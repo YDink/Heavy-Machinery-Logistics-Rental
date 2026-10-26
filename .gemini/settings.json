@@ -1,0 +1,20 @@
+{
+    "instructionFile": "GEMINI.md",
+    "contextFiles": [
+        "GEMINI.md",
+        "CONTEXT.md"
+    ],
+    "ignorePatterns": [
+        "data/**",
+        "postgres-data/**",
+        "valkey-data/**",
+        "minio-data/**",
+        "seaweed-data/**",
+        "backend/bin/**",
+        "backend/vendor/**",
+        "mobile/.dart_tool/**",
+        "mobile/build/**",
+        "admin/.next/**",
+        "admin/node_modules/**"
+    ]
+}

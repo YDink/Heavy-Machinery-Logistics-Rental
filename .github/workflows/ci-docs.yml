@@ -1,0 +1,130 @@
+name: Documentation Governance & Contract Linting
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  markdown-lint:
+    name: Markdown Lint & Structure Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Markdownlint CLI
+        run: npm install -g markdownlint-cli
+
+      - name: Run Markdownlint
+        run: |
+          markdownlint '**/*.md' \
+            --ignore 'node_modules' \
+            --ignore '.dart_tool' \
+            --ignore 'backend/vendor' \
+            --ignore 'mobile/build' \
+            --ignore 'admin/.next'
+
+  openapi-lint:
+    name: Spectral OpenAPI Contract Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Spectral CLI
+        run: npm install -g @stoplight/spectral-cli
+
+      - name: Lint OpenAPI Specifications
+        run: |
+          if [ -f "contracts/openapi.yaml" ]; then
+            spectral lint contracts/openapi.yaml --ruleset .spectral.yaml
+          else
+            echo "ERROR: contracts/openapi.yaml not found."
+            exit 1
+          fi
+
+  decision-governance:
+    name: Decision Link & Template Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Validate Decision Template Conformance
+        run: |
+          if [ -f "scripts/validate-decision-template.sh" ]; then
+            bash scripts/validate-decision-template.sh
+          else
+            echo "ERROR: scripts/validate-decision-template.sh not found."
+            exit 1
+          fi
+
+      - name: Validate Bidirectional Decision Links
+        run: |
+          if [ -f "scripts/validate-decision-links.sh" ]; then
+            bash scripts/validate-decision-links.sh
+          else
+            echo "ERROR: scripts/validate-decision-links.sh not found."
+            exit 1
+          fi
+
+  docs-drift-check:
+    name: Source-of-Truth Drift Detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for Unsynchronized Partitions Against docs/source/
+        run: |
+          if [ -f "scripts/check-docs-drift.sh" ]; then
+            bash scripts/check-docs-drift.sh
+          else
+            echo "Verifying docs/source vs docs/shared synchronization..."
+            CHANGED_SHARED=$(git diff --name-only origin/main...HEAD docs/shared/ 2>/dev/null || true)
+            CHANGED_SOURCE=$(git diff --name-only origin/main...HEAD docs/source/ 2>/dev/null || true)
+            if [ -n "$CHANGED_SHARED" ] && [ -z "$CHANGED_SOURCE" ]; then
+              echo "ERROR: Changes detected in docs/shared/ without corresponding canonical updates in docs/source/."
+              echo "Source hierarchy violation: docs/source/ must remain the single source of truth."
+              exit 1
+            fi
+            echo "Documentation synchronization verified."
+          fi
+
+  context-sanity-check:
+    name: CONTEXT.md Tracking Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Verify CONTEXT.md Structure & Invariants
+        run: |
+          if [ ! -f "CONTEXT.md" ]; then
+            echo "ERROR: CONTEXT.md is missing from project root."
+            exit 1
+          fi
+
+          grep -q "Current Progress Snapshot" CONTEXT.md || { echo "ERROR: Missing 'Current Progress Snapshot' section in CONTEXT.md"; exit 1; }
+          grep -q "Next Immediate Tasks" CONTEXT.md || { echo "ERROR: Missing 'Next Immediate Tasks' section in CONTEXT.md"; exit 1; }
+          grep -q "Active Decisions & Open Blockers" CONTEXT.md || { echo "ERROR: Missing 'Active Decisions & Open Blockers' section in CONTEXT.md"; exit 1; }
+          echo "CONTEXT.md structure verified."

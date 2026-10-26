@@ -1,0 +1,40 @@
+module.exports = {
+    extends: ['@commitlint/config-conventional'],
+    parserPreset: {
+        parserOpts: {
+            headerPattern: /^(\[([A-Z0-9-]+)\]\s)?(\w+)(?:\(([^)]+)\))?:\s(.+)$/,
+            headerCorrespondence: ['ticket', 'reqId', 'type', 'scope', 'subject'],
+        },
+    },
+    rules: {
+        'type-enum': [
+            2,
+            'always',
+            [
+                'feat',
+                'fix',
+                'docs',
+                'style',
+                'refactor',
+                'perf',
+                'test',
+                'build',
+                'ci',
+                'chore',
+                'revert',
+            ],
+        ],
+        'type-case': [2, 'always', 'lower-case'],
+        'type-empty': [2, 'never'],
+        'scope-case': [2, 'always', 'kebab-case'],
+        'scope-empty': [0],
+        'subject-case': [0],
+        'subject-empty': [2, 'never'],
+        'subject-full-stop': [2, 'never', '.'],
+        'header-max-length': [2, 'always', 100],
+        'body-leading-blank': [2, 'always'],
+        'body-max-line-length': [2, 'always', 120],
+        'footer-leading-blank': [2, 'always'],
+        'footer-max-line-length': [2, 'always', 120],
+    },
+};

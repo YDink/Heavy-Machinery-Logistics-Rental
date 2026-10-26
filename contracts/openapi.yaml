@@ -1,0 +1,1634 @@
+openapi: 3.1.0
+info:
+  title: Dink Machinery Marketplace API
+  description: |
+    Canonical REST API contract for Dink Machinery — a heavy machinery and logistics rental marketplace.
+    Enforces standardized JSON envelopes, RFC 9457 Problem Details error models, cursor-based pagination,
+    integer minor-unit financial structures, and multi-country parameterization.
+  version: 1.0.0
+  contact:
+    name: Dink Machinery Engineering Team
+    email: api-core@dinkmachinery.com
+
+servers:
+  - url: https://api.dinkmachinery.com/api/v1
+    description: Production Environment
+  - url: https://staging-api.dinkmachinery.com/api/v1
+    description: Staging Environment
+  - url: http://localhost:8080/api/v1
+    description: Local Development Environment
+
+tags:
+  - name: auth
+    description: Identity, multi-factor authentication, session lifecycle, and credentials.
+  - name: machinery
+    description: Fleet directory, specifications, attachments, and temporal availability.
+  - name: booking
+    description: 20-state reservation lifecycle, active holds, transitions, and inspections.
+  - name: payment
+    description: Double-entry ledger access, gateway orchestrations, and owner wallets.
+  - name: geo
+    description: Spatial search and PostGIS-backed machinery discovery.
+  - name: admin
+    description: Dynamic UI configurations, multi-country registries, and audit logs.
+
+paths:
+  # ============================================================================
+  # AUTHENTICATION & IDENTITY MODULE
+  # ============================================================================
+  /auth/otp/request:
+    post:
+      tags: [auth]
+      summary: Request an OTP verification code
+      description: Issues a time-bound verification code to a validated mobile telephone number.
+      operationId: requestOtp
+      parameters:
+        - $ref: '#/components/parameters/XCountryCodeHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phoneNumber, purpose]
+              properties:
+                phoneNumber:
+                  type: string
+                  pattern: '^\+[1-9]\d{1,14}$'
+                  example: "+251911223344"
+                purpose:
+                  type: string
+                  enum: [REGISTRATION, LOGIN, PASSWORD_RESET, STEP_UP]
+                  example: "LOGIN"
+      responses:
+        '200':
+          description: OTP dispatched successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OtpRequestSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '429':
+          $ref: '#/components/responses/TooManyRequestsError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/otp/verify:
+    post:
+      tags: [auth]
+      summary: Verify OTP and acquire user session tokens
+      description: Validates supplied code against pending challenge and returns authenticated session tokens.
+      operationId: verifyOtp
+      parameters:
+        - $ref: '#/components/parameters/XCountryCodeHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [verificationSessionId, code]
+              properties:
+                verificationSessionId:
+                  type: string
+                  format: uuid
+                code:
+                  type: string
+                  pattern: '^[0-9]{6}$'
+                  example: "123456"
+      responses:
+        '200':
+          description: Verification successful, tokens generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/session/refresh:
+    post:
+      tags: [auth]
+      summary: Refresh active JWT access token
+      description: Exchanges a cryptographically valid refresh token for a renewed access token.
+      operationId: refreshSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenSuccessResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/users/me:
+    get:
+      tags: [auth]
+      summary: Retrieve current authenticated user profile
+      description: Returns the user aggregate belonging to the active Bearer token.
+      operationId: getCurrentUserProfile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileSuccessResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ============================================================================
+  # MACHINERY & FLEET MODULE
+  # ============================================================================
+  /categories:
+    get:
+      tags: [machinery]
+      summary: List machinery taxonomy categories
+      description: Fetches hierarchical category nodes for machinery classification.
+      operationId: listCategories
+      responses:
+        '200':
+          description: Category hierarchy retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryListSuccessResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /fleets:
+    get:
+      tags: [machinery]
+      summary: Query machinery fleet inventory
+      description: Returns cursor-paginated active machinery listings matching filter parameters.
+      operationId: listFleets
+      parameters:
+        - $ref: '#/components/parameters/XCountryCodeHeader'
+        - $ref: '#/components/parameters/CursorQueryParam'
+        - $ref: '#/components/parameters/LimitQueryParam'
+        - name: categoryId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [AVAILABLE, RENTED, UNDER_MAINTENANCE]
+      responses:
+        '200':
+          description: Machinery inventory query results.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FleetListSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [machinery]
+      summary: Register a new machinery fleet asset
+      description: Onboards a physical piece of heavy equipment into the owner's fleet.
+      operationId: createFleet
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/XCountryCodeHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFleetRequest'
+      responses:
+        '201':
+          description: Asset successfully registered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FleetDetailSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /fleets/{id}:
+    get:
+      tags: [machinery]
+      summary: Retrieve specific machinery fleet asset
+      description: Fetches complete specifications, location, owner profile, and verified documentation.
+      operationId: getFleetById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Fleet asset retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FleetDetailSuccessResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ============================================================================
+  # GEOSPATIAL SEARCH MODULE
+  # ============================================================================
+  /geo/fleets/radius-search:
+    get:
+      tags: [geo]
+      summary: Spatial radius search for machinery
+      description: PostGIS spatial point radius query returning available machinery within given kilometers.
+      operationId: searchFleetsInRadius
+      parameters:
+        - $ref: '#/components/parameters/XCountryCodeHeader'
+        - name: latitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+            minimum: -90.0
+            maximum: 90.0
+            example: 9.0300
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+            minimum: -180.0
+            maximum: 180.0
+            example: 38.7400
+        - name: radiusKm
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            example: 50
+        - $ref: '#/components/parameters/LimitQueryParam'
+        - $ref: '#/components/parameters/CursorQueryParam'
+      responses:
+        '200':
+          description: Spatial query execution results.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FleetListSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ============================================================================
+  # BOOKING & RESERVATION ENGINE MODULE
+  # ============================================================================
+  /bookings:
+    get:
+      tags: [booking]
+      summary: List user bookings
+      description: Returns cursor-paginated booking history filtered by user role.
+      operationId: listBookings
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CursorQueryParam'
+        - $ref: '#/components/parameters/LimitQueryParam'
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/BookingStatus'
+      responses:
+        '200':
+          description: Bookings retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingListSuccessResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [booking]
+      summary: Initialize a booking hold reservation
+      description: |
+        Places a temporal hold on the designated machinery asset and initiates the
+        20-state reservation lifecycle in state PENDING_PAYMENT.
+      operationId: createBooking
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/XCountryCodeHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+      responses:
+        '201':
+          description: Booking hold established.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingDetailSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /bookings/{id}:
+    get:
+      tags: [booking]
+      summary: Retrieve booking details
+      description: Fetches complete booking entity including snapshots, transitions, and payment status.
+      operationId: getBookingById
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Booking retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingDetailSuccessResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /bookings/{id}:confirm-payment:
+    post:
+      tags: [booking]
+      summary: Transition booking upon payment verification
+      description: |
+        Atomically shifts booking state from PENDING_PAYMENT to CONFIRMED.
+        Guaranteed in-transaction ledger mutation (BK-17-BE).
+      operationId: confirmBookingPayment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [paymentTransactionId, version]
+              properties:
+                paymentTransactionId:
+                  type: string
+                  format: uuid
+                version:
+                  type: integer
+                  description: Optimistic concurrency control lock version.
+                  example: 1
+      responses:
+        '200':
+          description: Booking confirmed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingDetailSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /bookings/{id}:cancel:
+    post:
+      tags: [booking]
+      summary: Cancel an active or pending booking
+      description: Transitions booking to CANCELLED and evaluates refund obligations according to policy window.
+      operationId: cancelBooking
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason, version]
+              properties:
+                reason:
+                  type: string
+                  minLength: 5
+                  maxLength: 500
+                  example: "Project site construction delayed indefinitely."
+                version:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Booking successfully cancelled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingDetailSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /bookings/{id}/inspections:
+    post:
+      tags: [booking]
+      summary: Submit machinery physical inspection record
+      description: Records site handover inspection checklist, media attachments, and meter readings.
+      operationId: submitBookingInspection
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitInspectionRequest'
+      responses:
+        '201':
+          description: Inspection logged.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionDetailSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ============================================================================
+  # PAYMENTS & OWNER WALLET MODULE
+  # ============================================================================
+  /payments/initiate:
+    post:
+      tags: [payment]
+      summary: Initiate external gateway payment
+      description: Generates a payment intent or checkout redirect for Telebirr, CBEBirr, or MPESA.
+      operationId: initiatePayment
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/XCountryCodeHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bookingId, gatewayIdentifier, returnUrl]
+              properties:
+                bookingId:
+                  type: string
+                  format: uuid
+                gatewayIdentifier:
+                  type: string
+                  enum: [TELEBIRR, CBEBIRR, MPESA, STRIPE]
+                  example: "TELEBIRR"
+                returnUrl:
+                  type: string
+                  format: uri
+                  example: "https://dinkmachinery.com/payments/return"
+      responses:
+        '200':
+          description: Payment transaction initiated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentInitiateSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /wallets/me:
+    get:
+      tags: [payment]
+      summary: Retrieve authenticated owner wallet summary
+      description: Returns live balance and currency details derived from verified ledger aggregates.
+      operationId: getOwnerWallet
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Wallet summary retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletSuccessResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /wallets/me/transactions:
+    get:
+      tags: [payment]
+      summary: List wallet transaction ledger
+      description: Returns cursor-paginated history of immutable double-entry ledger items for this wallet.
+      operationId: listWalletTransactions
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CursorQueryParam'
+        - $ref: '#/components/parameters/LimitQueryParam'
+      responses:
+        '200':
+          description: Transactions retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletTransactionListSuccessResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ============================================================================
+  # ADMIN & MULTI-COUNTRY CONFIGURATION MODULE
+  # ============================================================================
+  /admin/ui-config:
+    get:
+      tags: [admin]
+      summary: Retrieve server-driven dynamic UI schema
+      description: |
+        Delivers table column definitions, form fields, action buttons, and navigation
+        hierarchies to dynamically drive the Next.js administrative console (AD-06-BE).
+      operationId: getAdminUiConfig
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: UI configuration metadata fetched.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUiConfigSuccessResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/countries:
+    get:
+      tags: [admin]
+      summary: List supported operational countries
+      description: Returns registry of country configurations, dialing codes, currencies, and tax rates.
+      operationId: listCountries
+      responses:
+        '200':
+          description: Country configs retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountryConfigListSuccessResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/countries/{countryCode}:
+    put:
+      tags: [admin]
+      summary: Update country configuration parameters
+      description: Updates regulatory parameters, tax basis points, and feature status for a jurisdiction.
+      operationId: updateCountryConfig
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: countryCode
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Z]{2}$'
+            example: "ET"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCountryConfigRequest'
+      responses:
+        '200':
+          description: Country configuration updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountryConfigDetailSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+# ==============================================================================
+# COMPONENTS & SCHEMAS
+# ==============================================================================
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Encrypted session JWT access token.
+
+  parameters:
+    XCountryCodeHeader:
+      name: X-Country-Code
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: '^[A-Z]{2}$'
+        default: "ET"
+      description: ISO 3166-1 alpha-2 operational country code driving multi-country logic.
+
+    IdempotencyKeyHeader:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Unique mutation request key preventing duplicate execution.
+
+    CursorQueryParam:
+      name: cursor
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Opaque cursor identifier for deterministic keyset pagination.
+
+    LimitQueryParam:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      description: Maximum number of records to return per page.
+
+  schemas:
+    # --------------------------------------------------------------------------
+    # Core Value Objects & Envelopes
+    # --------------------------------------------------------------------------
+    MoneyAmount:
+      type: object
+      required: [amountMinor, currency]
+      description: Integer minor currency units preventing precision truncation.
+      properties:
+        amountMinor:
+          type: integer
+          format: int64
+          description: Amount in minor units (e.g., 500000 = 5,000.00 ETB).
+          example: 500000
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          description: ISO 4217 three-letter currency symbol.
+          example: "ETB"
+
+    ResponseMeta:
+      type: object
+      required: [version, requestId, timestamp]
+      properties:
+        version:
+          type: string
+          example: "1.0"
+        requestId:
+          type: string
+          example: "req_01HP8XYZ12345678"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-10-26T07:12:00Z"
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+        warnings:
+          type: array
+          items:
+            type: string
+
+    PaginationMeta:
+      type: object
+      required: [hasMore]
+      nullable: true
+      properties:
+        nextCursor:
+          type: string
+          nullable: true
+          example: "ZXhhbXBsZS1jdXJzb3ItdmFsdWU="
+        prevCursor:
+          type: string
+          nullable: true
+          example: null
+        hasMore:
+          type: boolean
+          example: true
+
+    RFC9457ProblemDetails:
+      type: object
+      required: [type, title, status, detail, code]
+      properties:
+        type:
+          type: string
+          format: uri
+          example: "https://api.dinkmachinery.com/errors/invalid-booking-state"
+        title:
+          type: string
+          example: "Invalid Booking State Transition"
+        status:
+          type: integer
+          example: 409
+        detail:
+          type: string
+          example: "Cannot transition booking from CANCELLED to CONFIRMED."
+        code:
+          type: string
+          example: "BOOKING_INVALID_STATE_TRANSITION"
+        invalidParams:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvalidParam'
+
+    InvalidParam:
+      type: object
+      required: [name, reason]
+      properties:
+        name:
+          type: string
+          example: "status"
+        reason:
+          type: string
+          example: "Current status is terminal."
+
+    ErrorEnvelope:
+      type: object
+      required: [success, data, error, meta]
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+        data:
+          type: object
+          nullable: true
+          default: null
+        error:
+          $ref: '#/components/schemas/RFC9457ProblemDetails'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    # --------------------------------------------------------------------------
+    # Auth Domain Entities
+    # --------------------------------------------------------------------------
+    UserProfile:
+      type: object
+      required: [id, phoneNumber, role, status, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        phoneNumber:
+          type: string
+          example: "+251911223344"
+        fullName:
+          type: string
+          example: "Abebe Bikila"
+        role:
+          type: string
+          enum: [RENTER, OWNER, OPERATOR, ADMIN]
+          example: "RENTER"
+        status:
+          type: string
+          enum: [ACTIVE, SUSPENDED, PENDING_VERIFICATION]
+          example: "ACTIVE"
+        createdAt:
+          type: string
+          format: date-time
+
+    AuthTokenPair:
+      type: object
+      required: [accessToken, refreshToken, tokenType, expiresInSeconds]
+      properties:
+        accessToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        refreshToken:
+          type: string
+          example: "def50200abcd..."
+        tokenType:
+          type: string
+          example: "Bearer"
+        expiresInSeconds:
+          type: integer
+          example: 900
+
+    # --------------------------------------------------------------------------
+    # Machinery Domain Entities
+    # --------------------------------------------------------------------------
+    Category:
+      type: object
+      required: [id, code, name, iconUrl]
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          example: "EXCAVATOR"
+        name:
+          type: string
+          example: "Crawler Excavators"
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        iconUrl:
+          type: string
+          format: uri
+
+    FleetAsset:
+      type: object
+      required: [id, ownerId, categoryId, model, registrationNumber, dailyRate, status, location, version]
+      properties:
+        id:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        categoryId:
+          type: string
+          format: uuid
+        make:
+          type: string
+          example: "Caterpillar"
+        model:
+          type: string
+          example: "320D3"
+        manufacturingYear:
+          type: integer
+          example: 2022
+        registrationNumber:
+          type: string
+          example: "AA-3-98234"
+        dailyRate:
+          $ref: '#/components/schemas/MoneyAmount'
+        status:
+          type: string
+          enum: [AVAILABLE, RENTED, UNDER_MAINTENANCE, DECOMMISSIONED]
+          example: "AVAILABLE"
+        location:
+          type: object
+          required: [latitude, longitude, addressText]
+          properties:
+            latitude:
+              type: number
+              format: double
+              example: 9.0300
+            longitude:
+              type: number
+              format: double
+              example: 38.7400
+            addressText:
+              type: string
+              example: "Bole Subcity, Addis Ababa"
+        version:
+          type: integer
+          example: 1
+
+    CreateFleetRequest:
+      type: object
+      required: [categoryId, make, model, manufacturingYear, registrationNumber, dailyRate, location]
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+        make:
+          type: string
+          example: "Komatsu"
+        model:
+          type: string
+          example: "PC200-8"
+        manufacturingYear:
+          type: integer
+          example: 2021
+        registrationNumber:
+          type: string
+          example: "ET-MACH-0921"
+        dailyRate:
+          $ref: '#/components/schemas/MoneyAmount'
+        location:
+          type: object
+          required: [latitude, longitude, addressText]
+          properties:
+            latitude:
+              type: number
+              format: double
+            longitude:
+              type: number
+              format: double
+            addressText:
+              type: string
+
+    # --------------------------------------------------------------------------
+    # Booking Domain Entities
+    # --------------------------------------------------------------------------
+    BookingStatus:
+      type: string
+      enum:
+        - DRAFT
+        - PENDING_HOLD
+        - PENDING_PAYMENT
+        - PAYMENT_PROCESSING
+        - CONFIRMED
+        - SITE_DISPATCHED
+        - CHECKED_IN
+        - ACTIVE_OPERATION
+        - INSPECTION_PENDING
+        - DISPUTED
+        - EXTENSION_REQUESTED
+        - COMPLETED
+        - CANCELLED
+        - EXPIRED
+
+    Booking:
+      type: object
+      required: [id, fleetId, renterId, status, startDate, endDate, totalCost, depositHold, version, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        fleetId:
+          type: string
+          format: uuid
+        renterId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/BookingStatus'
+        startDate:
+          type: string
+          format: date
+          example: "2026-11-01"
+        endDate:
+          type: string
+          format: date
+          example: "2026-11-07"
+        totalCost:
+          $ref: '#/components/schemas/MoneyAmount'
+        depositHold:
+          $ref: '#/components/schemas/MoneyAmount'
+        siteLocationAddress:
+          type: string
+          example: "Kilinto Industrial Park, Addis Ababa"
+        version:
+          type: integer
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateBookingRequest:
+      type: object
+      required: [fleetId, startDate, endDate, siteLocationAddress]
+      properties:
+        fleetId:
+          type: string
+          format: uuid
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        siteLocationAddress:
+          type: string
+          example: "Bole Lemi Industrial Zone Phase 2"
+
+    SubmitInspectionRequest:
+      type: object
+      required: [stage, operatingHoursMeter, fuelLevelPercent, conditionReport, mediaUrls, passed]
+      properties:
+        stage:
+          type: string
+          enum: [CHECK_IN, CHECK_OUT]
+        operatingHoursMeter:
+          type: integer
+          example: 1250
+        fuelLevelPercent:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 85
+        conditionReport:
+          type: string
+          example: "Clean operational state. Tracks verified intact."
+        mediaUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+        passed:
+          type: boolean
+          example: true
+
+    InspectionRecord:
+      type: object
+      required: [id, bookingId, stage, operatingHoursMeter, passed, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        stage:
+          type: string
+          enum: [CHECK_IN, CHECK_OUT]
+        operatingHoursMeter:
+          type: integer
+        fuelLevelPercent:
+          type: integer
+        conditionReport:
+          type: string
+        passed:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    # --------------------------------------------------------------------------
+    # Payments & Wallet Entities
+    # --------------------------------------------------------------------------
+    OwnerWallet:
+      type: object
+      required: [id, ownerId, availableBalance, escrowBalance, currency, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        availableBalance:
+          $ref: '#/components/schemas/MoneyAmount'
+        escrowBalance:
+          $ref: '#/components/schemas/MoneyAmount'
+        currency:
+          type: string
+          example: "ETB"
+        updatedAt:
+          type: string
+          format: date-time
+
+    WalletTransaction:
+      type: object
+      required: [id, walletId, entryType, amount, runningBalance, referenceId, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        walletId:
+          type: string
+          format: uuid
+        entryType:
+          type: string
+          enum: [RENTAL_PAYOUT, ESCROW_RELEASE, PLATFORM_FEE, DISPUTE_DEBIT]
+        amount:
+          $ref: '#/components/schemas/MoneyAmount'
+        runningBalance:
+          $ref: '#/components/schemas/MoneyAmount'
+        referenceId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    PaymentInitiateResult:
+      type: object
+      required: [transactionId, checkoutUrl, expiresAt]
+      properties:
+        transactionId:
+          type: string
+          format: uuid
+        checkoutUrl:
+          type: string
+          format: uri
+          example: "https://telebirr.et/pay?token=ab897cd0"
+        expiresAt:
+          type: string
+          format: date-time
+
+    # --------------------------------------------------------------------------
+    # Admin & Country Configuration Entities
+    # --------------------------------------------------------------------------
+    CountryConfig:
+      type: object
+      required: [countryCode, countryName, dialingPrefix, defaultCurrency, standardTaxRateBps, isEnabled]
+      properties:
+        countryCode:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          example: "ET"
+        countryName:
+          type: string
+          example: "Ethiopia"
+        dialingPrefix:
+          type: string
+          example: "+251"
+        defaultCurrency:
+          type: string
+          example: "ETB"
+        currencyMinorUnitExponent:
+          type: integer
+          example: 2
+        defaultTimezone:
+          type: string
+          example: "Africa/Addis_Ababa"
+        taxLabel:
+          type: string
+          example: "VAT"
+        standardTaxRateBps:
+          type: integer
+          description: Standard tax basis points (1500 bps = 15.00%).
+          example: 1500
+        minAgeDefault:
+          type: integer
+          example: 18
+        paymentHoldTimeoutMins:
+          type: integer
+          example: 60
+        isEnabled:
+          type: boolean
+          example: true
+
+    UpdateCountryConfigRequest:
+      type: object
+      required: [standardTaxRateBps, paymentHoldTimeoutMins, isEnabled]
+      properties:
+        standardTaxRateBps:
+          type: integer
+          example: 1500
+        paymentHoldTimeoutMins:
+          type: integer
+          example: 60
+        isEnabled:
+          type: boolean
+          example: true
+
+    AdminUiConfig:
+      type: object
+      required: [navigation, tables, featureToggles]
+      properties:
+        navigation:
+          type: array
+          items:
+            type: object
+            required: [key, label, route]
+            properties:
+              key:
+                type: string
+              label:
+                type: string
+              route:
+                type: string
+        tables:
+          type: object
+          additionalProperties:
+            type: object
+            required: [columns]
+            properties:
+              columns:
+                type: array
+                items:
+                  type: object
+                  required: [key, header, type]
+                  properties:
+                    key:
+                      type: string
+                    header:
+                      type: string
+                    type:
+                      type: string
+        featureToggles:
+          type: object
+          additionalProperties:
+            type: boolean
+
+    # --------------------------------------------------------------------------
+    # Concrete Response Envelopes
+    # --------------------------------------------------------------------------
+    OtpRequestSuccessResponse:
+      type: object
+      required: [success, data, error, meta]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          type: object
+          required: [verificationSessionId, timeoutSeconds]
+          properties:
+            verificationSessionId:
+              type: string
+              format: uuid
+            timeoutSeconds:
+              type: integer
+              example: 120
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    AuthTokenSuccessResponse:
+      type: object
+      required: [success, data, error, meta]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/AuthTokenPair'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    UserProfileSuccessResponse:
+      type: object
+      required: [success, data, error, meta]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/UserProfile'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    CategoryListSuccessResponse:
+      type: object
+      required: [success, data, error, meta]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    FleetListSuccessResponse:
+      type: object
+      required: [success, data, error, meta]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FleetAsset'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    FleetDetailSuccessResponse:
+      type: object
+      required: [success, data, error, meta]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/FleetAsset'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    BookingListSuccessResponse:
+      type: object
+      required: [success, data, error, meta]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Booking'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    BookingDetailSuccessResponse:
+      type: object
+      required: [success, data, error, meta]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/Booking'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    InspectionDetailSuccessResponse:
+      type: object
+      required: [success, data, error, meta]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/InspectionRecord'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    PaymentInitiateSuccessResponse:
+      type: object
+      required: [success, data, error, meta]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/PaymentInitiateResult'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    WalletSuccessResponse:
+      type: object
+      required: [success, data, error, meta]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/OwnerWallet'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    WalletTransactionListSuccessResponse:
+      type: object
+      required: [success, data, error, meta]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/WalletTransaction'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    AdminUiConfigSuccessResponse:
+      type: object
+      required: [success, data, error, meta]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/AdminUiConfig'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    CountryConfigListSuccessResponse:
+      type: object
+      required: [success, data, error, meta]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CountryConfig'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    CountryConfigDetailSuccessResponse:
+      type: object
+      required: [success, data, error, meta]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/CountryConfig'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+  # ============================================================================
+  # STANDARD ERROR RESPONSES (RFC 9457)
+  # ============================================================================
+  responses:
+    BadRequestError:
+      description: Bad Request — Request failed initial edge schema or syntactic validation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+
+    UnauthorizedError:
+      description: Unauthorized — Authentication credentials missing, invalid, or expired.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+
+    ForbiddenError:
+      description: Forbidden — Authenticated principal lacks RBAC permission to access this resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+
+    NotFoundError:
+      description: Not Found — Specified resource entity does not exist or has been soft-deleted.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+
+    ConflictError:
+      description: Conflict — Invariant violation, state machine failure, or optimistic concurrency conflict.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+
+    TooManyRequestsError:
+      description: Too Many Requests — Ingress rate-limit quota exceeded for caller.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+
+    InternalServerError:
+      description: Internal Server Error — Unhandled server failure (anonymized error token emitted).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'

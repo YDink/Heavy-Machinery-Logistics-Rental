@@ -1,0 +1,149 @@
+name: Security Analysis & ASVS L3 Scanning
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 2 * * 1'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  secret-scan:
+    name: Secret Scanning (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_SUMMARY: true
+
+  sast-semgrep:
+    name: Static Application Security Testing (Semgrep)
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep:latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep Rulesets (OWASP Top 10 & ASVS L3)
+        run: |
+          semgrep scan \
+            --config "p/security-audit" \
+            --config "p/secrets" \
+            --config "p/owasp-top-ten" \
+            --config "p/golang" \
+            --config "p/typescript" \
+            --sarif \
+            --output semgrep.sarif \
+            --error
+
+      - name: Upload SARIF Report
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+
+  backend-vuln-check:
+    name: Backend Dependency & Vulnerability Scan (Go)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.x'
+          check-latest: true
+
+      - name: Install Govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Run Govulncheck
+        run: |
+          if [ -d "backend" ] && [ -f "backend/go.mod" ]; then
+            cd backend
+            govulncheck ./...
+          else
+            echo "Phase 0 Notice: No backend go.mod present. Skipping binary scan."
+          fi
+
+  frontend-vuln-check:
+    name: Admin Web Dependency Audit (Node.js)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run npm Audit
+        run: |
+          if [ -d "admin" ] && [ -f "admin/package.json" ]; then
+            cd admin
+            npm audit --audit-level=high
+          else
+            echo "Phase 0 Notice: No admin package.json present. Skipping npm audit."
+          fi
+
+  pii-leakage-check:
+    name: Zero-PII Log & Error Static Assertion
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Assert Zero PII Leakage in Log Signatures
+        run: |
+          echo "Scanning codebase for unmasked PII references in logger statements..."
+          DISALLOWED_PATTERNS=(
+            'logger.*\.(Info|Debug|Warn|Error).*(password|national_id|tin_number|bank_account|credit_card)'
+            'fmt\.Print.*(password|national_id|tin_number|bank_account)'
+            'console\.log.*(password|nationalId|tinNumber|bankAccount)'
+          )
+          
+          VIOLATIONS=0
+          for PATTERN in "${DISALLOWED_PATTERNS[@]}"; do
+            if grep -rEni "$PATTERN" backend/ admin/ mobile/ 2>/dev/null; then
+              echo "ERROR: Potential unmasked PII exposure detected matching pattern: $PATTERN"
+              VIOLATIONS=$((VIOLATIONS + 1))
+            fi
+          done
+
+          if [ $VIOLATIONS -gt 0 ]; then
+            echo "ASVS Level 3 Violation: Found $VIOLATIONS logging statement(s) exposing sensitive PII."
+            exit 1
+          fi
+          echo "Zero-PII logging check passed."
+
+  container-security:
+    name: Infrastructure Image Vulnerability Scan (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy Vulnerability Scanner on Compose Files
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: 'docker-compose.yml'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'

@@ -1,0 +1,73 @@
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Secrets & Local Configurations
+.env
+.env.local
+.env.*.local
+.env.production
+*.pem
+*.key
+*.cert
+*.p12
+
+# Local Infrastructure Volume Data
+data/
+minio-data/
+postgres-data/
+valkey-data/
+seaweed-data/
+
+# Go Toolchain
+backend/bin/
+backend/dist/
+backend/vendor/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+cover.out
+
+# Flutter & Dart
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.packages
+mobile/build/
+mobile/.pub/
+mobile/.pub-cache/
+mobile/ios/Flutter/Generated.xcconfig
+mobile/android/app/src/main/res/values/generated.xml
+
+# Next.js & Node
+admin/.next/
+admin/out/
+admin/build/
+admin/dist/
+admin/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Test Reports & Artifacts
+test-reports/
+coverage/
+*.lcov
+test_report_*.json
+
+# IDE Configurations
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

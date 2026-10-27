@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dink Machinery — System Flow Diagrams & Architecture Choreography (v7.0)</title>
+
+    <!-- Mermaid.js for Dynamic Client-Side Diagram Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+    <style>
+        /* ==========================================================================
+       Print & Screen Styling Foundations (ISO A4 Optimized)
+       ========================================================================== */
+        :root {
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+            --color-primary: #0f172a;
+            --color-accent: #d97706;
+            --color-accent-light: #fef3c7;
+            --color-border: #cbd5e1;
+            --color-border-light: #e2e8f0;
+            --color-bg: #ffffff;
+            --color-surface: #f8fafc;
+            --color-text: #1e293b;
+            --color-text-muted: #64748b;
+
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            color: var(--color-text);
+            background-color: var(--color-surface);
+            line-height: 1.5;
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Top Sticky Control Bar (Screen Only) */
+        .screen-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(8px);
+            color: #ffffff;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+        }
+
+        .screen-header h1 {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-primary {
+            background: var(--color-accent);
+            color: #ffffff;
+        }
+
+        .badge-outline {
+            border: 1px solid #ffffff44;
+            color: #e2e8f0;
+        }
+
+        .btn-print {
+            background: var(--color-accent);
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .btn-print:hover {
+            background: #b45309;
+        }
+
+        /* Document Sheet Wrapper */
+        .document-container {
+            max-width: 1200px;
+            margin: 24px auto;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border-light);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            padding: 48px;
+        }
+
+        /* Document Header & Cover Information */
+        .doc-meta-cover {
+            border-bottom: 2px solid var(--color-primary);
+            padding-bottom: 32px;
+            margin-bottom: 40px;
+        }
+
+        .doc-meta-cover .super-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-accent);
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+
+        .doc-meta-cover .doc-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--color-primary);
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+
+        .doc-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+            padding: 16px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border-light);
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .doc-meta-item .meta-label {
+            font-weight: 600;
+            color: var(--color-text-muted);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+
+        .doc-meta-item .meta-value {
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        /* Section & Content Blocks */
+        .section-block {
+            margin-bottom: 48px;
+        }
+
+        .section-header {
+            border-bottom: 1px solid var(--color-border);
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--color-primary);
+            letter-spacing: -0.01em;
+        }
+
+        .section-number {
+            color: var(--color-accent);
+            font-family: var(--font-mono);
+            font-weight: 700;
+            margin-right: 6px;
+        }
+
+        .section-narrative {
+            font-size: 13px;
+            color: #334155;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        /* Diagram Card Containers */
+        .diagram-card {
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .diagram-card .mermaid {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .diagram-caption {
+            margin-top: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            text-align: center;
+            font-family: var(--font-mono);
+        }
+
+        /* Footer & Page Breaks */
+        .page-footer {
+            border-top: 1px solid var(--color-border-light);
+            padding-top: 16px;
+            margin-top: 64px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--color-text-muted);
+        }
+
+        .page-break {
+            page-break-after: always;
+            break-after: page;
+            height: 0;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ==========================================================================
+       Print-Specific CSS Rules (@media print)
+       ========================================================================== */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 12mm 10mm 15mm 10mm;
+            }
+
+            body {
+                background: #ffffff !important;
+                font-size: 11pt;
+                color: #000000 !important;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .document-container {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
+
+            .diagram-card {
+                border: 1px solid #94a3b8 !important;
+                box-shadow: none !important;
+                padding: 12px !important;
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            .section-block {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                margin-bottom: 24pt;
+            }
+
+            .page-break {
+                page-break-after: always !important;
+                break-after: page !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Screen-Only Floating Action Header -->
+    <header class="screen-header no-print">
+        <h1>
+            <span>Dink Machinery</span>
+            <span class="badge badge-primary">v7.0 Core</span>
+            <span class="badge badge-outline">Flow Diagrams</span>
+        </h1>
+        <button class="btn-print" onclick="window.print()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                <path d="M6 14h12v8H6z" />
+            </svg>
+            Print / Save as PDF
+        </button>
+    </header>
+
+    <main class="document-container">
+
+        <!-- Document Cover & Header Metadata -->
+        <header class="doc-meta-cover">
+            <div class="super-title">Canonical Engineering Specification</div>
+            <h1 class="doc-title">System Application Flow Diagrams & Architecture Choreography</h1>
+            <p style="color: var(--color-text-muted); font-size: 14px;">
+                Single source of truth sequence diagrams, state machine choreography, and structural dataflows for the
+                Dink Machinery heavy equipment and logistics aggregator platform.
+            </p>
+
+            <div class="doc-meta-grid">
+                <div class="doc-meta-item">
+                    <div class="meta-label">Document ID</div>
+                    <div class="meta-value">FLOW-DINK-CORE-V7.0</div>
+                </div>
+                <div class="doc-meta-item">
+                    <div class="meta-label">Core Runtime</div>
+                    <div class="meta-value">Go 1.27.3 Monolith</div>
+                </div>
+                <div class="doc-meta-item">
+                    <div class="meta-label">Compliance Baseline</div>
+                    <div class="meta-value">OWASP ASVS L3 / RFC 9457</div>
+                </div>
+                <div class="doc-meta-item">
+                    <div class="meta-label">Target Markets</div>
+                    <div class="meta-value">Ethiopia (ET) & Kenya (KE)</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- SECTION 1 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">01</span> High-Level System Context &
+                    Multi-Persona Ingress</h2>
+                <span class="badge badge-primary">Ingress Tier</span>
+            </div>
+            <p class="section-narrative">
+                Edge orchestration mapping mobile personas (Renter, Owner, Operator) and web administrative consoles
+                through Traefik 3.x into the Go 1.27.3 modular monolith and persistence tiers.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    flowchart TD
+                    subgraph EdgeClients["Edge Clients & Personas"]
+                    Renter["Equipment Renter<br>(Flutter Mobile Client)"]
+                    Owner["Fleet Owner<br>(Flutter Mobile Client)"]
+                    Operator["Field Operator<br>(Flutter Mobile Client)"]
+                    Admin["Compliance & Ops Admin<br>(Next.js 16 Web Console)"]
+                    end
+
+                    subgraph EdgeIngress["Edge Gateway & Hardening Layer"]
+                    Traefik["Traefik 3.x API Gateway<br>(TLS 1.3 Termination, HSTS, Rate Limiter)"]
+                    WAF["OWASP CRS / DDoS Shield"]
+                    end
+
+                    subgraph CoreBackend["Go 1.27.3 Modular Monolith (Clean Architecture)"]
+                    AuthMod["Auth & Identity Module<br>(ES256 JWT, Valkey Sessions)"]
+                    FleetMod["Machinery & Catalog Module<br>(Dynamic EAV Taxonomy)"]
+                    GeoMod["Spatial Search Engine<br>(PostGIS 3.4 Bounded Queries)"]
+                    BookingMod["Booking State Engine<br>(20-State Machine, OCC Versioning)"]
+                    PaymentMod["Escrow Ledger & Wallet Engine<br>(Double-Entry, BK-17-BE)"]
+                    InspectMod["Inspection & Media Ingress<br>(ClamAV Stream Scan)"]
+                    AdminUIMod["Server-Driven UI Engine<br>(/api/v1/admin/ui-config)"]
+                    end
+
+                    subgraph PersistenceInfra["Storage & State Infrastructure"]
+                    Postgres[("PostgreSQL 18.4 + PostGIS 3.4<br>(Spatial Points, JSONB Specs, pgxpool)")]
+                    Valkey[("Valkey 8.0 Cache<br>(60-Min Mutex Holds, Rate-Limit Counters)")]
+                    SeaweedFS[("SeaweedFS S3 Object Storage<br>(Photos, Licenses, Encrypted PDFs)")]
+                    ClamAV["ClamAV Daemon<br>(tcp://clamav:3310 zINSTREAM)"]
+                    end
+
+                    Renter -->|HTTPS / TLS 1.3| Traefik
+                    Owner -->|HTTPS / TLS 1.3| Traefik
+                    Operator -->|WSS / HTTPS| Traefik
+                    Admin -->|HTTPS / TLS 1.3| Traefik
+
+                    Traefik --> WAF
+                    WAF --> CoreBackend
+
+                    CoreBackend -->|Binary Protocol pgx/v5| Postgres
+                    CoreBackend -->|TCP RESP Protocol| Valkey
+                    CoreBackend -->|S3 REST API| SeaweedFS
+                    InspectMod -->|TCP Stream| ClamAV
+                </div>
+                <div class="diagram-caption">Figure 1.1: Multi-Persona Edge Topology and Bounded Monolith Boundary</div>
+            </div>
+        </section>
+
+        <div class="page-break"></div>
+
+        <!-- SECTION 2.1 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">02.1</span> Passwordless Phone OTP Authentication
+                    & Refresh Rotation</h2>
+                <span class="badge badge-primary">Auth & Identity</span>
+            </div>
+            <p class="section-narrative">
+                Rate-limited OTP challenges via localized SMS gateways paired with rotating single-use refresh token
+                families stored in Valkey.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    sequenceDiagram
+                    autonumber
+                    actor Client as Flutter Client (Renter/Owner/Operator)
+                    participant GW as Traefik API Gateway
+                    participant Auth as Go Auth Module (net/http)
+                    participant VK as Valkey 8.0 Cache
+                    participant DB as PostgreSQL 18.4 (users)
+                    participant SMS as SMS Gateway (Ethio/Safaricom)
+
+                    Client->>GW: POST /api/v1/auth/otp/challenge { phone: "+251911223344" }
+                    GW->>Auth: Validate E.164 (+251 / +254)
+                    Auth->>VK: Check Rate Limit (max 5 OTPs/hr per IP & phone)
+                    alt Rate Limit Exceeded
+                    VK-->>Client: HTTP 429 Too Many Requests (RFC 9457)
+                    else Under Rate Limit
+                    Auth->>Auth: Generate 6-digit crypto OTP (crypto/rand)
+                    Auth->>VK: SETEX otp:challenge:+251911223344 120s { code_hash, attempts: 0 }
+                    Auth->>SMS: Dispatch SMS Challenge
+                    SMS-->>Client: SMS with 6-digit code received
+                    Auth-->>Client: HTTP 200 OK { challengeId, expiresIn: 120 }
+                    end
+
+                    Client->>GW: POST /api/v1/auth/otp/verify { phone: "+251911223344", code: "849201" }
+                    GW->>Auth: Forward verification payload
+                    Auth->>VK: GET otp:challenge:+251911223344
+                    alt Invalid Code / Attempts > 5
+                    Auth->>VK: INCR attempts
+                    Auth-->>Client: HTTP 400 Bad Request / 429 Locked (15 min lockout)
+                    else Valid Code
+                    Auth->>VK: DEL otp:challenge:+251911223344
+                    Auth->>DB: Upsert User Record & Resolve RBAC Roles
+                    Auth->>Auth: Sign Access JWT (ES256, 15-min TTL)
+                    Auth->>VK: SETEX refresh:{token_id} 30d { user_id, family_id }
+                    Auth-->>Client: HTTP 200 OK { accessToken, refreshToken, userProfile }
+                    Client->>Client: Store tokens in flutter_secure_storage (Keychain/Keystore)
+                    end
+                </div>
+                <div class="diagram-caption">Figure 2.1: Phone OTP Challenge Verification and ES256 Session Issuance
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2.2 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">02.2</span> Pluggable Identity Verification
+                    (Fayda / National ID Adapter)</h2>
+                <span class="badge badge-primary">KYC / NID</span>
+            </div>
+            <p class="section-narrative">
+                Pluggable identity verification framework with automated age checks, consent capture, and manual
+                administrative review failovers.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    sequenceDiagram
+                    autonumber
+                    actor User as Authenticated User
+                    participant App as Mobile Client
+                    participant API as Auth Identity Interactor
+                    participant Policy as Policy Engine
+                    participant Adapter as Identity Provider Adapter
+                    participant Registry as National Fayda Registry
+                    participant DB as PostgreSQL Database
+
+                    User->>App: Submit identity FIN and accept consent checkbox
+                    App->>API: POST identity verification request with consent
+                    API->>DB: Persist consent audit record with timestamp
+                    API->>Adapter: Dispatch verification challenge
+                    Adapter->>Registry: Call external verify endpoint
+
+                    alt Identity Matches Record
+                    Registry-->>Adapter: Return verified personal attributes and photo
+                    Adapter-->>API: Provider result verified
+                    API->>API: Enforce age gate check minimum 18 years
+                    API->>DB: Insert verified identity record
+                    API->>Policy: Evaluate policy rules
+                    Policy-->>API: Policy satisfied and status verified
+                    API-->>App: Return HTTP 200 identity verified
+                    App->>App: Dismiss identity lock overlay
+                    else Mismatch or Not Found
+                    Registry-->>Adapter: Return mismatch status
+                    Adapter-->>API: Provider result unverified with mismatch code
+                    API->>DB: Record failed attempt and decrement retry counter
+                    API-->>App: Return HTTP 422 with remaining daily attempts
+                    else Registry Unavailable or Timeout
+                    Adapter-->>API: Return timeout error
+                    API->>DB: Insert record with pending review status
+                    API->>DB: Enqueue in admin manual verification queue
+                    API-->>App: Return HTTP 202 submitted for manual review
+                    end
+                </div>
+                <div class="diagram-caption">Figure 2.2: Provider-Agnostic National ID Adapter Flow & Consent Logging
+                </div>
+            </div>
+        </section>
+
+        <div class="page-break"></div>
+
+        <!-- SECTION 2.3 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">02.3</span> Multi-Factor Authentication (Passkey
+                    WebAuthn & TOTP)</h2>
+                <span class="badge badge-primary">Security ASVS L3</span>
+            </div>
+            <p class="section-narrative">
+                Decision tree enforcing mandatory TOTP verification for staff roles and progressive WebAuthn passkey
+                assertion for end users.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    flowchart TD
+                    Start([User Initiates Authentication]) --> PasswordCheck{Password / OTP Valid?}
+                    PasswordCheck -- No --> LockoutCheck{Failed Attempts >= 10?}
+                    LockoutCheck -- Yes --> Lockout[HTTP 429 Account Locked 30 Min]
+                    LockoutCheck -- No --> Retry[Return Invalid Credentials]
+
+                    PasswordCheck -- Yes --> RoleCheck{Is Admin / Super Admin?}
+                    RoleCheck -- Yes --> ForceMFA[Mandatory TOTP Verification Required]
+                    RoleCheck -- No --> UserMFAConfig{User mfa_enabled == true?}
+
+                    UserMFAConfig -- No --> IssueSession[Issue Full ES256 Session JWT]
+                    UserMFAConfig -- Yes --> ResolvePriority[Resolve Factor Priority List: Passkey > TOTP > SMS]
+
+                    ForceMFA --> TOTPChallenge[Display TOTP Code Prompt]
+                    ResolvePriority --> PresentChallenge[Present Primary Registered Factor Challenge]
+
+                    PresentChallenge --> SwitchMethod{User Taps 'Try another method'?}
+                    SwitchMethod -- Yes --> FactorSheet[Display Alternate Registered Factors]
+                    FactorSheet --> PresentChallenge
+
+                    SwitchMethod -- No --> VerifyFactor{Verify Cryptographic Assertion / Code}
+                    TOTPChallenge --> VerifyFactor
+
+                    VerifyFactor -- Success --> RegressionCheck{Passkey Counter Regression Check}
+                    RegressionCheck -- Cloned Detected --> RejectAuth[HTTP 401 Cloned Authenticator Blocked]
+                    RegressionCheck -- Valid --> IssueSession
+                    VerifyFactor -- Fail --> CountMFA[Increment Failed MFA Counter]
+                </div>
+                <div class="diagram-caption">Figure 2.3: Adaptive MFA Prioritization & WebAuthn Regression Engine</div>
+            </div>
+        </section>
+
+        <!-- SECTION 3 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">03</span> Fleet Registration, Dynamic EAV
+                    Taxonomy & Availability Scheduling</h2>
+                <span class="badge badge-primary">Catalog Engine</span>
+            </div>
+            <p class="section-narrative">
+                Machinery registration workflow validating dynamic category specs, streaming images through ClamAV, and
+                registering availability intervals.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    sequenceDiagram
+                    autonumber
+                    actor Owner as Fleet Owner
+                    participant App as Mobile Client
+                    participant CatAPI as Category Spec Module
+                    participant MediaAPI as Media Ingress Controller
+                    participant ClamAV as ClamAV Antivirus Daemon
+                    participant S3 as SeaweedFS Object Storage
+                    participant DB as PostgreSQL Database
+                    participant Admin as NextJS Admin Queue
+
+                    Owner->>App: Select machinery category and subcategory
+                    App->>CatAPI: Request category spec template
+                    CatAPI-->>App: Return dynamic spec definitions
+                    App->>App: Render dynamic accordion form inputs
+
+                    Owner->>App: Capture 5 mandatory photos and hour meter photo
+                    App->>MediaAPI: Upload multipart image stream
+                    MediaAPI->>ClamAV: Stream bytes through antivirus scanner
+                    alt Malware Detected
+                    ClamAV-->>MediaAPI: Virus detected
+                    MediaAPI-->>App: Return HTTP 422 media scan failed
+                    else Stream Clean
+                    ClamAV-->>MediaAPI: Scan passed cleanly
+                    MediaAPI->>S3: Persist compressed WebP image
+                    MediaAPI-->>App: Return HTTP 201 with S3 media URL
+                    end
+
+                    Owner->>App: Enter daily rate, blocked dates, and assigned operator
+                    App->>CatAPI: Submit complete fleet registration payload
+                    CatAPI->>CatAPI: Validate daily rate positive integer minor units
+                    CatAPI->>CatAPI: Validate all mandatory dynamic category specs
+                    CatAPI->>DB: Insert fleet record with pending approval status
+                    CatAPI->>DB: Index logistics weight and transport dimensions
+                    CatAPI->>DB: Insert blocked calendar intervals
+                    CatAPI-->>App: Return HTTP 201 fleet pending approval
+                    CatAPI->>Admin: Emit fleet submitted for approval event
+                </div>
+                <div class="diagram-caption">Figure 3.1: Asset Onboarding with Antivirus Ingress & EAV Schema Parsing
+                </div>
+            </div>
+        </section>
+
+        <div class="page-break"></div>
+
+        <!-- SECTION 4 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">04</span> Geospatial Radius Discovery, Corridor
+                    Search & Filtering (PostGIS)</h2>
+                <span class="badge badge-primary">PostGIS Spatial</span>
+            </div>
+            <p class="section-narrative">
+                Geospatial discovery pipeline utilizing PostGIS GiST spatial indexing, GIN JSONB attribute scans, and
+                sponsored placement rankings.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    flowchart TD
+                    Client["Renter Mobile Client - GPS Coordinates Lat and Lng"]
+                    Gateway["Traefik Edge Gateway"]
+                    GeoEngine["Geospatial Query Interactor"]
+
+                    subgraph QueryParser ["Parameter Parsing and Bounds Enforcement"]
+                    BoundingCheck{"Radius Bounds Check - 1km to 500km"}
+                    Err400["HTTP 400 Bad Request"]
+                    CountryContext["Resolve Country Context and Dialing Code"]
+                    BoundingCheck -->|Exceeded| Err400
+                    BoundingCheck -->|Valid| CountryContext
+                    end
+
+                    subgraph PostGISExecution ["PostgreSQL and PostGIS Spatial Engine"]
+                    SQLQuery["Query Active Fleets using ST_DWithin Spheroidal Distance"]
+                    SpatialIndex["GiST Spatial Index Scan on location_point"]
+                    SpecFilter["GIN Index Scan on JSONB Dynamic Specs"]
+                    AvailabilitySubquery["Filter Out Overlapping Active Reservations"]
+                    SQLQuery --> SpatialIndex
+                    SpatialIndex --> SpecFilter
+                    SpecFilter --> AvailabilitySubquery
+                    end
+
+                    RankingEngine["Relevance and Placement Ranking Engine"]
+
+                    subgraph RankingLogic ["Weighted Ordering Pipeline"]
+                    BoostCheck{"IsBoosted Active? - Sponsored Listing"}
+                    FloatTop["Float Tier to Top - Gold, Silver, Bronze"]
+                    OrganicScore["Compute Organic Score - Distance, Rating, Recency, Completeness"]
+                    SortOutput["Order by Tier Descending and Score Descending"]
+                    BoostCheck -->|Yes| FloatTop
+                    BoostCheck -->|No| OrganicScore
+                    FloatTop --> SortOutput
+                    OrganicScore --> SortOutput
+                    end
+
+                    KeysetPagination["Keyset Cursor Pagination"]
+                    PayloadEnvelope["Wrap in RFC SuccessEnvelope JSON"]
+                    DeliverResults["Deliver Response to Client"]
+
+                    Client -->|GET radius search request| Gateway
+                    Gateway --> GeoEngine
+                    GeoEngine --> BoundingCheck
+                    CountryContext --> SQLQuery
+                    AvailabilitySubquery --> RankingEngine
+                    RankingEngine --> BoostCheck
+                    SortOutput --> KeysetPagination
+                    KeysetPagination --> PayloadEnvelope
+                    PayloadEnvelope --> DeliverResults
+                </div>
+                <div class="diagram-caption">Figure 4.1: Spatial Query Execution with Weighted Ranking & Keyset Cursor
+                </div>
+            </div>
+        </section>
+        <!-- SECTION 5.1 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">05.1</span> Manual Direct Transfer Flow (Direct
+                    Transfer Model)</h2>
+                <span class="badge badge-primary">Direct Transfer</span>
+            </div>
+            <p class="section-narrative">
+                Canonical MVP payment settlement: direct peer-to-peer bank transfer verified by uploaded proof, followed
+                by an atomic platform commission debit.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    sequenceDiagram
+                    autonumber
+                    actor Renter as Equipment Renter
+                    actor Owner as Fleet Owner
+                    participant App as Mobile Client
+                    participant BookingAPI as Booking State Interactor
+                    participant VK as Valkey Cache
+                    participant DB as PostgreSQL Database
+                    participant S3 as SeaweedFS Object Storage
+
+                    Renter->>App: Tap Book Now with dates, tools, and job site
+                    App->>BookingAPI: Create booking with idempotency key
+                    BookingAPI->>VK: Acquire 60-minute mutual exclusion lock
+                    alt Lock Acquisition Failed
+                    VK-->>BookingAPI: Lock key already exists
+                    BookingAPI-->>App: Return HTTP 409 fleet already reserved
+                    else Lock Acquired
+                    BookingAPI->>DB: Insert booking with hold pending status
+                    BookingAPI-->>App: Return HTTP 201 hold pending 3600 seconds
+                    end
+
+                    App->>App: Start 60-minute circular countdown timer
+                    Renter->>Renter: Execute commercial bank transfer to owner account
+                    Renter->>App: Upload transfer receipt screenshot
+                    App->>BookingAPI: Upload payment proof image
+                    BookingAPI->>S3: Stream scan and persist to object storage
+                    BookingAPI->>DB: Update booking to payment evidence uploaded
+                    BookingAPI-->>App: Return HTTP 200 evidence uploaded
+                    BookingAPI->>Owner: Dispatch notification payment slip uploaded
+
+                    Owner->>App: Inspect receipt image and transaction reference
+                    Owner->>BookingAPI: Submit payment confirmation
+                    BookingAPI->>DB: Begin atomic database transaction
+                    Note over BookingAPI,DB: Ledger Entry and Balance Mutation (BK-17-BE)
+                    BookingAPI->>DB: Lock owner wallet row for update
+                    BookingAPI->>DB: Calculate platform commission basis points
+                    BookingAPI->>DB: Insert commission debit transaction row
+                    BookingAPI->>DB: Decrement owner wallet balance
+                    BookingAPI->>DB: Update booking status to confirmed and increment version
+                    BookingAPI->>DB: Commit atomic transaction
+                    BookingAPI->>VK: Release 60-minute hold lock key
+                    BookingAPI->>Renter: Dispatch notification booking confirmed
+                    BookingAPI-->>Owner: Return HTTP 200 booking confirmed
+                </div>
+                <div class="diagram-caption">Figure 5.1: 60-Minute Mutual Exclusion Hold & Atomic Ledger Debit</div>
+            </div>
+        </section>
+
+        <div class="page-break"></div>
+
+        <!-- SECTION 5.2 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">05.2</span> Online Payment Gateway Flow
+                    (Pluggable Adapter)</h2>
+                <span class="badge badge-primary">Payment Gateways</span>
+            </div>
+            <p class="section-narrative">
+                Online payment rails (Telebirr, MPESA) processing digital transactions via cryptographically verified
+                webhook notifications.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    sequenceDiagram
+                    autonumber
+                    actor Renter as Equipment Renter
+                    participant App as Mobile Client
+                    participant PaymentAPI as Payment Engine
+                    participant Adapter as PaymentGatewayAdapter (Telebirr/MPESA)
+                    participant Gateway as Telco Payment Gateway
+                    participant DB as PostgreSQL 18.4 (pgx.Tx)
+
+                    Renter->>App: Selects Payment Method: "Telebirr" / "M-Pesa"
+                    App->>PaymentAPI: POST /api/v1/payments/gateway/initiate { bookingId, gatewayKey: "telebirr" }
+                    PaymentAPI->>Adapter: initiate(paymentLeg, amountMinor, currency)
+                    Adapter->>Gateway: POST /checkout/session (Merchant Credentials, CallbackURL)
+                    Gateway-->>Adapter: { checkoutUrl, gatewayTxnRef }
+                    Adapter-->>PaymentAPI: GatewayInitResponse
+                    PaymentAPI->>DB: INSERT INTO gateway_transactions (status='INITIATED', gateway_txn_ref=...)
+                    PaymentAPI-->>App: HTTP 200 OK { checkoutUrl, ussdPayload }
+
+                    App->>Gateway: Launches USSD Push / In-App Telco Deeplink
+                    Renter->>Gateway: Authorizes Payment via Mobile Wallet PIN
+                    Gateway->>PaymentAPI: POST /api/v1/payments/callback/telebirr (HMAC-SHA256 Signed Payload)
+
+                    PaymentAPI->>Adapter: verifyCallback(rawPayload, signatureHeader)
+                    alt Signature Invalid / Stale Timestamp (>300s)
+                    PaymentAPI-->>Gateway: HTTP 401 Unauthorized
+                    else Signature Verified & Amount Matches
+                    PaymentAPI->>DB: BEGIN TRANSACTION (pgx.Tx)
+                    PaymentAPI->>DB: UPDATE gateway_transactions SET status='SUCCEEDED' WHERE gateway_txn_ref=...
+                    PaymentAPI->>DB: INSERT INTO financial_ledger_entries (Double-Entry Legs Balanced to 0)
+                    PaymentAPI->>DB: UPDATE bookings SET status='CONFIRMED', version=version+1
+                    PaymentAPI->>DB: COMMIT TRANSACTION
+                    PaymentAPI-->>Gateway: HTTP 200 OK { received: true }
+                    PaymentAPI->>App: WebSocket Broadcast 'booking.confirmed'
+                    App->>App: Navigate to "Booking Confirmed" Screen
+                    end
+                </div>
+                <div class="diagram-caption">Figure 5.2: Pluggable Gateway Adapter Webhook Verification & State
+                    Advancement</div>
+            </div>
+        </section>
+
+        <!-- SECTION 6 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">06</span> The Canonical 20-State Booking Machine
+                    Choreography</h2>
+                <span class="badge badge-primary">State Machine</span>
+            </div>
+            <p class="section-narrative">
+                State machine enforcing 20 discrete operational states, optimistic concurrency versioning, and
+                deterministic transitions.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    stateDiagram-v2
+                    [*] --> DRAFT: Renter selects parameters
+                    DRAFT --> HOLD_PENDING: Request Hold (Idempotency Key)
+
+                    HOLD_PENDING --> HOLD_EXPIRED: 60-Min Timer Elapses
+                    HOLD_PENDING --> CANCELLED_BY_RENTER: Renter Aborts (Free Cancel)
+                    HOLD_PENDING --> PAYMENT_EVIDENCE_UPLOADED: Bank Slip Uploaded (Manual)
+                    HOLD_PENDING --> PAYMENT_PROCESSING: Online Gateway Initiated
+
+                    PAYMENT_PROCESSING --> CONFIRMED: Gateway Webhook Verified
+                    PAYMENT_PROCESSING --> PAYMENT_FAILED: Telco Rail Declined
+                    PAYMENT_FAILED --> HOLD_PENDING: Retry Payment Rail
+                    PAYMENT_FAILED --> HOLD_EXPIRED: Window Closes
+
+                    PAYMENT_EVIDENCE_UPLOADED --> CONFIRMED: Owner Approves Slip (Commission Debited)
+                    PAYMENT_EVIDENCE_UPLOADED --> PAYMENT_DECLINED: Owner Declines Slip
+
+                    PAYMENT_DECLINED --> PAYMENT_EVIDENCE_UPLOADED: Renter Re-uploads Slip
+                    PAYMENT_DECLINED --> CANCELLED: Renter Cancels (Free Cancel)
+                    PAYMENT_DECLINED --> DISPUTE_OPENED: Renter Disputes Decline
+
+                    DISPUTE_OPENED --> CONFIRMED: Admin Rules Slip Valid
+                    DISPUTE_OPENED --> CANCELLED: Admin Rules Payment Invalid
+
+                    CONFIRMED --> AWAITING_FLEET_READINESS: Owner Reports Mobilization Delay
+                    CONFIRMED --> READY_FOR_PICKUP: Equipment Staged at Site/Depot
+                    CONFIRMED --> CANCELLED: Cancel with Timeline Penalty
+
+                    AWAITING_FLEET_READINESS --> READY_FOR_PICKUP: Owner Marks Ready
+                    AWAITING_FLEET_READINESS --> PENDING_ADDITIONAL_PAYMENT: Extra Mobilization Fee Asked
+                    AWAITING_FLEET_READINESS --> CANCELLED: ETA Exceeded (Free Renter Refund)
+
+                    PENDING_ADDITIONAL_PAYMENT --> READY_FOR_PICKUP: Renter Pays & Owner Confirms
+                    PENDING_ADDITIONAL_PAYMENT --> CANCELLED: Renter Declines (Owner Penalty)
+
+                    READY_FOR_PICKUP --> ACTIVE: Joint Pre-Inspection & Sign-off
+                    READY_FOR_PICKUP --> DISPUTED_HOUR_METER: Pre-Rental Meter Conflict
+                    READY_FOR_PICKUP --> CANCELLED: 48h Handover Timeout
+
+                    DISPUTED_HOUR_METER --> READY_FOR_PICKUP: Admin Resolves Pre-Rental Reading
+
+                    ACTIVE --> EXTENSION_REQUESTED: Renter Requests Extra Days
+                    EXTENSION_REQUESTED --> ACTIVE: Owner Accepts & Debits Extra Comm
+                    EXTENSION_REQUESTED --> RETURN_INITIATED: Extension Denied / Expired
+
+                    ACTIVE --> RETURN_INITIATED: Scheduled End Date Reached / Return Triggered
+
+                    RETURN_INITIATED --> DISPUTED_HOUR_METER: Return Meter Conflict Flagged
+                    RETURN_INITIATED --> DAMAGE_PARTIAL_RESOLVED: Return Damage Claim Flagged
+                    RETURN_INITIATED --> PENDING_FINAL_PAYMENT: Excess Hours / Accepted Damage > 0
+                    RETURN_INITIATED --> COMPLETED: Zero Extra Charges (Inspection Clean)
+
+                    DISPUTED_HOUR_METER --> PENDING_FINAL_PAYMENT: Admin Resolves Reading (Due > 0)
+                    DISPUTED_HOUR_METER --> COMPLETED: Admin Resolves Reading (Due = 0)
+
+                    DAMAGE_PARTIAL_RESOLVED --> PENDING_FINAL_PAYMENT: Damage Sum Added to Invoice
+
+                    PENDING_FINAL_PAYMENT --> COMPLETED: Final Payment Verified
+
+                    COMPLETED --> RATED: Both Parties Submit Reviews (or 7-Day Cron)
+                    RATED --> CLOSED: Final Ledger Audit Reconciled
+
+                    HOLD_EXPIRED --> [*]
+                    CANCELLED_BY_RENTER --> [*]
+                    CANCELLED --> [*]
+                    CLOSED --> [*]
+                </div>
+                <div class="diagram-caption">Figure 6.1: Deterministic 20-State Lifecycle with Branching & Terminal
+                    Exits</div>
+            </div>
+        </section>
+
+        <div class="page-break"></div>
+
+        <!-- SECTION 7 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">07</span> Handover Check-In & Check-Out
+                    Inspection Workflow</h2>
+                <span class="badge badge-primary">Field Inspection</span>
+            </div>
+            <p class="section-narrative">
+                Field inspection choreography validating physical hour meters, enforcing non-regression constraints, and
+                verifying media through ClamAV.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    sequenceDiagram
+                    autonumber
+                    actor Renter as Equipment Renter
+                    actor Operator as Field Operator
+                    participant App as Mobile Inspection Stepper
+                    participant API as Inspection Module
+                    participant ClamAV as ClamAV Antivirus Daemon
+                    participant S3 as SeaweedFS Object Storage
+                    participant DB as PostgreSQL Database
+
+                    Note over Renter,Operator: Equipment arrives at construction site
+                    Operator->>App: Launch pre-rental inspection stepper
+                    Operator->>App: Capture photo of physical hour meter
+                    Operator->>App: Enter numeric reading 1450.50 hours
+                    Operator->>App: Select fuel gauge level 85 percent
+                    Operator->>App: Capture 4 mandatory machine angle photos
+
+                    App->>API: Stream inspection photos
+                    API->>ClamAV: Scan image stream for malware
+                    ClamAV-->>API: Stream verified clean
+                    API->>S3: Persist WebP inspection photos
+                    API-->>App: Return S3 media URLs
+
+                    Operator->>App: Sign handover attestation on glass canvas
+                    Renter->>App: Review recorded meter and condition photos
+                    Renter->>App: Counter-sign attestation via touch or phone OTP
+                    App->>API: Submit pre-rental handover payload
+
+                    API->>DB: Insert pre-rental inspection record
+                    API->>DB: Update booking to active status and record start timestamp
+                    API-->>App: Return HTTP 200 booking active
+
+                    Note over Renter,Operator: Rental concludes at job site
+
+                    Operator->>App: Launch post-rental return inspection stepper
+                    Operator->>App: Enter return hour meter reading 1498.50 hours
+                    App->>API: Submit return inspection payload
+
+                    API->>DB: Query pre-rental baseline meter reading
+                    alt Return Meter Below Pre-Rental Meter
+                    API-->>App: Return HTTP 422 meter regression rejected
+                    else Reading Valid and Non-Regressive
+                    API->>DB: Calculate billable operating hours difference
+                    API->>DB: Check actual hours against agreed contract limit
+                    Note over API,DB: Overtime hours zero and inspection clean
+                    API->>DB: Update booking status to completed and increment version
+                    API-->>App: Return HTTP 200 booking completed
+                    end
+                </div>
+                <div class="diagram-caption">Figure 7.1: Monotonic Telematics Inspection & Digital Glass Attestation
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 8 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">08</span> Damage Dispute Arbitration, SLA
+                    Escalation & Escrow Settlement</h2>
+                <span class="badge badge-primary">Dispute Operations</span>
+            </div>
+            <p class="section-narrative">
+                Dispute lifecycle with 3-business-day SLA monitoring, dual-party evidence chat channels, and binding
+                administrative rulings.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    sequenceDiagram
+                    autonumber
+                    actor Owner as Fleet Owner
+                    actor Renter as Equipment Renter
+                    actor Admin as Dispute Officer
+                    participant API as Dispute Module
+                    participant DB as PostgreSQL Database
+                    participant Cron as SLA Escalation Daemon
+
+                    Owner->>API: Submit damage claim with photos and repair estimate
+                    API->>DB: Insert damage claim record with claimed status
+                    API->>Renter: Dispatch push notification damage claim filed
+
+                    Renter->>API: Respond with dispute action and rebuttal notes
+                    API->>DB: Insert dispute row with return damage origin and 3-day SLA
+                    API->>DB: Update booking status to disputed and increment version
+
+                    Cron->>DB: Scan daily for open disputes past SLA deadline
+                    opt Overdue SLA Detected
+                    Cron->>Admin: Trigger high-priority alert for overdue dispute
+                    end
+
+                    Admin->>API: Fetch dispute dossier with photo lightbox and messages
+                    API-->>Admin: Return side-by-side check-in and check-out photos
+                    Admin->>API: Post message in owner private channel requesting certified quote
+
+                    Admin->>API: Submit binding ruling with partial split amount
+                    API->>DB: Begin atomic database transaction
+                    API->>DB: Update dispute status to resolved partial split
+                    API->>DB: Update booking status to damage partial resolved
+                    API->>DB: Append approved damage amount to final settlement invoice
+                    API->>DB: Advance booking status to pending final payment
+                    API->>DB: Commit atomic transaction
+                    API->>Renter: Dispatch push notification dispute ruled with balance due
+                    API->>Owner: Dispatch push notification dispute ruled with damage approved
+                </div>
+                <div class="diagram-caption">Figure 8.1: Tri-Party Dispute Adjudication with SLA Escalation</div>
+            </div>
+        </section>
+
+        <div class="page-break"></div>
+
+        <!-- SECTION 9 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">09</span> Logistics Transport Sub-Booking &
+                    Bidirectional Cascade Cancellation</h2>
+                <span class="badge badge-primary">Logistics Engine</span>
+            </div>
+            <p class="section-narrative">
+                Logistics vehicle allocation linked via `parent_booking_id`, demonstrating downward and upward viability
+                cancellation cascades.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    sequenceDiagram
+                    autonumber
+                    actor Renter as General Contractor
+                    actor MachineOwner as Machinery Owner
+                    actor CarrierOwner as Logistics Carrier Owner
+                    participant API as Logistics Booking Engine
+                    participant DB as PostgreSQL Database
+
+                    Renter->>API: Confirm primary booking for 30-ton excavator
+                    MachineOwner->>API: Request carrier suggestions matching machine weight
+                    API->>DB: Query active logistics carriers with sufficient payload capacity
+                    API-->>MachineOwner: Return compatible carrier listings
+
+                    MachineOwner->>API: Create transport sub-booking linked to primary booking ID
+                    API->>DB: Insert transport booking record with parent booking link
+                    MachineOwner->>API: Upload transport prepayment evidence
+                    CarrierOwner->>API: Confirm payment and advance transport sub-booking to confirmed
+
+                    alt Primary Machinery Booking Cancelled by Contractor
+                    Renter->>API: Cancel primary machinery rental
+                    API->>DB: Update primary booking to cancelled status
+                    Note over API,DB: Downward cascade cancellation
+                    API->>DB: Update linked sub-bookings to cancelled status
+                    API->>CarrierOwner: Dispatch alert transport cancelled due to main booking cancel
+                    else Logistics Carrier Cancels Transport Sub-Booking
+                    CarrierOwner->>API: Cancel transport sub-booking
+                    API->>DB: Update transport sub-booking to cancelled status
+                    Note over API,DB: Upward viability alert on primary booking
+                    API->>DB: Set logistics failed flag on primary machinery booking
+                    API->>MachineOwner: Dispatch alert carrier cancelled transport
+                    opt Machine Owner Does Not Re-book Before Deadline
+                    API->>DB: Auto-cancel primary booking with zero penalty to machine owner
+                    API->>Renter: Issue full prepayment refund obligation
+                    end
+                    end
+                </div>
+                <div class="diagram-caption">Figure 9.1: Sub-Booking Linkage & Bidirectional Cascade Cancellation Logic
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 10 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">10</span> Double-Entry Financial Ledger &
+                    Wallet-Debit Commission Accounting</h2>
+                <span class="badge badge-primary">Ledger BK-17-BE</span>
+            </div>
+            <p class="section-narrative">
+                Double-entry audit posting executing inside single database transactions with automatic zero-sum
+                verification.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    flowchart LR
+                    subgraph TriggerEvent["Trigger Event: Booking Confirmed (BK-17-BE)"]
+                    Confirm[Booking Confirmed Event<br>Rental Base: 350,000.00 ETB<br>Commission: 10% = 35,000.00 ETB]
+                    end
+
+                    subgraph AtomicTransaction["Single Atomic DB Transaction (pgx.Tx)"]
+                    direction TB
+                    LockWallet["SELECT * FROM owner_wallets<br>WHERE owner_id = $1 FOR UPDATE"]
+
+                    subgraph DoubleEntryLedger["financial_ledger_entries (Immutable Table)"]
+                    Leg1["DEBIT Leg (Account 1010: Cash Clearing)<br>+35,000,000 Santims"]
+                    Leg2["CREDIT Leg (Account 2010: Owner Payable)<br>-31,500,000 Santims"]
+                    Leg3["CREDIT Leg (Account 3010: Platform Commission)<br>-3,500,000 Santims"]
+                    end
+
+                    BalanceCheck{"Zero-Balance Trigger<br>SUM(amount_minor) == 0?"}
+                    DebitWallet["UPDATE owner_wallets<br>balance_minor = balance_minor - 3,500,000<br>version = version
+                    + 1"]
+                    UpdateBooking["UPDATE bookings<br>status = 'CONFIRMED'<br>version = version + 1"]
+                    end
+
+                    Confirm --> LockWallet
+                    LockWallet --> Leg1 & Leg2 & Leg3
+                    Leg1 & Leg2 & Leg3 --> BalanceCheck
+                    BalanceCheck -- True (Zero Net Sum) --> DebitWallet
+                    DebitWallet --> UpdateBooking
+                    UpdateBooking --> Commit([COMMIT TRANSACTION])
+                    BalanceCheck -- False --> Rollback([ABORT TRANSACTION & RAISE EXCEPTION])
+                </div>
+                <div class="diagram-caption">Figure 10.1: Balanced Multi-Leg Financial Journal Entry & Wallet Debit
+                </div>
+            </div>
+        </section>
+
+        <div class="page-break"></div>
+
+        <!-- SECTION 11 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">11</span> Operator Dispatch, 30-Second GPS
+                    Telematics & Geofence Breach Engine</h2>
+                <span class="badge badge-primary">Telematics Engine</span>
+            </div>
+            <p class="section-narrative">
+                Real-time telemetry ingestion streaming over secure WebSockets with PostGIS perimeter checks and
+                automated 30-day data pruning.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    sequenceDiagram
+                    autonumber
+                    actor Operator as Field Machine Operator
+                    participant Mobile as Operator Mobile App
+                    participant WS as WebSocket Telematics Ingress
+                    participant VK as Valkey 8.0 Cache
+                    participant Geo as PostGIS Geofence Evaluator
+                    participant DB as PostgreSQL 18.4 (fleet_location_histories)
+                    participant Owner as Fleet Owner App
+
+                    Operator->>Mobile: Launches App on Assigned Active Booking
+                    Mobile->>Mobile: Prompts Explicit Location Tracking Consent (GPS-04)
+                    Operator->>Mobile: Taps "Agree & Enable Tracking"
+                    Mobile->>WS: Connects WSS /ws/v1/bookings/{id}/tracking (Bearer JWT)
+                    WS->>DB: Verify Active Consent Record in operator_consent_logs
+
+                    loop Every 30 Seconds During ACTIVE State
+                    Mobile->>Mobile: Query GPS Sensor (High Accuracy, distanceFilter=25m)
+                    Mobile->>WS: Send JSON Packet { lat: 9.032, lng: 38.742, speedKnots: 1.2, heading: 180 }
+                    WS->>VK: SETEX telem:booking:{id} 60s { coords, speed }
+                    WS->>Geo: ST_DWithin(current_point, job_site_center, approved_radius_meters)
+
+                    alt Outside Approved Geofence (> 1,000m)
+                    Geo-->>WS: GEOFENCE BREACH DETECTED
+                    WS->>DB: INSERT INTO geofence_breach_events (booking_id, coords, timestamp)
+                    WS->>Owner: High-Priority FCM Push 'ALERT: Machine moved outside approved site boundary!'
+                    else Inside Geofence
+                    Geo-->>WS: Geofence Normal (OK)
+                    end
+
+                    WS->>DB: INSERT INTO fleet_location_histories (fleet_id, location_point, speed, recorded_at)
+                    WS->>Owner: WebSocket Broadcast Location Marker Update
+                    end
+
+                    Note over Mobile,DB: Rental Ends -> Status Transitions to COMPLETED
+                    WS->>WS: Immediate Connection Termination (GPS-03-BE)
+                    Mobile->>Mobile: Background Tracking Service Automatically Shuts Down
+                    DB->>DB: Scheduled Cron: Prune GPS Coordinate Trails Older than 30 Days (ASVS L3)
+                </div>
+                <div class="diagram-caption">Figure 11.1: Operator Telematics Loop with Geofence Breach Detection</div>
+            </div>
+        </section>
+        <!-- SECTION 12 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">12</span> Server-Driven Dynamic Admin UI Engine
+                </h2>
+                <span class="badge badge-primary">Admin Console</span>
+            </div>
+            <p class="section-narrative">
+                Metadata engine compiling administrative navigation trees, dynamic TanStack data grids, and RBAC-gated
+                actions.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    sequenceDiagram
+                    autonumber
+                    actor Admin as Operational Staff
+                    participant Browser as NextJS Web Client
+                    participant AuthContext as React Server Component
+                    participant UIEngine as Admin UI Config Interactor
+                    participant DB as PostgreSQL Database
+
+                    Admin->>Browser: Open fleets management page
+                    Browser->>AuthContext: Validate session cookie
+                    AuthContext->>UIEngine: Fetch UI layout config for user role
+
+                    UIEngine->>DB: Query permitted sidebar navigation items
+                    UIEngine->>DB: Query dynamic table column definitions
+                    UIEngine->>DB: Query authorized action permissions
+
+                    UIEngine-->>Browser: Return UI config payload
+                    Note over Browser: DynamicLayout receives columns, filters, and actions
+
+                    Browser->>Browser: Mount sidebar and page layout
+                    Browser->>Browser: Compile TanStack table from column definitions
+                    Browser->>Browser: Render action buttons for authorized permissions
+                    Admin->>Browser: Click Approve Listing action button
+                    Browser->>UIEngine: Dispatch approval request to backend
+                </div>
+                <div class="diagram-caption">Figure 12.1: Dynamic Administrative UI Layout Resolution</div>
+            </div>
+        </section>
+        <div class="page-break"></div>
+
+        <!-- SECTION 13 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">13</span> Dynamic Multilingual Typography & OTA
+                    Font Pipeline (ADR-013)</h2>
+                <span class="badge badge-primary">Typography Engine</span>
+            </div>
+            <p class="section-narrative">
+                Over-the-air font delivery resolving Ge'ez and Arabic glyphs on-demand with SHA-256 verification and
+                hot-reloading.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    flowchart TD
+                    AppLaunch[Mobile App / Web Bootstrap] --> ReadPref[Read Preferred Language: preferred_lang]
+                    ReadPref --> LatinCheck{Is Language Latin-Script?<br>e.g. English}
+
+                    LatinCheck -- Yes --> LoadLocalLatin[Load Pre-bundled Asset Font: Inter / Roboto]
+                    LatinCheck -- No --> CheckStorage{Font Binary Cached in<br>Local App Sandbox Directory?}
+
+                    CheckStorage -- Exists --> HashVerify{Compute SHA-256 Checksum<br>Matches Baked Config Hash?}
+                    HashVerify -- Valid --> LoadMemory[Add to Flutter FontLoader via Memory]
+                    HashVerify -- Corrupt / Mismatch --> EvictCorrupt[Delete Corrupted Blob from Storage]
+
+                    CheckStorage -- Missing --> FetchOTA[Fetch Font Binary from S3 CDN Endpoint]
+                    EvictCorrupt --> FetchOTA
+
+                    FetchOTA --> DownloadBytes[Download Font Subset: NotoSansEthiopic.ttf]
+                    DownloadBytes --> ValidateDownloaded{Verify Download SHA-256 Hash}
+
+                    ValidateDownloaded -- Failure --> AlertFallback[Log Error & Fallback to System Standard Font]
+                    ValidateDownloaded -- Success --> PersistSandbox[Save Binary to Secure App Directory]
+
+                    PersistSandbox --> LoadMemory
+                    LoadMemory --> ApplyTheme[Register in FontLoader & Trigger Global Text Theme Rebuild]
+                    ApplyTheme --> CleanRender[Render Ge'ez / Arabic Glyphs without Clipped Ascenders]
+                </div>
+                <div class="diagram-caption">Figure 13.1: SHA-256 Verified Font Ingestion and TextTheme Rebuild</div>
+            </div>
+        </section>
+
+        <!-- SECTION 14 -->
+        <section class="section-block">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-number">14</span> Offline-First Resilience, Isar Local
+                    Store & Background Sync Engine</h2>
+                <span class="badge badge-primary">Offline Daemon</span>
+            </div>
+            <p class="section-narrative">
+                Offline-first data capture in local Isar NoSQL storage with background isolate compression and
+                idempotent replay.
+            </p>
+            <div class="diagram-card">
+                <div class="mermaid">
+                    flowchart TD
+                    subgraph OfflineCapture["Offline Field Capture Phase (No Connectivity)"]
+                    FieldOperator[Field Operator on Remote Site] --> SubmitInsp[Completes Handover Inspection Form]
+                    SubmitInsp --> NetCheck{Network Available?}
+                    NetCheck -- Offline --> LocalStore[Write Inspection Draft to Isar DB]
+                    LocalStore --> GenerateDraftId[Assign UUIDv4 localDraftId]
+                    GenerateDraftId --> StatusQueued[Set syncStatus = SyncStatus.queued]
+                    StatusQueued --> CacheMedia[Persist Full-Res Photos in App File Cache]
+                    end
+
+                    subgraph SyncLoop["Connectivity Restoration & Background Sync Daemon"]
+                    NetListener[connectivity_plus Listener] --> ReconnectEvent[Network Interface Restored: 3G / LTE]
+                    ReconnectEvent --> SyncEngine[Trigger SyncEngine.processQueue]
+
+                    SyncEngine --> ReadQueue[Read All Inspections WHERE syncStatus == queued]
+                    ReadQueue --> CompressIsolate["Background Worker Isolate (compute)<br>Resize Photos to WebP 1600px,
+                    Quality 82%"]
+
+                    CompressIsolate --> StreamMedia["POST /media/upload<br>(Stream Bytes through ClamAV Daemon)"]
+                    StreamMedia --> S3Urls[Receive S3 Object URLs]
+
+                    S3Urls --> MutatingRPC["POST /api/v1/inspections/sync<br>(Header: Idempotency-Key == localDraftId)"]
+
+                    MutatingRPC --> BackendResponse{Backend Response Status}
+                    BackendResponse -- 200 / 201 Success --> MarkSynced[Update Isar: syncStatus = SyncStatus.synced]
+                    BackendResponse -- 409 Conflict --> MarkConflict[Update Isar: syncStatus = SyncStatus.failed]
+
+                    MarkSynced --> PurgeLocal[Purge Temporary File Cache]
+                    MarkConflict --> PromptOperator[Surface Manual Concurrency Resolution Prompt]
+                    end
+                </div>
+                <div class="diagram-caption">Figure 14.1: Isar Offline Outbox Pipeline & Idempotent Sync Daemon</div>
+            </div>
+        </section>
+
+        <footer class="page-footer">
+            <div>Dink Machinery — Heavy Machinery & Logistics Rental Aggregator</div>
+            <div>Confidential & Proprietary • Approved Architectural Baseline (v7.0)</div>
+        </footer>
+
+    </main>
+
+    <!-- Initialize Mermaid.js -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'neutral',
+                securityLevel: 'loose',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                themeVariables: {
+                    primaryColor: '#ffffff',
+                    primaryTextColor: '#0f172a',
+                    primaryBorderColor: '#64748b',
+                    lineColor: '#334155',
+                    secondaryColor: '#f8fafc',
+                    tertiaryColor: '#f1f5f9'
+                },
+                flowchart: {
+                    useMaxWidth: true,
+                    htmlLabels: true,
+                    curve: 'basis'
+                },
+                sequence: {
+                    diagramMarginX: 10,
+                    diagramMarginY: 10,
+                    actorMargin: 50,
+                    width: 140,
+                    height: 45,
+                    boxMargin: 10,
+                    boxTextMargin: 5,
+                    noteMargin: 10,
+                    messageMargin: 35,
+                    mirrorActors: false
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

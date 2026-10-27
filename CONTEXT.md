@@ -10,6 +10,7 @@
 ## 1. Current Progress Snapshot
 
 ### Completed (Phase 0 Documentation & Governance)
+- **Canonical Architecture & Design SSOT:** Populated `docs/source/Architecture_Design_Document.md`, `docs/source/Dink_Machinery_UI_UX_Design_Brief.md`, and complete application flow diagrams (`Heavy_Machinery_App_Flow_Diagrams.md` and `App_Flow_Diagrams_Print.html`).
 - **Tool Portability Established:** `AGENTS.md` finalized across all 8 disciplines; wrappers `CLAUDE.md` and `GEMINI.md` operational.
 - **Contract-First Baseline:** `contracts/openapi.yaml` specified with standard envelopes and RFC 9457 error models.
 - **Decision Governance Framework:** L1 ADR template, L2 partition decision template, and validation scripts initialized.
@@ -46,14 +47,8 @@
 
 ## 4. Files Touched in Current Session
 
-- `AGENTS.md`
-- `GIT_STANDARDS.md`
-- `CONTRIBUTING.md`
-- `PRD.md`
-- `ARCHITECTURE.md`
-- `DESIGN_SYSTEM.md`
-- `DATABASE.md`
-- `SECURITY.md`
-- `CODE_STYLE.md`
-- `TESTING.md`
+- `docs/source/App_Flow_Diagrams_Print.html`
+- `docs/source/Architecture_Design_Document.md`
+- `docs/source/Dink_Machinery_UI_UX_Design_Brief.md`
+- `docs/source/Heavy_Machinery_App_Flow_Diagrams.md`
 - `CONTEXT.md`

@@ -12,6 +12,7 @@
 ### Completed (Phase 0 Documentation & Governance)
 - **Canonical Architecture & Design SSOT:** Populated `docs/source/Architecture_Design_Document.md`, `docs/source/Dink_Machinery_UI_UX_Design_Brief.md`, and complete application flow diagrams (`Heavy_Machinery_App_Flow_Diagrams.md` and `App_Flow_Diagrams_Print.html`).
 - **Shared Architecture Specifications Partitioned:** Populated modular architecture chapters 01 through 14 and master `INDEX.md` under `docs/shared/architecture/` derived from canonical architecture specifications.
+- **Shared Design Specifications & DTCG Tokens:** Populated master design system (`00-design-system.md`), user personas and ergonomics (`01-personas.md`), tokens and accessibility architecture (`02-tokens-and-accessibility.md`), and canonical W3C DTCG token definitions (`design-tokens.json`, `design-tokens.yaml`) under `docs/shared/design/`.
 - **Tool Portability Established:** `AGENTS.md` finalized across all 8 disciplines; wrappers `CLAUDE.md` and `GEMINI.md` operational.
 - **Contract-First Baseline:** `contracts/openapi.yaml` specified with standard envelopes and RFC 9457 error models.
 - **Decision Governance Framework:** L1 ADR template, L2 partition decision template, and validation scripts initialized.
@@ -48,19 +49,9 @@
 
 ## 4. Files Touched in Current Session
 
-- `docs/shared/architecture/01-introduction.md`
-- `docs/shared/architecture/02-architecture-principles.md`
-- `docs/shared/architecture/03-system-architecture-overview.md`
-- `docs/shared/architecture/04-backend-architecture-go.md`
-- `docs/shared/architecture/05-flutter-mobile-app-architecture.md`
-- `docs/shared/architecture/06-nextjs-admin-panel-architecture.md`
-- `docs/shared/architecture/07-database-design.md`
-- `docs/shared/architecture/08-communication-patterns-api-design.md`
-- `docs/shared/architecture/09-security-architecture.md`
-- `docs/shared/architecture/10-deployment-architecture.md`
-- `docs/shared/architecture/11-observability-monitoring.md`
-- `docs/shared/architecture/12-architecture-decision-records.md`
-- `docs/shared/architecture/13-implementation-roadmap.md`
-- `docs/shared/architecture/14-appendix-full-technology-stack.md`
-- `docs/shared/architecture/INDEX.md`
+- `docs/shared/design/00-design-system.md`
+- `docs/shared/design/01-personas.md`
+- `docs/shared/design/02-tokens-and-accessibility.md`
+- `docs/shared/design/design-tokens.json`
+- `docs/shared/design/design-tokens.yaml`
 - `CONTEXT.md`

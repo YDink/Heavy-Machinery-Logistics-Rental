@@ -1,0 +1,898 @@
+{
+    "$schema": "https://design-tokens.github.io/community-group/format/",
+    "color": {
+        "brand": {
+            "amber": {
+                "50": {
+                    "$value": "#FFFBEB",
+                    "$type": "color",
+                    "$description": "Subtle highlight tint and container fill"
+                },
+                "100": {
+                    "$value": "#FEF3C7",
+                    "$type": "color",
+                    "$description": "Warning container fill and pending hold background"
+                },
+                "200": {
+                    "$value": "#FDE68A",
+                    "$type": "color",
+                    "$description": "Muted container accent"
+                },
+                "300": {
+                    "$value": "#FCD34D",
+                    "$type": "color",
+                    "$description": "Secondary brand accent"
+                },
+                "400": {
+                    "$value": "#FBBF24",
+                    "$type": "color",
+                    "$description": "High-luminance glare yellow for outdoor high-contrast mode"
+                },
+                "500": {
+                    "$value": "#F59E0B",
+                    "$type": "color",
+                    "$description": "Core construction equipment yellow - primary brand accent"
+                },
+                "600": {
+                    "$value": "#D97706",
+                    "$type": "color",
+                    "$description": "Hover and active interactive amber accent"
+                },
+                "700": {
+                    "$value": "#B45309",
+                    "$type": "color",
+                    "$description": "Tactile border accent and high-contrast emphasis"
+                },
+                "800": {
+                    "$value": "#92400E",
+                    "$type": "color",
+                    "$description": "Deep industrial shadow amber"
+                },
+                "900": {
+                    "$value": "#78350F",
+                    "$type": "color",
+                    "$description": "Maximum density amber text"
+                }
+            },
+            "slate": {
+                "50": {
+                    "$value": "#F8FAFC",
+                    "$type": "color",
+                    "$description": "Daylight canvas backdrop"
+                },
+                "100": {
+                    "$value": "#F1F5F9",
+                    "$type": "color",
+                    "$description": "Table alternating zebra row"
+                },
+                "200": {
+                    "$value": "#E2E8F0",
+                    "$type": "color",
+                    "$description": "Standard division border"
+                },
+                "300": {
+                    "$value": "#CBD5E1",
+                    "$type": "color",
+                    "$description": "Muted border line"
+                },
+                "400": {
+                    "$value": "#94A3B8",
+                    "$type": "color",
+                    "$description": "Placeholder content text"
+                },
+                "500": {
+                    "$value": "#64748B",
+                    "$type": "color",
+                    "$description": "Secondary metadata text"
+                },
+                "600": {
+                    "$value": "#475569",
+                    "$type": "color",
+                    "$description": "Muted body text"
+                },
+                "700": {
+                    "$value": "#334155",
+                    "$type": "color",
+                    "$description": "Subdued industrial surface and tactile borders"
+                },
+                "800": {
+                    "$value": "#1E293B",
+                    "$type": "color",
+                    "$description": "Elevated card dark surface"
+                },
+                "900": {
+                    "$value": "#0F172A",
+                    "$type": "color",
+                    "$description": "Cast iron industrial background dark surface"
+                },
+                "950": {
+                    "$value": "#020617",
+                    "$type": "color",
+                    "$description": "Blackout high-contrast canvas"
+                }
+            }
+        },
+        "feedback": {
+            "emerald": {
+                "50": {
+                    "$value": "#ECFDF5",
+                    "$type": "color",
+                    "$description": "Confirmed background tint"
+                },
+                "100": {
+                    "$value": "#D1FAE5",
+                    "$type": "color",
+                    "$description": "Success container fill"
+                },
+                "500": {
+                    "$value": "#10B981",
+                    "$type": "color",
+                    "$description": "Verified payment, active booking, and reticle locked indicator"
+                },
+                "600": {
+                    "$value": "#059669",
+                    "$type": "color",
+                    "$description": "Active status accent green"
+                },
+                "700": {
+                    "$value": "#047857",
+                    "$type": "color",
+                    "$description": "Accessible high-contrast green"
+                },
+                "950": {
+                    "$value": "#064E3B",
+                    "$type": "color",
+                    "$description": "Dark theme success surface"
+                }
+            },
+            "crimson": {
+                "50": {
+                    "$value": "#FEF2F2",
+                    "$type": "color",
+                    "$description": "Error and emergency alert container tint"
+                },
+                "100": {
+                    "$value": "#FEE2E2",
+                    "$type": "color",
+                    "$description": "Critical countdown container fill"
+                },
+                "500": {
+                    "$value": "#EF4444",
+                    "$type": "color",
+                    "$description": "Error alert, hazard alert, and cancelled booking"
+                },
+                "600": {
+                    "$value": "#DC2626",
+                    "$type": "color",
+                    "$description": "Inspection fault, destructive action button"
+                },
+                "700": {
+                    "$value": "#B91C1C",
+                    "$type": "color",
+                    "$description": "Accessible high-contrast red"
+                },
+                "950": {
+                    "$value": "#450A0A",
+                    "$type": "color",
+                    "$description": "Dark theme danger surface"
+                }
+            },
+            "orange": {
+                "500": {
+                    "$value": "#FF5722",
+                    "$type": "color",
+                    "$description": "Safety hazard and mandatory action required indicator"
+                }
+            },
+            "blue": {
+                "50": {
+                    "$value": "#EFF6FF",
+                    "$type": "color",
+                    "$description": "Verification pending container tint"
+                },
+                "100": {
+                    "$value": "#DBEAFE",
+                    "$type": "color",
+                    "$description": "Verification pending container fill"
+                },
+                "500": {
+                    "$value": "#3B82F6",
+                    "$type": "color",
+                    "$description": "Payment evidence uploaded verification badge"
+                },
+                "900": {
+                    "$value": "#1E3A8A",
+                    "$type": "color",
+                    "$description": "High-density blue text"
+                }
+            },
+            "purple": {
+                "50": {
+                    "$value": "#FAF5FF",
+                    "$type": "color",
+                    "$description": "Dispute arbitration container tint"
+                },
+                "100": {
+                    "$value": "#F3E8FF",
+                    "$type": "color",
+                    "$description": "Dispute arbitration container fill"
+                },
+                "500": {
+                    "$value": "#A855F7",
+                    "$type": "color",
+                    "$description": "Dispute escalation and arbitration pending indicator"
+                },
+                "900": {
+                    "$value": "#581C87",
+                    "$type": "color",
+                    "$description": "High-density dispute text"
+                }
+            }
+        }
+    },
+    "dimension": {
+        "space": {
+            "2": {
+                "$value": "2dp",
+                "$type": "dimension",
+                "$description": "Micro border offset and fine adjustments"
+            },
+            "4": {
+                "$value": "4dp",
+                "$type": "dimension",
+                "$description": "Tight badge padding and icon inset"
+            },
+            "6": {
+                "$value": "6dp",
+                "$type": "dimension",
+                "$description": "Compact element spacing"
+            },
+            "8": {
+                "$value": "8dp",
+                "$type": "dimension",
+                "$description": "Baseline 8dp grid spacing unit"
+            },
+            "12": {
+                "$value": "12dp",
+                "$type": "dimension",
+                "$description": "Input field vertical inner padding"
+            },
+            "16": {
+                "$value": "16dp",
+                "$type": "dimension",
+                "$description": "Card interior inset and standard gutter"
+            },
+            "24": {
+                "$value": "24dp",
+                "$type": "dimension",
+                "$description": "Section separation and screen margins"
+            },
+            "32": {
+                "$value": "32dp",
+                "$type": "dimension",
+                "$description": "Major module boundary separation"
+            },
+            "48": {
+                "$value": "48dp",
+                "$type": "dimension",
+                "$description": "Header margin, modal inset, and table header height"
+            },
+            "56": {
+                "$value": "56dp",
+                "$type": "dimension",
+                "$description": "Mandatory minimum touch target dimension for gloved field operations"
+            },
+            "64": {
+                "$value": "64dp",
+                "$type": "dimension",
+                "$description": "Primary action actuator button height in Field Mode"
+            },
+            "72": {
+                "$value": "72dp",
+                "$type": "dimension",
+                "$description": "Camera viewfinder capture actuator button diameter"
+            }
+        }
+    },
+    "typography": {
+        "fontFamily": {
+            "latin": {
+                "$value": "Roboto, -apple-system, sans-serif",
+                "$type": "fontFamily",
+                "$description": "Standard structural sans-serif for Latin text (English, Swahili, Afaan Oromoo)"
+            },
+            "ethiopic": {
+                "$value": "Noto Sans Ethiopic, sans-serif",
+                "$type": "fontFamily",
+                "$description": "Ge'ez typography with vertical line-height expansion (Amharic, Tigrinya)"
+            },
+            "mono": {
+                "$value": "Space Mono, monospace",
+                "$type": "fontFamily",
+                "$description": "Fixed-pitch monospaced figures for minor units, hour meters, and coordinates"
+            }
+        },
+        "fontSize": {
+            "12": {
+                "$value": "12sp",
+                "$type": "dimension",
+                "$description": "Caption, badge, and fine metadata text"
+            },
+            "14": {
+                "$value": "14sp",
+                "$type": "dimension",
+                "$description": "Body medium and table cell data"
+            },
+            "16": {
+                "$value": "16sp",
+                "$type": "dimension",
+                "$description": "Body large, button labels, and input values"
+            },
+            "18": {
+                "$value": "18sp",
+                "$type": "dimension",
+                "$description": "Subheadings and section titles"
+            },
+            "20": {
+                "$value": "20sp",
+                "$type": "dimension",
+                "$description": "Heading 2"
+            },
+            "24": {
+                "$value": "24sp",
+                "$type": "dimension",
+                "$description": "Heading 1"
+            },
+            "28": {
+                "$value": "28sp",
+                "$type": "dimension",
+                "$description": "Display medium"
+            },
+            "32": {
+                "$value": "32sp",
+                "$type": "dimension",
+                "$description": "Display large"
+            }
+        },
+        "lineHeightFactor": {
+            "latinStandard": {
+                "$value": 1.25,
+                "$type": "number",
+                "$description": "Standard Latin text line-height multiplier"
+            },
+            "ethiopicGolden": {
+                "$value": 1.38,
+                "$type": "number",
+                "$description": "Golden Ge'ez multiplier to eliminate diacritical clipping"
+            },
+            "ethiopicBody": {
+                "$value": 1.45,
+                "$type": "number",
+                "$description": "Dense Ge'ez paragraph line-height multiplier"
+            }
+        }
+    },
+    "stroke": {
+        "border": {
+            "thin": {
+                "$value": "1dp",
+                "$type": "dimension",
+                "$description": "Subtle division border"
+            },
+            "medium": {
+                "$value": "2dp",
+                "$type": "dimension",
+                "$description": "Standard card border and reticle stroke"
+            },
+            "heavy": {
+                "$value": "3dp",
+                "$type": "dimension",
+                "$description": "Tactile bottom-lip accent and high-contrast outline"
+            }
+        },
+        "radius": {
+            "none": {
+                "$value": "0dp",
+                "$type": "dimension",
+                "$description": "Pure geometric rectangle"
+            },
+            "sharp": {
+                "$value": "4dp",
+                "$type": "dimension",
+                "$description": "Industrial corner radius"
+            },
+            "soft": {
+                "$value": "8dp",
+                "$type": "dimension",
+                "$description": "Standard component border radius"
+            },
+            "pill": {
+                "$value": "999dp",
+                "$type": "dimension",
+                "$description": "Circular badge and slider thumb radius"
+            }
+        }
+    },
+    "elevation": {
+        "card": {
+            "$value": {
+                "offsetX": "0dp",
+                "offsetY": "2dp",
+                "blur": "4dp",
+                "spread": "0dp",
+                "color": "rgba(15, 23, 42, 0.08)"
+            },
+            "$type": "shadow",
+            "$description": "Subtle card elevation for standard mode"
+        },
+        "modal": {
+            "$value": {
+                "offsetX": "0dp",
+                "offsetY": "8dp",
+                "blur": "24dp",
+                "spread": "0dp",
+                "color": "rgba(15, 23, 42, 0.16)"
+            },
+            "$type": "shadow",
+            "$description": "Elevated dialog and modal drawer shadow"
+        }
+    },
+    "motion": {
+        "duration": {
+            "instant": {
+                "$value": "0ms",
+                "$type": "duration",
+                "$description": "Zero latency for reduced motion mode"
+            },
+            "fast": {
+                "$value": "150ms",
+                "$type": "duration",
+                "$description": "Button taps, toggles, and micro-interactions"
+            },
+            "normal": {
+                "$value": "250ms",
+                "$type": "duration",
+                "$description": "Sheet expansion, drawers, and inspection steps"
+            },
+            "slow": {
+                "$value": "350ms",
+                "$type": "duration",
+                "$description": "Modal transitions and major layout shifts"
+            }
+        },
+        "easing": {
+            "industrialDecelerate": {
+                "$value": [
+                    0.2,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "$type": "cubicBezier",
+                "$description": "Heavy physical actuator deceleration curve"
+            },
+            "standard": {
+                "$value": [
+                    0.4,
+                    0.0,
+                    0.2,
+                    1.0
+                ],
+                "$type": "cubicBezier",
+                "$description": "Standard layout transition curve"
+            }
+        }
+    },
+    "semantic": {
+        "light": {
+            "surface": {
+                "canvas": {
+                    "$value": "{color.brand.slate.50}",
+                    "$type": "color"
+                },
+                "card": {
+                    "$value": "#FFFFFF",
+                    "$type": "color"
+                },
+                "cardElevated": {
+                    "$value": "#FFFFFF",
+                    "$type": "color"
+                },
+                "overlay": {
+                    "$value": "rgba(15, 23, 42, 0.60)",
+                    "$type": "color"
+                },
+                "brand": {
+                    "$value": "{color.brand.amber.500}",
+                    "$type": "color"
+                }
+            },
+            "text": {
+                "primary": {
+                    "$value": "{color.brand.slate.900}",
+                    "$type": "color"
+                },
+                "secondary": {
+                    "$value": "{color.brand.slate.600}",
+                    "$type": "color"
+                },
+                "muted": {
+                    "$value": "{color.brand.slate.500}",
+                    "$type": "color"
+                },
+                "brand": {
+                    "$value": "{color.brand.amber.600}",
+                    "$type": "color"
+                },
+                "numericLedger": {
+                    "$value": "{color.brand.slate.950}",
+                    "$type": "color"
+                }
+            },
+            "border": {
+                "default": {
+                    "$value": "{color.brand.slate.200}",
+                    "$type": "color"
+                },
+                "focus": {
+                    "$value": "{color.brand.amber.600}",
+                    "$type": "color"
+                }
+            },
+            "action": {
+                "primary": {
+                    "bg": {
+                        "$value": "{color.brand.amber.500}",
+                        "$type": "color"
+                    },
+                    "text": {
+                        "$value": "{color.brand.slate.950}",
+                        "$type": "color"
+                    },
+                    "border": {
+                        "$value": "{color.brand.amber.600}",
+                        "$type": "color"
+                    }
+                },
+                "destructive": {
+                    "bg": {
+                        "$value": "{color.feedback.crimson.500}",
+                        "$type": "color"
+                    },
+                    "text": {
+                        "$value": "#FFFFFF",
+                        "$type": "color"
+                    }
+                }
+            }
+        },
+        "dark": {
+            "surface": {
+                "canvas": {
+                    "$value": "{color.brand.slate.900}",
+                    "$type": "color"
+                },
+                "card": {
+                    "$value": "{color.brand.slate.800}",
+                    "$type": "color"
+                },
+                "cardElevated": {
+                    "$value": "{color.brand.slate.700}",
+                    "$type": "color"
+                },
+                "overlay": {
+                    "$value": "rgba(2, 6, 23, 0.85)",
+                    "$type": "color"
+                },
+                "brand": {
+                    "$value": "{color.brand.amber.500}",
+                    "$type": "color"
+                }
+            },
+            "text": {
+                "primary": {
+                    "$value": "{color.brand.slate.50}",
+                    "$type": "color"
+                },
+                "secondary": {
+                    "$value": "{color.brand.slate.400}",
+                    "$type": "color"
+                },
+                "muted": {
+                    "$value": "{color.brand.slate.500}",
+                    "$type": "color"
+                },
+                "brand": {
+                    "$value": "{color.brand.amber.400}",
+                    "$type": "color"
+                },
+                "numericLedger": {
+                    "$value": "{color.brand.slate.50}",
+                    "$type": "color"
+                }
+            },
+            "border": {
+                "default": {
+                    "$value": "{color.brand.slate.700}",
+                    "$type": "color"
+                },
+                "focus": {
+                    "$value": "{color.brand.amber.400}",
+                    "$type": "color"
+                }
+            },
+            "action": {
+                "primary": {
+                    "bg": {
+                        "$value": "{color.brand.amber.500}",
+                        "$type": "color"
+                    },
+                    "text": {
+                        "$value": "{color.brand.slate.950}",
+                        "$type": "color"
+                    },
+                    "border": {
+                        "$value": "{color.brand.amber.700}",
+                        "$type": "color"
+                    }
+                },
+                "destructive": {
+                    "bg": {
+                        "$value": "{color.feedback.crimson.700}",
+                        "$type": "color"
+                    },
+                    "text": {
+                        "$value": "#FFFFFF",
+                        "$type": "color"
+                    }
+                }
+            }
+        },
+        "outdoorHighContrast": {
+            "surface": {
+                "canvas": {
+                    "$value": "#000000",
+                    "$type": "color",
+                    "$description": "Pure hex black maximizing AMOLED power and glare contrast"
+                },
+                "card": {
+                    "$value": "#000000",
+                    "$type": "color"
+                },
+                "cardElevated": {
+                    "$value": "#000000",
+                    "$type": "color"
+                },
+                "overlay": {
+                    "$value": "rgba(0, 0, 0, 0.95)",
+                    "$type": "color"
+                },
+                "brand": {
+                    "$value": "{color.brand.amber.400}",
+                    "$type": "color"
+                }
+            },
+            "text": {
+                "primary": {
+                    "$value": "#FFFFFF",
+                    "$type": "color",
+                    "$description": "100% solid white achieving 21:1 contrast"
+                },
+                "secondary": {
+                    "$value": "{color.brand.slate.200}",
+                    "$type": "color"
+                },
+                "muted": {
+                    "$value": "{color.brand.slate.300}",
+                    "$type": "color"
+                },
+                "brand": {
+                    "$value": "{color.brand.amber.400}",
+                    "$type": "color"
+                },
+                "numericLedger": {
+                    "$value": "#FFFFFF",
+                    "$type": "color"
+                }
+            },
+            "border": {
+                "default": {
+                    "$value": "#FFFFFF",
+                    "$type": "color",
+                    "$description": "Solid 2dp envelope replacing box shadows"
+                },
+                "focus": {
+                    "$value": "{color.brand.amber.400}",
+                    "$type": "color"
+                }
+            },
+            "action": {
+                "primary": {
+                    "bg": {
+                        "$value": "{color.brand.amber.400}",
+                        "$type": "color"
+                    },
+                    "text": {
+                        "$value": "#000000",
+                        "$type": "color"
+                    },
+                    "border": {
+                        "$value": "#FFFFFF",
+                        "$type": "color"
+                    }
+                },
+                "destructive": {
+                    "bg": {
+                        "$value": "#000000",
+                        "$type": "color"
+                    },
+                    "text": {
+                        "$value": "{color.feedback.crimson.500}",
+                        "$type": "color"
+                    }
+                }
+            }
+        }
+    },
+    "component": {
+        "actuator": {
+            "button": {
+                "heightStandard": {
+                    "$value": "{dimension.space.56}",
+                    "$type": "dimension"
+                },
+                "heightField": {
+                    "$value": "{dimension.space.64}",
+                    "$type": "dimension"
+                },
+                "borderRadius": {
+                    "$value": "{stroke.radius.soft}",
+                    "$type": "dimension"
+                },
+                "bottomTactileLip": {
+                    "$value": "{stroke.border.heavy}",
+                    "$type": "dimension"
+                },
+                "focusOutlineWidth": {
+                    "$value": "{stroke.border.heavy}",
+                    "$type": "dimension"
+                }
+            },
+            "slider": {
+                "trackHeight": {
+                    "$value": "{dimension.space.64}",
+                    "$type": "dimension"
+                },
+                "thumbDimension": {
+                    "$value": "{dimension.space.56}",
+                    "$type": "dimension"
+                },
+                "accentColor": {
+                    "$value": "{color.feedback.orange.500}",
+                    "$type": "color"
+                }
+            }
+        },
+        "reticle": {
+            "viewfinder": {
+                "width": {
+                    "$value": "320dp",
+                    "$type": "dimension"
+                },
+                "height": {
+                    "$value": "120dp",
+                    "$type": "dimension"
+                },
+                "strokeDefault": {
+                    "$value": "{stroke.border.medium}",
+                    "$type": "dimension"
+                },
+                "strokeOutdoor": {
+                    "$value": "{stroke.border.heavy}",
+                    "$type": "dimension"
+                },
+                "colorIdle": {
+                    "$value": "{color.brand.amber.500}",
+                    "$type": "color"
+                },
+                "colorLocked": {
+                    "$value": "{color.feedback.emerald.500}",
+                    "$type": "color"
+                }
+            }
+        },
+        "table": {
+            "headerHeight": {
+                "$value": "{dimension.space.48}",
+                "$type": "dimension"
+            },
+            "rowHeightDense": {
+                "$value": "40dp",
+                "$type": "dimension"
+            },
+            "rowHeightNormal": {
+                "$value": "{dimension.space.56}",
+                "$type": "dimension"
+            },
+            "cellPaddingX": {
+                "$value": "{dimension.space.16}",
+                "$type": "dimension"
+            },
+            "borderBottom": {
+                "$value": "{stroke.border.thin}",
+                "$type": "dimension"
+            }
+        },
+        "countdown": {
+            "holdNormalBg": {
+                "$value": "{color.brand.amber.50}",
+                "$type": "color"
+            },
+            "holdNormalText": {
+                "$value": "{color.brand.amber.900}",
+                "$type": "color"
+            },
+            "holdUrgentBg": {
+                "$value": "#FFF7ED",
+                "$type": "color"
+            },
+            "holdUrgentText": {
+                "$value": "#C2410C",
+                "$type": "color"
+            },
+            "holdCriticalBg": {
+                "$value": "#FEF2F2",
+                "$type": "color"
+            },
+            "holdCriticalText": {
+                "$value": "{color.feedback.crimson.700}",
+                "$type": "color"
+            }
+        },
+        "lightbox": {
+            "dividerWidth": {
+                "$value": "{stroke.border.heavy}",
+                "$type": "dimension"
+            },
+            "dividerColor": {
+                "$value": "{color.brand.amber.500}",
+                "$type": "color"
+            },
+            "hudBackground": {
+                "$value": "rgba(2, 6, 23, 0.85)",
+                "$type": "color"
+            },
+            "hudBorderRadius": {
+                "$value": "{stroke.radius.sharp}",
+                "$type": "dimension"
+            },
+            "hudTextColor": {
+                "$value": "#FFFFFF",
+                "$type": "color"
+            }
+        },
+        "signature": {
+            "canvasMinHeight": {
+                "$value": "180dp",
+                "$type": "dimension"
+            },
+            "strokeWidth": {
+                "$value": "{stroke.border.heavy}",
+                "$type": "dimension"
+            },
+            "strokeColor": {
+                "$value": "{color.brand.slate.950}",
+                "$type": "color"
+            },
+            "strokeColorDark": {
+                "$value": "#FFFFFF",
+                "$type": "color"
+            },
+            "minNodes": {
+                "$value": 20,
+                "$type": "number",
+                "$description": "Minimum vector complexity points required to validate signature"
+            }
+        }
+    }
+}

@@ -18,6 +18,7 @@
 - **Contract-First Baseline:** `contracts/openapi.yaml` specified with standard envelopes and RFC 9457 error models.
 - **Decision Governance Framework:** L1 ADR template, L2 partition decision template, and validation scripts initialized.
 - **Quality Assurance OS:** QA strategy, quality gates (G0–G4), security QA, and accessibility protocols articulated under `docs/quality/`.
+- **Shared Requirements Specifications Partitioned:** Populated modular functional requirements specifications across chapters 01 through 04 (Introduction, Universal Glossary, Product Vision, User Roles & Granular RBAC Matrix), chapters 05-01 through 05-24 (Functional Modules: Authentication, Fleet Registration, Attachments, Discovery, 16-State Booking Lifecycle, Active Rental, Return & Damage, Logistics Integration, Commission & Payouts, Notifications, Dynamic Admin UI, Operator GPS Tracking, Insurance & Documents, Onboarding, Search Enhancements, Accessibility & i18n, Offline Resilience, Error Feedback, Account Deletion, Policy Terms, Feature Flags, Global Soft Delete, Ethiopian Holidays, Marketplace Integrity), and Corporate Account Governance (06-01, 06-02) under `docs/shared/requirements/`.
 - **Infrastructure Stacks:** Docker Compose defined for PostgreSQL 18.4 + PostGIS, Valkey 8.0, MinIO, and ClamAV.
 
 ### In Progress
@@ -50,7 +51,11 @@
 
 ## 4. Files Touched in Current Session
 
-- `docs/shared/flows/INDEX.md`
-- `docs/shared/flows/appendix-a-notification-offline-handling.md`
-- `docs/shared/flows/appendix-b-authentication-security-flow.md`
+- `docs/shared/requirements/01-introduction.md`
+- `docs/shared/requirements/02-glossary.md`
+- `docs/shared/requirements/03-product-vision.md`
+- `docs/shared/requirements/04-user-roles.md`
+- `docs/shared/requirements/05-01-registration-authentication.md` through `05-24-marketplace-integrity-abuse-controls.md`
+- `docs/shared/requirements/06-01-corporate-account-management.md`
+- `docs/shared/requirements/06-02-corporate-approval-workflows.md`
 - `CONTEXT.md`

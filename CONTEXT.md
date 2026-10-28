@@ -12,7 +12,7 @@
 ### Completed (Phase 0 Documentation & Governance)
 - **Canonical Architecture & Design SSOT:** Populated `docs/source/Architecture_Design_Document.md`, `docs/source/Dink_Machinery_UI_UX_Design_Brief.md`, and complete application flow diagrams (`Heavy_Machinery_App_Flow_Diagrams.md` and `App_Flow_Diagrams_Print.html`).
 - **Shared Architecture Specifications Partitioned:** Populated modular architecture chapters 01 through 14 and master `INDEX.md` under `docs/shared/architecture/` derived from canonical architecture specifications.
-- **Shared Interaction Flow Specifications:** Populated complete interaction flow specifications 01 through 19 (platform entry, renter/owner/operator registration, fleet onboarding, discovery & spatial search, 16-state master state machine, payment evidence & dispute, active rental handover, return & damage assessment, logistics integration, commission tracking, admin operations, corporate approval hierarchy, secure phone migration, optimistic concurrency locking, multi-channel notification routing, logistics reverse cascade, and insurance claim lifecycle) under `docs/shared/flows/`.
+- **Shared Interaction Flow Specifications:** Populated complete interaction flow specifications 01 through 19, master navigation index (`INDEX.md`), and comprehensive technical appendices (Appendix A: Offline Sync & Notification Handling, Appendix B: Authentication, Token Lifecycle & Security) under `docs/shared/flows/`.
 - **Shared Design Specifications & DTCG Tokens:** Populated master design system (`00-design-system.md`), user personas and ergonomics (`01-personas.md`), tokens and accessibility architecture (`02-tokens-and-accessibility.md`), and canonical W3C DTCG token definitions (`design-tokens.json`, `design-tokens.yaml`) under `docs/shared/design/`.
 - **Tool Portability Established:** `AGENTS.md` finalized across all 8 disciplines; wrappers `CLAUDE.md` and `GEMINI.md` operational.
 - **Contract-First Baseline:** `contracts/openapi.yaml` specified with standard envelopes and RFC 9457 error models.
@@ -50,23 +50,7 @@
 
 ## 4. Files Touched in Current Session
 
-- `docs/shared/flows/01-platform-entry-role-selection.md`
-- `docs/shared/flows/02-renter-registration-authentication.md`
-- `docs/shared/flows/03-owner-registration-kyc-approval.md`
-- `docs/shared/flows/04-operator-registration-linking.md`
-- `docs/shared/flows/05-fleet-registration-full-flow.md`
-- `docs/shared/flows/06-fleet-discovery-search-comparison.md`
-- `docs/shared/flows/07-booking-lifecycle-master-state-machine.md`
-- `docs/shared/flows/08-payment-evidence-verification-dispute.md`
-- `docs/shared/flows/09-active-rental-handover-extension-issues.md`
-- `docs/shared/flows/10-return-damage-assessment-completion.md`
-- `docs/shared/flows/11-logistics-transport-integration.md`
-- `docs/shared/flows/12-commission-tracking-payout.md`
-- `docs/shared/flows/13-admin-operations-dashboard.md`
-- `docs/shared/flows/14-corporate-account-approval-workflow.md`
-- `docs/shared/flows/15-secure-phone-number-change-flow.md`
-- `docs/shared/flows/16-optimistic-locking-concurrency-resolution-flow.md`
-- `docs/shared/flows/17-multichannel-notification-routing-flow.md`
-- `docs/shared/flows/18-logistics-provider-cancellation-reverse-cascade-flow.md`
-- `docs/shared/flows/19-insurance-claim-lifecycle-flowchart.md`
+- `docs/shared/flows/INDEX.md`
+- `docs/shared/flows/appendix-a-notification-offline-handling.md`
+- `docs/shared/flows/appendix-b-authentication-security-flow.md`
 - `CONTEXT.md`

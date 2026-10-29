@@ -18,7 +18,7 @@
 - **Contract-First Baseline:** `contracts/openapi.yaml` specified with standard envelopes and RFC 9457 error models.
 - **Decision Governance Framework:** L1 ADR template, L2 partition decision template, and validation scripts initialized.
 - **Quality Assurance OS:** QA strategy, quality gates (G0–G4), security QA, and accessibility protocols articulated under `docs/quality/`.
-- **Shared Requirements Specifications Partitioned:** Populated modular functional requirements specifications across chapters 01 through 04 (Introduction, Universal Glossary, Product Vision, User Roles & Granular RBAC Matrix), chapters 05-01 through 05-24 (Functional Modules: Authentication, Fleet Registration, Attachments, Discovery, 16-State Booking Lifecycle, Active Rental, Return & Damage, Logistics Integration, Commission & Payouts, Notifications, Dynamic Admin UI, Operator GPS Tracking, Insurance & Documents, Onboarding, Search Enhancements, Accessibility & i18n, Offline Resilience, Error Feedback, Account Deletion, Policy Terms, Feature Flags, Global Soft Delete, Ethiopian Holidays, Marketplace Integrity), and Corporate Account Governance (06-01, 06-02) under `docs/shared/requirements/`.
+- **Shared Requirements Specifications Partitioned:** Populated modular functional requirements specifications across chapters 01 through 04 (Introduction, Universal Glossary, Product Vision, User Roles & Granular RBAC Matrix), chapters 05-01 through 05-24 (Core Modules), chapters 06-01 through 06-05 (Corporate Account Management, Approval Workflows, Pricing/Payment, Fleet Management, Reporting), chapters 07-01 through 07-09 (Advanced Marketplace Features: In-App Payments, Automatic Commission, Full Logistics Marketplace, Operator Marketplace, AI Surge Pricing, IoT Telematics, White-Label API, Multi-Region/Multi-Currency, Advanced Analytics), and System Baseline Specifications 08 through 11 (16-State Booking Machine, Non-Functional Requirements, Relational & Temporal Data Models, Dynamic Metadata Configuration) under `docs/shared/requirements/`.
 - **Infrastructure Stacks:** Docker Compose defined for PostgreSQL 18.4 + PostGIS, Valkey 8.0, MinIO, and ClamAV.
 
 ### In Progress
@@ -51,11 +51,12 @@
 
 ## 4. Files Touched in Current Session
 
-- `docs/shared/requirements/01-introduction.md`
-- `docs/shared/requirements/02-glossary.md`
-- `docs/shared/requirements/03-product-vision.md`
-- `docs/shared/requirements/04-user-roles.md`
-- `docs/shared/requirements/05-01-registration-authentication.md` through `05-24-marketplace-integrity-abuse-controls.md`
-- `docs/shared/requirements/06-01-corporate-account-management.md`
-- `docs/shared/requirements/06-02-corporate-approval-workflows.md`
+- `docs/shared/requirements/06-03-corporate-pricing-payment.md`
+- `docs/shared/requirements/06-04-corporate-fleet-management-owner-side.md`
+- `docs/shared/requirements/06-05-corporate-reporting.md`
+- `docs/shared/requirements/07-01-in-app-payment-processing.md` through `07-09-advanced-analytics-reporting.md`
+- `docs/shared/requirements/08-booking-state-machine.md`
+- `docs/shared/requirements/09-non-functional.md`
+- `docs/shared/requirements/10-data-model.md`
+- `docs/shared/requirements/11-dynamic-config.md`
 - `CONTEXT.md`

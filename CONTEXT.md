@@ -24,7 +24,7 @@
 - **Zero Empty Files Verified:** Automated recursive audit confirms 0 empty (0-byte) files remain across the entire codebase.
 - **Quality Assurance OS:** QA strategy, quality gates (G0–G4), security QA, and accessibility protocols articulated under `docs/quality/`.
 - **Canonical Toolchain & Version Standardization:**
-  - Root `.tool-versions` established (`golang 1.27.3`, `flutter 3.47.9`, `nodejs 26.13.0`, `pnpm 11.10.0`).
+  - Root `.tool-versions` established (`golang 1.27.3`, `flutter 3.47.9`, `nodejs 26.13.0`, `pnpm 12.16.1`).
   - `docs/TECH_STACK.md` updated as authoritative Single Source of Truth (SSOT).
   - Pinned exact infrastructure runtimes across `docker-compose.yml`, `.env.example`, `.env.dev`:
     - Go: `1.27.3`

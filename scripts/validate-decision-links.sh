@@ -52,7 +52,11 @@ if [ -d "${PARTITIONS_DIR}" ]; then
   done
 fi
 
-echo "Found ${#DEFINED_L2[@]} registered L2 Partition Decisions."
+COUNT_L2=0
+for k in "${!DEFINED_L2[@]}"; do
+  COUNT_L2=$((COUNT_L2 + 1))
+done
+echo "Found ${COUNT_L2} registered L2 Partition Decisions."
 
 # 3. Validate Referenced ADRs Across Repository
 echo "--> Verifying all ADR references point to existing records..."
@@ -88,19 +92,19 @@ for adr_id in "${!DEFINED_ADRS[@]}"; do
   affected_partitions=$(grep -oE '(partition[s]?[[:space:]]+|[[:space:]]|^)(05-[0-9]{2})' "${adr_path}" | grep -oE '05-[0-9]{2}' | sort -u || true)
 
   for part_id in ${affected_partitions}; do
-    part_req_file="${REQUIREMENTS_DIR}/${part_id}.md"
-    part_dec_file="${PARTITIONS_DIR}/${part_id}.md"
+    part_req_file="$(find "${REQUIREMENTS_DIR}" -maxdepth 1 -name "${part_id}*.md" | head -n 1 || true)"
+    part_dec_file="$(find "${PARTITIONS_DIR}" -maxdepth 1 -name "${part_id}*.md" | head -n 1 || true)"
 
     has_link=false
-    if [ -f "${part_req_file}" ] && grep -q "${adr_id}" "${part_req_file}"; then
+    if [ -n "${part_req_file}" ] && [ -f "${part_req_file}" ] && grep -q "${adr_id}" "${part_req_file}"; then
       has_link=true
     fi
-    if [ -f "${part_dec_file}" ] && grep -q "${adr_id}" "${part_dec_file}"; then
+    if [ -n "${part_dec_file}" ] && [ -f "${part_dec_file}" ] && grep -q "${adr_id}" "${part_dec_file}"; then
       has_link=true
     fi
 
     if [ "${has_link}" = false ]; then
-      echo "  [UNLINKED PARTITION] ${adr_id} designates partition '${part_id}', but neither ${part_req_file} nor ${part_dec_file} cites ${adr_id}."
+      echo "  [UNLINKED PARTITION] ${adr_id} designates partition '${part_id}', but neither ${part_req_file:-${part_id}.md} nor ${part_dec_file:-${part_id}.md} cites ${adr_id}."
       ERRORS=$((ERRORS + 1))
     fi
   done

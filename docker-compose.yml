@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   postgres:
-    image: postgis/postgis:18.6-3.6.4-alpine
+    image: postgis/postgis:18-3.6-alpine
     container_name: dink-postgres
     restart: unless-stopped
     environment:
@@ -12,7 +10,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d dink_machinery_dev" ]
       interval: 5s
@@ -20,7 +18,7 @@ services:
       retries: 5
 
   valkey:
-    image: valkey/valkey:9.1.3-alpine
+    image: valkey/valkey:9.1.3-alpine3.24
     container_name: dink-valkey
     restart: unless-stopped
     ports:
@@ -34,21 +32,19 @@ services:
       timeout: 3s
       retries: 5
 
-  minio:
-    image: minio/minio:latest
-    container_name: dink-minio
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    container_name: dink-seaweedfs
     restart: unless-stopped
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    command: server /data --console-address ":9001"
+    command: "server -dir=/data -s3 -s3.port=9000"
     ports:
       - "9000:9000"
-      - "9001:9001"
+      - "8888:8888"
+      - "9333:9333"
     volumes:
-      - minio-data:/data
+      - seaweedfs-data:/data
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -71,5 +67,5 @@ volumes:
     driver: local
   valkey-data:
     driver: local
-  minio-data:
+  seaweedfs-data:
     driver: local

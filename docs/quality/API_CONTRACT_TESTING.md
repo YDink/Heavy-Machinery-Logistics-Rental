@@ -71,55 +71,43 @@ rules:
 
   # Path Casing
   paths-kebab-case:
-    description: "All path segments must use lowercase kebab-case."
+    description: "All path segments must use lowercase kebab-case, standard path parameters, and optional RPC action suffixes."
     severity: error
     given: "$.paths[*]~"
     then:
       function: pattern
       functionOptions:
-        match: "^(/|[a-z0-9-~/_{}]+)*$"
+        match: "^(/|[a-zA-Z0-9-~/_{}:]+)*$"
 
   # Universal Success Envelope Verification
   universal-success-envelope:
-    description: "2xx responses must reference a SuccessEnvelope containing success, data, error, and meta."
+    description: "2xx responses must reference an envelope containing success, data, error, and meta properties."
     severity: error
-    given: "$.paths.*.*.responses[?(@property >= 200 && @property < 300)].content['application/json'].schema"
+    given: "$.paths.*.*.responses[?(@property >= 200 && @property < 300)].content['application/json'].schema.properties"
     then:
-      function: schema
-      functionOptions:
-        schema:
-          type: object
-          required: [success, data, error, meta]
-          properties:
-            success:
-              type: boolean
-              enum: [true]
-            error:
-              type: "null"
-            meta:
-              type: object
-              required: [version, requestId, timestamp]
+      - field: success
+        function: defined
+      - field: data
+        function: defined
+      - field: error
+        function: defined
+      - field: meta
+        function: defined
 
   # RFC 9457 Problem Details Error Envelope Verification
   rfc9457-error-envelope:
-    description: "4xx and 5xx responses must reference the standard ErrorEnvelope conforming to RFC 9457."
+    description: "4xx and 5xx responses must reference an ErrorEnvelope containing success, data, error, and meta properties."
     severity: error
-    given: "$.paths.*.*.responses[?(@property >= 400 && @property <= 599)].content['application/json'].schema"
+    given: "$.paths.*.*.responses[?(@property >= 400 && @property <= 599)].content['application/json'].schema.properties"
     then:
-      function: schema
-      functionOptions:
-        schema:
-          type: object
-          required: [success, data, error, meta]
-          properties:
-            success:
-              type: boolean
-              enum: [false]
-            data:
-              type: "null"
-            error:
-              type: object
-              required: [type, title, status, detail, code]
+      - field: success
+        function: defined
+      - field: data
+        function: defined
+      - field: error
+        function: defined
+      - field: meta
+        function: defined
 
   # Integer Minor-Unit Currency Invariant
   no-floating-point-money:

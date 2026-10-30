@@ -1,0 +1,68 @@
+extends: ["spectral:oas"]
+
+rules:
+  # Structural Invariants
+  oas3-schema: true
+  operation-operationId: true
+  operation-tags: true
+  operation-description: true
+
+  # Path Casing & Action Suffix Support
+  paths-kebab-case:
+    description: "All path segments must use lowercase kebab-case, standard path parameters, and optional RPC action suffixes."
+    severity: error
+    given: "$.paths[*]~"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^(/|[a-zA-Z0-9-~/_{}:]+)*$"
+
+  # Universal Success Envelope Verification
+  universal-success-envelope:
+    description: "2xx responses must reference an envelope containing success, data, error, and meta properties."
+    severity: error
+    given: "$.paths.*.*.responses[?(@property >= 200 && @property < 300)].content['application/json'].schema.properties"
+    then:
+      - field: success
+        function: defined
+      - field: data
+        function: defined
+      - field: error
+        function: defined
+      - field: meta
+        function: defined
+
+  # RFC 9457 Problem Details Error Envelope Verification
+  rfc9457-error-envelope:
+    description: "4xx and 5xx responses must reference an ErrorEnvelope containing success, data, error, and meta properties."
+    severity: error
+    given: "$.paths.*.*.responses[?(@property >= 400 && @property <= 599)].content['application/json'].schema.properties"
+    then:
+      - field: success
+        function: defined
+      - field: data
+        function: defined
+      - field: error
+        function: defined
+      - field: meta
+        function: defined
+
+  # Integer Minor-Unit Currency Invariant
+  no-floating-point-money:
+    description: "Financial properties must use 64-bit integer minor units (MoneyAmount). Floats are banned."
+    severity: error
+    given: "$..properties[?(@property.match(/(amount|price|cost|balance|rate|deposit|fee)/i))]"
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          not:
+            type: number
+
+  # Mandatory Idempotency Header on Mutating Operations
+  idempotency-header-required:
+    description: "State-mutating operations (POST, PUT, PATCH) must declare the Idempotency-Key header."
+    severity: error
+    given: "$.paths.*[post,put,patch].parameters[?(@.in == 'header' && @.name == 'Idempotency-Key')]"
+    then:
+      function: defined

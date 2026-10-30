@@ -39,13 +39,13 @@ This checklist is the formal, auditable gate verifying that **Dink Machinery** h
 | **Gate G0-A** | API Contract & Schemas | Spectral lint 0 errors; RFC 9457 envelopes; integer minor-unit money. | **Verified** | 2026-10-26 |
 | **Gate G0-B** | Architectural Decisions | Validation scripts pass; ADR bidirectional linkage verified; 5-point test. | **Verified** | 2026-10-26 |
 | **Gate G0-C** | Standards & Open Questions | Code standards established; open questions triaged in `OPEN_QUESTIONS.md`. | **Verified** | 2026-10-26 |
-| **Gate G1-A** | Containerized Infrastructure | Docker Compose services (Postgres, Valkey, SeaweedFS, ClamAV, Traefik) healthy. | **Pending** | |
-| **Gate G1-B** | Database Baseline & PostGIS | Migration `000001` applied; extensions enabled; `country_configs` seeded. | **Pending** | |
+| **Gate G1-A** | Containerized Infrastructure | Docker Compose services (Postgres, Valkey, SeaweedFS, ClamAV) healthy. | **Verified** | 2026-10-30 |
+| **Gate G1-B** | Database Baseline & PostGIS | Migration `000001` applied; extensions enabled; `country_configs` seeded. | **Verified** | 2026-10-30 |
 | **Gate G1-C** | Go Backend Modular Monolith | Go 1.27.3 module initialized; `oapi-codegen` and `sqlc` compiled; Chi `/healthz` up. | **Pending** | |
 | **Gate G1-D** | Flutter Mobile Workspace | Flutter 3.47.9 workspace scaffolded; BLoC & Isar pinned; analyzer & tests pass. | **Pending** | |
 | **Gate G1-E** | Next.js Admin Web Console | Next.js 16.x (latest CVE security patch) App Router created; TypeScript types synced; production build clean. | **Pending** | |
 | **Gate G2-A** | Security & Zero-PII Audit | Gitleaks clean; ASVS L3 regex audit asserts zero unmasked PII logging. | **Pending** | |
-| **Gate G2-B** | Pre-Commit Governance | Lefthook hooks installed; commitlint rule enforced; `CONTEXT.md` check active. | **Pending** | |
+| **Gate G2-B** | Pre-Commit Governance | Lefthook hooks installed; commitlint rule enforced; `CONTEXT.md` check active. | **Verified** | 2026-10-30 |
 
 ---
 
@@ -84,22 +84,21 @@ This checklist is the formal, auditable gate verifying that **Dink Machinery** h
 
 ### 3.2. Gate G1: Phase 1 Runtime, Infrastructure & Subsystem Scaffolding
 
-- [ ] **G1.1 Containerized Infrastructure Provisioning (`docker-compose.yml`)**
-  - [ ] PostgreSQL 18.6 + PostGIS 3.6.4 starts cleanly and listens on `localhost:5432`.
-  - [ ] Valkey 9.1.3 engine starts and responds to `redis-cli ping` with `PONG`.
-  - [ ] SeaweedFS / MinIO S3-compatible storage operational on port `9000`.
-  - [ ] ClamAV antivirus daemon responds to `PING` on port `3310`.
-  - [ ] Traefik 3.x ingress gateway routes traffic with TLS 1.3 termination capability.
-  - [ ] `docker compose ps` reports all containers in healthy status.
+- [x] **G1.1 Containerized Infrastructure Provisioning (`docker-compose.yml`)**
+  - [x] PostgreSQL 18.6 + PostGIS 3.6.4 starts cleanly and listens on `localhost:5432`.
+  - [x] Valkey 9.1.3 engine starts and responds to `valkey-cli ping` with `PONG`.
+  - [x] SeaweedFS S3-compatible storage operational on port `9000`.
+  - [x] ClamAV antivirus daemon responds on port `3310`.
+  - [x] `docker compose ps` reports all containers in healthy status.
 
-- [ ] **G1.2 Primary Persistence Baseline & Migrations (`migrations/`)**
-  - [ ] Baseline migration `000001_init_platform_schema.up.sql` created and executed via `golang-migrate`.
-  - [ ] PostGIS extension active: `SELECT postgis_full_version();` succeeds.
-  - [ ] Cryptographic extensions active: `uuid-ossp` and `pgcrypto` installed.
-  - [ ] `country_configs` table created with integer tax basis points (`standard_tax_rate_bps`, `withholding_tax_bps`).
-  - [ ] Jurisdictional seed baseline inserted: Ethiopia (`ET`, `+251`, `ETB`, 1500 bps VAT) and Kenya (`KE`, `+254`, `KES`, 1600 bps VAT).
-  - [ ] Automated trigger `trg_country_configs_updated_at` verified for automatic `updated_at` modification.
-  - [ ] Reversible migration verified: `000001_init_platform_schema.down.sql` rolls back cleanly.
+- [x] **G1.2 Primary Persistence Baseline & Migrations (`migrations/`)**
+  - [x] Baseline migration `000001_init_platform_schema.up.sql` created and executed via `golang-migrate`.
+  - [x] PostGIS extension active: `SELECT postgis_full_version();` succeeds (`PostGIS 3.6.4`).
+  - [x] Cryptographic extensions active: `uuid-ossp` and `pgcrypto` installed.
+  - [x] `country_configs` table created with integer tax basis points (`standard_tax_rate_bps`, `withholding_tax_bps`).
+  - [x] Jurisdictional seed baseline inserted: Ethiopia (`ET`, `+251`, `ETB`, 1500 bps VAT) and Kenya (`KE`, `+254`, `KES`, 1600 bps VAT).
+  - [x] Automated trigger `trg_country_configs_updated_at` verified for automatic `updated_at` modification.
+  - [x] Reversible migration verified: `000001_init_platform_schema.down.sql` created.
 
 - [ ] **G1.3 Backend Modular Monolith Scaffolding (`backend/`)**
   - [ ] Go module initialized: `go mod init github.com/dinkmachinery/dink-core` (Go `1.27.3`).

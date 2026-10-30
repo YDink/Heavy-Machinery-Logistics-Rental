@@ -1,59 +1,47 @@
 # CONTEXT.md — Dink Machinery Active Session State
 
-**Project Phase:** Phase 0 (Docs-First & Pre-Development Governance)  
+**Project Phase:** Phase 1 (Subsystem Bootstrap & Wiring)  
 **Active Requirement Partition:** `00-foundations-governance`  
-**Active Branch:** `main` (Pre-bootstrap baseline)  
-**Current Stop Point:** Technology Stack Version Standardization, FVM Configuration & pnpm Package Manager Enforcement Complete
+**Active Branch:** `main`  
+**Current Stop Point:** Gate G0 Signed Off, Gate G1-A (Docker Infrastructure) & Gate G1-B (Migrations & PostGIS) Verified
 
 ---
 
 ## 1. Current Progress Snapshot
 
-### Completed (Phase 0 Documentation & Governance)
-- **Canonical Architecture & Design SSOT:** Populated `docs/source/Architecture_Design_Document.md`, `docs/source/Dink_Machinery_UI_UX_Design_Brief.md`, and complete application flow diagrams (`Heavy_Machinery_App_Flow_Diagrams.md` and `App_Flow_Diagrams_Print.html`).
-- **Shared Architecture Specifications Partitioned:** Populated modular architecture chapters 01 through 14 and master `INDEX.md` under `docs/shared/architecture/` derived from canonical architecture specifications.
-- **Shared Interaction Flow Specifications:** Populated complete interaction flow specifications 01 through 19, master navigation index (`INDEX.md`), and comprehensive technical appendices (Appendix A: Offline Sync & Notification Handling, Appendix B: Authentication, Token Lifecycle & Security) under `docs/shared/flows/`.
-- **Shared Design Specifications & DTCG Tokens:** Populated master design system (`00-design-system.md`), user personas and ergonomics (`01-personas.md`), tokens and accessibility architecture (`02-tokens-and-accessibility.md`), and canonical W3C DTCG token definitions (`design-tokens.json`, `design-tokens.yaml`) under `docs/shared/design/`.
-- **Tool Portability Established:** `AGENTS.md` finalized across all 8 disciplines; wrappers `CLAUDE.md` and `GEMINI.md` operational.
-- **Contract-First Baseline:** `contracts/openapi.yaml` specified with standard envelopes and RFC 9457 error models.
-- **Architectural Decision Records (L1 ADRs):** All 15 L1 system-wide Architecture Decision Records (`ADR-001` through `ADR-015`), master `INDEX.md`, and `ADR-TEMPLATE.md` authored, populated, and validated with zero template or linking errors.
-- **Partition Decision Records (L2 Decisions):** All 40 partition decision files (`05-01` through `11-dynamic-config`), master `README.md`, and `PARTITION_DECISIONS_TEMPLATE.md` populated with 80 comprehensive decisions strictly meeting the 7-section layout and 5-point qualification test.
-- **Shared Requirements Specifications Partitioned:** All modular requirements specifications (chapters 01 through 14, including `12-tech-stack.md`, `13-roadmap.md`, `14-appendices.md`, and master `INDEX.md`) fully populated and synchronized.
-- **Mobile Subsystem Specifications Expanded:** Populated 65 bespoke screen and behavior specifications across all 5 persona contexts, industrial foundations, shared features, and QA test matrices alongside master `INDEX.md` under `docs/mobile/`.
-- **Admin Subsystem Specifications Expanded:** Populated 38 dedicated operational console specifications covering the admin shell, operations queues, booking operations, dispute arbitration lightbox, double-entry financial ledger, dynamic metadata schema engine, and QA benchmarks alongside master `INDEX.md` under `docs/admin/`.
-- **Zero Empty Files Verified:** Automated recursive audit confirms 0 empty (0-byte) files remain across the entire codebase.
-- **Quality Assurance OS:** QA strategy, quality gates (G0–G4), security QA, and accessibility protocols articulated under `docs/quality/`.
+### Completed (Phase 0 Documentation, Governance & Baseline Infrastructure)
+- **Spectral Contract Linting Verified:** Created root `.spectral.yaml` conforming to RFC 9457 and integer minor-unit money rules; `pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml` passes with 0 errors.
+- **Architectural Decisions Verified:** `validate-decision-template.sh` and `validate-decision-links.sh` pass with 0 errors across 15 L1 ADRs and 80 L2 Partition Decisions.
+- **Local Git Hooks Activated:** `lefthook` configured with commitlint, decision checks, spectral linting, and atomic doc-commit rules; hooks installed in `.git/hooks`.
+- **Docker Compose Infrastructure Operational (Gate G1-A):**
+  - PostgreSQL 18.6 + PostGIS 3.6.4 container (`dink-postgres`) healthy on port 5432.
+  - Valkey 9.1.3 container (`dink-valkey`) healthy on port 6379.
+  - SeaweedFS S3-compatible container (`dink-seaweedfs`) healthy on port 9000.
+  - ClamAV container (`dink-clamav`) healthy on port 3310.
+- **Persistence Baseline Applied (Gate G1-B):**
+  - Migration `000001_init_platform_schema.up.sql` executed cleanly via `golang-migrate`.
+  - Cryptographic extensions (`uuid-ossp`, `pgcrypto`) and `postgis` (3.6.4) active.
+  - `country_configs` table created with updated-at trigger and seeded with Ethiopia (`ET`) and Kenya (`KE`).
+- **Canonical Architecture & Design SSOT:** All specifications, mobile specs (65 files), admin specs (38 files), and modular requirements fully populated.
 - **Canonical Toolchain & Version Standardization:**
-  - Root `.tool-versions` established (`golang 1.27.3`, `flutter 3.47.9`, `nodejs 26.13.0`, `pnpm 12.16.1`).
-  - `docs/TECH_STACK.md` updated as authoritative Single Source of Truth (SSOT).
-  - Pinned exact infrastructure runtimes across `docker-compose.yml`, `.env.example`, `.env.dev`:
-    - Go: `1.27.3`
-    - Flutter: `3.47.9` (configured and managed via FVM `.fvmrc`)
-    - Node.js: `26.13.0`
-    - Package Manager: `pnpm` (`v11.x`, `pnpm-lock.yaml`) mandatory across repository
-    - Next.js: `16.x` (strict requirement to track latest patch release to mitigate frequent CVEs)
-    - PostgreSQL: `18.6`
-    - PostGIS: `3.6.4` (`postgis/postgis:18.6-3.6.4-alpine`)
-    - Valkey: `9.1.3` (`valkey/valkey:9.1.3-alpine`)
-- **FVM & pnpm Standardization:**
-  - Configured root `.fvmrc` and `.fvm/fvm_config.json` pinning Flutter `3.47.9`.
-  - Added `.fvm/flutter_sdk` and `.fvm/cache` to `.gitignore`.
-  - Migrated all Flutter commands across documentation, bootstrap runbooks, CI workflows, and quality matrices to `fvm flutter ...`.
-  - Enforced `pnpm` as the exclusive package manager, replacing all `npm` and `npx` references with `pnpm`, `pnpm dlx`, and `pnpm-lock.yaml`.
-  - Validated architectural decision templates (`validate-decision-template.sh`) and links (`validate-decision-links.sh`) with 0 errors.
+  - Go: `1.27.3` (windows/amd64) configured.
+  - Flutter: `3.47.9` (Dart `3.13.7`) with FVM (`.fvmrc`).
+  - Node.js: `26.13.0` & pnpm `12.16.1`.
+  - Java: OpenJDK 21 LTS configured in Flutter.
+  - `flutter doctor -v`: 100% clean (`• No issues found!`).
 
 ### In Progress
-- Formal verification and sign-off of `docs/quality/BOOTSTRAP_CHECKLIST.md` Gate G0.
+- Scaffolding Go modular monolith (`backend/`), Flutter mobile workspace (`mobile/`), and Next.js admin portal (`admin/`).
 
 ---
 
 ## 2. Next Immediate Tasks (In Order)
 
-1. Verify and sign off Gate G0 in `docs/quality/BOOTSTRAP_CHECKLIST.md`.
-2. Initialize local Git pre-commit hooks via `lefthook install`.
-3. Execute Phase 1 bootstrap per `docs/BOOTSTRAP.md` using `fvm flutter ...` and `pnpm ...`.
-4. Generate `docs/TECH_STACK.md` lockfile record from the bootstrap output.
-5. Create initial partition feature branch: `feature/05-01-registration-authentication`.
+1. Scaffold Go modular monolith (`backend/`): initialize module, run `oapi-codegen` and `sqlc generate`, build Chi `/healthz`.
+2. Scaffold Flutter mobile workspace (`mobile/`): run `fvm flutter create`, pin BLoC, Isar, Dio, generate feature structure.
+3. Scaffold Next.js admin app (`admin/`): run `pnpm create next-app`, install UI dependencies, sync OpenAPI types.
+4. Verify non-decreasing coverage and lockfile generation (`go.sum`, `pubspec.lock`, `pnpm-lock.yaml`).
+5. Open initial Phase 2 partition branch: `feature/05-01-registration-authentication`.
 
 ---
 

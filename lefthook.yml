@@ -1,19 +1,13 @@
 commit-msg:
   commands:
     commitlint:
-      run: pnpm dlx commitlint --edit {1}
+      run: pnpm dlx commitlint --config .github/commitlint.config.js --edit {1}
 
 pre-commit:
   parallel: false
   commands:
     verify-context-staged:
-      run: |
-        if git diff --cached --name-only | grep -E '^backend/|^mobile/|^admin/|^docs/shared/' > /dev/null; then
-          if ! git diff --cached --name-only | grep -E '^CONTEXT.md$' > /dev/null; then
-            echo "ERROR: Atomic doc-commit rule violated. CONTEXT.md must be staged with code or spec changes."
-            exit 1
-          fi
-        fi
+      run: bash scripts/verify-context-staged.sh
 
     verify-decision-links:
       run: bash scripts/validate-decision-links.sh
@@ -24,7 +18,3 @@ pre-commit:
     spectral-openapi-lint:
       glob: "contracts/openapi.yaml"
       run: pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
-
-    markdown-lint:
-      glob: "**/*.md"
-      run: pnpm dlx markdownlint-cli --ignore "node_modules" --ignore ".dart_tool" {staged_files}

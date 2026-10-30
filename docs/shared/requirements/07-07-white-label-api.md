@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Open Architecture Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§1.2, §5.2, §5.4, §5.5, §5.9, §6.1, §6.3, §7.0, §7.1, §7.2, §7.7, §8, §10, §11, §12, §13.2), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `FLOW-COMMISSION-DEBT-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, Envoy / Traefik Ingress API Gateway, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.44 / Dart 3.9 (Headless SDK & Whitelabel Shells), Next.js 16 / React 19 (Partner Developer Portal), Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Envoy / Traefik Ingress API Gateway, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.47.8 / Dart 3.9 (Headless SDK & Whitelabel Shells), Next.js 16.x (latest CVE security patch) / React 19 (Partner Developer Portal), Isar NoSQL 3.1+  
 **Target Personas:** Enterprise Commercial Partner & OEM Distributor (*Caterpillar / Komatsu East Africa Dealers*), Tier-1 ERP Systems Integrator (*Midroc / Sur Construction IT Architecture Directorate*), Third-Party Logistics & Fintech Platform CTO (*TeleBirr SuperApp / Safaricom Daraja Partner Teams*), Independent Software Vendor (ISV) Developer, Compliance Officer & API Governance Auditor (*Yohannes Bekele*), Super Administrator (*Rahel Tadesse*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (API Security, Cryptographic Non-Repudiation, Scoped OAuth2 Tokens & Rate-Limiting Controls), RFC 9457 (Problem Details), RFC 6749 (OAuth 2.0 Authorization Framework), RFC 7519 (JSON Web Tokens), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), ISO 27001:2022 (Information Security Management Systems - Annex A.8.26 Application Security), National Bank of Ethiopia (NBE) Financial Cloud Directives, Kenya Data Protection Act 2019  
@@ -76,7 +76,7 @@ This document formally specifies:
    $$\text{ExecutionScope} \iff \text{tenant\_id} = \text{Claims.PartnerTenantID}$$
    A white-label tenant cannot discover, query, inspect, or mutate private fleet inventories, confidential corporate pricing schedules, telematics breadcrumbs, or financial ledgers belonging to other partner tenants or competing enterprises.
 2. **Canonical State Machine Immutability Invariant:** Headless reservations initiated via the White-Label API execute against the exact canonical Booking State Machine (`FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`). Third-party API consumers cannot bypass statutory pre-conditions, physical inspection photograph uploads (`AR-01`), operator competency checks (`OPR-01`), or dual-PIN site handshakes.
-3. **Sub-15ms Spatial Discovery Latency SLO:** Public and syndicated fleet discovery endpoints (`/api/v1/whitelabel/catalog/search`) executed via partner API keys must resolve in $< 15\text{ ms}$ (p99) for cache hits in Valkey 8.0, maintaining high throughput for partner superapp integrations.
+3. **Sub-15ms Spatial Discovery Latency SLO:** Public and syndicated fleet discovery endpoints (`/api/v1/whitelabel/catalog/search`) executed via partner API keys must resolve in $< 15\text{ ms}$ (p99) for cache hits in Valkey 9.1.3, maintaining high throughput for partner superapp integrations.
 4. **Transparent Partner Commission Ceiling:** Partner markups and custom referral commissions are strictly capped within regulatory bounds:
    $$\text{PartnerMarkupRateBps} \le 1,500\text{ bps}\ (15.00\%)$$
    Guarantees that white-label syndication does not induce artificial price inflation or violate national price-gouging directives in Ethiopia (Trade Competition and Consumers Protection Proclamation) and Kenya (Competition Act Cap 504).
@@ -95,7 +95,7 @@ flowchart TD
     IngressEdge --> ResolveDomain{"Inspect Host Header & SNI<br/>Custom Domain Registered in whitelabel_tenants?"}
 
     ResolveDomain -->|"Unknown Host / No CNAME Match"| FallbackCore["Route to Canonical Dink Machinery Namespace<br/>Apply Default Branding & Standard Catalog"]
-    ResolveDomain -->|"Matched CNAME (e.g., moenco-ethiopia.com)"| ResolveTenant["Extract Tenant Configuration from Valkey 8.0<br/>Key: whitelabel:domain:{host} -> partner_tenant_id"]
+    ResolveDomain -->|"Matched CNAME (e.g., moenco-ethiopia.com)"| ResolveTenant["Extract Tenant Configuration from Valkey 9.1.3<br/>Key: whitelabel:domain:{host} -> partner_tenant_id"]
 
     ResolveTenant --> AuthenticateRequest{"Authenticate Partner Credentials<br/>Check X-API-Key or Bearer OAuth2 Token"}
 
@@ -123,7 +123,7 @@ Enterprise partners can host Dink Machinery's headless commerce portal on their 
   - The Traefik / Envoy edge ingress terminates TLS using automated **ACME / Let's Encrypt HTTP-01 or TLS-ALPN-01 challenge verification**.
   - Certificates are refreshed automatically 30 days prior to expiration.
 * **Context Resolution Middleware:**
-  The Go monolith intercepts the HTTP `Host` header and resolves the tenant mapping from Valkey 8.0:
+  The Go monolith intercepts the HTTP `Host` header and resolves the tenant mapping from Valkey 9.1.3:
   ```text
   GET whitelabel:domain:machinery.moenco-ethiopia.com
   --> {"tenantId":"ten_019a8fe0-moenco-8812","status":"ACTIVE","tier":"ENTERPRISE"}
@@ -252,7 +252,7 @@ Access permissions are bounded by granular OAuth2-style permission scopes:
 ### 3.3 Tiered Token-Bucket Rate Limiting (Valkey Sliding-Window Scripting)
 
 To defend platform microservices against denial-of-service (DoS) attacks and erratic client polling:
-* Every API request passes through a Lua-scripted **Sliding-Window Token Bucket** in Valkey 8.0:
+* Every API request passes through a Lua-scripted **Sliding-Window Token Bucket** in Valkey 9.1.3:
   ```lua
   -- Valkey Rate Limiting Lua Script
   local key = KEYS[1]
@@ -286,7 +286,7 @@ All financial or booking mutation endpoints (`POST /v1/whitelabel/headless/booki
 * **The Nonce Tuple:**
   $$\langle \text{PartnerTenantID}, \text{Idempotency-Key}, \text{Timestamp} \rangle$$
 * **Verification Routine:**
-  1. Checks if `Idempotency-Key` exists in Valkey 8.0 (`SET lock:idemp:{key} "1" EX 86400 NX`).
+  1. Checks if `Idempotency-Key` exists in Valkey 9.1.3 (`SET lock:idemp:{key} "1" EX 86400 NX`).
   2. If the key exists, returns the cached previous HTTP response without re-executing domain transactions.
   3. Validates that $\vert{}\text{Timestamp}_{\text{request}} - \text{Timestamp}_{\text{server}}\vert{} \le 300\text{ seconds}$.
 
@@ -303,7 +303,7 @@ flowchart TD
     PartnerReq(["Partner Client Initiates Headless Booking<br/>POST /api/v1/whitelabel/headless/bookings<br/>(Payload: fleetId, startDate, endDate, partnerRenterId)"]) --> ValidateScope{"Validate Partner Scopes<br/>Token has whitelabel:bookings.write?"}
 
     ValidateScope -->|"Scope Missing"| AbortScope["HTTP 403 Forbidden: ERR_INSUFFICIENT_SCOPES"]
-    ValidateScope -->|"Scope Valid"| ResolveTariff["Step 1: Compute Headless Commercial Tariffs<br/>1. Fetch Base Machinery Rate (PostgreSQL 18.4)<br/>2. Ingest Partner Markup Rate Bps (whitelabel_tenants)<br/>3. Compute Split: Base Hire + Partner Markup + VAT"]
+    ValidateScope -->|"Scope Valid"| ResolveTariff["Step 1: Compute Headless Commercial Tariffs<br/>1. Fetch Base Machinery Rate (PostgreSQL 18.6)<br/>2. Ingest Partner Markup Rate Bps (whitelabel_tenants)<br/>3. Compute Split: Base Hire + Partner Markup + VAT"]
 
     ResolveTariff --> LockAsset["Step 2: Acquire Distributed Valkey Reservation Lock<br/>SET hold:fleet:{fleet_id} {booking_id} NX EX 3600"]
 
@@ -896,7 +896,7 @@ flowchart TD
 2. **Multi-Tenant Perimeter Isolation Gate:** Seeds the database with private equipment assets and corporate pricing ledgers belonging to competing partner tenants (`Tenant A` and `Tenant B`). Executes 1,000 concurrent queries using `Tenant A` credentials, asserting that zero data rows from `Tenant B` are returned across all relational query dimensions.
 3. **Token-Bucket Rate Limiting Benchmark:** Dispatches 2,000 parallel requests within a 10-second window against a Standard Tier API key ($100\text{ req/min}$). Asserts that the gateway precisely permits the initial 150 burst requests and systematically intercepts subsequent calls with HTTP 429 `ERR_API_RATE_LIMIT_EXCEEDED`.
 4. **Webhook HMAC Cryptographic Verification Gate:** Mutates a single byte in a simulated outbound webhook payload. Verifies that the recipient client SDK fails HMAC-SHA256 signature verification and discards the payload without execution.
-5. **Catalog Discovery Latency Performance Gate:** Executes 10,000 parallel catalog search queries across Valkey 8.0 hot cache clusters, asserting that p95 latency remains $< 5\text{ ms}$ and p99 latency strictly $< 15\text{ ms}$.
+5. **Catalog Discovery Latency Performance Gate:** Executes 10,000 parallel catalog search queries across Valkey 9.1.3 hot cache clusters, asserting that p95 latency remains $< 5\text{ ms}$ and p99 latency strictly $< 15\text{ ms}$.
 
 ---
 

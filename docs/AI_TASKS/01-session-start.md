@@ -62,8 +62,8 @@ Confirm that required local engines and compilers are online and pinned:
 ```bash
 # Check compiler versions
 go version         # Must be Go 1.27.3
-flutter --version  # Must be Flutter 3.44
-node -v            # Must be Node v22.x
+flutter --version  # Must be Flutter 3.47.8
+node -v            # Must be Node v26.13.0
 
 # Check container infrastructure (if developing backend or integration tests)
 docker compose ps

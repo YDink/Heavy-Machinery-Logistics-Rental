@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-OWN-09`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (§5.9, §7.2, `CW-01`..`CW-12`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Equipment Fleet Owner & Depot Yard Manager (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*)  
 **Associated Requirements:** `REQ-05-09` (`CW-01` to `CW-12`), `REQ-07-02` (Phase 3 Automated Commission Deduction & Gateway Escrow Payouts)  
 **Associated Interaction Flows:** `FLOW-12` (Commission Debt, Top-Up Verification & Delinquency Lockout), `FLOW-18` (Force Majeure Commission Restitution)  

@@ -3,7 +3,7 @@
 **Subsystem:** Go 1.27.3 Modular Monolith Backend Core (`backend/`)  
 **Specification:** System Architecture, Domain Decomposition, State Machine Engine & Persistence Lifecycle  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), ISO/IEC/IEEE 29119, ISO/IEC 25010, ISO 4217, ISO 3166-1 alpha-2  
-**Target Runtimes:** Go 1.27.3, Chi v5, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine, ClamAV Daemon, SeaweedFS S3  
+**Target Runtimes:** Go 1.27.3, Chi v5, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, ClamAV Daemon, SeaweedFS S3  
 **Governing Documents:** `AGENTS.md`, `TECH_STACK.md`, `CODE_STANDARDS.md`, `API_CONVENTIONS.md`, `ERROR_CATALOG.md`, `DEFINITION_OF_DONE.md`, `docs/components/backend/AGENTS.md`
 
 ---
@@ -79,8 +79,8 @@ flowchart TD
     BoundedContexts --> PlatformLayer
   end
 
-  PlatformLayer -->|pgxpool TCP:5432| Postgres[(PostgreSQL 18.4 + PostGIS 3.4)]
-  PlatformLayer -->|redis-cli TCP:6379| Valkey[(Valkey 8.0-alpine Distributed Cache)]
+  PlatformLayer -->|pgxpool TCP:5432| Postgres[(PostgreSQL 18.6 + PostGIS 3.6.4)]
+  PlatformLayer -->|redis-cli TCP:6379| Valkey[(Valkey 9.1.3-alpine Distributed Cache)]
   PlatformLayer -->|S3 API HTTP:9000| SeaweedFS[(SeaweedFS Encrypted Object Storage)]
   PlatformLayer -->|TCP:3310 zINSTREAM| ClamAV[(ClamAV Daemon Antivirus)]
 ```
@@ -341,7 +341,7 @@ FOR EACH ROW EXECUTE FUNCTION prevent_ledger_modification();
 
 ## 7. Data Persistence & PostGIS Spatial Architecture
 
-### 7.1. PostgreSQL 18.4 + PostGIS 3.4 Configuration
+### 7.1. PostgreSQL 18.6 + PostGIS 3.6.4 Configuration
 The persistence layer is managed through `jackc/pgx/v5` with connection pooling via `pgxpool`.
 
 #### Connection Pool Configuration (`internal/platform/database/pool.go`)
@@ -421,8 +421,8 @@ sequenceDiagram
   autonumber
   actor Client as Mobile Client / Admin Web
   participant GW as Chi Idempotency Middleware
-  participant VK as Valkey 8.0 Cache
-  participant DB as PostgreSQL 18.4 (idempotency_keys)
+  participant VK as Valkey 9.1.3 Cache
+  participant DB as PostgreSQL 18.6 (idempotency_keys)
   participant Interactor as Domain Interactor
 
   Client->>GW: POST /api/v1/bookings (Idempotency-Key: K)
@@ -514,7 +514,7 @@ Testing adheres to ISO/IEC/IEEE 29119, combining unit tests, real infrastructure
        ┌───────────────────────────────────┼───────────────────────────────────┐
        ▼                                   ▼                                   ▼
 [Domain Unit Tests]                [Integration Tests]                 [Wire Conformance Tests]
- Pure business invariants;         Real PostgreSQL 18.4 + PostGIS      kin-openapi router validates
+ Pure business invariants;         Real PostgreSQL 18.6 + PostGIS      kin-openapi router validates
  zero external dependencies;       & Valkey via testcontainers-go;     live Chi HTTP outputs against
  table-driven state transitions    verifies atomic pgx.Tx & GiST       contracts/openapi.yaml
 ```

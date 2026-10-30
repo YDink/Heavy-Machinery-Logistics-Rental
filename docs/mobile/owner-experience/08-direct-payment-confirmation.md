@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-OWN-08`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (§5.5.4, §5.9.3, `BK-07`..`BK-10`, `BK-17-BE`, `CW-01`, `CW-06`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Equipment Fleet Owner & Depot Yard Manager (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*)  
 **Associated Requirements:** `REQ-05-05` (`BK-09`, `BK-10`, `BK-07B` Duplicate Receipt Hash Detection, `BK-17-BE` Atomic In-Transaction Commission Ledger Mutation), `REQ-05-09` (`CW-01`, `CW-06`)  
 **Associated Interaction Flows:** `FLOW-08` (Direct Bank Wire Verification & Atomic Ledger Debit), `FLOW-12` (Commission Overdraft Check)  
@@ -134,8 +134,8 @@ sequenceDiagram
     participant UI as DirectPaymentConfirmationScreen
     participant Bloc as PaymentConfirmationBloc
     participant API as Go Monolith (/api/v1)
-    participant DB as PostgreSQL 18.4 (pgx.Tx)
-    participant Valkey as Valkey 8.0
+    participant DB as PostgreSQL 18.6 (pgx.Tx)
+    participant Valkey as Valkey 9.1.3
 
     Owner->>UI: Inspect CBE Slip (Zoom 3x), Verify FT263029918441 & Check Attestation
     Owner->>UI: Tap [✅ Confirm Payment Received]

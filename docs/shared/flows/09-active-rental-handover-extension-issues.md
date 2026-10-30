@@ -4,7 +4,7 @@
 **Document Identifier:** `FLOW-ACTIVE-RENTAL-DINK-CORE-V7.0`  
 **Classification:** Canonical User Interaction Flow & Wire Protocol Specification (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (§5.6 AR-01 to AR-05, §5.7, §8.1, §8.2), `FLOW-ENTRY-DINK-CORE-V7.0`, `FLOW-RENTER-AUTH-DINK-CORE-V7.0`, `FLOW-OWNER-KYC-DINK-CORE-V7.0`, `FLOW-OPERATOR-LINK-DINK-CORE-V7.0`, `FLOW-FLEET-REG-DINK-CORE-V7.0`, `FLOW-DISCOVERY-DINK-CORE-V7.0`, `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `FLOW-PAYMENT-DISPUTE-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-005`, `ADR-010`  
-**Target Client Runtimes:** Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Admin Web Console), Go 1.24 Backend Monolith, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL  
+**Target Client Runtimes:** Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Admin Web Console), Go 1.27.3 Backend Monolith, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL  
 **Target Personas:** Civil Engineering Contractor / Commercial Renter (*Dawit Haile-Mariam* / *Patrick Kariuki*), Fleet Owner & Depot Yard Manager (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Certified Field Operator (*Mulugeta Tadesse* / *Juma Omwamba*), Compliance Officer & Arbitrator (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Identity Validation, Tamper-Evident Geolocation & Secure Document Ingestion), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mode) & Level AA (Admin Mode), National Bank of Ethiopia (NBE) Directives  
@@ -155,7 +155,7 @@ sequenceDiagram
     actor Renter as Contractor (Dawit)
     participant AppRenter as Renter Flutter App
     participant Monolith as Go Monolith Core
-    participant DB as PostgreSQL 18.4
+    participant DB as PostgreSQL 18.6
 
     Op->>AppOp: Complete Handover Photos & Input Meter: 1452.20 Hrs
     AppOp->>Monolith: POST /api/v1/bookings/bk_8829a10f/handover/initiate
@@ -238,7 +238,7 @@ sequenceDiagram
     participant Edge as Traefik Gateway
     participant ClamAV as ClamAV Daemon (:3310)
     participant Monolith as Go Monolith Core
-    participant DB as PostgreSQL 18.4
+    participant DB as PostgreSQL 18.6
     actor Owner as Fleet Owner (Almaz)
     actor Renter as Contractor (Dawit)
 

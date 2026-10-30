@@ -1,6 +1,6 @@
 # Mobile Client Agent Instructions & Engineering Protocols (`mobile/`) — Dink Machinery
 
-**Subsystem:** Flutter 3.44 Cross-Platform Mobile Client (`mobile/`)  
+**Subsystem:** Flutter 3.47.8 Cross-Platform Mobile Client (`mobile/`)  
 **Target:** AI Agents, Mobile Systems Engineers & Flutter Architects  
 **Scope:** Architectural rules, Feature-First Clean Architecture, BLoC state management, API client generation, offline persistence, dynamic font delivery, and testing gates for `mobile/`.  
 **Governing Documents:** `AGENTS.md`, `TECH_STACK.md`, `CODE_STANDARDS.md`, `API_CONVENTIONS.md`, `ERROR_CATALOG.md`, `DEFINITION_OF_DONE.md`  
@@ -10,7 +10,7 @@
 
 ## 1. Subsystem Mission & Non-Negotiable Architectural Invariants
 
-The **Flutter 3.44 Mobile Client** (`mobile/`) serves as the primary operational edge for Dink Machinery across Ethiopia and Kenya. It provides role-tailored interfaces for three distinct personas:
+The **Flutter 3.47.8 Mobile Client** (`mobile/`) serves as the primary operational edge for Dink Machinery across Ethiopia and Kenya. It provides role-tailored interfaces for three distinct personas:
 1. **Equipment Renters:** Machinery catalog search, PostGIS radius discovery, 60-minute reservation holds, and Telebirr/CBEBirr/MPESA mobile checkout.
 2. **Fleet Owners:** Asset management, utilization telemetry, escrow disbursement tracking, and digital maintenance logging.
 3. **Field Operators:** Joint check-in/check-out site inspections, monotonic operating hours meter logging, ClamAV-scanned condition photo capture, and offline signature synchronization.
@@ -36,14 +36,14 @@ Any agent modifying or authoring code within `mobile/` must strictly adhere to t
      ┌───────────────────┬────────────────────┴───────────────────┬───────────────────┐
      ▼                   ▼                                        ▼                   ▼
 [Runtime & SDK]     [State & UI Architecture]                [Persistence & I/O] [Security & Hardware]
- - Flutter 3.44.x    - flutter_bloc v8.1+                     - Dio v5.7+         - flutter_secure_storage
+ - Flutter 3.47.8    - flutter_bloc v8.1+                     - Dio v5.7+         - flutter_secure_storage
  - Dart 3.9.x        - freezed & freezed_annotation v2.4+     - Isar v3.1+        - Local Auth (Biometrics)
  - Material 3 Theme  - dynamic font loader (ADR-013)          - geolocator        - image_picker / camera
 ```
 
 | Layer / Concern | Technology & Version | Purpose & Architectural Rules |
 |---|---|---|
-| **Core Framework** | Flutter `3.44.x` (Dart `3.9.x`) | Multi-platform compilation for Android (API 26+) and iOS (15.0+). |
+| **Core Framework** | Flutter `3.47.8` (Dart `3.9.x`) | Multi-platform compilation for Android (API 26+) and iOS (15.0+). |
 | **State Management** | `flutter_bloc` (`^8.1.6`) | Unidirectional reactive state machines, event-to-state mapping. |
 | **Data Immutability** | `freezed` (`^2.5.7`) | Union states, pattern matching, value equality, and copy-with semantics. |
 | **HTTP Networking** | `dio` (`^5.7.0`) | Pluggable interceptor pipeline (Auth, Country, Idempotency, RFC 9457). |

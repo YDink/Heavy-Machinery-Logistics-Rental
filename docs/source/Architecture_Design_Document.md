@@ -4,7 +4,7 @@
 **Document Identifier:** `ADD-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Blueprint (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `FLOW-DINK-CORE-V7.0`, `UIUX-DINK-CORE-V7.0`, `contracts/openapi.yaml`  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.44 Cross-Platform Mobile Client, Next.js 16 Admin Web Console, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine, SeaweedFS S3, ClamAV Daemon  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), W3C WCAG 2.2 AA / AAA (Outdoor Mode), ISO/IEC/IEEE 42010, ISO 4217, ISO 3166-1 alpha-2  
 **Status:** Approved Engineering Baseline
 
@@ -19,7 +19,7 @@
   - 4.1 [Package & Boundary Encapsulation (`internal/modules/*`)](#41-package--boundary-encapsulation-internalmodules)
   - 4.2 [Domain Event Bus & In-Process Messaging](#42-domain-event-bus--in-process-messaging)
   - 4.3 [Transaction Boundaries & `pgx/v5` Persistence Protocol](#43-transaction-boundaries--pgxv5-persistence-protocol)
-- 5. [Mobile Client Architecture (Flutter 3.44)](#5-mobile-client-architecture-flutter-344)
+- 5. [Mobile Client Architecture (Flutter 3.47.8)](#5-mobile-client-architecture-flutter-344)
   - 5.1 [Feature-First Clean Architecture Layering](#51-feature-first-clean-architecture-layering)
   - 5.2 [BLoC State Management & Lifecycle](#52-bloc-state-management--lifecycle)
   - 5.3 [Offline-First Persistence (Isar NoSQL) & Outbox Sync Daemon](#53-offline-first-persistence-isar-nosql--outbox-sync-daemon)
@@ -29,10 +29,10 @@
   - 6.2 [Dynamic Metadata-Driven Table & Form Engine](#62-dynamic-metadata-driven-table--form-engine)
   - 6.3 [Fine-Grained RBAC & Dynamic Menu Compilation](#63-fine-grained-rbac--dynamic-menu-compilation)
 - 7. [Data Architecture, Spatial Indexing & Ledger Integrity](#7-data-architecture-spatial-indexing--ledger-integrity)
-  - 7.1 [Relational Storage & PostGIS 3.4 Spatial Queries](#71-relational-storage--postgis-34-spatial-queries)
+  - 7.1 [Relational Storage & PostGIS 3.6.4 Spatial Queries](#71-relational-storage--postgis-34-spatial-queries)
   - 7.2 [Dynamic EAV Specifications & JSONB Indexing](#72-dynamic-eav-specifications--jsonb-indexing)
   - 7.3 [Immutable Double-Entry Financial Ledger (`BK-17-BE`)](#73-immutable-double-entry-financial-ledger-bk-17-be)
-  - 7.4 [Distributed Mutex Locking & Valkey 8.0 Cache](#74-distributed-mutex-locking--valkey-80-cache)
+  - 7.4 [Distributed Mutex Locking & Valkey 9.1.3 Cache](#74-distributed-mutex-locking--valkey-80-cache)
   - 7.5 [Blob Storage Topology & ClamAV Antivirus Pipeline](#75-blob-storage-topology--clamav-antivirus-pipeline)
 - 8. [Security Architecture & ASVS Level 3 Governance](#8-security-architecture--asvs-level-3-governance)
   - 8.1 [Authentication, ES256 JWT & Rotating Refresh Tokens](#81-authentication-es256-jwt--rotating-refresh-tokens)
@@ -118,8 +118,8 @@ C4Container
     }
 
     Container_Boundary(c1, "Client Applications") {
-        Container(flutter_app, "Mobile Client", "Flutter 3.44 / Dart 3.9", "Cross-platform mobile client for Renters, Owners, and Operators. Feature-first Clean Architecture, Isar offline store.")
-        Container(nextjs_admin, "Admin Web Console", "Next.js 16 / React 19", "Server-driven back-office console. React Server Components, TanStack Table, dynamic metadata rendering.")
+        Container(flutter_app, "Mobile Client", "Flutter 3.47.8 / Dart 3.9", "Cross-platform mobile client for Renters, Owners, and Operators. Feature-first Clean Architecture, Isar offline store.")
+        Container(nextjs_admin, "Admin Web Console", "Next.js 16.x (latest CVE security patch) / React 19", "Server-driven back-office console. React Server Components, TanStack Table, dynamic metadata rendering.")
     }
 
     Container_Boundary(c2, "Backend Core") {
@@ -127,8 +127,8 @@ C4Container
     }
 
     Container_Boundary(c3, "State & Persistence Layer") {
-        ContainerDb(postgres, "Relational Store & Spatial DB", "PostgreSQL 18.4 + PostGIS 3.4", "Stores core relational schema, JSONB specs, PostGIS geometry, immutable ledger.")
-        ContainerDb(valkey, "Distributed Cache & Mutex", "Valkey 8.0-alpine", "Handles 60-min reservation hold locks, session tokens, OTP counters, and rate limiting.")
+        ContainerDb(postgres, "Relational Store & Spatial DB", "PostgreSQL 18.6 + PostGIS 3.6.4", "Stores core relational schema, JSONB specs, PostGIS geometry, immutable ledger.")
+        ContainerDb(valkey, "Distributed Cache & Mutex", "Valkey 9.1.3-alpine", "Handles 60-min reservation hold locks, session tokens, OTP counters, and rate limiting.")
         ContainerDb(seaweedfs, "Object Storage", "SeaweedFS S3", "Stores fleet photos, inspection images, trade licenses, and generated PDF statements.")
         Container(clamav, "Antivirus Scanner", "ClamAV Daemon", "Performs synchronous zINSTREAM antivirus scanning on all uploaded files.")
     }
@@ -157,11 +157,11 @@ C4Container
 | **HTTP Routing** | Chi Router | `v5.0.12` | Lightweight, 100% standard library compatible HTTP router; zero third-party lock-in. |
 | **Database Driver** | `jackc/pgx/v5` | `v5.7.1` | Native PostgreSQL binary protocol encoding, pooled connections (`pgxpool`), and low allocation overhead. |
 | **SQL Compiler** | `sqlc` | `v1.27.0` | Generates type-safe Go structs and queries directly from raw SQL migrations; guarantees compile-time query verification. |
-| **Primary Database** | PostgreSQL + PostGIS | `18.4` / `3.4` | ACID relational compliance, advanced spatial distance calculations (`ST_DWithin`), JSONB EAV indexing via GIN. |
+| **Primary Database** | PostgreSQL + PostGIS | `18.6` / `3.6.4` | ACID relational compliance, advanced spatial distance calculations (`ST_DWithin`), JSONB EAV indexing via GIN. |
 | **Distributed Cache & Mutex**| Valkey | `8.0-alpine` | High-throughput open-source Redis replacement; powers 60-min reservation hold locks (`SET NX EX`) and session tokens. |
 | **Object Persistence** | SeaweedFS | `3.70+` | High-performance Go-based object storage; S3-compatible, horizontally scalable, optimized for millions of small/medium photos. |
 | **Antivirus Scanning** | ClamAV Daemon | `1.3.1` | Synchronous malware inspection (`zINSTREAM`) verifying all uploaded media before S3 persistence. |
-| **Mobile Client** | Flutter / Dart | `3.44` / `3.9` | Single cross-platform codebase compiling to native ARM64 for Android and iOS; 60fps animations, accessible layout tree. |
+| **Mobile Client** | Flutter / Dart | `3.47.8` / `3.9` | Single cross-platform codebase compiling to native ARM64 for Android and iOS; 60fps animations, accessible layout tree. |
 | **Admin Web Console** | Next.js / React | `16.x` / `19.x` | React Server Components by default, SSR performance, edge hydration, and dynamic data tables via `@tanstack/react-table`. |
 | **Secrets & Keys** | OpenBao | `2.0+` | Linux Foundation open-source Vault fork managing column-encryption master keys and JWT signing credentials. |
 
@@ -285,13 +285,13 @@ func (s *BookingService) ConfirmPayment(ctx context.Context, cmd ConfirmPaymentC
 
 ---
 
-## 5. Mobile Client Architecture (Flutter 3.44)
+## 5. Mobile Client Architecture (Flutter 3.47.8)
 
-The mobile client is built on Flutter 3.44 (Dart 3.9) using Feature-First Clean Architecture. A unified binary serves Renters, Fleet Owners, and Operators, dynamically altering visible tabs, navigation drawers, and actions according to the authenticated persona's active claims.
+The mobile client is built on Flutter 3.47.8 (Dart 3.9) using Feature-First Clean Architecture. A unified binary serves Renters, Fleet Owners, and Operators, dynamically altering visible tabs, navigation drawers, and actions according to the authenticated persona's active claims.
 
 ```mermaid
 flowchart TD
-    subgraph PresentationTier["Presentation Layer (Flutter 3.44)"]
+    subgraph PresentationTier["Presentation Layer (Flutter 3.47.8)"]
         UI["Flutter Widgets (Screen / Layout)"]
         BLoC["Business Logic Component (BLoC State Machine)"]
         UI -->|Dispatches Events| BLoC
@@ -446,7 +446,7 @@ erDiagram
     }
 ```
 
-### 7.1 Relational Storage & PostGIS 3.4 Spatial Queries
+### 7.1 Relational Storage & PostGIS 3.6.4 Spatial Queries
 Geographic coordinates are persisted using PostGIS native spatial types:
 ```sql
 ALTER TABLE fleets ADD COLUMN location_point geography(POINT, 4326);
@@ -477,7 +477,7 @@ All financial operations post to the immutable `financial_ledger_entries` audit 
 * A transaction constraint verifies that:
   $$\sum \text{Amount}_{\text{Debit}} + \sum \text{Amount}_{\text{Credit}} = 0$$
 
-### 7.4 Distributed Mutex Locking & Valkey 8.0 Cache
+### 7.4 Distributed Mutex Locking & Valkey 9.1.3 Cache
 To prevent race conditions during booking creation, a distributed lock is acquired in Valkey:
 ```text
 SET lock:hold:fleet:{fleet_id} {renter_id} NX EX 3600
@@ -516,7 +516,7 @@ flowchart TD
 
     IdLockCheck -- Satisfied --> DomainHandler[Dispatch to Clean Architecture Handler]
     DomainHandler --> CryptCore[AES-256-GCM Column Cipher]
-    CryptCore --> PostgresDB[(PostgreSQL 18.4)]
+    CryptCore --> PostgresDB[(PostgreSQL 18.6)]
 ```
 
 ### 8.1 Authentication, ES256 JWT & Rotating Refresh Tokens
@@ -601,9 +601,9 @@ flowchart TD
     end
 
     subgraph DataStorageTier["Persistence & Data Tier"]
-        PGPrimary[("PostgreSQL 18.4 Primary<br>(RW Master)")]
-        PGReplica[("PostgreSQL 18.4 Standby<br>(RO Read Replica)")]
-        ValkeyCluster[("Valkey 8.0 Cluster<br>(Primary-Replica Sentinel)")]
+        PGPrimary[("PostgreSQL 18.6 Primary<br>(RW Master)")]
+        PGReplica[("PostgreSQL 18.6 Standby<br>(RO Read Replica)")]
+        ValkeyCluster[("Valkey 9.1.3 Cluster<br>(Primary-Replica Sentinel)")]
         SeaweedCluster[("SeaweedFS S3 Cluster<br>(Distributed Volume Servers)")]
     end
 
@@ -625,7 +625,7 @@ flowchart TD
 The platform deploys as containerized workloads orchestrated via Docker Compose / Kubernetes:
 * **Ingress:** Traefik 3.x cluster exposing ports `80` (HTTP to HTTPS redirect) and `443` (TLS 1.3).
 * **Workloads:** Go application replicas running unprivileged (`nonroot`), exposing internal metrics on `:9090` and application APIs on `:8080`.
-* **Database:** PostgreSQL 18.4 instance utilizing NVMe storage, tuned for high concurrency connection pooling (`max_connections = 250`, `shared_buffers = 4GB`, `work_mem = 64MB`).
+* **Database:** PostgreSQL 18.6 instance utilizing NVMe storage, tuned for high concurrency connection pooling (`max_connections = 250`, `shared_buffers = 4GB`, `work_mem = 64MB`).
 
 ### 10.2 High Availability, Backups & Disaster Recovery (RPO/RTO)
 * **High Availability:** Application nodes deploy in an active-active configuration behind Traefik load balancers.
@@ -661,14 +661,14 @@ The platform deploys as containerized workloads orchestrated via Docker Compose 
 * **Decision:** Enforce optimistic concurrency control on all mutable operational entities using a `version INT NOT NULL DEFAULT 1` column.
 * **Consequences:** Updates assert `WHERE id = $1 AND version = $2`. Conflicting operations fail safely with HTTP 409 Conflict without deadlocking database rows.
 
-### ADR-004: Geospatial Indexing — PostgreSQL + PostGIS 3.4
+### ADR-004: Geospatial Indexing — PostgreSQL + PostGIS 3.6.4
 * **Context:** Search requires high-speed spatial distance queries and corridor filtering across heavy machinery locations.
 * **Decision:** Utilize PostgreSQL PostGIS geometry/geography data types indexed via GiST.
 * **Consequences:** Distance queries execute within $\le 80\text{ ms}$ at P95 without requiring a separate geospatial search cluster.
 
 ### ADR-005: Temporary Reservation Locks — Valkey Distributed Mutex
 * **Context:** Renters need time to complete manual bank transfers without allowing another user to reserve the same machine.
-* **Decision:** Use Valkey 8.0 `SET lock:hold:fleet:{id} {renter_id} NX EX 3600` to create a 60-minute reservation hold.
+* **Decision:** Use Valkey 9.1.3 `SET lock:hold:fleet:{id} {renter_id} NX EX 3600` to create a 60-minute reservation hold.
 * **Consequences:** Ensures atomic hold reservation with automatic TTL release if payment evidence is not uploaded.
 
 ### ADR-006: Antivirus Ingress — Synchronous ClamAV Stream Scanning
@@ -678,7 +678,7 @@ The platform deploys as containerized workloads orchestrated via Docker Compose 
 
 ### ADR-007: Mobile Architecture — Flutter Feature-First Clean Architecture
 * **Context:** The mobile app must serve three user roles, maintain offline reliability, and execute complex state machines.
-* **Decision:** Implement Flutter 3.44 with Feature-First packaging, BLoC state management, and an Isar local database.
+* **Decision:** Implement Flutter 3.47.8 with Feature-First packaging, BLoC state management, and an Isar local database.
 * **Consequences:** Clean separation of concerns, isolated testing, and robust offline field inspection support.
 
 ### ADR-008: Admin Console — Server-Driven Metadata Architecture (`/admin/ui-config`)

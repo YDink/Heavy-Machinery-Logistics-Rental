@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Architecture Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§5.5, §8, §10, §11), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0` (Interaction Flow 07), `FLOW-DISCOVERY-DINK-CORE-V7.0`, `FLOW-WIRE-DISPUTE-DINK-CORE-V7.0`, `FLOW-CONCURRENCY-LOCKING-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
 **Target Personas:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Equipment Fleet Owner (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Certified Field Operator (*Mulugeta Tadesse* / *Juma Omwamba*), Compliance Officer & Arbitrator (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Business Logic Integrity, Concurrency & Non-Repudiation), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), National Bank of Ethiopia (NBE) Financial Directives, Kenya Data Protection Act 2019  
@@ -81,7 +81,7 @@ The booking and reservation lifecycle represents the core contractual engine of 
 
 This document formally specifies:
 1. The 16-state canonical booking lifecycle finite state machine (FSM).
-2. The two-tier concurrency engine combining in-memory Valkey 8.0 hold leases with PostgreSQL 18.4 GiST temporal range exclusion constraints.
+2. The two-tier concurrency engine combining in-memory Valkey 9.1.3 hold leases with PostgreSQL 18.6 GiST temporal range exclusion constraints.
 3. The peer-to-peer (P2P) bank wire evidence ingestion, verification, decline, and arbitration workflows.
 4. The contractual cancellation penalty matrix, force majeure logistics exemptions, and wallet debt accounting.
 5. The field handover protocol, monotonic hour meter tracking, 24-hour post-rental damage claiming, and final balance reconciliation statements.
@@ -90,8 +90,8 @@ This document formally specifies:
 
 1. **Non-Custodial Settlement Invariant (NBE Compliance):** Dink Machinery never acts as an escrow agent, never takes custody of gross rental funds, and never pools capital into platform-controlled holding accounts. All prepayments and final balances settle directly between commercial bank accounts via direct wire transfers (`FLOW-08`).
 2. **Two-Tier Concurrency Hierarchy (`Zero Double-Booking Guarantee`):**
-   - **Tier 1 (Volatile In-Memory Lease):** Valkey 8.0 enforces an exclusive, self-evicting 60-minute reservation lease (`SET hold:fleet:{id} {renter} EX 3600 NX`), providing immediate sub-millisecond feedback to competing contractors.
-   - **Tier 2 (Relational Storage Invariant):** PostgreSQL 18.4 enforces physical disk exclusion via `EXCLUDE USING gist (fleet_id WITH =, hire_period WITH &&)`, mathematically preventing overlapping date allocations across concurrent transactions.
+   - **Tier 1 (Volatile In-Memory Lease):** Valkey 9.1.3 enforces an exclusive, self-evicting 60-minute reservation lease (`SET hold:fleet:{id} {renter} EX 3600 NX`), providing immediate sub-millisecond feedback to competing contractors.
+   - **Tier 2 (Relational Storage Invariant):** PostgreSQL 18.6 enforces physical disk exclusion via `EXCLUDE USING gist (fleet_id WITH =, hire_period WITH &&)`, mathematically preventing overlapping date allocations across concurrent transactions.
 3. **Strict Monotonic Meter Non-Regression:** Mechanical engine hour meter readings logged during equipment check-out can never be less than the reading logged during check-in:
    $$\text{Baseline Meter} \le \text{Handover Check-In Meter} \le \text{Return Check-Out Meter}$$
 4. **Idempotency Key Enforcement:** All mutation requests originating from mobile clients mandate a client-generated UUID v4 header (`Idempotency-Key`). Re-transmitted payloads due to intermittent cellular drops return cached responses without re-executing state transitions.

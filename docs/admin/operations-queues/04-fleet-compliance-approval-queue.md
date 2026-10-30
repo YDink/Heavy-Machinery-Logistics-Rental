@@ -111,7 +111,7 @@ sequenceDiagram
     participant DetailUI as FleetApprovalWorkbench ('use client')
     participant SA as approveFleetAction ('use server')
     participant GoAPI as Go Fleet Compliance Interactor
-    participant DB as PostgreSQL 18.4 + PostGIS 3.4 (pgx.Tx)
+    participant DB as PostgreSQL 18.6 + PostGIS 3.6.4 (pgx.Tx)
 
     Inspector->>DetailUI: Checks Libre & Photo Attestations + Clicks "Approve & Publish Fleet"
     DetailUI->>SA: approveFleetAction(formData)

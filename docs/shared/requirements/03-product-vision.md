@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Strategic Product Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (Full Suite §1–§14), `FLOW-ENTRY-DINK-CORE-V7.0` through `FLOW-INSURANCE-CLAIM-DINK-CORE-V7.0` (Interaction Flows 01–19), `FLOW-APPENDIX-NOTIF-OFFLINE-DINK-CORE-V7.0`, `FLOW-APPENDIX-AUTH-SEC-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
 **Target Personas:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Fleet Owner & Depot Yard Manager (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Certified Field Operator (*Mulugeta Tadesse* / *Juma Omwamba*), Lowboy Transporter (*Ato Girma Wolde* / *Samuel Odhiambo*), Compliance Officer & Security Auditor (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Identity, Concurrency, Secrets & Access Control), RFC 9457 (Problem Details), RFC 7519 (JWT), RFC 6238 (TOTP), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), National Bank of Ethiopia (NBE) Directives, Kenya Data Protection Act 2019  
@@ -55,7 +55,7 @@ The heavy civil construction, infrastructure, and mining sectors across East Afr
 | Opaque, variable broker margins (15% to 35%)    | Transparent, fixed commission structure (10%   |
 | inflated arbitrarily based on contractor urgency| machinery, 2.5% pass-through freight).         |
 +-------------------------------------------------+------------------------------------------------+
-| Zero verified mechanical availability; brokers  | Sub-second PostGIS 3.4 spatial discovery with  |
+| Zero verified mechanical availability; brokers  | Sub-second PostGIS 3.6.4 spatial discovery with  |
 | "shop" unavailable or broken equipment.         | real-time Valkey calendar availability locks.  |
 +-------------------------------------------------+------------------------------------------------+
 | Disconnected logistics; contractor discovers    | Heavy lowboy trailers modeled as an atomic     |
@@ -125,7 +125,7 @@ Under the regulatory directives of the National Bank of Ethiopia (NBE) and the C
 Dink Machinery embraces this constraint as an architectural strength:
 * **100% Peer-to-Peer Wire Settlements:** Capital movements (e.g., $157,500.00\text{ ETB}$ prepayments or final reconciliations) flow directly between the contractor’s and owner’s corporate bank accounts (`FLOW-08`).
 * **Pre-Funded Wallet Debt Accounting:** Platform service revenue is collected via a virtual double-entry ledger (`owner_wallets`). The platform calculates commission upon confirmation and debits the owner's wallet balance (`FLOW-12`).
-* **Two-Tier Concurrency Control:** In-memory distributed leases in Valkey 8.0 combined with PostgreSQL 18.4 GiST temporal range exclusion constraints mathematically guarantee zero double-bookings (`FLOW-16`).
+* **Two-Tier Concurrency Control:** In-memory distributed leases in Valkey 9.1.3 combined with PostgreSQL 18.6 GiST temporal range exclusion constraints mathematically guarantee zero double-bookings (`FLOW-16`).
 
 ### 2.2 Theme 2: Frontier-Resilient Offline Execution Perimeter (`ADR-010`)
 
@@ -297,7 +297,7 @@ C4Context
     Person(admin, "Compliance Officer", "Arbitrates disputes, audits wire receipts, manages catalog taxonomy.")
 
     Enterprise_Boundary(dink_boundary, "Dink Machinery Core System Platform") {
-        System(dink_core, "Dink Machinery Monolith & Gateway Core", "Go 1.24 backend monolith, PostGIS spatial search, Valkey distributed leases, Next.js admin consoles, and Flutter mobile apps.")
+        System(dink_core, "Dink Machinery Monolith & Gateway Core", "Go 1.27.3 backend monolith, PostGIS spatial search, Valkey distributed leases, Next.js admin consoles, and Flutter mobile apps.")
     }
 
     System_Ext(cbe_bank, "Commercial Bank of Ethiopia (CBE)", "Commercial banking rails, corporate statement APIs, and mobile wire confirmations.")

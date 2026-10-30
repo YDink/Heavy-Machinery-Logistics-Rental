@@ -3,7 +3,7 @@
 **System:** Heavy Machinery & Logistics Rental Marketplace  
 **Specification:** Security Verification, Threat Modeling, Cryptographic Controls & Vulnerability Governance  
 **Compliance Standard:** OWASP Application Security Verification Standard (ASVS) 4.0.3 Level 3 (High-Assurance / Critical Infrastructure)  
-**Target Subsystems:** Go 1.27.3 Backend Modular Monolith, Flutter 3.44 Mobile Client, Next.js 16 Admin Web Console, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine, SeaweedFS S3, ClamAV Antivirus  
+**Target Subsystems:** Go 1.27.3 Backend Modular Monolith, Flutter 3.47.8 Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Antivirus  
 **Governing Documents:** `AGENTS.md`, `TECH_STACK.md`, `CODE_STANDARDS.md`, `API_CONVENTIONS.md`, `ERROR_CATALOG.md`, `DEFINITION_OF_DONE.md`, `docs/AI_TASKS/05-security-review.md`
 
 ---

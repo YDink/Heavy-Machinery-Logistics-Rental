@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-FND-02`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `docs/source/Dink_Machinery_UI_UX_Design_Brief.md`, `docs/shared/design/00-design-system.md`, `docs/shared/design/design-tokens.json`, `docs/shared/requirements/05-16-accessibility-internationalisation.md`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** All Mobile Personas (Contractor, Fleet Owner, Field Operator, Lowboy Transporter)  
 **Requirement Traceability:** `REQ-05-16` (`AC-01`..`AC-06`, `LOC-01-BE`), `REQ-05-17` (`OF-01`), `REQ-05-18` (`ER-01`)  
 **Associated Interaction Flows:** `FLOW-ENTRY`, `FLOW-01`, `FLOW-APPENDIX-A`  

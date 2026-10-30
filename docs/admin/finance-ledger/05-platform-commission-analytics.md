@@ -83,7 +83,7 @@ sequenceDiagram
     actor CFO as CFO / Financial Analyst
     participant RSC as Next.js 16 Analytics RSC Page
     participant GoAPI as Go Monolith (Analytics Query Handler)
-    participant PG as PostgreSQL 18.4 (Materialized Rollup + Live Delta)
+    participant PG as PostgreSQL 18.6 (Materialized Rollup + Live Delta)
 
     CFO->>RSC: Navigate to /finance/commission-analytics?period=30d&country=ET
     RSC->>GoAPI: GET /api/v1/admin/finance/commission-analytics?period=30d (X-Country-Code: ET)

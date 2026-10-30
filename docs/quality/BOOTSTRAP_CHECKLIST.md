@@ -1,7 +1,7 @@
 # Phase 0 & Phase 1 Quality Gate & Bootstrap Verification Checklist — Dink Machinery
 
 **System:** Heavy Machinery & Logistics Rental Marketplace  
-**Subsystems:** Go 1.27.3 Modular Monolith, Flutter 3.44 Mobile Client, Next.js 16 Admin Console, PostgreSQL 18.4 + PostGIS, Valkey 8.0  
+**Subsystems:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Mobile Client, Next.js 16.x Admin Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS, Valkey 9.1.3  
 **Phase State:** Phase 0 (Contract & Governance) $\rightarrow$ Phase 1 (Subsystem Bootstrap)  
 **Governing Documents:** `AGENTS.md`, `TECH_STACK.md`, `CODE_STANDARDS.md`, `BOOTSTRAP.md`, `API_CONVENTIONS.md`, `ERROR_CATALOG.md`
 
@@ -28,8 +28,8 @@ This checklist is the formal, auditable gate verifying that **Dink Machinery** h
      ▼                            ▼                            ▼
 [Gate G0: Contracts        [Gate G1: Runtime &         [Gate G2: Governance &
  & Architecture Docs]       Infra Provisioning]         Static Security Gates]
- - OpenAPI 3.1.0 Spectral    - PostgreSQL 18.4+PostGIS   - Lefthook & Commitlint
- - ADR & Decision Links      - Valkey 8.0 & SeaweedFS    - Gitleaks Zero-Secrets
+ - OpenAPI 3.1.0 Spectral    - PostgreSQL 18.6+PostGIS   - Lefthook & Commitlint
+ - ADR & Decision Links      - Valkey 9.1.3 & SeaweedFS    - Gitleaks Zero-Secrets
  - Error Catalog RFC 9457    - Go, Flutter, Next.js      - Zero-PII Logging Check
  - Integer Minor-Unit Money  - Code Generators Pass      - Non-Decreasing Coverage
 ```
@@ -42,8 +42,8 @@ This checklist is the formal, auditable gate verifying that **Dink Machinery** h
 | **Gate G1-A** | Containerized Infrastructure | Docker Compose services (Postgres, Valkey, SeaweedFS, ClamAV, Traefik) healthy. | **Pending** | |
 | **Gate G1-B** | Database Baseline & PostGIS | Migration `000001` applied; extensions enabled; `country_configs` seeded. | **Pending** | |
 | **Gate G1-C** | Go Backend Modular Monolith | Go 1.27.3 module initialized; `oapi-codegen` and `sqlc` compiled; Chi `/healthz` up. | **Pending** | |
-| **Gate G1-D** | Flutter Mobile Workspace | Flutter 3.44 workspace scaffolded; BLoC & Isar pinned; analyzer & tests pass. | **Pending** | |
-| **Gate G1-E** | Next.js Admin Web Console | Next.js 16 App Router created; TypeScript types synced; production build clean. | **Pending** | |
+| **Gate G1-D** | Flutter Mobile Workspace | Flutter 3.47.8 workspace scaffolded; BLoC & Isar pinned; analyzer & tests pass. | **Pending** | |
+| **Gate G1-E** | Next.js Admin Web Console | Next.js 16.x (latest CVE security patch) App Router created; TypeScript types synced; production build clean. | **Pending** | |
 | **Gate G2-A** | Security & Zero-PII Audit | Gitleaks clean; ASVS L3 regex audit asserts zero unmasked PII logging. | **Pending** | |
 | **Gate G2-B** | Pre-Commit Governance | Lefthook hooks installed; commitlint rule enforced; `CONTEXT.md` check active. | **Pending** | |
 
@@ -75,7 +75,7 @@ This checklist is the formal, auditable gate verifying that **Dink Machinery** h
   - [x] 5-Point Qualification Test defined and documented in `AGENTS.md` and `docs/AI_TASKS/04-new-adr.md`.
 
 - [x] **G0.4 Engineering Standards & Tech Stack Alignment**
-  - [x] `docs/TECH_STACK.md` specifies exact version pins for Go 1.27.3, Flutter 3.44, Next.js 16, PostgreSQL 18.4, and Valkey 8.0.
+  - [x] `docs/TECH_STACK.md` specifies exact version pins for Go 1.27.3, Flutter 3.47.8, Next.js 16.x (latest CVE security patch), PostgreSQL 18.6, and Valkey 9.1.3.
   - [x] `CODE_STANDARDS.md` documents architectural invariants (OCC `version` column, soft deletes via `deleted_at`, in-transaction double-entry ledger balance, zero PII logging).
   - [x] `API_CONVENTIONS.md` specifies cursor keyset pagination, RPC state action suffixes, and standard header propagation.
   - [x] `OPEN_QUESTIONS.md` registers all architectural blockers and tracks resolution links.
@@ -85,8 +85,8 @@ This checklist is the formal, auditable gate verifying that **Dink Machinery** h
 ### 3.2. Gate G1: Phase 1 Runtime, Infrastructure & Subsystem Scaffolding
 
 - [ ] **G1.1 Containerized Infrastructure Provisioning (`docker-compose.yml`)**
-  - [ ] PostgreSQL 18.4 + PostGIS 3.4 starts cleanly and listens on `localhost:5432`.
-  - [ ] Valkey 8.0 engine starts and responds to `redis-cli ping` with `PONG`.
+  - [ ] PostgreSQL 18.6 + PostGIS 3.6.4 starts cleanly and listens on `localhost:5432`.
+  - [ ] Valkey 9.1.3 engine starts and responds to `redis-cli ping` with `PONG`.
   - [ ] SeaweedFS / MinIO S3-compatible storage operational on port `9000`.
   - [ ] ClamAV antivirus daemon responds to `PING` on port `3310`.
   - [ ] Traefik 3.x ingress gateway routes traffic with TLS 1.3 termination capability.
@@ -116,7 +116,7 @@ This checklist is the formal, auditable gate verifying that **Dink Machinery** h
   - [ ] `go test -v -race ./...` passes with zero failures.
 
 - [ ] **G1.4 Flutter Mobile Subsystem Scaffolding (`mobile/`)**
-  - [ ] Flutter workspace initialized with bundle ID `com.dinkmachinery.dink_mobile` (Flutter `3.44`, Dart `3.9`).
+  - [ ] Flutter workspace initialized with bundle ID `com.dinkmachinery.dink_mobile` (Flutter `3.47.8`, Dart `3.9`).
   - [ ] Pinned dependencies added: `flutter_bloc`, `dio`, `isar`, `isar_flutter_libs`, `freezed_annotation`, `flutter_secure_storage`, `geolocator`.
   - [ ] Feature-first clean architecture directory hierarchy scaffolded:
     - `lib/core/{network, theme, storage, errors}`
@@ -126,7 +126,7 @@ This checklist is the formal, auditable gate verifying that **Dink Machinery** h
   - [ ] Baseline test passes: `flutter test` executes cleanly.
 
 - [ ] **G1.5 Next.js Admin Web Console Scaffolding (`admin/`)**
-  - [ ] Next.js 16 App Router initialized with TypeScript, Tailwind CSS v4, and ESLint (Node `22.x LTS`).
+  - [ ] Next.js 16 App Router initialized with TypeScript, Tailwind CSS v4, and ESLint (Node `26.13.0`). Pinned to latest Next.js 16.x patch release for CVE mitigation.
   - [ ] Operational libraries installed: `@tanstack/react-table`, `@tanstack/react-query`, `react-hook-form`, `@hookform/resolvers`, `zod`, `lucide-react`, `sonner`.
   - [ ] Contract schema synchronization: `npx openapi-typescript ../contracts/openapi.yaml -o src/types/api.generated.ts` executes cleanly.
   - [ ] Production build succeeds: `npm run build` compiles with zero TypeScript errors.
@@ -235,9 +235,9 @@ echo "=================================================================="
 | Role / Governance Authority | Representative | Attestation Statement | Date |
 |---|---|---|---|
 | **Lead Platform Architect** | Dink Engineering Core | *I attest that all contracts, architectural decisions, and invariants strictly comply with AGENTS.md, TECH_STACK.md, and ASVS Level 3.* | `2026-10-26` |
-| **Backend Subsystem Lead** | Dink Core Services | *I attest that the Go 1.27.3 modular monolith, PostgreSQL 18.4 + PostGIS schema, and sqlc/oapi code generators compile with zero warnings.* | `Pending` |
-| **Mobile Subsystem Lead** | Dink Mobile Client | *I attest that Flutter 3.44 workspace dependencies are pinned, BLoC/Isar layers scaffolded, and test suites pass.* | `Pending` |
-| **Admin Web Console Lead** | Dink Web & Admin | *I attest that Next.js 16 App Router builds cleanly and API types synchronize with contracts/openapi.yaml.* | `Pending` |
+| **Backend Subsystem Lead** | Dink Core Services | *I attest that the Go 1.27.3 modular monolith, PostgreSQL 18.6 + PostGIS schema, and sqlc/oapi code generators compile with zero warnings.* | `Pending` |
+| **Mobile Subsystem Lead** | Dink Mobile Client | *I attest that Flutter 3.47.8 workspace dependencies are pinned, BLoC/Isar layers scaffolded, and test suites pass.* | `Pending` |
+| **Admin Web Console Lead** | Dink Web & Admin | *I attest that Next.js 16.x (latest CVE security patch) App Router builds cleanly and API types synchronize with contracts/openapi.yaml.* | `Pending` |
 
 ### Handover Protocol to Phase 2 (Feature Partitions)
 When all checkboxes in Section 3 are marked `[x]` and certified:
@@ -247,7 +247,7 @@ When all checkboxes in Section 3 are marked `[x]` and certified:
    git commit -m "[BOOTSTRAP] feat(platform): sign off phase 1 bootstrap and verify quality gates
 
    Completed all verification criteria across infrastructure, database baseline,
-   Go 1.27.3 monolith, Flutter 3.44 client, Next.js 16 admin, and Lefthook governance.
+   Go 1.27.3 monolith, Flutter 3.47.8 client, Next.js 16.x (latest CVE security patch) admin, and Lefthook governance.
 
    Tests: All subsystem builds, race-condition suites, and static audits passing.
    Docs: CONTEXT.md, docs/quality/BOOTSTRAP_CHECKLIST.md

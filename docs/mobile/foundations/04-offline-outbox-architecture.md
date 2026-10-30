@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-FND-04`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `docs/source/Dink_Machinery_UI_UX_Design_Brief.md`, `docs/shared/design/00-design-system.md`, `docs/shared/design/design-tokens.json`, `docs/shared/requirements/05-17-offline-low-connectivity-support.md`, `docs/shared/requirements/05-18-error-handling-user-feedback.md`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** All Mobile Personas (Primary: Field Operator & Lowboy Transporter)  
 **Requirement Traceability:** `REQ-05-17` (`OFF-01`..`OFF-04`, `SYNC-01`), `REQ-05-18` (`ER-02`), `REQ-09` (`NFR-AVAIL`, `NFR-NET`)  
 **Associated Interaction Flows:** `FLOW-09`, `FLOW-10`, `FLOW-APPENDIX-A`  

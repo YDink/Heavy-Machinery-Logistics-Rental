@@ -1,4 +1,4 @@
-# ADR-005: Type-Safe SQL Compilation (sqlc + pgx/v5) on PostgreSQL 18.4 + PostGIS 3.4 over ORMs
+# ADR-005: Type-Safe SQL Compilation (sqlc + pgx/v5) on PostgreSQL 18.6 + PostGIS 3.6.4 over ORMs
 
 - **Status:** Accepted
 - **Date:** 2026-10-26
@@ -26,7 +26,7 @@ Dink Machinery requires spatial radius discovery queries (`ST_DWithin` on WGS 84
 
 ## 3. Considered Options
 
-### Option 1: `sqlc` + `jackc/pgx/v5` on PostgreSQL 18.4 + PostGIS 3.4
+### Option 1: `sqlc` + `jackc/pgx/v5` on PostgreSQL 18.6 + PostGIS 3.6.4
 - **Summary:** Write plain SQL queries in `internal/platform/database/queries/*.sql`. `sqlc` compiles them into type-safe Go repository code using `pgx/v5` native binary protocol encoding.
 - **Pros:**
   - Zero runtime reflection; maximum Go execution throughput.
@@ -53,7 +53,7 @@ Dink Machinery requires spatial radius discovery queries (`ST_DWithin` on WGS 84
 
 ## 4. Chosen Solution & Architectural Rationale
 
-We adopt **Option 1: `sqlc` + `jackc/pgx/v5` on PostgreSQL 18.4 + PostGIS 3.4**.
+We adopt **Option 1: `sqlc` + `jackc/pgx/v5` on PostgreSQL 18.6 + PostGIS 3.6.4**.
 
 1. **Native Performance & Binary Protocol:** `pgx/v5` communicates directly over PostgreSQL's binary protocol, eliminating string parsing overhead.
 2. **Type Safety Without Reflection:** `sqlc` validates SQL queries against the schema DDL at build time and emits type-safe structs:

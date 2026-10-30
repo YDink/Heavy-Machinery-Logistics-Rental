@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Internationalization Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§1.2, §5.2, §5.5, §5.8, §5.9, §6.3, §7.0, §7.1, §7.2, §7.3, §7.7, §7.8, §8, §10, §11, §12, §13.2), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `FLOW-COMMISSION-DEBT-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
 **Target Personas:** International Civil Contractor (*Patrick Kariuki* / *Dawit Haile-Mariam*), Cross-Border Fleet Owner (*Kamau Ndegwa* / *W/ro Almaz Tesfaye*), Customs Clearing & Forwarding Agent (*Ato Girma Wolde* / *Samuel Odhiambo*), Corporate Treasury Director & Forex Compliance Controller (*Solomon Kassa*), Legal Counsel & Cross-Border Regulatory Auditor (*Yohannes Bekele*), Super Administrator (*Rahel Tadesse*)  
 **Target Operating Markets:** Ethiopia (`ET`), Kenya (`KE`), and Cross-Border Corridors (Moyale OSBP, Galafi/Djibouti Border, Namanga OSBP, Malaba OSBP) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Multi-Tenancy Ledger Isolation, Forex Rounding Non-Repudiation & Customs Escrow Attestation), RFC 9457 (Problem Details), ISO 4217 (Currency Codes), ISO 3166-1 alpha-2 (Country Codes), ISO 8601 (Universal Time Representation), National Bank of Ethiopia (NBE) Foreign Exchange Directives (FXD/01/2024 & Comprehensive Foreign Exchange Regime Reform Directives), Central Bank of Kenya (CBK) Prudential Guidelines on Foreign Exchange Business, East African Community (EAC) Customs Management Act 2004, Common Market for Eastern and Southern Africa (COMESA) Carnet de Passages en Douane (CPD) / Yellow Card System, International Financial Reporting Standards (IAS 21 The Effects of Changes in Foreign Exchange Rates & IFRS 15)  
@@ -83,11 +83,11 @@ This document formally specifies:
    - Domestic Ethiopian rentals (equipment origin `ET` $\rightarrow$ destination `ET`) must be priced, invoiced, and settled exclusively in `ETB`.
    - Domestic Kenyan rentals (origin `KE` $\rightarrow$ destination `KE`) must settle in `KES` or approved commercial contract `USD`.
    - Cross-border rentals (origin `KE` $\rightarrow$ destination `ET` or vice versa) execute via bilateral contract rate freezes locked at the central bank mid-market rate on the reservation confirmation date, routing settlements through approved commercial bank trade-settlement accounts.
-3. **Fixed Exchange Rate Guarantee Window (72-Hour Reservation Lock):** Once a cross-border booking checkout generates a payment intent, the foreign exchange rate ($\mathcal{X}_{\text{rate}}$) is frozen for exactly **$72.0\text{ hours}$** in Valkey 8.0:
+3. **Fixed Exchange Rate Guarantee Window (72-Hour Reservation Lock):** Once a cross-border booking checkout generates a payment intent, the foreign exchange rate ($\mathcal{X}_{\text{rate}}$) is frozen for exactly **$72.0\text{ hours}$** in Valkey 9.1.3:
    $$\Delta \mathcal{X}_{\text{rate}} \equiv 0 \quad \forall \ t \le T_{\text{freeze}} \ (72\text{ Hours})$$
    Market exchange rate fluctuations occurring within this 72-hour window are absorbed by the platform's volatility buffer reserve without passing currency risk to either the renter or the equipment owner.
 4. **Customs Bond Escrow Clearance Floor (COMESA Carnet):** Heavy machinery assets crossing the Kenya–Ethiopia frontier cannot advance to `ACTIVE` rental status until the customs clearing agent verifies the physical entry stamp and uploads the registered COMESA Carnet or Temporary Importation Permit (TIP) approved by the Ethiopian Customs Commission (ECC) or Kenya Revenue Authority (KRA).
-5. **Universal Multi-Tenant Regional Ledger Isolation:** Ledger balances, tax remittance accounts, and platform commission receivables maintain hard sovereign segregation in PostgreSQL 18.4 (`country_code`). Commingling Ethiopian tax liabilities with Kenyan revenue ledgers is strictly barred at the relational engine level via PostgreSQL Row-Level Security (RLS).
+5. **Universal Multi-Tenant Regional Ledger Isolation:** Ledger balances, tax remittance accounts, and platform commission receivables maintain hard sovereign segregation in PostgreSQL 18.6 (`country_code`). Commingling Ethiopian tax liabilities with Kenyan revenue ledgers is strictly barred at the relational engine level via PostgreSQL Row-Level Security (RLS).
 
 ---
 
@@ -95,7 +95,7 @@ This document formally specifies:
 
 ### 2.1 Dynamic Country Configuration Matrix (`LOC-01-BE`)
 
-To eliminate hardcoded regional branches in application source code, all country-specific rules are driven dynamically by the `country_configs` table in PostgreSQL 18.4:
+To eliminate hardcoded regional branches in application source code, all country-specific rules are driven dynamically by the `country_configs` table in PostgreSQL 18.6:
 
 ```text
 +----------------------------------------------------------------------------------------------------+
@@ -145,7 +145,7 @@ The platform virtualizes national boundaries using PostGIS spatial boundaries:
 ### 2.3 Multi-Calendar Synchronization: Gregorian vs. Ethiopian (Ge'ez Computus)
 
 Operational schedules in Ethiopia follow the Ge'ez solar calendar (12 months of 30 days plus *Pagumē* of 5 or 6 epagomenal days), lagging the Gregorian calendar by approximately 7 to 8 years:
-* **Storage Invariant:** All temporal timestamps (`created_at`, `start_date`, `end_date`, `shift_time`) are stored strictly as **UTC ISO 8601 timestamps** in PostgreSQL 18.4 (`TIMESTAMPTZ`).
+* **Storage Invariant:** All temporal timestamps (`created_at`, `start_date`, `end_date`, `shift_time`) are stored strictly as **UTC ISO 8601 timestamps** in PostgreSQL 18.6 (`TIMESTAMPTZ`).
 * **Bidirectional Computus Conversion (`Bahire Hasab` Algorithm):**
   The Go backend incorporates a deterministic conversion library:
   - Gregorian Date $\Longleftrightarrow$ Ethiopian Date (*Amete Mihret*).
@@ -206,7 +206,7 @@ $$\text{TargetCurrencyAmount} = \left\lfloor \frac{\text{SourceCurrencyMinor} \t
 
 ```mermaid
 flowchart TD
-    InitCheckout(["Contractor Initiates Cross-Border Checkout<br/>(e.g., Kenyan Contractor renting Ethiopian Crane)"]) --> FetchForex["Fetch Latest Central Bank Mid-Market Fixing<br/>From Valkey 8.0: forex:rate:ETB:KES"]
+    InitCheckout(["Contractor Initiates Cross-Border Checkout<br/>(e.g., Kenyan Contractor renting Ethiopian Crane)"]) --> FetchForex["Fetch Latest Central Bank Mid-Market Fixing<br/>From Valkey 9.1.3: forex:rate:ETB:KES"]
     
     FetchForex --> AddBuffer["Step 1: Calculate Volatility Protection Margin<br/>Add Platform Slippage Buffer (+1.5% = 150 bps)"]
     

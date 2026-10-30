@@ -14,12 +14,12 @@
 
 ## 1. Executive Summary & Architectural Invariants
 
-The **Server-Driven Dynamic UI Engine & Metadata Synthesis Protocol** (`SPEC-ADM-SCH-01`) defines the core architectural engine (`AD-06-BE` / `AD-06-WEB`) that powers the entire Dink Machinery Next.js 16 Admin Web Console. In compliance with `SRS-DINK-CORE-V7.0` **Section 05.11**, the Next.js frontend contains **zero hardcoded navigation trees, table column arrays, filter facets, or role-gated action triggers**. Instead, the Go 1.27.3 modular monolith dynamically synthesizes the UI configuration payload from eight PostgreSQL metadata tables, filters every element against the authenticated administrator's active RBAC permissions (`RolePermission`) and jurisdictional scope (`X-Country-Code`: `ET` | `KE`), caches the compiled projection in **Valkey 8.0**, and serves it to Next.js React Server Components via `/api/v1/admin/ui-config`.
+The **Server-Driven Dynamic UI Engine & Metadata Synthesis Protocol** (`SPEC-ADM-SCH-01`) defines the core architectural engine (`AD-06-BE` / `AD-06-WEB`) that powers the entire Dink Machinery Next.js 16 Admin Web Console. In compliance with `SRS-DINK-CORE-V7.0` **Section 05.11**, the Next.js frontend contains **zero hardcoded navigation trees, table column arrays, filter facets, or role-gated action triggers**. Instead, the Go 1.27.3 modular monolith dynamically synthesizes the UI configuration payload from eight PostgreSQL metadata tables, filters every element against the authenticated administrator's active RBAC permissions (`RolePermission`) and jurisdictional scope (`X-Country-Code`: `ET` | `KE`), caches the compiled projection in **Valkey 9.1.3**, and serves it to Next.js React Server Components via `/api/v1/admin/ui-config`.
 
 ### 1.1 Five Core SDUI Engine Invariants
 1. **Zero Hardcoded Admin Layout Invariant:** Adding a new table column, changing a badge color mapping, or gating a destructive button behind Four-Eyes co-signing is executed via metadata records in `admin_table_columns` and `admin_actions`—requiring zero Next.js code changes or container rebuilds.
 2. **Backend RBAC Projection Before Wire Serialization:** Unauthorized navigation links (`admin_sidebar_items`), restricted PII/financial columns (`admin_table_columns.required_permission`), and unpermitted row actions (`admin_actions.required_permission`) are stripped inside the Go interactor **before** the JSON response leaves the backend. Client-side hiding (`display: none`) is strictly forbidden as an access control mechanism (`OWASP ASVS 4.0.3 L3`).
-3. **Sub-15ms Valkey Cache Hit & Pub/Sub Invalidation:** Compiled UI metadata payloads are cached in Valkey 8.0 under key `sdui:v1:{country_code}:{role_hash}:{route_slug}` with a 300-second TTL. Any mutation to `admin_pages`, `admin_table_columns`, or `role_permissions` publishes an invalidation event on Valkey channel `sdui:invalidate` and triggers Next.js `revalidateTag('ui-config')`.
+3. **Sub-15ms Valkey Cache Hit & Pub/Sub Invalidation:** Compiled UI metadata payloads are cached in Valkey 9.1.3 under key `sdui:v1:{country_code}:{role_hash}:{route_slug}` with a 300-second TTL. Any mutation to `admin_pages`, `admin_table_columns`, or `role_permissions` publishes an invalidation event on Valkey channel `sdui:invalidate` and triggers Next.js `revalidateTag('ui-config')`.
 4. **Deterministic Schema Versioning (`schemaVersion` & `etag`):** Every `/api/v1/admin/ui-config` payload carries an `etag` (`SHA-256` of the canonical JSON) and `schemaVersion` integer so stale client modals fail fast (`409 BOOKING_CONCURRENCY_CONFLICT`) if an admin schema changes mid-session.
 5. **Headless Virtualized Rendering:** Client leaf components (`<DynamicTable/>`, `<DynamicFilterBar/>`, `<DynamicActionModal/>`) bind the server-provided JSON schema to `@tanstack/react-table`, `@tanstack/react-virtual`, and `react-hook-form` + `zod`.
 
@@ -33,7 +33,7 @@ The **SDUI Schema Registry & Cache Inspector Console** (`/schema-engine/overview
 +------------------------------------------------------------------------------------------------------------------------------------------+
 | DINK ADMIN [ET: Ethiopia v]   Schema Engine > Dynamic UI Engine & Metadata Protocol Inspector   [Purge Valkey SDUI Cache] [Export Schema]|
 +------------------------------------------------------------------------------------------------------------------------------------------+
-| [SDUI Compilation p95 Latency] | [Valkey 8.0 Cache Hit Ratio]  | [Registered Admin Routes]     | [RBAC Role Projections Cached]         |
+| [SDUI Compilation p95 Latency] | [Valkey 9.1.3 Cache Hit Ratio]  | [Registered Admin Routes]     | [RBAC Role Projections Cached]         |
 | 6.4 ms (Target <= 100.0 ms)    | 99.42% (Keyspace: sdui:v1:*)  | 28 Active Pages / 184 Columns | 5 Roles x 2 Countries = 10 Projections |
 +------------------------------------------------------------------------------------------------------------------------------------------+
 | SIMULATE PERSONA PROJECTION: [Role: COMPLIANCE_OFFICER v] [Country: ET (Ethiopia) v] [Route: /finance/bank-slips v] [Re-Compile Preview] |
@@ -69,7 +69,7 @@ The **SDUI Schema Registry & Cache Inspector Console** (`/schema-engine/overview
 |---|---|---|---|
 | **JSON Projection Code Viewport** | `typography.fontFamily.mono` + `color.brand.slate.900` | `Space Mono, monospace` on `#0F172A` surface | Read-only syntax-highlighted JSON tree with `aria-label="Compiled SDUI JSON payload"`. |
 | **RBAC Stripped Annotation Line** | `color.feedback.crimson.100` + `color.feedback.crimson.700` | `#FEE2E2` highlight, `#B91C1C` text | Visually shows Super Admins which columns/actions are stripped for lower-privileged roles during simulation. |
-| **Valkey Cache Connected Pill** | `color.feedback.emerald.100` + `color.feedback.emerald.700` | `#D1FAE5` fill, `#047857` text | Real-time indicator of Valkey 8.0 cluster connectivity and `< 100ms` compilation SLO compliance. |
+| **Valkey Cache Connected Pill** | `color.feedback.emerald.100` + `color.feedback.emerald.700` | `#D1FAE5` fill, `#047857` text | Real-time indicator of Valkey 9.1.3 cluster connectivity and `< 100ms` compilation SLO compliance. |
 
 ---
 
@@ -83,8 +83,8 @@ sequenceDiagram
     actor Admin as Admin User (Any Role)
     participant RSC as Next.js 16 RSC Page
     participant GoSDUI as Go Monolith (SDUI Compiler Handler)
-    participant VK as Valkey 8.0 Cache
-    participant PG as PostgreSQL 18.4 (admin_pages / role_permissions)
+    participant VK as Valkey 9.1.3 Cache
+    participant PG as PostgreSQL 18.6 (admin_pages / role_permissions)
 
     Admin->>RSC: Navigate to /(dashboard)/[module]/[slug]
     RSC->>GoSDUI: GET /api/v1/admin/ui-config?route={slug} (Bearer Cookie + X-Country-Code)

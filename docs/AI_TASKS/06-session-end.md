@@ -47,7 +47,7 @@ go test -v -race -cover ./...
 cd ..
 
 # ------------------------------------------------------------------------------
-# Mobile: Flutter 3.44 Analyzer & Unit/Widget Suites
+# Mobile: Flutter 3.47.8 Analyzer & Unit/Widget Suites
 # ------------------------------------------------------------------------------
 cd mobile
 flutter analyze

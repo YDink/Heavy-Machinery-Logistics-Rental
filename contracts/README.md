@@ -112,7 +112,7 @@ Upon transition to Phase 1 (Bootstrap), client SDKs and server scaffolding are g
 | Target | Toolchain | Output Directory | Notes |
 |---|---|---|---|
 | **Go 1.27.3 Backend** | `oapi-codegen` | `backend/internal/transport/http/` | Generates strict interfaces, chi/echo routing wrappers, and DTO structs. |
-| **Flutter 3.44 Mobile** | `openapi-generator-cli` | `mobile/packages/dink_api_client/` | Generates Dart models and type-safe Dio API client. |
+| **Flutter 3.47.8 Mobile** | `openapi-generator-cli` | `mobile/packages/dink_api_client/` | Generates Dart models and type-safe Dio API client. |
 | **Next.js 16 Admin** | `openapi-typescript` + `zod` | `admin/lib/api/generated/` | Generates TypeScript interfaces and runtime validation schemas. |
 
 ---

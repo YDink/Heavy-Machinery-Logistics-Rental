@@ -4,7 +4,7 @@
 **Document Identifier:** `FLOW-ADMIN-OPS-DINK-CORE-V7.0`  
 **Classification:** Canonical User Interaction Flow & Wire Protocol Specification (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (§5.11 AD-01 to AD-08, §4 User Roles & Permissions, §10, §11 Dynamic Configuration Architecture), `FLOW-ENTRY-DINK-CORE-V7.0`, `FLOW-OWNER-KYC-DINK-CORE-V7.0`, `FLOW-FLEET-REG-DINK-CORE-V7.0`, `FLOW-DISCOVERY-DINK-CORE-V7.0`, `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `FLOW-PAYMENT-DISPUTE-DINK-CORE-V7.0`, `FLOW-ACTIVE-RENTAL-DINK-CORE-V7.0`, `FLOW-RETURN-DAMAGE-DINK-CORE-V7.0`, `FLOW-LOGISTICS-DINK-CORE-V7.0`, `FLOW-COMMISSION-PAYOUT-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-005`, `ADR-010`  
-**Target Client Runtimes:** Next.js 16 / React 19 (Admin Web Console), Go 1.24 Backend Monolith, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL  
+**Target Client Runtimes:** Next.js 16.x (latest CVE security patch) / React 19 (Admin Web Console), Go 1.27.3 Backend Monolith, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL  
 **Target Personas:** Back-Office Compliance Officer & Dispute Arbitrator (*Yohannes Bekele*), Super Admin / Operations Director (*Rahel Tadesse*), Platform Finance Auditor (*Solomon Kassa*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (RBAC, Audit Logging, Session Management), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AA (Admin Console Mode), Ethiopian Personal Data Protection Proclamation No. 1321/2024, National Bank of Ethiopia (NBE) Directives  
@@ -33,7 +33,7 @@
   - 5.1 [Dual-Control "Four-Eyes" Authorization for High-Value Overrides](#51-dual-control-four-eyes-authorization-for-high-value-overrides)
   - 5.2 [Concurrent Admin Review Collisions & Advisory Session Locks in Valkey](#52-concurrent-admin-review-collisions--advisory-session-locks-in-valkey)
   - 5.3 [Audit Log Immutability & Append-Only Cryptographic Hashing](#53-audit-log-immutability--append-only-cryptographic-hashing)
-- 6. [Client UI/UX Ergonomic Specifications & Design Tokens (Next.js 16 / React 19)](#6-client-uiux-ergonomic-specifications--design-tokens-nextjs-16--react-19)
+- 6. [Client UI/UX Ergonomic Specifications & Design Tokens (Next.js 16.x (latest CVE security patch) / React 19)](#6-client-uiux-ergonomic-specifications--design-tokens-nextjs-16--react-19)
   - 6.1 [Split-Screen Audit Workbench Layout & Image Annotation Viewer](#61-split-screen-audit-workbench-layout--image-annotation-viewer)
   - 6.2 [Dynamic Filter Matrix & Server-Side Paginated Table Grids](#62-dynamic-filter-matrix--server-side-paginated-table-grids)
   - 6.3 [Emergency System Kill-Switch & Delinquency Blacklist Actuators](#63-emergency-system-kill-switch--delinquency-blacklist-actuators)
@@ -345,7 +345,7 @@ To guarantee non-repudiation in legal proceedings:
 
 ---
 
-## 6. Client UI/UX Ergonomic Specifications & Design Tokens (Next.js 16 / React 19)
+## 6. Client UI/UX Ergonomic Specifications & Design Tokens (Next.js 16.x (latest CVE security patch) / React 19)
 
 ### 6.1 Split-Screen Audit Workbench Layout & Image Annotation Viewer
 

@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Enterprise Intelligence Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§5.6, §5.7, §5.9, §5.11, §6.0, §6.1, §6.2, §6.3, §6.4, §6.5, §8, §10, §12, §13.2), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
 **Target Personas:** Corporate Finance Controller & Internal Auditor (*Solomon Kassa*), Corporate Procurement Director (*Eng. Samuel Getachew*), Regional Project Director (*Dawit Haile-Mariam*), Senior Site Quantity Surveyor (*Bethlehem Tessema*), Corporate Fleet Owner Executive (*W/ro Almaz Tesfaye*), Compliance Officer & Data Protection Officer (*Yohannes Bekele*), Super Administrator (*Rahel Tadesse*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Tenant Data Leakage Defense, Cryptographic Export Signing & PII Redaction), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), International Financial Reporting Standards (IFRS 15 Revenue, IFRS 16 Leases, IAS 16 Property, Plant and Equipment), Commercial Code of Ethiopia (Accounting Books & Audit Trail Retention), Kenya Companies Act 2015, Kenya Data Protection Act 2019  
@@ -21,7 +21,7 @@
 - 2. [Corporate Intelligence Architecture & Analytical Pipeline (`REP-01`)](#2-corporate-intelligence-architecture--analytical-pipeline-rep-01)
   - 2.1 [End-to-End Analytical Aggregation & Export Flowchart](#21-end-to-end-analytical-aggregation--export-flowchart)
   - 2.2 [Read-Replica OLAP Segregation & Asynchronous Ingestion Topology](#22-read-replica-olap-segregation--asynchronous-ingestion-topology)
-  - 2.3 [PostgreSQL 18.4 Materialized Views & Refresh Cadence](#23-postgresql-184-materialized-views--refresh-cadence)
+  - 2.3 [PostgreSQL 18.6 Materialized Views & Refresh Cadence](#23-postgresql-184-materialized-views--refresh-cadence)
 - 3. [Cost Center Accounting & Multi-Project Allocation (`REP-02`)](#3-cost-center-accounting--multi-project-allocation-rep-02)
   - 3.1 [General Ledger (GL) Chart of Accounts & Cost Center Mapping](#31-general-ledger-gl-chart-of-accounts--cost-center-mapping)
   - 3.2 [Machinery vs. Logistics vs. Ancillary Expense Split Formulas](#32-machinery-vs-logistics-vs-ancillary-expense-split-formulas)
@@ -63,7 +63,7 @@ In major civil infrastructure, mining projects, and commercial plant hire operat
 * Enterprise clients require automated synchronization and export capabilities directly into tier-1 ERP systems (**SAP S/4HANA**, **Oracle Fusion Cloud**, **Microsoft Dynamics 365 Finance & Operations**, and **Odoo Enterprise**) via standardized file feeds (ISO 20022 XML, CSV, formatted XLSX) and programmatic webhooks.
 
 This document formally specifies:
-1. The analytical corporate intelligence pipeline segregating online transaction processing (OLTP) from online analytical processing (OLAP) via dedicated PostgreSQL 18.4 read replicas and materialized rollups (`REP-01`).
+1. The analytical corporate intelligence pipeline segregating online transaction processing (OLTP) from online analytical processing (OLAP) via dedicated PostgreSQL 18.6 read replicas and materialized rollups (`REP-01`).
 2. The hierarchical Cost Center, Work Breakdown Structure (WBS), and General Ledger accounting allocation engine (`REP-02`).
 3. Fleet utilization, mechanical uptime, idle asset depreciation, and geographical deployment density analytics (`REP-03`).
 4. The asynchronous export and ERP synchronization engine delivering cryptographically signed PDF/A-3, XLSX, and ISO 20022 data feeds (`REP-04`).
@@ -74,7 +74,7 @@ This document formally specifies:
 1. **Strict Multi-Tenant Analytical Perimeter Invariant (OWASP ASVS §4.1):** Every analytical query, background aggregation worker, and generated report file must enforce hard organizational isolation:
    $$\text{FilterScope} \iff \text{organization\_id} = \text{ContextOrgID}$$
    Analytical data, machine utilization rates, or internal project cost codes can never leak across tenant boundaries. Competitor organizations operating within the same region cannot view or derive another enterprise's operational metrics.
-2. **Zero-OLTP Impact SLO:** Heavy analytical queries, historical multi-year rollups, and bulk ERP export generations must execute exclusively against dedicated PostgreSQL 18.4 streaming read replicas (`dink-ro-replica-01`) or pre-aggregated materialized views. Long-running report queries are strictly barred from executing against the primary write master node, guaranteeing zero latency impact on live field bookings.
+2. **Zero-OLTP Impact SLO:** Heavy analytical queries, historical multi-year rollups, and bulk ERP export generations must execute exclusively against dedicated PostgreSQL 18.6 streaming read replicas (`dink-ro-replica-01`) or pre-aggregated materialized views. Long-running report queries are strictly barred from executing against the primary write master node, guaranteeing zero latency impact on live field bookings.
 3. **Double-Entry Reconciliation Integrity Floor (IFRS 15 / 16):** The total financial expense attributed across all individual project cost centers must equal the consolidated net corporate invoice statement down to the exact minor currency unit:
    $$\sum_{i=1}^{n} \text{CostCenterAllocation}_i \equiv \text{NetPayableInvoiceStatement} \quad (\Delta = 0\text{ Minor Units})$$
 4. **Cryptographic Export Immutability & Non-Repudiation:** Every generated corporate export file (PDF/A-3, XLSX, CSV) is fingerprinted with a SHA-256 binary hash and digitally signed using Dink Machinery's corporate RSA-4096 signing key before being archived in SeaweedFS S3 (`s3://dink-corporate-vault/{org_id}/reports/`). Subsequent audits verify the file's digital signature to confirm that the report has not been altered post-generation.
@@ -101,7 +101,7 @@ flowchart TD
         
         RouteDataSource -->|"Yes: Hot Metric"| QueryMatView["Query Materialized View on Read Replica<br/>mv_corporate_monthly_cost_summary"]
         
-        RouteDataSource -->|"No: Custom Multi-Variable"| QueryOLAPReplica["Execute Partitioned Analytical Query<br/>PostgreSQL 18.4 Read Replica (dink-ro-replica-01)"]
+        RouteDataSource -->|"No: Custom Multi-Variable"| QueryOLAPReplica["Execute Partitioned Analytical Query<br/>PostgreSQL 18.6 Read Replica (dink-ro-replica-01)"]
         
         QueryMatView --> AggregateData["Compile Analytical Data Structures<br/>Enforce Double-Entry Minor Unit Parity"]
         QueryOLAPReplica --> AggregateData
@@ -140,7 +140,7 @@ To maintain sub-millisecond OLTP response times on production checkouts:
 
 ---
 
-### 2.3 PostgreSQL 18.4 Materialized Views & Refresh Cadence
+### 2.3 PostgreSQL 18.6 Materialized Views & Refresh Cadence
 
 Core corporate KPIs are maintained via pre-computed PostgreSQL materialized views refreshed on scheduled cadences:
 

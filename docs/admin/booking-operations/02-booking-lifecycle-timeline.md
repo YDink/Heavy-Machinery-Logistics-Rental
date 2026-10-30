@@ -17,7 +17,7 @@
 
 The **Forensic Booking Lifecycle Timeline, Inspection Cards & Ledger Journal View** (`SPEC-ADM-BKG-02`) is the canonical single-booking forensic inspection screen (`src/app/(dashboard)/bookings/[id]/page.tsx`). When operations staff, financial auditors, or dispute arbitrators open a reservation, this view consolidates four immutable data streams:
 1. **The Immutable State Transition Audit Trail (`booking_audit_logs`, `AD-07`, `AD-09-WEB`):** Every state transition across the 20-state machine (`from_state` -> `to_state`), the exact actor (`RENTER`, `OWNER`, `OPERATOR`, `ADMIN`, `SYSTEM_CRON`), optimistic concurrency `version` increment, IP/request correlation ID (`req_...`), and expandable JSONB state diff.
-2. **Valkey 8.0 Mutex Hold & GPS Telematics Health Card:** Live TTL of `lock:hold:fleet:{fleetId}` during `HOLD_PENDING`, or the latest 30-second WebSocket GPS coordinate ping (`fleet_location_histories`) and PostGIS geofence status (`INSIDE_APPROVED_RADIUS` vs `GEOFENCE_BREACH`) during `ACTIVE` operation.
+2. **Valkey 9.1.3 Mutex Hold & GPS Telematics Health Card:** Live TTL of `lock:hold:fleet:{fleetId}` during `HOLD_PENDING`, or the latest 30-second WebSocket GPS coordinate ping (`fleet_location_histories`) and PostGIS geofence status (`INSIDE_APPROVED_RADIUS` vs `GEOFENCE_BREACH`) during `ACTIVE` operation.
 3. **Joint Pre-Rental (`CHECK_IN`) & Post-Rental (`CHECK_OUT`) Inspection Cards:** Monotonic engine hour meter readings (`1,450.50 Hrs` -> `1,498.50 Hrs`), computed billable hours vs agreed allowance, fuel percentages, ClamAV-verified 4-angle photo thumbnails, and glass signature attestations.
 4. **Balanced Double-Entry Financial Ledger Journal (`financial_ledger_entries`, `BK-17-BE`):** Displays every debit and credit leg bound to `booking_id` in integer minor units (e.g., Cash Clearing `+35,000,000` Santims, Owner Payable `-31,500,000` Santims, Platform Commission `-3,500,000` Santims) with an automated **Zero-Sum Balance Verification Badge (`SUM == 0 Santims`)**.
 
@@ -103,8 +103,8 @@ sequenceDiagram
     actor Auditor as Support Specialist / Financial Auditor
     participant PageRSC as BookingForensicPage (RSC)
     participant GoAPI as Go Booking Forensic Interactor
-    participant VK as Valkey 8.0 (Hold TTL & Live Telemetry)
-    participant DB as PostgreSQL 18.4
+    participant VK as Valkey 9.1.3 (Hold TTL & Live Telemetry)
+    participant DB as PostgreSQL 18.6
 
     Auditor->>PageRSC: Navigates to /bookings/bk-9042
     PageRSC->>GoAPI: GET /api/v1/admin/bookings/bk-9042/forensic (Header: X-Country-Code: ET)

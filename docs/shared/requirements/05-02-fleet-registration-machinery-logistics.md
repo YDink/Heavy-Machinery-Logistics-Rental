@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Architecture Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§5.2, §5.8, §10, §11), `FLOW-FLEET-REG-DINK-CORE-V7.0`, `FLOW-DISCOVERY-DINK-CORE-V7.0`, `FLOW-LOGISTICS-DINK-CORE-V7.0`, `FLOW-CONCURRENCY-LOCKING-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
 **Target Personas:** Equipment Fleet Owner (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Certified Field Operator (*Mulugeta Tadesse* / *Juma Omwamba*), Lowboy Transporter (*Ato Girma Wolde* / *Samuel Odhiambo*), Compliance Officer & Fleet Inspector (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Input Validation, File Upload Integrity & Non-Repudiation), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), Ethiopian Federal Transport Authority Directives, KeNHA Axle Load Regulations  
@@ -133,7 +133,7 @@ The operational state of every registered fleet asset is governed by an immutabl
 |---|:---:|:---:|---|
 | **`DRAFT`** | ❌ No | ❌ No | Incomplete registration dossier saved locally in Isar NoSQL or server draft cache. |
 | **`PENDING_APPROVAL`** | ❌ No | ❌ No | Dossier submitted by owner; queued in Next.js Compliance Approval Console (`AD-06-WEB`). |
-| **`ACTIVE`** | ✅ Yes | ✅ Yes | Fully approved and verified; indexed in PostGIS 3.4 spatial search clusters. |
+| **`ACTIVE`** | ✅ Yes | ✅ Yes | Fully approved and verified; indexed in PostGIS 3.6.4 spatial search clusters. |
 | **`RENTED`** | ✅ Yes (Show Busy) | ❌ No (Overlap) | Asset is actively deployed under an in-flight booking contract (`ACTIVE` / `RETURN_INITIATED`). |
 | **`INACTIVE`** | ❌ No | ❌ No | Voluntarily paused or deactivated by the equipment owner. |
 | **`INSURANCE_HOLD`** | ❌ No | ❌ No | Locked due to catastrophic site incident (`FLOW-19`); requires Loss Adjuster certificate to clear. |

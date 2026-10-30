@@ -4,7 +4,7 @@
 **Document Identifier:** `FLOW-CONCURRENCY-LOCKING-DINK-CORE-V7.0`  
 **Classification:** Canonical Technical Architecture & Wire Protocol Specification (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (§5.4 SR-07, §5.5, §8.1, §8.2, §10, §11), `FLOW-ENTRY-DINK-CORE-V7.0`, `FLOW-FLEET-REG-DINK-CORE-V7.0`, `FLOW-DISCOVERY-DINK-CORE-V7.0`, `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `FLOW-PAYMENT-DISPUTE-DINK-CORE-V7.0`, `FLOW-ACTIVE-RENTAL-DINK-CORE-V7.0`, `FLOW-CORP-APPROVAL-DINK-CORE-V7.0`, `FLOW-PHONE-MIGRATION-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Client Runtimes:** Go 1.24 Backend Monolith, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Admin & Corporate Web Console), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, Isar NoSQL  
+**Target Client Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Admin & Corporate Web Console), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, Isar NoSQL  
 **Target Personas:** Civil Engineering Contractor (*Dawit Haile-Mariam*), Fleet Owner & Depot Yard Manager (*W/ro Almaz Tesfaye*), Lowboy Logistics Fleet Provider (*Ato Girma Wolde*), Enterprise Site Engineer (*Tigist Assefa*), Back-Office Compliance Officer (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Race Condition Resilience, Concurrency Control & State Integrity), RFC 9457 (Problem Details), RFC 7232 / RFC 9110 (HTTP Conditional Requests — ETags / If-Match), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mode) & Level AA (Admin Mode)  
@@ -81,7 +81,7 @@ flowchart TD
     ContractorA(["Contractor A (Dawit)<br/>Attempts 3-Day Reservation"]) --> AcquireHoldA["Step 1: POST /api/v1/bookings/hold<br/>Checks Out Equipment #FLT-9042"]
     ContractorB(["Contractor B (Tigist)<br/>Attempts Overlapping Reservation"]) --> AcquireHoldB["Step 1: POST /api/v1/bookings/hold<br/>Checks Out Equipment #FLT-9042"]
 
-    AcquireHoldA --> ValkeyLock["Valkey 8.0 Atomic Distributed Lease<br/>SET hold:fleet:FLT-9042 renter_uuid EX 3600 NX"]
+    AcquireHoldA --> ValkeyLock["Valkey 9.1.3 Atomic Distributed Lease<br/>SET hold:fleet:FLT-9042 renter_uuid EX 3600 NX"]
     AcquireHoldB --> ValkeyLock
 
     ValkeyLock -->|"Wins Lock (OK)"| HoldGrantedA["Contractor A Acquires Exclusive Hold<br/>Status: HOLD_PENDING (60-Min Timer Started)<br/>ETag Version Token Generated: v1_hash"]
@@ -175,7 +175,7 @@ When Dawit taps **"Reserve Fleet"**, the platform cannot synchronously debit a c
 
 ### 3.3 Step 3: PostgreSQL Temporal Range Exclusion Constraints & ACID Serialization
 
-While Valkey handles sub-millisecond in-memory holds, PostgreSQL 18.4 serves as the canonical source of truth. Dink Machinery rejects manual, error-prone application-layer date range checking (e.g., `SELECT COUNT(*) WHERE start <= new_end AND end >= new_start`), which is vulnerable to race conditions under concurrent transactions.
+While Valkey handles sub-millisecond in-memory holds, PostgreSQL 18.6 serves as the canonical source of truth. Dink Machinery rejects manual, error-prone application-layer date range checking (e.g., `SELECT COUNT(*) WHERE start <= new_end AND end >= new_start`), which is vulnerable to race conditions under concurrent transactions.
 
 Instead, the database enforces physical storage-layer invariants via **GiST Temporal Range Exclusion Constraints**:
 
@@ -221,8 +221,8 @@ sequenceDiagram
     participant Client as Flutter Mobile App
     participant Edge as Traefik Gateway
     participant Monolith as Go Monolith Core
-    participant Valkey as Valkey 8.0 Cache
-    participant DB as PostgreSQL 18.4
+    participant Valkey as Valkey 9.1.3 Cache
+    participant DB as PostgreSQL 18.6
 
     Tigist->>Client: Tap "Reserve Fleet" (Nov 5 - Nov 10)
     Client->>Edge: POST /api/v1/bookings/hold (If-Match: "v4-9f8a2c")
@@ -294,8 +294,8 @@ sequenceDiagram
     participant Client as Flutter Mobile Client
     participant Traefik as Traefik Gateway
     participant Monolith as Go Monolith Core
-    participant Valkey as Valkey 8.0 Cache
-    participant DB as PostgreSQL 18.4
+    participant Valkey as Valkey 9.1.3 Cache
+    participant DB as PostgreSQL 18.6
 
     Dawit->>Client: Tap "Submit Payment Proof"
     Client->>Client: Generate UUID v4: "idem_8829-10af-99b2"
@@ -331,7 +331,7 @@ sequenceDiagram
 
 The Dink Machinery concurrency model partitions responsibilities across memory and storage tiers:
 
-| Attribute | Tier 1: Valkey 8.0 In-Memory Lease | Tier 2: PostgreSQL 18.4 GiST Storage |
+| Attribute | Tier 1: Valkey 9.1.3 In-Memory Lease | Tier 2: PostgreSQL 18.6 GiST Storage |
 |---|---|---|
 | **Latency Profile** | Sub-millisecond ($< 2\text{ ms}$) | Low-latency disk commit ($15\text{–}45\text{ ms}$) |
 | **Scope of Lock** | Ephemeral, time-bounded exclusive lease ($3,600\text{ s}$) | Immutable, permanent historical reservation ranges |

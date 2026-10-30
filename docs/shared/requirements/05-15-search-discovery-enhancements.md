@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Discovery Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§5.4, §5.15, §10, §11), `FLOW-DISCOVERY-DINK-CORE-V7.0` (Interaction Flow 06), `FLOW-CONCURRENCY-LOCKING-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
 **Target Personas:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Project Procurement Director (*Eng. Samuel Getachew*), Equipment Fleet Owner (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Compliance Officer & Route Auditor (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Search Injection Defense, Rate Limiting & Resource Protection), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), National Bank of Ethiopia (NBE) Directives, Kenya Data Protection Act 2019  
@@ -26,7 +26,7 @@
   - 3.2 [Operational Attribute Faceting & Multi-Select Tags (`SR-10`)](#32-operational-attribute-faceting--multi-select-tags-sr-10)
   - 3.3 [Attachment Compatibility Cross-Matching (`SR-11`)](#33-attachment-compatibility-cross-matching-sr-11)
   - 3.4 [Multi-Factor Composite Ranking & Machine Reputation Scenarios (`SR-12`)](#34-multi-factor-composite-ranking--machine-reputation-scenarios-sr-12)
-- 4. [Spatial Geo-Clustering & Dynamic Viewport Ingress (PostGIS 3.4)](#4-spatial-geo-clustering--dynamic-viewport-ingress-postgis-34)
+- 4. [Spatial Geo-Clustering & Dynamic Viewport Ingress (PostGIS 3.6.4)](#4-spatial-geo-clustering--dynamic-viewport-ingress-postgis-34)
   - 4.1 [Server-Side K-Means Spatial Geo-Clustering (`ST_ClusterKMeans`)](#41-server-side-k-means-spatial-geo-clustering-st_clusterkmeans)
   - 4.2 [Dynamic Bounding-Box (BBox) Map Pan & Zoom Ingress](#42-dynamic-bounding-box-bbox-map-pan--zoom-ingress)
   - 4.3 [Infrastructure Corridor Polyline Proximity Filtering](#43-infrastructure-corridor-polyline-proximity-filtering)
@@ -73,7 +73,7 @@ This document extends the baseline discovery mechanisms defined in SRS 05.04, fo
 1. **Sub-50ms Dynamic Query Latency SLO (p95):** Complex multi-variable queries (category, price interval, date range, spatial radius, and dynamic specs) executing against an active catalog of 25,000 machines must return in $< 50\text{ ms}$ (p95) and $< 80\text{ ms}$ (p99).
 2. **Denormalized Index Isolation (`fleet_spec_indexed`):** Numerical and dimensional filters query denormalized relational search columns (`fleet_spec_indexed`) rather than raw EAV entity-attribute-value tables (`fleet_spec_values`), eliminating computational overhead during multi-parameter scans.
 3. **Strict Bounding-Box Density Capping:** When the client map viewport zooms out to regional levels (e.g., all of Ethiopia/Kenya), the server groups pins using `ST_ClusterKMeans` into a maximum of **60 cluster centroids** to maintain smooth 60fps rendering in Flutter and React Mapbox viewports.
-4. **Real-Time Hold Lease Interrogation:** Listings returned by advanced queries must reflect live in-memory Valkey 8.0 hold leases (`MGET hold:fleet:{id}`). Assets held in checkout by other contractors are badged as `HELD_PENDING_WIRE` rather than falsely presented as unencumbered.
+4. **Real-Time Hold Lease Interrogation:** Listings returned by advanced queries must reflect live in-memory Valkey 9.1.3 hold leases (`MGET hold:fleet:{id}`). Assets held in checkout by other contractors are badged as `HELD_PENDING_WIRE` rather than falsely presented as unencumbered.
 5. **Zero-Result Intelligent Relaxation:** If an overly specific search returns zero matches, the engine automatically relaxes constraints in a deterministic order (expanding search radius from $50\text{ km} \rightarrow 100\text{ km}$, then broadening weight tolerance by $\pm 10\%$) while informing the user of the applied adjustments.
 
 ---
@@ -93,7 +93,7 @@ flowchart TD
     
     CheckValkeyCache -->|"Miss"| QueryCoordinator["Go Monolith Query Coordinator"]
     
-    subgraph ParallelQuery["PostgreSQL 18.4 + PostGIS Query Engine"]
+    subgraph ParallelQuery["PostgreSQL 18.6 + PostGIS Query Engine"]
         direction TB
         SpatialClause["Spatial Scope: ST_DWithin(depot_geog, Point, Radius) OR ST_MakeEnvelope(BBox)"]
         SpecClause["Parametric Filter: operating_weight_kg BETWEEN min AND max"]
@@ -209,7 +209,7 @@ $$\mathcal{S}_{\text{composite}} = (0.35 \times \mathcal{P}_{\text{proximity}}) 
 
 ---
 
-## 4. Spatial Geo-Clustering & Dynamic Viewport Ingress (PostGIS 3.4)
+## 4. Spatial Geo-Clustering & Dynamic Viewport Ingress (PostGIS 3.6.4)
 
 ### 4.1 Server-Side K-Means Spatial Geo-Clustering (`ST_ClusterKMeans`)
 

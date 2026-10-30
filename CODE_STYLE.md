@@ -18,7 +18,7 @@ All code across the modular monolith, Flutter mobile app, Next.js admin portal, 
 
 ---
 
-## 2. Flutter 3.44 Mobile Standards
+## 2. Flutter 3.47.8 Mobile Standards
 
 - **State Management:** Strict BLoC pattern (`flutter_bloc`). Widgets must be pure views consuming `BlocBuilder` or triggering `BlocProvider.of(context).add(Event)`.
 - **No Hardcoded Tokens:** Colors, padding, line heights, and borders must strictly consume generated design tokens (`tool/generate_tokens.dart`).

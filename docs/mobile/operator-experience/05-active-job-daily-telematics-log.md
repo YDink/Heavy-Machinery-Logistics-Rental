@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-OPR-05`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (§5.6.4, §5.6.6, §5.12, `AR-03`, `AR-05`, `GPS-01`..`GPS-03`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Certified Heavy Machinery Operator (*Mulugeta Tadesse* / *Juma Omwamba*)  
 **Associated Requirements:** `REQ-05-06` (`AR-03` High-Contrast Field HUD & 8.0h Daily Shift Engine, `AR-05` Mechanical Breakdown Logging & Immediate Shift Clock Pause), `REQ-05-12` (`GPS-01` 30s WebSocket Telemetry Streamer, `GPS-02` Geofence Breach Monitoring, `GPS-03` Automatic Lifecycle Shutoff on `RETURN_INITIATED` / `COMPLETED`)  
 **Associated Interaction Flows:** `FLOW-09` (Active Rental HUD & Breakdown Stoppage), `FLOW-10` (Transition to Return Check-Out)  
@@ -134,7 +134,7 @@ sequenceDiagram
     participant Bloc as ActiveTelematicsBloc
     participant Loc as Geolocator (30s / 25m Filter)
     participant WSS as Go Monolith WSS & REST
-    participant Valkey as Valkey 8.0 (GEOADD)
+    participant Valkey as Valkey 9.1.3 (GEOADD)
 
     loop Every 30s (or 60s when speed < 0.5 km/h for 5m)
         Loc-->>Bloc: Position(8.54121, 39.27184, acc: 3.8m, speed: 1.4km/h)

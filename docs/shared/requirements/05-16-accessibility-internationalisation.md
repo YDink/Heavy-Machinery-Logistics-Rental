@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Ergonomic/Linguistic Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§5.1, §5.10, §5.14, §5.16, §10, §12), `FLOW-ENTRY-DINK-CORE-V7.0`, `FLOW-ACTIVE-RENTAL-DINK-CORE-V7.0`, `FLOW-NOTIF-OFFLINE-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), Go 1.24 Backend Monolith, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
+**Target Runtimes:** Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), Go 1.27.3 Backend Monolith, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
 **Target Personas:** Certified Field Operator (*Mulugeta Tadesse* / *Juma Omwamba*), Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Equipment Fleet Owner (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Lowboy Transporter (*Ato Girma Wolde* / *Samuel Odhiambo*), Compliance Officer & Accessibility Auditor (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** W3C Web Content Accessibility Guidelines (WCAG) 2.2 Level AAA (Mobile Field HUD) & Level AA (Web Admin), ISO 9241-110 (Ergonomics of Human-System Interaction), ISO 9241-210 (Human-Centred Design), ISO 639-1 / BCP 47 Language Tags, Unicode 16.0 (Ethiopic Extended Script Block U+1200–U+137F & U+2D80–U+2DDF), Ethiopian Communications Authority (ECA) Accessibility Guidelines, Kenya National Commission for Persons with Disabilities (NCPWD) Standards  
@@ -69,7 +69,7 @@ This document formally specifies:
 1. **Zero Hardcoded String Invariant:** No user-facing text, label, error description, metric suffix, or notification header may be hardcoded into Flutter client widgets or Next.js React templates. Every string must be resolved via a namespaced translation key (`i18n.translate(key, params)`).
 2. **WCAG 2.2 Level AAA Solar Contrast Invariant:** All field-critical UI viewports—including the Active Rental HUD (`FLOW-09`), Handover Reticle Camera (`FLOW-10`), Emergency Breakdown Reporter (`FLOW-09 §3.3`), and PIN Authorization Canvas—must maintain a contrast ratio of strictly $\ge 7.0:1$ for normal text and $\ge 4.5:1$ for heavy graphical borders against background canvases.
 3. **Glove-Friendly Tap Target Floor ($56 \times 56\text{ dp}$):** Every interactive button, selector, checkbox, reticle shutter trigger, and tab item on mobile must provide an effective hit-test box of at least **$56 \times 56\text{ device-independent pixels (dp)}$**, padded with a minimum $8\text{ dp}$ physical margin to prevent accidental dual-touch actuation in vibrating cabs.
-4. **Internal UTC / Gregorian Data Model Storage Invariant:** Irrespective of user display language, input modality, or calendar selection, all timestamps, rental date ranges, and ledger records are transmitted across APIs and committed to PostgreSQL 18.4 strictly in UTC ISO 8601 format (`YYYY-MM-DDTHH:mm:ssZ`) and Gregorian `daterange` brackets. Dual-calendar conversion occurs strictly at presentation and ingestion boundaries.
+4. **Internal UTC / Gregorian Data Model Storage Invariant:** Irrespective of user display language, input modality, or calendar selection, all timestamps, rental date ranges, and ledger records are transmitted across APIs and committed to PostgreSQL 18.6 strictly in UTC ISO 8601 format (`YYYY-MM-DDTHH:mm:ssZ`) and Gregorian `daterange` brackets. Dual-calendar conversion occurs strictly at presentation and ingestion boundaries.
 5. **Ethiopic Script Font Rendering Fidelity:** Ethiopic characters (Unicode block U+1200–U+137F) must be rendered using open-source, hint-optimized typefaces (*Noto Sans Ethiopic* or *Abyssinica SIL*). The typography engine must maintain vertical line-height metrics that prevent diacritic clashing and line-height jitter across localized switchers.
 
 ---
@@ -107,7 +107,7 @@ Dink Machinery natively supports four core languages across its target markets:
 
 ### 2.2 Relational Schema: Dynamic Localization & Translation Keys
 
-Translation catalogs are persisted in PostgreSQL 18.4, allowing platform compliance officers to adjust terminology dynamically without triggering mobile application store deployments:
+Translation catalogs are persisted in PostgreSQL 18.6, allowing platform compliance officers to adjust terminology dynamically without triggering mobile application store deployments:
 
 ```mermaid
 erDiagram

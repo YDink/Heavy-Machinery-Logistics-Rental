@@ -124,8 +124,8 @@ sequenceDiagram
     actor Exec as Operations Lead / Finance Controller
     participant PageRSC as DashboardOverviewPage (RSC)
     participant GoAPI as Go Admin Analytics Interactor
-    participant VK as Valkey 8.0 (60s KPI Snapshot Cache)
-    participant DB as PostgreSQL 18.4 + PostGIS 3.4
+    participant VK as Valkey 9.1.3 (60s KPI Snapshot Cache)
+    participant DB as PostgreSQL 18.6 + PostGIS 3.6.4
 
     Exec->>PageRSC: GET /?window=30d&region=ALL
     PageRSC->>GoAPI: GET /api/v1/admin/analytics/kpi-summary?window=30d (Header: X-Country-Code: ET)

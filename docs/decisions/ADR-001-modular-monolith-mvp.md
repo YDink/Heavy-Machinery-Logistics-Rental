@@ -86,7 +86,7 @@ Domain logic is strictly organized into Clean Architecture feature modules under
               +----------------------+----------------------+
               |                                             |
 +-----------------------------+               +---------------------------+
-| PostgreSQL 18.4 + PostGIS   |               | Valkey 8.0 Cache & Mutex  |
+| PostgreSQL 18.6 + PostGIS   |               | Valkey 9.1.3 Cache & Mutex  |
 +-----------------------------+               +---------------------------+
 ```
 

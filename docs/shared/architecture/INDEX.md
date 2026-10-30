@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-INDEX-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `contracts/openapi.yaml`, `ADR-001` through `ADR-014`  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.44 Cross-Platform Mobile Client, Next.js 16 Admin Web Console, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine, SeaweedFS S3, ClamAV Daemon, OpenBao KMS, Traefik 3.x Gateway  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon, OpenBao KMS, Traefik 3.x Gateway  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), ISO/IEC/IEEE 42010, ISO 4217, ISO 3166-1 alpha-2, Ethiopian Personal Data Protection Proclamation No. 1321/2024, National Bank of Ethiopia (NBE) Directives  
 **Status:** Approved Engineering Baseline
@@ -93,7 +93,7 @@ flowchart TD
 | **04** | `04-backend-architecture-go.md` | `ARCH-BACKEND-GO-DINK-CORE-V7.0` | **Backend Architecture (Go Modular Monolith):** Chi routing, domain interactors, Unit of Work, 20-state machine, and `sqlc` persistence. | Backend Engineers, Core Platform Pod |
 | **05** | `05-flutter-mobile-app-architecture.md` | `ARCH-FLUTTER-DINK-CORE-V7.0` | **Flutter Mobile Client Architecture:** Persona polymorphism (Renter, Owner, Operator), BLoC FSM, Isar offline outbox, and OTA fonts. | Mobile Engineers, UI/UX Designers |
 | **06** | `06-nextjs-admin-panel-architecture.md` | `ARCH-ADMIN-NEXT-DINK-CORE-V7.0` | **Next.js Admin Console Architecture:** Server-driven UI metadata compilation, React Server Components, dispute lightboxes, and RBAC. | Web Frontend Engineers, Operations Leads |
-| **07** | `07-database-design.md` | `ARCH-DB-DINK-CORE-V7.0` | **Database Design & Persistence:** PostgreSQL 18.4 schemas, PostGIS spatial GiST, GIN JSONB EAV indexing, and double-entry triggers. | Database Architects, Backend Engineers |
+| **07** | `07-database-design.md` | `ARCH-DB-DINK-CORE-V7.0` | **Database Design & Persistence:** PostgreSQL 18.6 schemas, PostGIS spatial GiST, GIN JSONB EAV indexing, and double-entry triggers. | Database Architects, Backend Engineers |
 | **08** | `08-communication-patterns-api-design.md` | `ARCH-COMM-DINK-CORE-V7.0` | **Communication Patterns & API Design:** OpenAPI 3.1 supremacy, universal envelopes, RFC 9457 errors, idempotency, and WebSockets. | Backend, Mobile, and Web Engineers |
 | **09** | `09-security-architecture.md` | `ARCH-SEC-DINK-CORE-V7.0` | **Security & Compliance Architecture:** OWASP ASVS L3, ES256 JWTs, AES-256-GCM AAD field encryption, ClamAV streaming, and RBAC. | DevSecOps Lead, Security Auditors |
 | **10** | `10-deployment-architecture.md` | `ARCH-DEPLOY-DINK-CORE-V7.0` | **Deployment & Infrastructure Architecture:** Sovereign Tier III DC colocation, Docker distroless containers, Traefik edge, and SeaweedFS. | SRE, Infrastructure Pod, SysAdmins |
@@ -111,7 +111,7 @@ The system coordinates client runtimes, edge ingress, application monolith modul
 ```mermaid
 flowchart TD
     subgraph ClientTier ["Client Runtimes Tier"]
-        FlutterApp["Flutter 3.44 Mobile Client<br/>Governed by: 05-flutter-mobile-app-architecture.md"]
+        FlutterApp["Flutter 3.47.8 Mobile Client<br/>Governed by: 05-flutter-mobile-app-architecture.md"]
         AdminWeb["Next.js 16 Admin Web Console<br/>Governed by: 06-nextjs-admin-panel-architecture.md"]
     end
 
@@ -124,8 +124,8 @@ flowchart TD
     end
 
     subgraph DataTier ["Persistence, Storage & Security Tier"]
-        PostgreSQL[("PostgreSQL 18.4 + PostGIS 3.4<br/>Governed by: 07-database-design.md")]
-        Valkey[("Valkey 8.0 Cache & Mutex<br/>Governed by: 04-backend & 07-database")]
+        PostgreSQL[("PostgreSQL 18.6 + PostGIS 3.6.4<br/>Governed by: 07-database-design.md")]
+        Valkey[("Valkey 9.1.3 Cache & Mutex<br/>Governed by: 04-backend & 07-database")]
         SeaweedFS[("SeaweedFS S3 Cluster<br/>Governed by: 10-deployment-architecture.md")]
         ClamAV["ClamAV Streaming Daemon<br/>Governed by: 09-security-architecture.md"]
         OpenBao["OpenBao KMS<br/>Governed by: 09-security & 10-deployment"]
@@ -212,11 +212,11 @@ The platform standardizes on production-proven runtimes with permissive open-sou
 +------------------------------------------------------------------------------------+
 |  Tier 1: Edge Ingress        | Traefik 3.1 (TLS 1.3, Rate Limiting, WAF, CORS)     |
 |  Tier 2: Backend Application | Go 1.27.3 Static Binary (distroless/static-debian12)|
-|  Tier 3: Persistence Core    | PostgreSQL 18.4 + PostGIS 3.4 (NVMe RAID 10)        |
-|  Tier 4: Distributed Cache   | Valkey 8.0-alpine (Sentinel Failover Cluster)       |
+|  Tier 3: Persistence Core    | PostgreSQL 18.6 + PostGIS 3.6.4 (NVMe RAID 10)        |
+|  Tier 4: Distributed Cache   | Valkey 9.1.3-alpine (Sentinel Failover Cluster)       |
 |  Tier 5: Object Storage      | SeaweedFS S3 Distributed Cluster (Replication 001)  |
-|  Tier 6: Mobile Client       | Flutter 3.44 / Dart 3.9 (Android API 26+, iOS 15+)  |
-|  Tier 7: Admin Web Console   | Next.js 16 Standalone (React 19 RSC, Node.js 22 LTS)|
+|  Tier 6: Mobile Client       | Flutter 3.47.8 / Dart 3.9 (Android API 26+, iOS 15+)  |
+|  Tier 7: Admin Web Console   | Next.js 16.x Standalone (latest CVE security patch, React 19 RSC, Node.js 26.13.0)|
 |  Tier 8: SRE & Observability | Prometheus v3 + Loki v3 + Tempo v2 + Alertmanager   |
 +------------------------------------------------------------------------------------+
 ```
@@ -225,7 +225,7 @@ The platform standardizes on production-proven runtimes with permissive open-sou
 |---|---|---|---|---|
 | **Edge Ingress** | Traefik Proxy | `v3.1.x` | TLS 1.3 termination, rate-limiting token buckets, WAF security headers. | `10-deployment-architecture.md` |
 | **Backend Workload** | Go Modular Monolith | `1.27.3` | Core business logic, 20-state machine, financial ledgers, and API controllers. | `04-backend-architecture-go.md` |
-| **Relational Database** | PostgreSQL | `18.4` | ACID relational persistence, double-entry ledgers, and table partitioning. | `07-database-design.md` |
+| **Relational Database** | PostgreSQL | `18.6` | ACID relational persistence, double-entry ledgers, and table partitioning. | `07-database-design.md` |
 | **Geospatial Engine** | PostGIS Extension | `3.4.2` | Spheroidal geographic calculations (`ST_DWithin`) on WGS 84 coordinates. | `07-database-design.md` |
 | **In-Memory Cache** | Valkey Engine | `8.0-alpine` | 60-minute reservation holds (`SET NX EX`), token buckets, session revocations. | `04-backend`, `07-database` |
 | **Object Storage** | SeaweedFS Cluster | `v3.70+` | S3-compliant distributed storage for photos, trade licenses, and PDF slips. | `10-deployment-architecture.md` |

@@ -4,7 +4,7 @@
 **Document Identifier:** `FLOW-APPENDIX-AUTH-SEC-DINK-CORE-V7.0`  
 **Classification:** Canonical Technical Architecture & Cryptographic Wire Specification (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (§4 User Roles & Permissions, §10 Security & Identity Architecture, §11 Architecture Appendices), `FLOW-ENTRY-DINK-CORE-V7.0`, `FLOW-RENTER-AUTH-DINK-CORE-V7.0`, `FLOW-OWNER-KYC-DINK-CORE-V7.0`, `FLOW-ADMIN-OPS-DINK-CORE-V7.0`, `FLOW-PHONE-MIGRATION-DINK-CORE-V7.0`, `FLOW-CONCURRENCY-LOCKING-DINK-CORE-V7.0`, `FLOW-NOTIFICATION-ROUTING-DINK-CORE-V7.0`, `FLOW-APPENDIX-NOTIF-OFFLINE-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Client Runtimes:** Go 1.24 Backend Monolith, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL  
+**Target Client Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL  
 **Target Personas:** Civil Engineering Contractor (*Dawit Haile-Mariam*), Fleet Owner (*W/ro Almaz Tesfaye*), Certified Field Operator (*Mulugeta Tadesse*), Enterprise Procurement Director (*Eng. Samuel Getachew*), Compliance Officer & Security Auditor (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Identity, Session Management, Cryptographic Storage & Secrets Protection), RFC 7519 (JSON Web Tokens), RFC 6238 (TOTP MFA), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mode) & Level AA (Admin Mode), Ethiopian Communications Authority (ECA) Electronic Signature Directives, National Bank of Ethiopia (NBE) Cyber Security Framework  
@@ -35,7 +35,7 @@
   - 5.2 [Intermittent Field Connectivity & Grace Token Buffers](#52-intermittent-field-connectivity--grace-token-buffers)
   - 5.3 [Compromised Mobile Operating Systems (Root/Jailbreak Detection)](#53-compromised-mobile-operating-systems-rootjailbreak-detection)
   - 5.4 [Cross-Border Regulatory Identity Sovereignty (`ET` vs. `KE`)](#54-cross-border-regulatory-identity-sovereignty-et-vs-ke)
-- 6. [Client UI/UX Ergonomic Specifications & Security HUD (Flutter 3.44)](#6-client-uiux-ergonomic-specifications--security-hud-flutter-344)
+- 6. [Client UI/UX Ergonomic Specifications & Security HUD (Flutter 3.47.8)](#6-client-uiux-ergonomic-specifications--security-hud-flutter-344)
   - 6.1 [Step-Up Biometric Reticle & PIN Pad ($56 \times 56\text{ dp}$)](#61-step-up-biometric-reticle--pin-pad-56-times-56text-dp)
   - 6.2 [Active Sessions & Device Management Viewport](#62-active-sessions--device-management-viewport)
   - 6.3 [Next.js Admin Console: Security Audit Logs & Session Kill Dashboard](#63-nextjs-admin-console-security-audit-logs--session-kill-dashboard)
@@ -58,7 +58,7 @@ This canonical appendix defines the platform-wide **Identity, Authentication, Cr
 * **Depot Yard Mobile & Web Portals:** Fleet Owner fleet management and dispatch views.
 * **Enterprise Web Portals (Next.js 16):** Multi-tier Corporate Requisition and Approval systems.
 * **Internal Back-Office Consoles:** Compliance, Underwriting, and Dispute Arbitration desks.
-* **Backend Monolith Core (Go 1.24):** High-throughput micro-services, background workers, and PostgreSQL storage.
+* **Backend Monolith Core (Go 1.27.3):** High-throughput micro-services, background workers, and PostgreSQL storage.
 
 Because heavy machinery transactions involve physical assets valued up to $35,000,000.00\text{ ETB}$ ($300,000\text{ USD}$), multi-million Birr commercial bank transfers, and high-hazard civil construction sites, credential compromise or session hijacking carries catastrophic real-world liabilities. This architecture implements **OWASP ASVS 4.0.3 Level 3** controls across the entire distributed lifecycle.
 
@@ -78,7 +78,7 @@ The platform defends against six critical threat vectors:
 2. **Refresh Token Rotation (RTR) with Immediate Family Invalidation:** Refresh tokens are single-use. Replay of an already-used refresh token instantly flags token theft, revoking the entire token family and terminating all active sessions for that user identity.
 3. **Asymmetric ECDSA P-256 Signatures:** Stateless JWTs are signed exclusively using ECDSA (Curve P-256, SHA-256), separating private signing authority (Go monolith auth service) from public verification across edge reverse proxies (Traefik).
 4. **Step-Up Authentication for High-Value Mutations:** Re-authentication (biometric hardware attestation or master password) is mandatory prior to executing high-risk financial or security mutations (`CHANGE_PHONE`, `MUTATE_BANK_DETAILS`, `AUTHORIZE_DISPUTE_PAYOUT`, `DRAWDOWN_CREDIT_LINE`).
-5. **Stateful Session Blacklisting in Valkey:** Global session invalidation is backed by Valkey 8.0 distributed memory with sub-millisecond lookup latency, guaranteeing instant platform-wide lockout upon account kill-switch activation.
+5. **Stateful Session Blacklisting in Valkey:** Global session invalidation is backed by Valkey 9.1.3 distributed memory with sub-millisecond lookup latency, guaranteeing instant platform-wide lockout upon account kill-switch activation.
 
 ---
 
@@ -201,8 +201,8 @@ sequenceDiagram
     actor User as User Device
     participant Gateway as Traefik API Gateway
     participant Auth as Go Monolith Auth Service
-    participant Valkey as Valkey 8.0 Distributed Cache
-    participant DB as PostgreSQL 18.4
+    participant Valkey as Valkey 9.1.3 Distributed Cache
+    participant DB as PostgreSQL 18.6
 
     User->>Gateway: POST /api/v1/auth/refresh (RefreshToken: RT_FamilyA_v1)
     Gateway->>Auth: Forward Refresh Request
@@ -372,7 +372,7 @@ To prevent memory-scraping attacks on modified field smartphones:
 
 ---
 
-## 6. Client UI/UX Ergonomic Specifications & Security HUD (Flutter 3.44)
+## 6. Client UI/UX Ergonomic Specifications & Security HUD (Flutter 3.47.8)
 
 ### 6.1 Step-Up Biometric Reticle & PIN Pad ($56 \times 56\text{ dp}$)
 

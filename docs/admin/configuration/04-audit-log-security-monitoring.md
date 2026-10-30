@@ -88,7 +88,7 @@ sequenceDiagram
     participant UI as Next.js 16 Audit Explorer
     participant SA as Server Action (verifyAuditChainAction)
     participant GoAPI as Go Monolith (Audit Verification Worker)
-    participant PG as PostgreSQL 18.4 (admin_audit_logs)
+    participant PG as PostgreSQL 18.6 (admin_audit_logs)
 
     CISO->>UI: Click "Verify HMAC Hash Chain" for Date Range
     UI->>SA: Dispatch verifyAuditChainAction(startDate, endDate)

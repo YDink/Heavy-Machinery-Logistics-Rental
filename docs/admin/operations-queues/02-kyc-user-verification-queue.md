@@ -117,8 +117,8 @@ sequenceDiagram
     participant SA as adjudicateKycAction ('use server')
     participant GoAPI as Go Auth Identity Interactor
     participant Policy as Policy Engine (REG-IDP-02-BE)
-    participant DB as PostgreSQL 18.4 (pgx.Tx)
-    participant VK as Valkey 8.0 Cache
+    participant DB as PostgreSQL 18.6 (pgx.Tx)
+    participant VK as Valkey 9.1.3 Cache
 
     Officer->>Workbench: Reviews ID Card + Selfie Liveness & Clicks "Approve Identity"
     Workbench->>SA: adjudicateKycAction({ verificationId, version: 2, decision: "APPROVE", notes })

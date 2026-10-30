@@ -1,6 +1,6 @@
 # Database Architecture & Entity Model — Dink Machinery
 
-**Database Engine:** PostgreSQL 18.4 + PostGIS Extension  
+**Database Engine:** PostgreSQL 18.6 + PostGIS Extension  
 **Access Layer:** `pgx/v5` connection pool + `sqlc` type-safe generated queries (No ORM)
 
 ---

@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Enterprise Governance Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§6.0, §6.1, §6.2, §8, §10, §12, §13.2), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
 **Target Personas:** Corporate Procurement Director (*Eng. Samuel Getachew*), Senior Project Manager (*Dawit Haile-Mariam*), Site Quantity Surveyor (*Bethlehem Tessema*), Corporate Fleet Owner Executive (*W/ro Almaz Tesfaye*), Finance Controller & Compliance Auditor (*Solomon Kassa*), Super Administrator (*Rahel Tadesse*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Separation of Duties, Multi-Party Approval Integrity & Non-Repudiation), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), Commercial Code of Ethiopia (Corporate Agency & Signing Authorities), Kenya Companies Act 2015, International Financial Reporting Standards (IFRS 16 Leases & Internal Controls)  
@@ -74,7 +74,7 @@ This document formally specifies:
 2. **Immutable Audit Trail of Voting Mandate:** Once cast, an approval vote (Approve, Reject, Abstain) is cryptographically signed and immutable. It can never be edited, deleted, or transferred retroactively. The audit record permanently commits the acting user ID, vote choice, timestamp, client IP, and justification narrative.
 3. **Deterministic Quorum Resolution SLO ($\le 15.0\text{ ms}$):** When an approver submits a vote, the quorum evaluation algorithm must synchronously resolve the stage state (remain `PENDING`, advance to `STAGE_APPROVED`, or terminate as `REJECTED`) within $< 15.0\text{ ms}$ (p99) under an ACID database transaction lock.
 4. **Veto Precedence Invariant:** If any designated approver possessing `has_veto_power = true` casts a `REJECT` vote within their assigned stage, the approval docket terminates **immediately** as `REJECTED`, short-circuiting all remaining stages, voting weights, and open approvals.
-5. **Safe Booking Lease Hold Extension:** While a requisition docket traverses an active internal approval chain, the referenced machinery asset must be held under a corporate reservation hold lease in Valkey 8.0, preventing public rediscovery while guarding against infinite deadlocks via strict stage SLA timers.
+5. **Safe Booking Lease Hold Extension:** While a requisition docket traverses an active internal approval chain, the referenced machinery asset must be held under a corporate reservation hold lease in Valkey 9.1.3, preventing public rediscovery while guarding against infinite deadlocks via strict stage SLA timers.
 
 ---
 
@@ -92,7 +92,7 @@ flowchart TD
     
     RuleMatch --> CreateDocket["Step 2: Initialize Approval Docket (APPR-DB)<br/>INSERT INTO corporate_approval_dockets<br/>Status: PENDING_APPROVAL | CurrentStage: 1"]
     
-    CreateDocket --> LockValkeyLease["Lock Fleet Hold Lease in Valkey 8.0<br/>Key: hold:corporate:{booking_id} (TTL: 48h)"]
+    CreateDocket --> LockValkeyLease["Lock Fleet Hold Lease in Valkey 9.1.3<br/>Key: hold:corporate:{booking_id} (TTL: 48h)"]
     
     LockValkeyLease --> StageDispatch["Step 3: Dispatch Stage 1 Tasks<br/>Notify Designated Stage Approvers via In-App / Push / Email"]
     

@@ -13,7 +13,7 @@
        /-------\
       / Contract\       OpenAPI Schema & Consumer-Driven Verification (15%)[cite: 24]
      /-----------\
-    / Integration \     testcontainers-go + PostgreSQL 18 + Valkey 8 (30%)[cite: 24, 32]
+    / Integration \     testcontainers-go + PostgreSQL 18.6 + Valkey 9.1.3 (30%)[cite: 24, 32]
    /---------------\
   /   Unit Tests    \   Pure Domain, BLoC States, Invariants, & Math (50%)[cite: 24]
  /-------------------\
@@ -98,12 +98,12 @@ Executed whenever an engineering increment affects endpoints shared between `bac
   ```
 
 ### 4.2 Integration Testing with `testcontainers-go`
-Integration tests assert real PostgreSQL 18.4 + PostGIS and Valkey 8.0 interactions[cite: 25, 27, 32]:
+Integration tests assert real PostgreSQL 18.6 + PostGIS and Valkey 9.1.3 interactions[cite: 25, 27, 32]:
 ```go
 func TestPaymentRepository_ConfirmPayment_AtomicTx(t *testing.T) {
     ctx := context.Background()
     pgContainer, err := postgres.RunContainer(ctx,
-        testcontainers.WithImage("postgis/postgis:18-3.4-alpine"),
+        testcontainers.WithImage("postgis/postgis:18.6-3.6.4-alpine"),
         postgres.WithDatabase("dink_test"),
         testcontainers.WithWaitStrategy(wait.ForLog("database system is ready to accept connections")),
     )
@@ -143,7 +143,7 @@ func TestFleetRepository_ExcludesSoftDeletedRecords(t *testing.T) {
 
 ---
 
-## 5. Mobile Testing Standards (Flutter 3.44)
+## 5. Mobile Testing Standards (Flutter 3.47.8)
 
 ### 5.1 BLoC Unit Testing
 All UI state mutations are tested via `bloc_test` asserting deterministic event-to-state streams[cite: 32]:

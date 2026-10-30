@@ -116,7 +116,7 @@ sequenceDiagram
     participant Form as KybVerificationForm ('use client')
     participant SA as adjudicateBusinessLicenseAction ('use server')
     participant GoAPI as Go Corporate KYB Interactor
-    participant DB as PostgreSQL 18.4 (pgx.Tx)
+    participant DB as PostgreSQL 18.6 (pgx.Tx)
 
     Officer->>Form: Enters License Expiry (2027-08-06), Checks VAT+WHT, Clicks "Approve"
     Form->>SA: adjudicateBusinessLicenseAction(formData)

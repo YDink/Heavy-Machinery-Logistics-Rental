@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-DB-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `ARCH-INTRO-DINK-CORE-V7.0`, `ARCH-PRIN-DINK-CORE-V7.0`, `ARCH-OVERVIEW-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-014`  
-**Target Runtimes:** PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine, Go 1.27.3 (`jackc/pgx/v5`, `sqlc`), Goose Migration Engine  
+**Target Runtimes:** PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, Go 1.27.3 (`jackc/pgx/v5`, `sqlc`), Goose Migration Engine  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Data Protection), RFC 9457 (Problem Details), ISO 4217, ISO 3166-1 alpha-2, Ethiopian Proclamation No. 1321/2024  
 **Status:** Approved Engineering Baseline
@@ -19,7 +19,7 @@
   - 3.1 [Schema Definitions: `categories` & `spec_field_definitions`](#31-schema-definitions-categories--spec_field_definitions)
   - 3.2 [Flattened GIN Query Target: `fleet_spec_indexed`](#32-flattened-gin-query-target-fleet_spec_indexed)
   - 3.3 [JSONB Operators & Query Optimization](#33-jsonb-operators--query-optimization)
-- 4. [Geospatial Data Architecture (PostGIS 3.4)](#4-geospatial-data-architecture-postgis-34)
+- 4. [Geospatial Data Architecture (PostGIS 3.6.4)](#4-geospatial-data-architecture-postgis-34)
   - 4.1 [Spatial Column Modeling & Coordinate Precision](#41-spatial-column-modeling--coordinate-precision)
   - 4.2 [Spatial Indexing: GiST over `geography(POINT, 4326)`](#42-spatial-indexing-gist-over-geographypoint-4326)
   - 4.3 [Spheroidal Radius & Corridor Query Execution](#43-spheroidal-radius--corridor-query-execution)
@@ -51,7 +51,7 @@
 
 ## 1. Executive Summary & Core Persistence Invariants
 
-The Dink Machinery data architecture is engineered around PostgreSQL 18.4 and PostGIS 3.4. It serves as the single transactional source of truth for high-value heavy machinery leases, logistics sub-bookings, telematics streaming, and multi-party financial settlement across Ethiopia and Kenya.
+The Dink Machinery data architecture is engineered around PostgreSQL 18.6 and PostGIS 3.6.4. It serves as the single transactional source of truth for high-value heavy machinery leases, logistics sub-bookings, telematics streaming, and multi-party financial settlement across Ethiopia and Kenya.
 
 ### The Six Persistence Invariants
 
@@ -238,7 +238,7 @@ LIMIT 50;
 
 ---
 
-## 4. Geospatial Data Architecture (PostGIS 3.4)
+## 4. Geospatial Data Architecture (PostGIS 3.6.4)
 
 Machinery discovery is driven by geography. Contractors require equipment located within defined radii of their active sites, while logistics carriers plan transit routes along regional transportation corridors.
 
@@ -740,7 +740,7 @@ max_parallel_maintenance_workers = 4
 
 ```mermaid
 flowchart LR
-    PrimaryPG[("PostgreSQL 18.4 Primary<br/>Read and Write Master")] -->|Synchronous Streaming WAL| StandbyPG[("PostgreSQL 18.4 Standby<br/>Read-Only Replica")]
+    PrimaryPG[("PostgreSQL 18.6 Primary<br/>Read and Write Master")] -->|Synchronous Streaming WAL| StandbyPG[("PostgreSQL 18.6 Standby<br/>Read-Only Replica")]
     PrimaryPG -->|Archive WAL Stream| IsolatedS3[("SeaweedFS Backup Bucket<br/>Continuous WAL Archive")]
     IsolatedS3 --> PITR["Point-in-Time Recovery Engine<br/>Recovery SLA: RPO <= 1h, RTO <= 4h"]
 ```

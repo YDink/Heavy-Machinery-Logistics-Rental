@@ -4,7 +4,7 @@
 **Document Identifier:** `FLOW-INSURANCE-CLAIM-DINK-CORE-V7.0`  
 **Classification:** Canonical Technical Architecture & Wire Protocol Specification (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (§5.13 IN-01 to IN-03, §5.7 RC-04, §8.1, §8.2, §10, §11), `FLOW-ENTRY-DINK-CORE-V7.0`, `FLOW-FLEET-REG-DINK-CORE-V7.0`, `FLOW-ACTIVE-RENTAL-DINK-CORE-V7.0`, `FLOW-RETURN-DAMAGE-DINK-CORE-V7.0`, `FLOW-ADMIN-OPS-DINK-CORE-V7.0`, `FLOW-CONCURRENCY-LOCKING-DINK-CORE-V7.0`, `FLOW-NOTIFICATION-ROUTING-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Client Runtimes:** Go 1.24 Backend Monolith, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Admin & Underwriter Portal), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL  
+**Target Client Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Admin & Underwriter Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL  
 **Target Personas:** Equipment Fleet Owner (*W/ro Almaz Tesfaye*), Civil Contractor (*Dawit Haile-Mariam*), Certified Field Operator (*Mulugeta Tadesse*), Insurance Underwriter / Loss Adjuster (*Tewodros Kassahun* / Awash Insurance S.C.), Back-Office Compliance Arbitrator (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Tamper-Evident Media, Identity Attestation & Immutable Auditability), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mode) & Level AA (Admin Mode), National Bank of Ethiopia (NBE) Directives on Insurance Underwriting Escrow, Ethiopian Insurance Corporation (EIC) / Insurance Regulatory Authority of Kenya (IRA) Statutory Claim Filing Mandates  
@@ -224,7 +224,7 @@ sequenceDiagram
     actor Adjuster as Loss Adjuster (Tewodros)
     participant Portal as Next.js Admin & Underwriter Portal
     participant Monolith as Go Monolith Core
-    participant DB as PostgreSQL 18.4
+    participant DB as PostgreSQL 18.6
     actor Owner as Fleet Owner (Almaz)
     actor Renter as Contractor (Dawit)
 

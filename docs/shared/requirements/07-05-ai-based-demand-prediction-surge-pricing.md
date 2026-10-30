@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Algorithmic Intelligence Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§5.2, §5.4, §5.5, §5.9, §6.3, §7.0, §7.1, §7.2, §7.3, §7.4, §7.5, §8, §10, §11, §12, §13.2), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `FLOW-COMMISSION-DEBT-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, Python 3.12 ML Inference Microservice (gRPC :50051), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Python 3.12 ML Inference Microservice (gRPC :50051), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
 **Target Personas:** Equipment Fleet Owner (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Corporate Finance Controller & Pricing Strategist (*Solomon Kassa*), Regional Fleet Operations Manager (*Kassahun Mekonnen*), Compliance Officer & Algorithmic Auditor (*Yohannes Bekele*), Super Administrator (*Rahel Tadesse*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Algorithmic Fairness, Transparent Tariff Disclosure & Model Output Sanitization), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), Commercial Code of Ethiopia (Price Gouging Prohibitions & Fair Trade Practices Proclamation No. 813/2013), Kenya Competition Act (Cap 504 - Restrictive Trade Practices & Excessive Pricing Rules), International Financial Reporting Standards (IFRS 15 Revenue Recognition)  
@@ -36,7 +36,7 @@
 - 5. [Model Training, Offline Inference & Fallback Safety Layers (`AI-04`)](#5-model-training-offline-inference--fallback-safety-layers-ai-04)
   - 5.1 [Model Architecture (Gradient-Boosted Decision Trees & Temporal Fusion Transformers)](#51-model-architecture-gradient-boosted-decision-trees--temporal-fusion-transformers)
   - 5.2 [Batch Offline Pre-Calculation vs. Sub-50ms Real-Time Inference](#52-batch-offline-pre-calculation-vs-sub-50ms-real-time-inference)
-  - 5.3 [Valkey 8.0 In-Memory Tariff Snapshot Caching & TTL Eviction](#53-valkey-80-in-memory-tariff-snapshot-caching--ttl-eviction)
+  - 5.3 [Valkey 9.1.3 In-Memory Tariff Snapshot Caching & TTL Eviction](#53-valkey-80-in-memory-tariff-snapshot-caching--ttl-eviction)
   - 5.4 [Degraded State Circuit Breakers & Static Catalog Fallbacks](#54-degraded-state-circuit-breakers--static-catalog-fallbacks)
 - 6. [Relational Database Schema & Data Modeling (`AI-DB`)](#6-relational-database-schema--data-modeling-ai-db)
   - 6.1 [Entity Relationship Diagram](#61-entity-relationship-diagram)
@@ -70,7 +70,7 @@ This document formally specifies:
 1. The multi-factor data ingestion and feature engineering pipeline capturing telemetry, search velocity, macroeconomic project indicators, and weather signals (`AI-01`).
 2. The dynamic surge multiplier engine and non-exploitative, anti-gouging regulatory boundaries (`AI-02`).
 3. Owner-side yield optimization controls, automated markdown triggers, and dynamic booking floor parameters (`AI-03`).
-4. gRPC-based low-latency inference runtimes, Valkey 8.0 caching snapshots, and fail-safe circuit breaker fallbacks (`AI-04`).
+4. gRPC-based low-latency inference runtimes, Valkey 9.1.3 caching snapshots, and fail-safe circuit breaker fallbacks (`AI-04`).
 
 ### 1.2 Core Pricing Invariants & Algorithmic Governance Principles
 
@@ -79,11 +79,11 @@ This document formally specifies:
    Any pricing recommendation breaching these mathematical bounds is truncated by the Go domain middleware before persistence or client quotation, preventing price gouging under Ethiopian Fair Trade Directives and Kenya Competition Authority rules.
 2. **Owner-Defined Absolute Price Floor Invariant ($\mathcal{R}_{\text{min}}$):** Regardless of predicted depression in demand or wet-weather discounting, the system must never publish a daily rental rate lower than the equipment owner's explicit minimum reserve rate:
    $$\mathcal{R}_{\text{effective\_daily}} \ge \mathcal{R}_{\text{owner\_hard\_floor}} \quad (\text{Non-Negotiable})$$
-3. **Sub-50ms Synchronous Quotation SLO:** Evaluating dynamic pricing for search discovery listings, map pins, and checkout quotes must resolve in $< 50\text{ ms}$ (p99). Pricing evaluation must read pre-computed, quantized spatial multipliers from Valkey 8.0 hot cache layers without blocking on real-time external ML model inference.
+3. **Sub-50ms Synchronous Quotation SLO:** Evaluating dynamic pricing for search discovery listings, map pins, and checkout quotes must resolve in $< 50\text{ ms}$ (p99). Pricing evaluation must read pre-computed, quantized spatial multipliers from Valkey 9.1.3 hot cache layers without blocking on real-time external ML model inference.
 4. **Transparent Explainability & Line-Item Disclosure (OWASP ASVS §4.2):** A contractor presented with a dynamically adjusted tariff must receive an itemized breakdown disclosing:
    $$\text{FinalDailyRate} = \text{BaseCatalogRate} \pm \text{DemandAdjustmentLineItem}$$
    The UI must clearly render the demand factor (e.g., *"Dry Season Peak Infrastructure Demand: +15%"* or *"Wet Season Extended Deployment Discount: -12%"*), guaranteeing algorithmic transparency.
-5. **Double-Entry Financial Accounting Parity:** All dynamically evaluated adjustments are committed to PostgreSQL 18.4 as exact 64-bit integer minor currency units. Platform service commission ($10.0\%$ base hire) is assessed on the final dynamically adjusted rate, guaranteeing exact double-entry ledger balance parity down to zero minor units.
+5. **Double-Entry Financial Accounting Parity:** All dynamically evaluated adjustments are committed to PostgreSQL 18.6 as exact 64-bit integer minor currency units. Platform service commission ($10.0\%$ base hire) is assessed on the final dynamically adjusted rate, guaranteeing exact double-entry ledger balance parity down to zero minor units.
 
 ---
 
@@ -103,7 +103,7 @@ flowchart TD
     S3 --> FeaturePipeline
     S4 --> FeaturePipeline
 
-    FeaturePipeline --> FeatureStore["Feature Vector Storage (PostgreSQL 18.4 + Valkey 8.0)<br/>Spatial H3 Hexagonal Grid (Resolution 7 / ~5km radius)"]
+    FeaturePipeline --> FeatureStore["Feature Vector Storage (PostgreSQL 18.6 + Valkey 9.1.3)<br/>Spatial H3 Hexagonal Grid (Resolution 7 / ~5km radius)"]
 
     FeatureStore --> MLInference["AI Inference Engine (Python 3.12 / gRPC :50051)<br/>LightGBM + Spatio-Temporal Demand Predictor<br/>Forecast Horizon: 14 to 30 Days Forward"]
 
@@ -114,7 +114,7 @@ flowchart TD
     OwnerConfigCheck -->|"Owner Mode: MANUAL_FIXED"| FixedRate["Bypass Dynamic Adjustment<br/>Apply Fixed Base Listing Tariff"]
     OwnerConfigCheck -->|"Owner Mode: DYNAMIC_OPTIMIZED"| ApplySurge["Apply Multiplier to Fleet Base Rate<br/>Assert R_effective >= Owner Hard Floor"]
 
-    FixedRate --> QuantizeCache["Quantize & Commit to Valkey 8.0 Hot Cache<br/>Key: pricing:h3:{h3_index}:{subcategory_id}<br/>TTL: 3,600 Seconds (1 Hour)"]
+    FixedRate --> QuantizeCache["Quantize & Commit to Valkey 9.1.3 Hot Cache<br/>Key: pricing:h3:{h3_index}:{subcategory_id}<br/>TTL: 3,600 Seconds (1 Hour)"]
     ApplySurge --> QuantizeCache
 
     QuantizeCache --> FastDiscovery["Sub-50ms Fast Discovery & Quotation Ingestion<br/>Next.js Web Portal & Flutter Mobile App"]
@@ -292,18 +292,18 @@ The machine learning prediction service (`dink-ml-engine`) combines two compleme
 To reconcile machine learning complexity with sub-50ms API performance:
 * **The Hybrid Serving Standard:**
   - The ML inference worker executes batch spatial scoring every **60 minutes**, calculating surge multipliers for all active H3 grid cells across Ethiopia and Kenya.
-  - Multipliers are written directly to Valkey 8.0 hot cache clusters as byte-packed string keys.
+  - Multipliers are written directly to Valkey 9.1.3 hot cache clusters as byte-packed string keys.
   - When a contractor browses machinery, the Go backend performs an $O(1)$ memory lookup in Valkey:
     `HGET pricing:h3:871f1448bffffff cat_sub_excavator_std`
   - Latency is strictly bounded to $< 5.0\text{ ms}$ for cache hits.
 
 ---
 
-### 5.3 Valkey 8.0 In-Memory Tariff Snapshot Caching & TTL Eviction
+### 5.3 Valkey 9.1.3 In-Memory Tariff Snapshot Caching & TTL Eviction
 
 ```text
 +--------------------------------------------------------------------------------------------------+
-| VALKEY 8.0 HOT PRICING CACHE KEY SPECIFICATION (AI-04)                                           |
+| VALKEY 9.1.3 HOT PRICING CACHE KEY SPECIFICATION (AI-04)                                           |
 +---------------------+-------------------+---------------------+----------------------------------+
 | CACHE KEY PATTERN   | DATA STRUCTURE    | TIME-TO-LIVE (TTL)  | CONTENT & ENCODING               |
 +---------------------+-------------------+---------------------+----------------------------------+
@@ -716,7 +716,7 @@ flowchart TD
 1. **OpenAPI Schema Contract Gate (`kin-openapi`):** Validates all dynamic pricing evaluation, owner configuration, surge map visualization, and administrative override schemas against `contracts/openapi.yaml`.
 2. **Asymmetric Bounding Mathematical Fuzzing Test:** Streams 2,000 extreme feature combinations (zero supply with infinite search velocity; torrential rain with zero demand). Asserts that $100\%$ of calculated surge multipliers remain strictly within the closed interval $[0.75, 1.40]$.
 3. **Owner Reserve Floor Assertion:** Simulates 500 equipment assets with aggressive clearance markdown triggers. Verifies that under zero operational conditions does the effective rental rate drop below `min_daily_rate_minor`.
-4. **Sub-50ms Latency Performance Benchmark:** Executes 10,000 parallel requests across Valkey 8.0 hot cache clusters, asserting that spatial surge resolution achieves p95 latency $< 15\text{ ms}$ and p99 latency $< 40\text{ ms}$.
+4. **Sub-50ms Latency Performance Benchmark:** Executes 10,000 parallel requests across Valkey 9.1.3 hot cache clusters, asserting that spatial surge resolution achieves p95 latency $< 15\text{ ms}$ and p99 latency $< 40\text{ ms}$.
 5. **Degraded State Circuit Breaker Test:** Force-terminates the Python gRPC ML inference microservice on port `:50051`. Asserts that the Go backend trips the circuit breaker within $50\text{ ms}$, reverts all pricing calculations to $\mathcal{S}_{\text{surge}} = 1.00\times$, and executes checkouts with zero HTTP 500 error spills.
 
 ---

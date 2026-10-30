@@ -38,7 +38,7 @@ To avoid divergence between system architecture documentation and partition-leve
                                                ▼
                                   ┌─────────────────────────┐
                                   │  Multi-Tier Scaffolding │  backend/ (Go 1.27.3)
-                                  │  & Implementation       │  mobile/  (Flutter 3.44)
+                                  │  & Implementation       │  mobile/  (Flutter 3.47.8)
                                   └─────────────────────────┘  admin/   (Next.js 16)
 ```
 

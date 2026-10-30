@@ -110,7 +110,7 @@ sequenceDiagram
     participant ConsoleUI as LogisticsDispatchWorkbench ('use client')
     participant SA as dispatchReplacementCarrierAction ('use server')
     participant GoAPI as Go Logistics & Booking Interactor
-    participant DB as PostgreSQL 18.4 + PostGIS 3.4 (pgx.Tx)
+    participant DB as PostgreSQL 18.6 + PostGIS 3.6.4 (pgx.Tx)
 
     Dispatcher->>ConsoleUI: Selects Parent #BK-9085 & Compatible Lowboy #FLT-881 (45T >= 37.5T)
     ConsoleUI->>SA: dispatchReplacementCarrierAction(formData)

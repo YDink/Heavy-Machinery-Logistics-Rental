@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-OWN-06`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (§5.2.4, §5.2.6, §5.23, `FL-16`..`FL-24`, `FL-28`..`FL-36`, `HOL-01`..`HOL-03`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Equipment Fleet Owner & Depot Yard Manager (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*)  
 **Associated Requirements:** `REQ-05-02` (`FL-16`..`FL-24`, `FL-28`..`FL-36`), `REQ-05-23` (`HOL-01`..`HOL-03` / `HC-01`..`HC-05` Ethiopian Public Holiday & Movable Feast Calendar)  
 **Associated Interaction Flows:** `FLOW-03` (Tariff & Calendar Setup), `FLOW-07` (Cancellation Penalty Tiers), `FLOW-11` (Lowboy Corridor Freight Ban Interlock)  
@@ -22,7 +22,7 @@ The **Interactive Availability Calendar & Commercial Tariff Configuration** scre
    - Renders a monthly calendar grid displaying both **Gregorian** and **Ethiopian Ge'ez (`EC`)** dates side-by-side in each day cell (e.g., `Sep 11 / መስከረም 1`).
    - Day cells are color-coded by immutable reservation or blackout state:
      - **`AVAILABLE`:** Open for booking.
-     - **`BOOKED_ACTIVE` / `HOLD_PENDING`:** Locked by an existing contractor booking (`EXCLUDE USING gist` in PostgreSQL 18.4). Cannot be modified or unblocked by the owner.
+     - **`BOOKED_ACTIVE` / `HOLD_PENDING`:** Locked by an existing contractor booking (`EXCLUDE USING gist` in PostgreSQL 18.6). Cannot be modified or unblocked by the owner.
      - **`MAINTENANCE_BLACKOUT`:** Owner-defined maintenance, servicing, or private-use blackout window created via single-tap or multi-day touch-drag selection (`FL-35`).
      - **`STATUTORY_HOLIDAY` (`HC-01`..`HC-05` / `HOL-01`):** Highlighted with a cultural/religious feast badge (Fixed National, Orthodox Computus *Bahire Hasab* such as *Fasika* / *Timket* / *Meskel*, or Islamic Lunar *Eid al-Fitr* / *Eid al-Adha* / *Mawlid*).
 2. **Wet Rate, Dry Rate & Per-Kilometer Logistics Tariff Configuration (`FL-16`..`FL-21`):**

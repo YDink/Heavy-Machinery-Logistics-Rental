@@ -78,8 +78,8 @@ sequenceDiagram
     participant Studio as Next.js 16 Table Customizer UI
     participant SA as Server Action (updateAdminTableConfigAction)
     participant GoAPI as Go Monolith (SDUI Metadata Handler)
-    participant PG as PostgreSQL 18.4
-    participant VK as Valkey 8.0 Pub/Sub
+    participant PG as PostgreSQL 18.6
+    participant VK as Valkey 9.1.3 Pub/Sub
 
     SuperAdmin->>Studio: Reorder Columns, Update Badge Map & Click "Save & Hot-Reload Schema"
     Studio->>SA: Dispatch updateAdminTableConfigAction(payload)

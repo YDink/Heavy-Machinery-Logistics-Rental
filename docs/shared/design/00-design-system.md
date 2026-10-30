@@ -4,7 +4,7 @@
 **Document Identifier:** `DS-DINK-CORE-V7.0`  
 **Classification:** Canonical Design System Specification & UI/UX Engineering Baseline (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `ARCH-INTRO-DINK-CORE-V7.0` through `ARCH-ROADMAP-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-014`  
-**Target Client Runtimes:** Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Desktop Admin Web Console), Tailwind CSS v4, Radix UI Primitives, Lucide Icons  
+**Target Client Runtimes:** Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Desktop Admin Web Console), Tailwind CSS v4, Radix UI Primitives, Lucide Icons  
 **Target Personas:** Field Operators (Excavator/Crane Drivers), Fleet Owners (Yard Managers), Renters (Civil Contractors), Administrative Compliance & Dispute Arbitrators  
 **Target Operating Environments:** Harsh Field Conditions (Direct Sunlight $> 80,000\text{ lux}$, Heavy Dust, Vibration, Glove Usage) & High-Density Back-Office Desktops  
 **Compliance Standards:** W3C WCAG 2.2 Level AAA (Field/Outdoor Mode), WCAG 2.2 Level AA (Indoor/Admin Console), W3C Design Tokens Community Group (DTCG) Specification, ISO 9241-110 (Ergonomics of Human-System Interaction)  

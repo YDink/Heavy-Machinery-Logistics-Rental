@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Architecture Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§5.6, §8, §10, §11), `FLOW-ACTIVE-RENTAL-DINK-CORE-V7.0` (Interaction Flow 09), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `FLOW-INSURANCE-CLAIM-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
 **Target Personas:** Certified Field Operator (*Mulugeta Tadesse* / *Juma Omwamba*), Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Fleet Owner & Yard Manager (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Compliance Officer & Arbitrator (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Business Logic Integrity, Concurrency & Cryptographic Attestation), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), National Bank of Ethiopia (NBE) Directives, Kenya Data Protection Act 2019  
@@ -32,7 +32,7 @@
 - 5. [Rental Extension Engine & Rate Differential Settlement](#5-rental-extension-engine--rate-differential-settlement)
   - 5.1 [Extension Request Submission & Concurrency Checks (`AR-04`)](#51-extension-request-submission--concurrency-checks-ar-04)
   - 5.2 [Rate Differential Financial Accounting & Prepayment Ingestion](#52-rate-differential-financial-accounting--prepayment-ingestion)
-  - 5.3 [GiST Temporal Range Expansion in PostgreSQL 18.4](#53-gist-temporal-range-expansion-in-postgresql-184)
+  - 5.3 [GiST Temporal Range Expansion in PostgreSQL 18.6](#53-gist-temporal-range-expansion-in-postgresql-184)
 - 6. [Mechanical Breakdown, Stoppage Logging & Timer Pausing](#6-mechanical-breakdown-stoppage-logging--timer-pausing)
   - 6.1 [Mechanical Breakdown Logging & Photo Ingestion (`AR-05`)](#61-mechanical-breakdown-logging--photo-ingestion-ar-05)
   - 6.2 [Automated Shift Timer Pausing & SLA Clocks](#62-automated-shift-timer-pausing--sla-clocks)
@@ -319,7 +319,7 @@ $$\text{Incremental Prepayment Due (50\%)} = \lfloor \text{Incremental Gross Fee
 
 ---
 
-### 5.3 GiST Temporal Range Expansion in PostgreSQL 18.4
+### 5.3 GiST Temporal Range Expansion in PostgreSQL 18.6
 
 Once the extension prepayment is verified by the equipment owner, the relational range is expanded within an ACID transaction:
 

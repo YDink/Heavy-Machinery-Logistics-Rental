@@ -8,7 +8,7 @@
 
 ## 1. Overview & Core Architectural Invariants
 
-This document establishes the mandatory API conventions for all internal and external HTTP services across Dink Machinery. Every endpoint implemented in the Go 1.27.3 modular monolith, consumed by the Flutter 3.44 mobile client, or called by the Next.js 16 administrative console must adhere strictly to these conventions.
+This document establishes the mandatory API conventions for all internal and external HTTP services across Dink Machinery. Every endpoint implemented in the Go 1.27.3 modular monolith, consumed by the Flutter 3.47.8 mobile client, or called by the Next.js 16 administrative console must adhere strictly to these conventions.
 
 ### Summary of Platform Invariants
 1. **Universal Response Envelope:** Raw unadorned JSON models, flat arrays, or plain text responses are forbidden. Every response must resolve to either a Success or RFC 9457 Error envelope.
@@ -331,7 +331,7 @@ To prevent lost updates in multi-tenant workflows (e.g., simultaneous booking co
 
 ## 9. Geospatial Query Conventions
 
-Geospatial discovery endpoints leverage the PostGIS spatial engine (`PostgreSQL 18.4 + PostGIS 3.4`).
+Geospatial discovery endpoints leverage the PostGIS spatial engine (`PostgreSQL 18.6 + PostGIS 3.6.4`).
 
 ### 9.1. Coordinates & Projections
 - Spatial coordinates must use the **WGS 84** coordinate reference system (`SRID 4326`).

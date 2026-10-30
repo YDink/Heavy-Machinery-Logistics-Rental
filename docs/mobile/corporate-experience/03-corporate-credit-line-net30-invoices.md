@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-CRP-03`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/06-03-corporate-pricing-payment.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Corporate Finance Controller (*Solomon Kassa*), Corporate Procurement Director (*Eng. Samuel Getachew*)  
 **Associated Requirements:** `REQ-06-03` (`CORP-PRICE`, `CORP-CREDIT`, `CORP-PO`, `CORP-INV`), `REQ-05-05` (`ADR-010` Non-Custodial Direct Settlement)  
 **Associated Interaction Flows:** `FLOW-14` (Corporate Credit Booking), `FLOW-08` (Direct Corporate Bank Settlement + WHT Voucher Upload)  
@@ -114,11 +114,11 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor FinCtrl as Finance Controller (Flutter 3.44)
+    actor FinCtrl as Finance Controller (Flutter 3.47.8)
     participant CreditBloc as CorporateCreditInvoiceBloc
     participant API as Go Monolith (/api/v1/corporate/invoices)
     participant ClamAV as ClamAV Daemon (:3310)
-    participant PG as PostgreSQL 18.4 (Append-Only Ledger)
+    participant PG as PostgreSQL 18.6 (Append-Only Ledger)
 
     FinCtrl->>CreditBloc: Select Statement #INV-2026-10 & Tap "Upload Wire + WHT Cert"
     FinCtrl->>CreditBloc: Attach CBE RTGS Slip (ETB 949,200.00) + MOR WHT Voucher (ETB 16,800.00)

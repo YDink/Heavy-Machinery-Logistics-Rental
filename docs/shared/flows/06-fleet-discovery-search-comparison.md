@@ -4,7 +4,7 @@
 **Document Identifier:** `FLOW-DISCOVERY-DINK-CORE-V7.0`  
 **Classification:** Canonical Interaction Flow & Wire Protocol Specification (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (§5.4 SR-01 to SR-08, §5.2.2 FL-14/FL-15, §5.2.5 FL-28 to FL-31), `FLOW-ENTRY-DINK-CORE-V7.0`, `FLOW-RENTER-AUTH-DINK-CORE-V7.0`, `FLOW-FLEET-REG-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `DS-TOKENS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-004`, `ADR-007`, `ADR-010`  
-**Target Client Runtimes:** Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Desktop Web), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, Isar NoSQL  
+**Target Client Runtimes:** Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Desktop Web), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, Isar NoSQL  
 **Target Personas:** Civil Engineering Contractor / Commercial Renter (*Dawit Haile-Mariam* / *Patrick Kariuki*), Fleet Owner (*W/ro Almaz Tesfaye*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mode) & Level AA (Web Console), Ethiopian Personal Data Protection Proclamation No. 1321/2024  
@@ -81,7 +81,7 @@ flowchart TD
     TextSearch --> ExecuteQuery
     MapSearch --> ExecuteQuery
 
-    ExecuteQuery --> PostGIS["PostgreSQL 18.4 Engine:<br/>1. Spatial Filter: ST_DWithin(location, Point, Radius)<br/>2. Full-Text Rank: ts_rank_cd(tsv, query)<br/>3. EAV Spec Filter: fleet_spec_indexed & values<br/>4. Availability Filter: Exclusion of Active Bookings"]
+    ExecuteQuery --> PostGIS["PostgreSQL 18.6 Engine:<br/>1. Spatial Filter: ST_DWithin(location, Point, Radius)<br/>2. Full-Text Rank: ts_rank_cd(tsv, query)<br/>3. EAV Spec Filter: fleet_spec_indexed & values<br/>4. Availability Filter: Exclusion of Active Bookings"]
 
     PostGIS --> ResultsView["Render Search Results Shell<br/>Toggle: Clustered Map View vs. Paginated List Cards"]
 

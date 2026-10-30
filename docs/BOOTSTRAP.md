@@ -24,8 +24,8 @@ Ensure the host workstation meets the required toolchain specifications before s
 | Runtime / Tool | Required Version | Verification Command | Purpose |
 |---|---|---|---|
 | **Go** | `1.27.3` | `go version` | Backend modular monolith engine |
-| **Flutter / Dart** | `3.44` / `3.9.x` | `flutter --version` | Cross-platform mobile client |
-| **Node.js / npm** | `22.x LTS` / `10.x+` | `node -v && npm -v` | Admin web console & contract tooling |
+| **Flutter / Dart** | `3.47.8` / `3.9.x` | `flutter --version` | Cross-platform mobile client |
+| **Node.js / npm** | `26.13.0` / `10.x+` | `node -v && npm -v` | Admin web console & contract tooling |
 | **Docker Engine & Compose** | `27.x+` / `v2.x+` | `docker compose version` | Local containerized infrastructure |
 | **Spectral CLI** | `v6.x+` | `npx @stoplight/spectral-cli -v` | OpenAPI 3.1.0 contract linting |
 | **sqlc** | `v1.27+` | `sqlc version` | Type-safe SQL code generation |
@@ -289,7 +289,7 @@ cd ..
 
 ---
 
-### Step 4: Flutter Mobile Subsystem Bootstrap (Flutter 3.44)
+### Step 4: Flutter Mobile Subsystem Bootstrap (Flutter 3.47.8)
 
 Scaffold the cross-platform mobile workspace, pin dependencies, and establish the feature-first Clean Architecture hierarchy.
 
@@ -436,8 +436,8 @@ Once all verification checks pass:
    git add .
    git commit -m "[BOOTSTRAP] feat(platform): complete phase 1 repository bootstrap
 
-   Initialized Go 1.27.3 modular monolith, Flutter 3.44 mobile client, Next.js 16
-   admin console, PostgreSQL 18.4 + PostGIS baseline schema, and Lefthook governance.
+   Initialized Go 1.27.3 modular monolith, Flutter 3.47.8 mobile client, Next.js 16
+   admin console, PostgreSQL 18.6 + PostGIS baseline schema, and Lefthook governance.
 
    Tests: All baseline subsystem compilation and test suites passing.
    Docs: CONTEXT.md, docs/quality/BOOTSTRAP_CHECKLIST.md

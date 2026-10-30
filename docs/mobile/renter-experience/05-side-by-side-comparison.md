@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-RNT-05`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/05-04-fleet-discovery-search-comparison.md`, `05-15-search-discovery-enhancements.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Corporate Procurement Director (*Eng. Samuel Getachew*)  
 **Associated Requirements:** `REQ-05-04` (`FD-15`..`FD-17`, `SR-08`), `REQ-05-15` (§5.1..§5.4 Relational Dynamic Pivoting over `is_comparable = true`, Diff Highlighting, PDF Procurement Export)  
 **Associated Interaction Flows:** `FLOW-04` (`FLOW-DISCOVERY-DINK-CORE-V7.0`), `FLOW-06`  
@@ -106,11 +106,11 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Renter as Contractor / QS (Flutter 3.44)
+    actor Renter as Contractor / QS (Flutter 3.47.8)
     participant CmpBloc as FleetComparisonBloc
     participant API as Go Monolith (/api/v1/discovery/compare/matrix)
-    participant PG as PostgreSQL 18.4
-    participant Valkey as Valkey 8.0
+    participant PG as PostgreSQL 18.6
+    participant Valkey as Valkey 9.1.3
 
     Renter->>CmpBloc: Launch Comparison (fleetIds: [flt_1, flt_2, flt_3])
     CmpBloc->>API: POST /api/v1/discovery/compare/matrix {fleetIds: [...], jobSiteLat, jobSiteLng}

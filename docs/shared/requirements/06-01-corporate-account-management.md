@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Corporate Governance Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§6.0, §6.1, §8, §10, §12, §13.2), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
 **Target Personas:** Corporate Procurement Director (*Eng. Samuel Getachew*), Senior Project Manager (*Dawit Haile-Mariam*), Site Quantity Surveyor (*Bethlehem Tessema*), Corporate Fleet Owner Executive (*W/ro Almaz Tesfaye*), Compliance Officer & Legal Counsel (*Yohannes Bekele*), Finance Controller (*Solomon Kassa*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Multi-Tenancy Isolation, Identity Governance, Session Segregation & Cryptographic Proof), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), Commercial Code of Ethiopia (2021 Book II — Business Organizations), National Bank of Ethiopia (NBE) Financial Directives, Kenya Companies Act 2015, Kenya Data Protection Act 2019  
@@ -31,7 +31,7 @@
   - 4.1 [Enterprise Role Taxonomy (Admin, Approver, Requester, Viewer)](#41-enterprise-role-taxonomy-admin-approver-requester-viewer)
   - 4.2 [Tiered Auto-Approval Spending Thresholds (`AutoApprovalLimit`)](#42-tiered-auto-approval-spending-thresholds-autoapprovallimit)
   - 4.3 [Cryptographic Invitation & Onboarding Lifecycle](#43-cryptographic-invitation--onboarding-lifecycle)
-  - 4.4 [PostgreSQL 18.4 Row-Level Security (RLS) Tenant Isolation](#44-postgresql-184-row-level-security-rls-tenant-isolation)
+  - 4.4 [PostgreSQL 18.6 Row-Level Security (RLS) Tenant Isolation](#44-postgresql-184-row-level-security-rls-tenant-isolation)
 - 5. [Personal vs. Corporate Dual-Persona Context Switching (`CORP-03`)](#5-personal-vs-corporate-dual-persona-context-switching-corp-03)
   - 5.1 [Zero-Reauth Session Compartmentalization & Claims Structuring](#51-zero-reauth-session-compartmentalization--claims-structuring)
   - 5.2 [Valkey In-Memory Active Tenant Context Binding](#52-valkey-in-memory-active-tenant-context-binding)
@@ -69,7 +69,7 @@ This document formally specifies:
 1. The corporate legal entity registration, KYC dossier ingestion, trade license verification, and tax authority (TIN) validation pipeline (`CORP-01`).
 2. The multi-tenant organizational structure establishing granular enterprise role hierarchies (*Corporate Admin*, *Approver*, *Requester*, *Viewer*) and auto-approval spend limits (`CORP-02`).
 3. The seamless, zero-reauth context-switching engine enabling users to toggle between personal retail accounts and corporate enterprise workspaces across mobile and web viewports (`CORP-03`).
-4. The Row-Level Security (RLS) tenant isolation architecture in PostgreSQL 18.4 and session security layers in Valkey 8.0.
+4. The Row-Level Security (RLS) tenant isolation architecture in PostgreSQL 18.6 and session security layers in Valkey 9.1.3.
 
 ### 1.2 Core Enterprise Invariants & Multi-Tenancy Principles
 
@@ -117,7 +117,7 @@ flowchart TD
 
 ### 2.2 Corporate Organization Lifecycle Taxonomy (`OrgState`)
 
-Every corporate enterprise entity in PostgreSQL 18.4 is governed by an immutable state enumeration:
+Every corporate enterprise entity in PostgreSQL 18.6 is governed by an immutable state enumeration:
 
 | Status Key | Can Members Transact? | Public Fleet Listing Visibility | Operational System Behavior |
 |---|:---:|:---:|---|
@@ -312,7 +312,7 @@ To onboard employees into a corporate organization:
 
 ---
 
-### 4.4 PostgreSQL 18.4 Row-Level Security (RLS) Tenant Isolation
+### 4.4 PostgreSQL 18.6 Row-Level Security (RLS) Tenant Isolation
 
 Every corporate operational query enforces Row-Level Security:
 
@@ -367,7 +367,7 @@ Users should never log out to switch between personal and corporate duties:
 
 When a user calls `POST /api/v1/auth/switch-context`:
 1. Go backend validates that `users.id` holds an active, non-suspended membership in the requested `organization_id`.
-2. Updates the active context pointer in Valkey 8.0:
+2. Updates the active context pointer in Valkey 9.1.3:
    ```text
    SET user:active_context:usr_018f6a9e-876b-7341 '{"orgId":"org_019a8f2c-8812","role":"CORP_ADMIN"}' EX 86400
    ```
@@ -779,7 +779,7 @@ flowchart TD
 2. **Multi-Tenant RLS Isolation Leakage Test:** Seeds a database with two competing corporate organizations (`Org A` and `Org B`). Executes 1,000 parallel queries under `Org A` context claims, asserting that zero rows belonging to `Org B` are returned under any query structure.
 3. **In-Flight ClamAV Corporate Ingestion Gate:** Streams an `EICAR` test signature file into the corporate trade license upload multipart endpoint across TCP socket `:3310`. Asserts that the Go backend terminates the upload, returns HTTP 422 `ERR_FILE_MALWARE_DETECTED`, and commits zero files to SeaweedFS S3.
 4. **Auto-Approval Threshold Boundary Benchmark:** Simulates 500 booking requisitions with values spanning $1.00\text{ ETB}$ below and above member limits. Asserts that $100\%$ of below-limit requisitions self-approve to `PENDING_PAYMENT`, while $100\%$ of above-limit requisitions halt under `PENDING_CORPORATE_APPROVAL`.
-5. **Context Switch Latency SLO Gate:** Executes 2,000 rapid context toggles across Valkey 8.0, verifying that active context updating and new token signing complete with p99 latency $< 25\text{ ms}$.
+5. **Context Switch Latency SLO Gate:** Executes 2,000 rapid context toggles across Valkey 9.1.3, verifying that active context updating and new token signing complete with p99 latency $< 25\text{ ms}$.
 
 ---
 

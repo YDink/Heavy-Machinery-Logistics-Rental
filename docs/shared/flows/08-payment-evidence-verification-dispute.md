@@ -4,7 +4,7 @@
 **Document Identifier:** `FLOW-PAYMENT-DISPUTE-DINK-CORE-V7.0`  
 **Classification:** Canonical User Interaction Flow & Wire Protocol Specification (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (§5.5.2 BK-06 to BK-13, §5.9 CW-01 to CW-04, §8.1, §8.2), `FLOW-ENTRY-DINK-CORE-V7.0`, `FLOW-RENTER-AUTH-DINK-CORE-V7.0`, `FLOW-OWNER-KYC-DINK-CORE-V7.0`, `FLOW-FLEET-REG-DINK-CORE-V7.0`, `FLOW-DISCOVERY-DINK-CORE-V7.0`, `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-005`, `ADR-010`  
-**Target Client Runtimes:** Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Admin Web Console), Go 1.24 Backend Monolith, PostgreSQL 18.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3 Cluster  
+**Target Client Runtimes:** Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Admin Web Console), Go 1.27.3 Backend Monolith, PostgreSQL 18.6, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3 Cluster  
 **Target Personas:** Civil Engineering Contractor / Commercial Renter (*Dawit Haile-Mariam* / *Patrick Kariuki*), Fleet Owner & Depot Yard Manager (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Back-Office Compliance Officer & Dispute Arbitrator (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Secure Document Ingestion & Integrity), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mode) & Level AA (Admin Mode), National Bank of Ethiopia (NBE) Directives on Non-Custodial Marketplace Settlements, Ethiopian Personal Data Protection Proclamation No. 1321/2024  
@@ -189,7 +189,7 @@ sequenceDiagram
     participant Monolith as Go Monolith Core
     participant ClamAV as ClamAV Daemon (:3310)
     participant S3 as SeaweedFS S3 Cluster
-    participant DB as PostgreSQL 18.4
+    participant DB as PostgreSQL 18.6
     actor Almaz as Fleet Owner (Almaz)
 
     Dawit->>Client: Snap/Select Bank Receipt Screenshot
@@ -360,7 +360,7 @@ sequenceDiagram
     actor Admin as Compliance Officer (Yohannes)
     participant Web as Next.js 16 Web Admin Console
     participant Monolith as Go Monolith Core
-    participant DB as PostgreSQL 18.4
+    participant DB as PostgreSQL 18.6
     actor Dawit as Contractor (Dawit)
     actor Almaz as Fleet Owner (Almaz)
 

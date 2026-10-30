@@ -4,8 +4,8 @@
 **Document Identifier:** `ARCH-UIUX-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture, Sequence Choreography & UX Baseline (Single Source of Truth)  
 **Governing Specifications:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `contracts/openapi.yaml`, `ADR-013` (OTA Typography)  
-**Target Platforms:** Flutter 3.44 Mobile (iOS & Android), Next.js 16 Admin Web Console (Desktop & Tablet)  
-**Backend & Data Runtimes:** Go 1.27.3 Modular Monolith, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine, SeaweedFS S3, ClamAV Daemon  
+**Target Platforms:** Flutter 3.47.8 Mobile (iOS & Android), Next.js 16 Admin Web Console (Desktop & Tablet)  
+**Backend & Data Runtimes:** Go 1.27.3 Modular Monolith, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, W3C WCAG 2.2 AA / AAA (Outdoor Mode), RFC 9457 (Problem Details), ISO 4217, ISO 3166-1 alpha-2  
 **Status:** Approved Unified Baseline
@@ -86,7 +86,7 @@ flowchart TD
     subgraph CoreBackend["Go 1.27.3 Modular Monolith (Clean Architecture)"]
         AuthMod["Auth & Identity Module<br>(ES256 JWT, Valkey Sessions)"]
         FleetMod["Machinery & Catalog Module<br>(Dynamic EAV Taxonomy)"]
-        GeoMod["Spatial Search Engine<br>(PostGIS 3.4 Bounded Queries)"]
+        GeoMod["Spatial Search Engine<br>(PostGIS 3.6.4 Bounded Queries)"]
         BookingMod["Booking State Engine<br>(20-State Machine, OCC Versioning)"]
         PaymentMod["Escrow Ledger & Wallet Engine<br>(Double-Entry, BK-17-BE)"]
         InspectMod["Inspection & Media Ingress<br>(ClamAV Stream Scan)"]
@@ -94,8 +94,8 @@ flowchart TD
     end
 
     subgraph PersistenceInfra["Storage & State Infrastructure"]
-        Postgres[("PostgreSQL 18.4 + PostGIS 3.4<br>(Spatial Points, JSONB Specs, pgxpool)")]
-        Valkey[("Valkey 8.0 Cache<br>(60-Min Mutex Holds, Rate-Limit Counters)")]
+        Postgres[("PostgreSQL 18.6 + PostGIS 3.6.4<br>(Spatial Points, JSONB Specs, pgxpool)")]
+        Valkey[("Valkey 9.1.3 Cache<br>(60-Min Mutex Holds, Rate-Limit Counters)")]
         SeaweedFS[("SeaweedFS S3 Object Storage<br>(Photos, Licenses, Encrypted PDFs)")]
         ClamAV["ClamAV Daemon<br>(tcp://clamav:3310 zINSTREAM)"]
     end
@@ -128,8 +128,8 @@ sequenceDiagram
     actor Client as Flutter Client (Renter/Owner/Operator)
     participant GW as Traefik API Gateway
     participant Auth as Go Auth Module (net/http)
-    participant VK as Valkey 8.0 Cache
-    participant DB as PostgreSQL 18.4 (users)
+    participant VK as Valkey 9.1.3 Cache
+    participant DB as PostgreSQL 18.6 (users)
     participant SMS as SMS Gateway (Ethio/Safaricom)
 
     Client->>GW: POST /api/v1/auth/otp/challenge { phone: "+251911223344" }
@@ -174,7 +174,7 @@ sequenceDiagram
     participant Policy as Policy Engine (REG-IDP-02-BE)
     participant Adapter as IdentityVerificationProvider (Fayda)
     participant Registry as National Fayda API
-    participant DB as PostgreSQL 18.4 (identity_verifications)
+    participant DB as PostgreSQL 18.6 (identity_verifications)
 
     User->>App: Submits Identity ID (e.g. Fayda FIN) + Consent Checkbox
     App->>API: POST /api/v1/user/identity/verify { providerKey: "fayda", identifier: "...", consentAccepted: true }
@@ -253,7 +253,7 @@ sequenceDiagram
     participant MediaAPI as Media & Ingress Controller
     participant ClamAV as ClamAV Antivirus Daemon
     participant S3 as SeaweedFS Object Storage
-    participant DB as PostgreSQL 18.4 (fleets)
+    participant DB as PostgreSQL 18.6 (fleets)
     participant Admin as Next.js Admin Queue
 
     Owner->>App: Selects Machinery Category (e.g. Excavation > Crawler Excavator)
@@ -301,7 +301,7 @@ flowchart TD
         BoundingCheck -- Valid --> CountryContext["Resolve Country Context<br>(country_configs: ET or KE)"]
     end
 
-    subgraph PostGISExecution["PostgreSQL 18.4 + PostGIS 3.4 Engine"]
+    subgraph PostGISExecution["PostgreSQL 18.6 + PostGIS 3.6.4 Engine"]
         CountryContext --> SQLQuery["SELECT * FROM fleets f<br>WHERE f.status = 'ACTIVE'<br>AND f.deleted_at IS NULL<br>AND ST_DWithin(f.location_point::geography,<br>    ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography,<br>    radius_meters)"]
         SQLQuery --> SpatialIndex["idx_fleets_location_point (GiST Index Scan)"]
         SpatialIndex --> SpecFilter["Filter JSONB Dynamic Specs (GIN Index Scan)"]
@@ -338,8 +338,8 @@ sequenceDiagram
     actor Owner as Fleet Owner
     participant App as Mobile Client
     participant BookingAPI as Booking State Interactor
-    participant VK as Valkey 8.0 Cache
-    participant DB as PostgreSQL 18.4 (pgx.Tx)
+    participant VK as Valkey 9.1.3 Cache
+    participant DB as PostgreSQL 18.6 (pgx.Tx)
     participant S3 as SeaweedFS Object Storage
 
     Renter->>App: Taps "Book Now" (Dates, Attachments, Delivery Site)
@@ -389,7 +389,7 @@ sequenceDiagram
     participant PaymentAPI as Payment Engine
     participant Adapter as PaymentGatewayAdapter (Telebirr/MPESA)
     participant Gateway as Telco Payment Gateway
-    participant DB as PostgreSQL 18.4 (pgx.Tx)
+    participant DB as PostgreSQL 18.6 (pgx.Tx)
 
     Renter->>App: Selects Payment Method: "Telebirr" / "M-Pesa"
     App->>PaymentAPI: POST /api/v1/payments/gateway/initiate { bookingId, gatewayKey: "telebirr" }
@@ -509,7 +509,7 @@ sequenceDiagram
     participant API as Inspection Module
     participant ClamAV as ClamAV Daemon (zINSTREAM)
     participant S3 as SeaweedFS S3
-    participant DB as PostgreSQL 18.4 (inspections)
+    participant DB as PostgreSQL 18.6 (inspections)
 
     Note over Renter,Operator: Equipment Arrives at Construction Job Site
     Operator->>App: Launches Pre-Rental Inspection Stepper
@@ -564,7 +564,7 @@ sequenceDiagram
     actor Renter as Equipment Renter
     actor Admin as Dispute Arbitration Officer
     participant API as Dispute Module
-    participant DB as PostgreSQL 18.4 (pgx.Tx)
+    participant DB as PostgreSQL 18.6 (pgx.Tx)
     participant Cron as SLA Escalation Daemon
 
     Owner->>API: POST /api/v1/bookings/{id}/damage { amountMinor: 4500000, description: "Cracked boom hydraulic cylinder" }
@@ -608,7 +608,7 @@ sequenceDiagram
     actor MachineOwner as Machinery Owner
     actor CarrierOwner as Logistics Carrier Owner
     participant API as Logistics & Booking Engine
-    participant DB as PostgreSQL 18.4 (bookings)
+    participant DB as PostgreSQL 18.6 (bookings)
 
     Renter->>API: Books 30-Ton Crawler Excavator (Confirmed Booking #101)
     MachineOwner->>API: GET /api/v1/bookings/101/logistics-suggestions
@@ -687,9 +687,9 @@ sequenceDiagram
     actor Operator as Field Machine Operator
     participant Mobile as Operator Mobile App
     participant WS as WebSocket Telematics Ingress
-    participant VK as Valkey 8.0 Cache
+    participant VK as Valkey 9.1.3 Cache
     participant Geo as PostGIS Geofence Evaluator
-    participant DB as PostgreSQL 18.4 (fleet_location_histories)
+    participant DB as PostgreSQL 18.6 (fleet_location_histories)
     participant Owner as Fleet Owner App
 
     Operator->>Mobile: Launches App on Assigned Active Booking
@@ -735,7 +735,7 @@ sequenceDiagram
     participant Browser as Next.js 16 Web Client
     participant AuthContext as React Server Component
     participant UIEngine as Admin UI Config Interactor
-    participant DB as PostgreSQL 18.4 (admin_table_configs)
+    participant DB as PostgreSQL 18.6 (admin_table_configs)
 
     Admin->>Browser: Opens Admin Console URL (/admin/fleets)
     Browser->>AuthContext: Validates ES256 Session Cookie

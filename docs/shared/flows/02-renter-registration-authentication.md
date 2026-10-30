@@ -4,7 +4,7 @@
 **Document Identifier:** `FLOW-RENTER-AUTH-DINK-CORE-V7.0`  
 **Classification:** Canonical User Interaction Flow & Wire Protocol Specification (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (§5.1.1, §5.5), `FLOW-ENTRY-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `DS-TOKENS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-006`  
-**Target Client Runtimes:** Flutter 3.44 / Dart 3.9 (Android API 26+, iOS 15+), BLoC State Management, Isar NoSQL Local Cache, Dio Network Interceptors  
+**Target Client Runtimes:** Flutter 3.47.8 / Dart 3.9 (Android API 26+, iOS 15+), BLoC State Management, Isar NoSQL Local Cache, Dio Network Interceptors  
 **Target Persona:** Civil Engineering Contractor / Commercial Renter (*Dawit Haile-Mariam* / *Patrick Kariuki*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Authentication & Session Verification), RFC 9457 (Problem Details), RFC 7519 (JWT ES256), ISO 9241-110, W3C WCAG 2.2 Level AAA (Outdoor High-Contrast), Ethiopian Personal Data Protection Proclamation No. 1321/2024, NBE Directives  
@@ -197,8 +197,8 @@ sequenceDiagram
     participant Client as Flutter Client (Dio)
     participant Edge as Traefik 3.x Gateway
     participant Monolith as Go Monolith (Auth Module)
-    participant VK as Valkey 8.0 Cluster
-    participant DB as PostgreSQL 18.4
+    participant VK as Valkey 9.1.3 Cluster
+    participant DB as PostgreSQL 18.6
     participant SMS as Telco SMS Gateway
 
     Dawit->>Client: Tap "Send Verification Code"

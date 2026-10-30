@@ -119,8 +119,8 @@ sequenceDiagram
     participant UI as Next.js 16 Reconciliation Split-View
     participant SA as Server Action (reconcileBankSlipAction)
     participant GoAPI as Go Modular Monolith (Finance Handler)
-    participant PG as PostgreSQL 18.4 (Serializable Tx)
-    participant VK as Valkey 8.0 Cache
+    participant PG as PostgreSQL 18.6 (Serializable Tx)
+    participant VK as Valkey 9.1.3 Cache
 
     Auditor->>UI: Upload CBE/Awash CSV Statement or Select Queue Row SLIP-9K82
     UI->>GoAPI: GET /api/v1/admin/finance/bank-slips/SLIP-9K82

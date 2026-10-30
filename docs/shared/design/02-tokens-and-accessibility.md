@@ -4,7 +4,7 @@
 **Document Identifier:** `DS-TOKENS-DINK-CORE-V7.0`  
 **Classification:** Canonical Design Specification & Front-End Engineering Standard (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `DS-DINK-CORE-V7.0` (Master Design System), `DS-PERSONAS-DINK-CORE-V7.0` (Personas), `ARCH-INTRO-DINK-CORE-V7.0` through `ARCH-ROADMAP-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-014`  
-**Target Client Runtimes:** Flutter 3.44 / Dart 3.9 (Mobile), Next.js 16 / React 19 (Admin Web), Tailwind CSS v4, Style Dictionary v4, Radix UI Primitives  
+**Target Client Runtimes:** Flutter 3.47.8 / Dart 3.9 (Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Admin Web), Tailwind CSS v4, Style Dictionary v4, Radix UI Primitives  
 **Target Operating Environments:** Harsh Field Conditions (Direct Sunlight $> 80,000\text{ lux}$, Heavy Basalt Dust, Engine Vibration, Leather Work Gloves) & High-Density Back-Office Desktops  
 **Compliance Standards:** W3C Design Tokens Community Group (DTCG) Format, W3C WCAG 2.2 Level AAA (Outdoor Field Mode) & Level AA (Indoor/Admin Mode), ISO 9241-110, ISO 9241-171 (Software Accessibility), Section 508  
 **Status:** Approved Engineering Baseline
@@ -95,7 +95,7 @@ flowchart TD
     
     Compiler["Style Dictionary v4 Transformation Engine"]
     
-    subgraph MobileOutput ["Field Mobile Channel (Flutter 3.44)"]
+    subgraph MobileOutput ["Field Mobile Channel (Flutter 3.47.8)"]
         DartTokens["lib/core/theme/tokens.g.dart<br/>Typed Immutable Classes and Extension Getters"]
         AmbientEngine["Ambient Light Sensor Controller<br/>Auto-Switch: Standard vs. Outdoor AAA"]
     end
@@ -113,8 +113,8 @@ flowchart TD
     DartTokens --> AmbientEngine
 ```
 
-* **Desktop Web (Next.js 16 / React 19 RSC):** Compiles tokens into native CSS variables consumed by Tailwind CSS v4. Prioritizes data density, sub-millisecond table virtualization, split-screen arbitration lightboxes, and keyboard focus outlines conforming to WCAG 2.2 AA.
-* **Field Mobile (Flutter 3.44 / Dart 3.9):** Compiles tokens into immutable Dart constants and dynamic `ThemeExtension<T>` classes. Prioritizes sunlight legibility (WCAG 2.2 AAA $\ge 7:1$), glove-friendly touch targets ($56\times 56\text{ dp}$), tactile haptics, and live sensor-driven theme switching.
+* **Desktop Web (Next.js 16.x (latest CVE security patch) / React 19 RSC):** Compiles tokens into native CSS variables consumed by Tailwind CSS v4. Prioritizes data density, sub-millisecond table virtualization, split-screen arbitration lightboxes, and keyboard focus outlines conforming to WCAG 2.2 AA.
+* **Field Mobile (Flutter 3.47.8 / Dart 3.9):** Compiles tokens into immutable Dart constants and dynamic `ThemeExtension<T>` classes. Prioritizes sunlight legibility (WCAG 2.2 AAA $\ge 7:1$), glove-friendly touch targets ($56\times 56\text{ dp}$), tactile haptics, and live sensor-driven theme switching.
 
 ---
 

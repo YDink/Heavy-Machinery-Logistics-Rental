@@ -5,7 +5,7 @@
 **Version:** 7.0 – v3 National ID (Fayda / Pluggable Identity), MFA & Advanced Ads Edition  
 **Classification:** Canonical Architecture & Development Reference (Single Source of Truth)  
 **Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Multi-Country Parameterization (`LOC-01-BE`)  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.44 Cross-Platform Mobile Client, Next.js 16 Admin Web Console, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), W3C WCAG 2.1/2.2 AA, ISO/IEC/IEEE 29148, ISO 4217, ISO 3166-1 alpha-2  
 **Status:** Approved Final Specification
 
@@ -98,7 +98,7 @@ This document constitutes the first partition of the canonical Software Requirem
 | **Product Managers** | Validate feature completeness, prioritise development backlog, and enforce business rules. |
 | **System Architects & Agents** | Ensure contract supremacy, zero architectural drift, and strict invariant compliance. |
 | **Backend Engineers (Go 1.27.3)** | Implement Clean Architecture interactors, `sqlc` compiled repositories, and Chi routing. |
-| **Mobile Engineers (Flutter 3.44)** | Build BLoC state machines, Isar offline persistence, and accessible screens. |
+| **Mobile Engineers (Flutter 3.47.8)** | Build BLoC state machines, Isar offline persistence, and accessible screens. |
 | **Frontend Engineers (Next.js 16)** | Build dynamic server-driven admin data tables (`@tanstack/react-table`) and Server Actions. |
 | **QA & Test Automation Engineers** | Derive contract tests (`kin-openapi`), integration suites, and ASVS L3 security audits. |
 | **Security & Compliance Officers** | Audit zero-PII masking, identity provider integrations, and immutable audit logs. |
@@ -1490,8 +1490,8 @@ The platform enforces a strict automated quality assurance pipeline in the CI/CD
                                            ┌──────────────────────────────────┼──────────────────────────────────┐
                                            ▼                                  ▼                                  ▼
                              ┌───────────────────────────┐      ┌───────────────────────────┐      ┌───────────────────────────┐
-                             │      PostgreSQL 18.4      │      │        Valkey 8.0         │      │       SeaweedFS S3        │
-                             │     + PostGIS 3.4 GiST    │      │     Distributed Cache     │      │     Encrypted Storage     │
+                             │      PostgreSQL 18.6      │      │        Valkey 9.1.3         │      │       SeaweedFS S3        │
+                             │     + PostGIS 3.6.4 GiST    │      │     Distributed Cache     │      │     Encrypted Storage     │
                              │     (Relational DB)       │      │     & Mutex Hold Locks    │      │     & ClamAV Daemon       │
                              └───────────────────────────┘      └───────────────────────────┘      └───────────────────────────┘
 ```
@@ -1500,12 +1500,12 @@ The platform enforces a strict automated quality assurance pipeline in the CI/CD
 |---|---|---|
 | **Backend Core** | Go `1.27.3` (`net/http`, `go-chi/v5`) | Modular monolith with Clean Architecture. High concurrency, memory efficiency ($\le 256\text{MB}$ RSS). |
 | **API Gateway** | Traefik `3.x` / Envoy Gateway | Lightweight edge routing, TLS 1.3 termination, rate-limiting, and Gzip/Brotli compression. |
-| **Mobile Client** | Flutter `3.44.x` (Dart `3.9.x`) | Feature-First Clean Architecture, BLoC state management, Isar NoSQL offline store. |
+| **Mobile Client** | Flutter `3.47.8` (Dart `3.9.x`) | Feature-First Clean Architecture, BLoC state management, Isar NoSQL offline store. |
 | **Admin Web Console** | Next.js `16.x` (React 19 App Router) | React Server Components by default, Tailwind CSS v4, dynamic grids via `@tanstack/react-table`. |
-| **Relational Database** | PostgreSQL `18.4` + PostGIS `3.4` | Spatial WGS 84 (`SRID 4326`) distance queries via GiST indexing, `TIMESTAMPTZ` UTC storage. |
+| **Relational Database** | PostgreSQL `18.6` + PostGIS `3.6.4` | Spatial WGS 84 (`SRID 4326`) distance queries via GiST indexing, `TIMESTAMPTZ` UTC storage. |
 | **Database Driver** | `jackc/pgx/v5` (`v5.7.1`) | Native binary protocol encoding with connection pooling (`pgxpool`). Heavy ORMs prohibited. |
 | **SQL Compiler** | `sqlc` (`v1.27.0`) | Compiles type-safe Go structs and queries directly from plain SQL files. |
-| **Cache & Distributed Locks** | Valkey `8.0-alpine` | High-throughput open-source Redis replacement for mutex hold locks (`SET NX EX`) and sessions. |
+| **Cache & Distributed Locks** | Valkey `9.1.3-alpine` | High-throughput open-source Redis replacement for mutex hold locks (`SET NX EX`) and sessions. |
 | **Object Persistence** | SeaweedFS S3 | High-performance Go-based object storage for inspection photos, PDF statements, and licenses. |
 | **Antivirus Scanning** | ClamAV `clamd` (TCP 3310) | Synchronous stream scanning (`zINSTREAM`) on all uploaded media prior to S3 persistence. |
 | **Telemetry & Observability** | OpenTelemetry, Zap, Loki, Vector | Structured JSON logging with Zap PII-masking core, distributed tracing, and RED metrics. |

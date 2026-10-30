@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Architecture Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (Full Suite §1–§14), `FLOW-ENTRY-DINK-CORE-V7.0` through `FLOW-INSURANCE-CLAIM-DINK-CORE-V7.0` (Interaction Flows 01–19), `FLOW-APPENDIX-NOTIF-OFFLINE-DINK-CORE-V7.0`, `FLOW-APPENDIX-AUTH-SEC-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
 **Target Personas:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Fleet Owner & Depot Yard Manager (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Certified Field Operator (*Mulugeta Tadesse* / *Juma Omwamba*), Lowboy Transporter (*Ato Girma Wolde* / *Samuel Odhiambo*), Compliance Officer & Security Auditor (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Identity, Concurrency, Secrets & Access Control), RFC 9457 (Problem Details), RFC 7519 (JWT), RFC 6238 (TOTP), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), National Bank of Ethiopia (NBE) Directives, Kenya Data Protection Act 2019  
@@ -344,13 +344,13 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    ReqA(["Contractor A: Reserve Nov 5 - Nov 12"]) --> Tier1["Tier 1: Valkey 8.0 Distributed Memory Lease<br/>SET hold:fleet:320D renter_uuid EX 3600 NX"]
+    ReqA(["Contractor A: Reserve Nov 5 - Nov 12"]) --> Tier1["Tier 1: Valkey 9.1.3 Distributed Memory Lease<br/>SET hold:fleet:320D renter_uuid EX 3600 NX"]
     ReqB(["Contractor B: Reserve Nov 8 - Nov 15"]) --> Tier1
 
     Tier1 -->|"Acquires Key (First Thread)"| LeaseA["Contractor A Secures 60-Minute Lease<br/>Status: HOLD_PENDING"]
     Tier1 -->|"Key Exists (Second Thread)"| ConflictB["Contractor B Intercepted: HTTP 409 Conflict<br/>Enqueued in Valkey Standby Queue (ZADD)"]
 
-    LeaseA --> Tier2["Tier 2: PostgreSQL 18.4 Relational Storage<br/>EXCLUDE USING gist (fleet_id WITH =, hire_period WITH &&)"]
+    LeaseA --> Tier2["Tier 2: PostgreSQL 18.6 Relational Storage<br/>EXCLUDE USING gist (fleet_id WITH =, hire_period WITH &&)"]
     
     Tier2 -->|"Commits Transaction"| DBOk["Status: PAYMENT_EVIDENCE_UPLOADED<br/>PostgreSQL Excludes Any Overlapping Range"]
     Tier2 -->|"Overlapping Commit Race"| DBViolation["Aborts with 23P01 exclusion_violation<br/>ACID Rollback"]

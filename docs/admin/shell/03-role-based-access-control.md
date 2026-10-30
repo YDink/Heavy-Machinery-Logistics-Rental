@@ -135,7 +135,7 @@ sequenceDiagram
     participant Modal as PiiRevealModal ('use client')
     participant SA as revealPiiFieldAction ('use server')
     participant GoAPI as Go Admin Security Handler
-    participant DB as PostgreSQL 18.4 (pgx.Tx)
+    participant DB as PostgreSQL 18.6 (pgx.Tx)
 
     Officer->>Field: Clicks "[👁 Reveal]" on TIN: *****4821
     Field->>Modal: Open Dialog (targetUserId, fieldKey: "tin_number")

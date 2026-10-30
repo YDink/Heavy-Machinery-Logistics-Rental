@@ -4,7 +4,7 @@
 **Document Identifier:** `FLOW-ENTRY-DINK-CORE-V7.0`  
 **Classification:** Canonical User Interaction Flow & System Behavior Specification (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `ARCH-INTRO-DINK-CORE-V7.0` through `ARCH-ROADMAP-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0` (Design System), `DS-PERSONAS-DINK-CORE-V7.0` (Personas), `DS-TOKENS-DINK-CORE-V7.0` (Tokens), `contracts/openapi.yaml`, `ADR-001` through `ADR-014`  
-**Target Client Runtimes:** Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Desktop Admin Web Console), Android API 26+, iOS 15+  
+**Target Client Runtimes:** Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Desktop Admin Web Console), Android API 26+, iOS 15+  
 **Target Personas:** Individual Renter (Civil Contractor), Fleet Owner (Yard Manager), Certified Field Operator, Platform Staff (Admin / Compliance)  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), RFC 6238 (TOTP), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mode), Ethiopian Personal Data Protection Proclamation No. 1321/2024, NBE Directives  
@@ -102,7 +102,7 @@ sequenceDiagram
     participant App as Flutter Mobile Client
     participant Edge as Traefik 3.x Gateway
     participant Monolith as Go Monolith Core
-    participant DB as PostgreSQL 18.4 (country_configs)
+    participant DB as PostgreSQL 18.6 (country_configs)
 
     User->>App: Launch Application
     App->>Edge: GET /api/v1/bootstrap
@@ -260,7 +260,7 @@ sequenceDiagram
     participant App as Flutter Mobile Client
     participant AuthMod as Go Auth Module
     participant VK as Valkey Cluster
-    participant DB as PostgreSQL 18.4
+    participant DB as PostgreSQL 18.6
 
     User->>App: Enter 6-Digit Code (e.g. 482910)
     App->>AuthMod: POST /api/v1/auth/otp/verify
@@ -346,7 +346,7 @@ sequenceDiagram
     actor Renter as Renter (Dawit)
     participant App as Flutter Mobile Client
     participant Monolith as Go Monolith Core
-    participant DB as PostgreSQL 18.4
+    participant DB as PostgreSQL 18.6
 
     Renter->>App: Tap "Rent Machinery"
     App-->>Renter: Render Simple Registration Form
@@ -374,7 +374,7 @@ sequenceDiagram
     participant ClamAV as ClamAV Antivirus Daemon
     participant S3 as SeaweedFS S3 Storage
     participant Monolith as Go Monolith Core
-    participant DB as PostgreSQL 18.4
+    participant DB as PostgreSQL 18.6
 
     Owner->>App: Tap "List My Equipment"
     App-->>Owner: Step 1: Personal & Business Identity
@@ -408,7 +408,7 @@ sequenceDiagram
     actor Operator as Operator (Mulugeta)
     participant App as Flutter Mobile Client
     participant Monolith as Go Monolith Core
-    participant DB as PostgreSQL 18.4
+    participant DB as PostgreSQL 18.6
 
     Operator->>App: Tap "I Operate Machinery"
     App-->>Operator: Step 1: Profile & Certification Capture
@@ -437,7 +437,7 @@ sequenceDiagram
     participant Web as Next.js 16 Web Admin
     participant Monolith as Go Monolith Core
     participant OpenBao as OpenBao KMS
-    participant DB as PostgreSQL 18.4
+    participant DB as PostgreSQL 18.6
 
     Admin->>Web: Navigate to [https://ops.dinkmachinery.com/login](https://ops.dinkmachinery.com/login)
     Admin->>Web: Enter Email & Administrative Password

@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-AUTH-02`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `docs/source/Dink_Machinery_UI_UX_Design_Brief.md`, `docs/shared/design/00-design-system.md`, `docs/shared/design/design-tokens.json`, `docs/shared/requirements/05-01-registration-authentication.md`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Unauthenticated New or Returning User  
 **Requirement Traceability:** `REQ-05-01` (`REG-01`..`REG-07`, `AUT-01`..`AUT-09`), `REQ-05-16` (`AC-02`), `REQ-05-18` (`ER-01`..`ER-04`)  
 **Associated Interaction Flows:** `FLOW-01`, `FLOW-RENTER-AUTH`, `FLOW-APPENDIX-B`  
@@ -98,7 +98,7 @@ sequenceDiagram
     participant Bloc as PhoneOtpAuthBloc
     participant Keystore as Hardware Enclave (Keystore/Keychain)
     participant API as Go Monolith (/api/v1/auth/*)
-    participant Valkey as Valkey 8.0 (OTP & RTR Family)
+    participant Valkey as Valkey 9.1.3 (OTP & RTR Family)
 
     User->>Bloc: Enter +251911442910 & Tap Send OTP
     Bloc->>API: POST /api/v1/auth/register (Idempotency-Key, E.164, TermsSHA256)

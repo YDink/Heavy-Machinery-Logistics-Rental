@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-TRN-03`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (§5.2, §5.8.1, §5.8.3, `FL-01`..`FL-14`, `LG-01`, `LG-02`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Heavy Haulage Lowboy Transporter & Carrier Manager (*Ato Girma Wolde* / *Samuel Odhiambo*)  
 **Associated Requirements:** `REQ-05-02` (`FL-01`..`FL-14` First-Class `LOGISTICS` Category Registration & `FleetSpecIndexed` Synchronization), `REQ-05-08` (`LG-01`, `LG-02` Trailer Payload, Deck Geometry, Axle Count & Ramp Configuration), `REQ-05-13` (Goods-in-Transit Insurance & Commercial Truck `Libre`)  
 **Associated Interaction Flows:** `FLOW-03` (Fleet Onboarding & Compliance Approval), `FLOW-11` (Volumetric & Tonnage Matching)  
@@ -144,7 +144,7 @@ sequenceDiagram
     participant UI as CarrierFleetRegistrationScreen
     participant Bloc as CarrierRegistrationBloc
     participant API as Go Monolith (/api/v1)
-    participant DB as PostgreSQL 18.4 (pgx.Tx)
+    participant DB as PostgreSQL 18.6 (pgx.Tx)
 
     Carrier->>UI: Enter Payload = 45,000 kg, Well Length = 11,500 mm, Deck Height = 950 mm, 3 Axles
     UI->>Bloc: add(DeckGeometryUpdated(payloadKg: 45000, lengthMm: 11500, widthMm: 3000, outriggerMm: 500, heightMm: 950))

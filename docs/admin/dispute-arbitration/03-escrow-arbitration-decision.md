@@ -151,8 +151,8 @@ sequenceDiagram
     participant Panel as ArbitrationRulingPanel ('use client')
     participant SA as executeArbitrationRulingAction ('use server')
     participant GoAPI as Go Dispute Arbitration Interactor
-    participant DB as PostgreSQL 18.4 (pgx.Tx)
-    participant VK as Valkey 8.0 Cache
+    participant DB as PostgreSQL 18.6 (pgx.Tx)
+    participant VK as Valkey 9.1.3 Cache
 
     Arbitrator->>Panel: Enters Ruling Verdict + Minor-Unit Amount + Written Finding & Submits
     Panel->>SA: executeArbitrationRulingAction(formData)

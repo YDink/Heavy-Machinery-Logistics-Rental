@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-INTRO-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `FLOW-DINK-CORE-V7.0`, `UIUX-DINK-CORE-V7.0`, `contracts/openapi.yaml`  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.44 Cross-Platform Mobile Client, Next.js 16 Admin Web Console, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine, SeaweedFS S3, ClamAV Daemon  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), W3C WCAG 2.2 AA / AAA (Outdoor Mode), ISO/IEC/IEEE 42010, ISO 4217, ISO 3166-1 alpha-2  
 **Status:** Approved Engineering Baseline
@@ -16,7 +16,7 @@
 The Dink Machinery software ecosystem operates as an enterprise-grade digital marketplace and logistics aggregation platform engineered specifically for the heavy civil engineering, infrastructure, and agricultural equipment sectors in East Africa (Ethiopia and Kenya).
 
 In developing African markets, heavy equipment utilization remains inefficient due to fragmented asset ownership, offline brokerage monopolies, opaque pricing structures, high logistical transport costs, and reliance on unverified physical paper receipts. Dink Machinery eliminates these friction points by providing:
-* **Spheroidal Geospatial Discovery:** Bounded radius and corridor searches over PostGIS 3.4 indexes that locate certified equipment within defined project vicinities.
+* **Spheroidal Geospatial Discovery:** Bounded radius and corridor searches over PostGIS 3.6.4 indexes that locate certified equipment within defined project vicinities.
 * **Dynamic Technical Specification Taxonomy:** Category-driven Entity-Attribute-Value (EAV) schemas handling mechanical parameters (operating weight, hydraulic flow, boom reach, cabin safety certifications) without requiring database schema redeployments.
 * **The Canonical 20-State Booking Machine:** A deterministic finite state machine backed by distributed 60-minute mutual exclusion holds in Valkey and optimistic concurrency control (OCC) in PostgreSQL.
 * **Direct Transfer Settlement Rail (`MANUAL_TRANSFER`):** Direct peer-to-peer commercial bank wire transfers paired with cryptographic image verification and an owner-funded wallet commission model (`OwnerWallet`).
@@ -55,7 +55,7 @@ In developing African markets, heavy equipment utilization remains inefficient d
 |  - Passwordless Phone OTP Challenges via Localized Telco SMS Gateways             |
 |  - Pluggable Identity Adapter Framework (Fayda National ID Reference Client)     |
 |  - Dynamic Category EAV Specification Engine with GIN Indexing                    |
-|  - PostGIS 3.4 Spheroidal Radius Discovery & Keyset Cursor Pagination             |
+|  - PostGIS 3.6.4 Spheroidal Radius Discovery & Keyset Cursor Pagination             |
 |  - 20-State Rental Booking State Machine with 60-Minute Valkey Mutex Holds        |
 |  - Direct Commercial Transfer Settlement (MANUAL_TRANSFER) + Evidence Verification|
 |  - Pre-Funded OwnerWallet Commission Debit Architecture (BK-17-BE)                |
@@ -95,7 +95,7 @@ In developing African markets, heavy equipment utilization remains inefficient d
 
 ```mermaid
 flowchart TD
-    subgraph MobilePersonas [Mobile Client Personas Flutter 3.44]
+    subgraph MobilePersonas [Mobile Client Personas Flutter 3.47.8]
         Renter["Civil Contractor / Site PM<br/>Role: renter<br/>Goal: Find & reserve verified machinery"]
         Owner["Fleet Owner / Yard Manager<br/>Role: owner<br/>Goal: Monetize idle equipment & verify cash"]
         Operator["Field Technician / Driver<br/>Role: operator<br/>Goal: Document handovers & track run hours"]
@@ -218,9 +218,9 @@ This introductory document forms Part 1 of the Dink Machinery modular architectu
 * **`02-system-context.md`:** C4 Level 1 context diagrams, boundary definitions, and external API gateway topologies.
 * **`03-container-architecture.md`:** C4 Level 2 container topologies, runtime allocations, network port mappings, and infrastructure configurations.
 * **`04-modular-monolith.md`:** C4 Level 3 internal component packaging (`internal/modules/*`), domain event bus mechanics, and transaction boundaries.
-* **`05-mobile-architecture.md`:** Flutter 3.44 feature-first structure, BLoC state lifecycles, Isar offline outbox sync, and OTA dynamic typography.
+* **`05-mobile-architecture.md`:** Flutter 3.47.8 feature-first structure, BLoC state lifecycles, Isar offline outbox sync, and OTA dynamic typography.
 * **`06-admin-console.md`:** Next.js 16 App Router architecture, dynamic table compilation, Server Actions, and fine-grained RBAC.
-* **`07-data-architecture.md`:** PostgreSQL 18.4 schema catalog, PostGIS spatial queries, GIN JSONB indexing, and immutable double-entry ledger design.
+* **`07-data-architecture.md`:** PostgreSQL 18.6 schema catalog, PostGIS spatial queries, GIN JSONB indexing, and immutable double-entry ledger design.
 * **`08-security-architecture.md`:** ASVS Level 3 verification, ES256 JWT lifecycle, WebAuthn ceremonies, AES-256-GCM column encryption, and zero-PII logging.
 * **`09-cross-cutting-workflows.md`:** The 20-state booking machine, direct settlement vs. gateway custody, pluggable Fayda adapters, and telematics geofencing.
 * **`10-infrastructure-observability.md`:** Production Docker deployment topology, RPO/RTO disaster recovery configurations, and RED metrics.

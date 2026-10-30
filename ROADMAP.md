@@ -32,7 +32,7 @@ Status updates are committed atomically with code and tests on the active partit
 | Component | Target Scaffold | Status | Toolchain Rule |
 |---|---|---|---|
 | Backend | `backend/`[cite: 37] | todo | Go modular monolith, `sqlc`, `pgx/v5`[cite: 32, 38] |
-| Mobile | `mobile/`[cite: 37] | todo | Flutter 3.x, BLoC, Dio, `isar_community`[cite: 32, 38] |
+| Mobile | `mobile/`[cite: 37] | todo | Flutter 3.47.8, BLoC, Dio, `isar_community`[cite: 32, 38] |
 | Admin Web | `admin/`[cite: 37] | todo | Next.js 16 (App Router), Tailwind, Server Actions[cite: 32, 38] |
 | Lockfile Registry | `docs/TECH_STACK.md` | todo | Record installed framework versions |
 

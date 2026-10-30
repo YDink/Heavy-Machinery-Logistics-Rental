@@ -33,8 +33,8 @@ Any agent or engineer modifying, refactoring, or authoring code within `backend/
      ┌───────────────────┬───────────────┴───────────────┬───────────────────┐
      ▼                   ▼                               ▼                   ▼
 [Runtime & Routing] [Persistence & Spatial]         [Cache & Concurrency] [Security & Code-Gen]
- - Go 1.27.3         - PostgreSQL 18.4               - Valkey 8.0-alpine   - oapi-codegen v2.4+
- - Chi Router v5     - PostGIS 3.4 (SRID 4326)       - Distributed Locks   - sqlc v1.27+
+ - Go 1.27.3         - PostgreSQL 18.6               - Valkey 9.1.3-alpine   - oapi-codegen v2.4+
+ - Chi Router v5     - PostGIS 3.6.4 (SRID 4326)       - Distributed Locks   - sqlc v1.27+
  - pgx/v5 Driver     - sqlc Type-Safe SQL (No ORM)   - Rate-Limiting       - ClamAV Daemon
  - zap Telemetry     - golang-migrate v4.18+         - Token Revocation    - AES-256-GCM
 ```
@@ -46,9 +46,9 @@ Any agent or engineer modifying, refactoring, or authoring code within `backend/
 | **Contract Code-Gen** | `oapi-codegen/v2` (`v2.4.1`) | Generates Chi server interfaces, request decoders, and DTO types from `contracts/openapi.yaml`. |
 | **Database Driver** | `jackc/pgx/v5` (`v5.7.1`) | High-performance PostgreSQL driver with native binary format encoding and `pgxpool`. |
 | **SQL Compiler** | `sqlc` (`v1.27.0`) | Generates type-safe Go structs and queries from plain SQL; heavy ORMs (GORM, Ent) are banned. |
-| **Spatial Engine** | PostGIS `3.4` (PostgreSQL 18.4) | Spheroidal distance calculations (`ST_DWithin`, `ST_Distance`) with GiST spatial indexing (`SRID 4326`). |
+| **Spatial Engine** | PostGIS `3.6.4` (PostgreSQL 18.6) | Spheroidal distance calculations (`ST_DWithin`, `ST_Distance`) with GiST spatial indexing (`SRID 4326`). |
 | **Migrations** | `golang-migrate/v4` (`v4.18.1`)| Deterministic sequential SQL migrations (`.up.sql` and `.down.sql`). |
-| **Cache & Locks** | Valkey `8.0-alpine` (`go-redis/v9`)| Distributed locking (`SET NX EX`), idempotency caching, session token blacklists. |
+| **Cache & Locks** | Valkey `9.1.3-alpine` (`go-redis/v9`)| Distributed locking (`SET NX EX`), idempotency caching, session token blacklists. |
 | **Structured Logging** | `go.uber.org/zap` (`v1.27.0`) | High-throughput structured JSON logging with custom PII masking core. |
 | **Distributed Tracing** | `go.opentelemetry.io/otel` (`v1.32.0`) | OpenTelemetry tracing and span propagation via `traceparent` headers. |
 | **Malware Ingress** | ClamAV `clamd` (TCP 3310) | Synchronous antivirus stream scanning for uploaded inspection photographs and PDFs. |
@@ -563,8 +563,8 @@ Backend code must achieve full test coverage verified against real infrastructur
 ```mermaid
 flowchart TD
   GoTest[go test -v -race] --> UnitDomain[Pure Domain Unit Tests]
-  GoTest --> IntegPG[Testcontainers PostgreSQL 18.4 + PostGIS]
-  GoTest --> IntegValkey[Testcontainers Valkey 8.0]
+  GoTest --> IntegPG[Testcontainers PostgreSQL 18.6 + PostGIS]
+  GoTest --> IntegValkey[Testcontainers Valkey 9.1.3]
   GoTest --> KinWire[kin-openapi HTTP Wire Conformance]
   
   UnitDomain --> Coverage[Code Coverage Ratchet]

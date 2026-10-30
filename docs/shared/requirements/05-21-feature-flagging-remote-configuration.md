@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Operational Control Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§5.11, §5.14, §5.16, §5.17, §5.18, §5.20, §5.21, §8, §10, §12), `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
 **Target Personas:** Super Administrator (*Rahel Tadesse*), Platform Release Engineer (*Yared Birhanu*), Compliance Officer & Legal Counsel (*Yohannes Bekele*), Finance Controller & Revenue Auditor (*Solomon Kassa*), Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Equipment Fleet Owner (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Access Control, Configuration Integrity & Change Auditability), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), Ethiopian Communications Authority (ECA) Directives, Kenya Data Protection Act 2019  
@@ -32,7 +32,7 @@
   - 4.2 [JSON Type Safety & Schema Validation Engine](#42-json-type-safety--schema-validation-engine)
   - 4.3 [Emergency Kill Switch & Fast-Rollback Protocols](#43-emergency-kill-switch--fast-rollback-protocols)
 - 5. [Dual-Tier Cache, SSE Streaming & Offline Resilience (`FF-03`)](#5-dual-tier-cache-sse-streaming--offline-resilience-ff-03)
-  - 5.1 [Valkey 8.0 In-Memory Hot Evaluation Layer](#51-valkey-80-in-memory-hot-evaluation-layer)
+  - 5.1 [Valkey 9.1.3 In-Memory Hot Evaluation Layer](#51-valkey-80-in-memory-hot-evaluation-layer)
   - 5.2 [Server-Sent Events (SSE) Real-Time Invalidation Stream](#52-server-sent-events-sse-real-time-invalidation-stream)
   - 5.3 [Client Embedded Isar NoSQL Cache & Offline Defaults (`ADR-010`)](#53-client-embedded-isar-nosql-cache--offline-defaults-adr-010)
   - 5.4 [Client Evaluation Fallbacks on Network Disconnect](#54-client-evaluation-fallbacks-on-network-disconnect)
@@ -62,7 +62,7 @@ In managing a high-stakes, multi-country (Ethiopia and Kenya) heavy machinery an
 * In the event of downstream provider outages (e.g., Ethio Telecom SMS gateway latency, underwriter verification API downtime, or regional banking network halts), platform engineers must possess immediate, sub-second **Kill Switch** capabilities to disable impaired functionality or swap payment rails globally without service restarts.
 
 This document formally specifies:
-1. The centralized, database-backed Feature Flag and Remote Configuration management engine in PostgreSQL 18.4 and Valkey 8.0.
+1. The centralized, database-backed Feature Flag and Remote Configuration management engine in PostgreSQL 18.6 and Valkey 9.1.3.
 2. The deterministic client- and server-side evaluation algorithm using normalized hashing (MurmurHash3) over user identifiers.
 3. The multi-dimensional segmentation engine partitioning flags by sovereign country (`ET` vs. `KE`), user role (`RENTER`, `OWNER`, `OPERATOR`, `CARRIER`), app build version, and geographic PostGIS geofences.
 4. The real-time Server-Sent Events (SSE) dynamic configuration invalidation stream pushing live parameter updates to active Flutter and Next.js runtimes in $< 100\text{ ms}$.
@@ -71,7 +71,7 @@ This document formally specifies:
 ### 1.2 Core Engineering Invariants & Control Principles
 
 1. **Zero Hardcoded Operational Parameters Invariant:** All business timeouts, lease durations, rate limits, regulatory fee percentages, and UI feature switches must resolve via the remote configuration engine. No timing constant or commercial threshold may be hardcoded into Dart mobile packages or Go monolith services.
-2. **Sub-Millisecond Evaluation SLO ($\le 1.0\text{ ms}$):** Server-side flag evaluation must execute in $< 1.0\text{ ms}$ (p99) against local in-memory Valkey 8.0 instances. Client-side evaluation in Flutter must execute synchronously in $< 0.1\text{ ms}$ against locally hydrated Isar NoSQL memory blocks.
+2. **Sub-Millisecond Evaluation SLO ($\le 1.0\text{ ms}$):** Server-side flag evaluation must execute in $< 1.0\text{ ms}$ (p99) against local in-memory Valkey 9.1.3 instances. Client-side evaluation in Flutter must execute synchronously in $< 0.1\text{ ms}$ against locally hydrated Isar NoSQL memory blocks.
 3. **Deterministic Percentage Bucketing (Sticky Hashing):** A user allocated to a canary cohort (e.g., $10\%$ rollout) must remain deterministically within that cohort across sessions, device restarts, and network transitions. Allocation is strictly formulated as a normalized 32-bit hash:
    $$\text{Bucket Value} = \frac{\text{MurmurHash3}(\text{FlagKey} \parallel \text{UserID})}{2^{32} - 1} \times 100 \in [0.0, 100.0)$$
 4. **Four-Eyes Dual Control for Production Critical Flags (`FF-GOV`):** Flags classified as `CRITICAL_FINANCIAL` (e.g., modifying commission rates, altering booking prepayment percentages) or `KILL_SWITCH` (disabling entire transaction rails) require two distinct administrative signatures in the Next.js admin console: a Drafter and an Authorizer.
@@ -85,7 +85,7 @@ This document formally specifies:
 
 ```mermaid
 flowchart TD
-    ConfigReq(["Client Requests Configuration<br/>POST /api/v1/config/evaluate<br/>(Context: UserID, Role, Country, Version)"]) --> EdgeCacheCheck{"Valkey 8.0 Cache Hit?<br/>config:user:{hash}"}
+    ConfigReq(["Client Requests Configuration<br/>POST /api/v1/config/evaluate<br/>(Context: UserID, Role, Country, Version)"]) --> EdgeCacheCheck{"Valkey 9.1.3 Cache Hit?<br/>config:user:{hash}"}
     
     EdgeCacheCheck -->|"Hit (< 1ms)"| ReturnCached["Return Cached Flag Map<br/>X-Config-Source: VALKEY_HOT"]
     
@@ -130,7 +130,7 @@ flowchart TD
 
 ### 2.2 State Sub-Machine Taxonomy (`FlagState`)
 
-Every feature flag and dynamic parameter record in PostgreSQL 18.4 is governed by an explicit operational lifecycle:
+Every feature flag and dynamic parameter record in PostgreSQL 18.6 is governed by an explicit operational lifecycle:
 
 | Status Key | Evaluation Behavior | Administrative Permissibility | Description & Operational Perimeter |
 |---|:---:|:---:|---|
@@ -293,7 +293,7 @@ If a newly deployed feature or external integration experiences severe degradati
 
 ## 5. Dual-Tier Cache, SSE Streaming & Offline Resilience (`FF-03`)
 
-### 5.1 Valkey 8.0 In-Memory Hot Evaluation Layer
+### 5.1 Valkey 9.1.3 In-Memory Hot Evaluation Layer
 
 To handle tens of thousands of concurrent API requests without overloading PostgreSQL:
 * **Pre-Computed Flag Dictionaries:** Active flag definitions, targeting rules, and parameters are stored in Valkey as optimized Redis Hashes (`HSET config:flags {flagKey} {json}`).
@@ -386,7 +386,7 @@ sequenceDiagram
     actor Admin1 as Release Engineer (Yared)
     participant Console as Next.js Admin Console
     participant Core as Go Monolith Core
-    participant DB as PostgreSQL 18.4
+    participant DB as PostgreSQL 18.6
     actor Admin2 as Super Admin (Rahel)
 
     Admin1->>Console: Adjusts 'commission.baseline_machinery_bps' to 8.5% (850 bps)
@@ -645,7 +645,7 @@ flowchart TD
 
 1. **OpenAPI Schema Contract Gate (`kin-openapi`):** Validates all remote configuration evaluation, SSE streaming, flag drafting, and kill switch schemas against `contracts/openapi.yaml`.
 2. **MurmurHash3 Determinism & Distribution Test:** Evaluates 100,000 synthetic user UUIDs against a $25.0\%$ rollout threshold. Verifies that exactly $25,000 \pm 150$ users ($25.0\% \pm 0.15\%$) evaluate `true`, and repeated evaluations yield $100\%$ sticky consistency.
-3. **Sub-Millisecond Evaluation Latency Benchmark:** Ingests 10,000 concurrent evaluation requests against Valkey 8.0 hot cache, asserting that p95 response latency remains strictly $< 0.5\text{ ms}$ and p99 remains $< 1.0\text{ ms}$.
+3. **Sub-Millisecond Evaluation Latency Benchmark:** Ingests 10,000 concurrent evaluation requests against Valkey 9.1.3 hot cache, asserting that p95 response latency remains strictly $< 0.5\text{ ms}$ and p99 remains $< 1.0\text{ ms}$.
 4. **Four-Eyes Dual Control Integration Gate:** Attempts to modify parameters categorized as `CRITICAL_FINANCIAL` using a single administrator token. Asserts that the Go backend intercepts the mutation, places it in status `PENDING_APPROVAL`, and returns HTTP 403 `ERR_FOUR_EYES_APPROVAL_REQUIRED`.
 5. **Offline Isar Fallback Verification Test:** Simulates application launch on an offline test harness (`ConnectivityResult.none`) with empty network connectivity. Verifies that all configuration keys successfully resolve from local Isar storage in $< 15\text{ ms}$ with zero application crashes.
 

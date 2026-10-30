@@ -120,7 +120,7 @@ sequenceDiagram
     participant ChatUI as ScopedDisputeMessenger ('use client')
     participant SA as postDisputeScopedMessageAction ('use server')
     participant GoAPI as Go Dispute Arbitration Interactor
-    participant DB as PostgreSQL 18.4 (dispute_messages)
+    participant DB as PostgreSQL 18.6 (dispute_messages)
 
     Arbitrator->>ChatUI: Selects Scope="owner-only", Enters Message, Clicks "Dispatch Scoped Msg"
     ChatUI->>SA: postDisputeScopedMessageAction(formData)

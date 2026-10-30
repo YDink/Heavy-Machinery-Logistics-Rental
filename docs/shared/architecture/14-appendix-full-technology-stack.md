@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-TECH-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `ARCH-INTRO-DINK-CORE-V7.0` through `ARCH-ROADMAP-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-014`  
-**Target Runtimes:** Go 1.27.3, Flutter 3.44 / Dart 3.9, Next.js 16 / React 19, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine, SeaweedFS S3, ClamAV Daemon, OpenBao KMS, Traefik 3.x  
+**Target Runtimes:** Go 1.27.3, Flutter 3.47.8 / Dart 3.9, Next.js 16.x (latest CVE security patch) / React 19, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon, OpenBao KMS, Traefik 3.x  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), ISO/IEC 27001:2022, ISO 4217, ISO 3166-1 alpha-2, Ethiopian Personal Data Protection Proclamation No. 1321/2024, NBE Directives  
 **Status:** Approved Engineering Baseline
@@ -18,7 +18,7 @@
 - 3. [Tier 2: Backend Application Runtime & Core Libraries (Go Monolith)](#3-tier-2-backend-application-runtime--core-libraries-go-monolith)
 - 4. [Tier 3: Persistence, Spatial Engine & Distributed Caching](#4-tier-3-persistence-spatial-engine--distributed-caching)
 - 5. [Tier 4: Object Storage & Content Security](#5-tier-4-object-storage--content-security)
-- 6. [Tier 5: Cross-Platform Mobile Client (Flutter 3.44)](#6-tier-5-cross-platform-mobile-client-flutter-344)
+- 6. [Tier 5: Cross-Platform Mobile Client (Flutter 3.47.8)](#6-tier-5-cross-platform-mobile-client-flutter-344)
 - 7. [Tier 6: Administrative Operations Web Console (Next.js 16)](#7-tier-6-administrative-operations-web-console-nextjs-16)
 - 8. [Tier 7: Security, Identity & Cryptography Infrastructure](#8-tier-7-security-identity--cryptography-infrastructure)
 - 9. [Tier 8: Observability, SRE & Alerting Mesh](#9-tier-8-observability-sre--alerting-mesh)
@@ -42,8 +42,8 @@ The Dink Machinery technology stack is selected to fulfill strict engineering an
 ```mermaid
 flowchart TD
     subgraph ClientLayer ["Client Runtimes"]
-        FlutterMobile["Flutter 3.44 / Dart 3.9 Mobile Client<br/>Android API 26+ and iOS 15+"]
-        NextAdmin["Next.js 16 Standalone / React 19 RSC<br/>Admin Web Console (Node.js 22 LTS)"]
+        FlutterMobile["Flutter 3.47.8 / Dart 3.9 Mobile Client<br/>Android API 26+ and iOS 15+"]
+        NextAdmin["Next.js 16 Standalone / React 19 RSC<br/>Admin Web Console (Node.js 26.13.0)"]
     end
 
     subgraph EdgeLayer ["Ingress Perimeter"]
@@ -55,8 +55,8 @@ flowchart TD
     end
 
     subgraph PersistenceLayer ["Data & Storage Tier"]
-        PostgreSQL["PostgreSQL 18.4 + PostGIS 3.4<br/>ACID Relational & Spheroidal GIS"]
-        Valkey["Valkey 8.0-alpine<br/>60-Min Mutex & Sliding Rate Limiter"]
+        PostgreSQL["PostgreSQL 18.6 + PostGIS 3.6.4<br/>ACID Relational & Spheroidal GIS"]
+        Valkey["Valkey 9.1.3-alpine<br/>60-Min Mutex & Sliding Rate Limiter"]
         SeaweedFS["SeaweedFS S3 Cluster<br/>Distributed Replicated Blob Storage"]
         ClamAV["ClamAV Daemon<br/>zINSTREAM Synchronous Antivirus"]
     end
@@ -133,7 +133,7 @@ flowchart LR
 | **`github.com/pressly/goose/v3`** | `v3.21.1` | Sequential SQL migration management engine supporting transaction-safe up/down scripts. | MIT |
 | **`github.com/aws/aws-sdk-go-v2`**| `v1.30.x` | S3 API client library for multipart upload and retrieval from self-hosted SeaweedFS S3. | Apache 2.0 |
 | **`github.com/getkin/kin-openapi`**| `v0.124.0` | OpenAPI 3.1 contract schema parsing, validation, and request/response linting. | MIT |
-| **`github.com/testcontainers/testcontainers-go`** | `v0.32.0` | Docker-based integration testing harness for PostgreSQL 18.4 + PostGIS and Valkey instances. | MIT |
+| **`github.com/testcontainers/testcontainers-go`** | `v0.32.0` | Docker-based integration testing harness for PostgreSQL 18.6 + PostGIS and Valkey instances. | MIT |
 
 ---
 
@@ -143,10 +143,10 @@ Persistence components handle relational consistency, spheroidal spatial distanc
 
 ```mermaid
 flowchart TD
-    subgraph PostgreSQLCluster [PostgreSQL 18.4 + PostGIS 3.4 Persistence]
+    subgraph PostgreSQLCluster [PostgreSQL 18.6 + PostGIS 3.6.4 Persistence]
         PGPrimary["PostgreSQL Primary (NVMe)<br/>Read/Write ACID & Spatial Master"]
         PGStandby["PostgreSQL Standby Replica<br/>Physical Streaming WAL Replication"]
-        PostGIS["PostGIS 3.4 Extension<br/>geography(POINT, 4326) & GiST Indexing"]
+        PostGIS["PostGIS 3.6.4 Extension<br/>geography(POINT, 4326) & GiST Indexing"]
         JSONBEngine["JSONB Engine<br/>Dynamic EAV Schemas & GIN jsonb_path_ops"]
         TriggerEngine["PL/pgSQL Trigger Engine<br/>Append-Only Ledger & Monotonic Meters"]
 
@@ -156,9 +156,9 @@ flowchart TD
         PGPrimary -->|Physical Streaming WAL| PGStandby
     end
 
-    subgraph ValkeyCluster [Valkey 8.0 In-Memory Engine]
-        ValkeyMaster["Valkey 8.0 Primary (Port 6379)<br/>RESP3, 60-Min Mutex Holds, Rate Limits"]
-        ValkeyReplica["Valkey 8.0 Replica (Port 6379)<br/>Asynchronous In-Memory Mirror"]
+    subgraph ValkeyCluster [Valkey 9.1.3 In-Memory Engine]
+        ValkeyMaster["Valkey 9.1.3 Primary (Port 6379)<br/>RESP3, 60-Min Mutex Holds, Rate Limits"]
+        ValkeyReplica["Valkey 9.1.3 Replica (Port 6379)<br/>Asynchronous In-Memory Mirror"]
         ValkeySentinel["Valkey Sentinel Quorum (3 Instances)<br/>Automated Sub-3s Failover"]
 
         ValkeyMaster -->|Replication Stream| ValkeyReplica
@@ -169,7 +169,7 @@ flowchart TD
 
 | Technology Component | Version | Role in Architecture | Storage / Memory Footprint | Open-Source License |
 |---|---|---|---|---|
-| **PostgreSQL** | `18.4` | Primary relational database, double-entry financial ledger, state machine persistence. | $64\text{GB RAM}$, $4\text{TB NVMe}$ (RAID 10) | PostgreSQL License |
+| **PostgreSQL** | `18.6` | Primary relational database, double-entry financial ledger, state machine persistence. | $64\text{GB RAM}$, $4\text{TB NVMe}$ (RAID 10) | PostgreSQL License |
 | **PostGIS Extension** | `3.4.2` | Spheroidal geographic calculations (`ST_DWithin`, `ST_Distance`) on WGS 84 spatial coordinates. | Shared with PostgreSQL process | GPLv2 |
 | **Valkey Engine** | `8.0-alpine` | Distributed mutual exclusion locks (`SET NX EX`), token-bucket rate limiting, session revocations. | $16\text{GB RAM}$ dedicated cluster | BSD-3-Clause |
 | **Valkey Sentinel** | `8.0-alpine` | Quorum-based cluster health monitoring, auto-failover, and configuration provider. | 3 Lightweight Daemon Instances | BSD-3-Clause |
@@ -202,13 +202,13 @@ flowchart LR
 
 ---
 
-## 6. Tier 5: Cross-Platform Mobile Client (Flutter 3.44)
+## 6. Tier 5: Cross-Platform Mobile Client (Flutter 3.47.8)
 
 The mobile client is built as a single universal binary targeting Android and iOS. A cryptographic ES256 session token dynamically reconfigures the UI for Renters, Fleet Owners, or Field Operators.
 
 ```mermaid
 flowchart TD
-    subgraph FlutterCore [Flutter 3.44 / Dart 3.9 Mobile Client]
+    subgraph FlutterCore [Flutter 3.47.8 / Dart 3.9 Mobile Client]
         AppShell["Universal App Shell (Dynamic Persona Mounting)"]
         
         subgraph FeatureLayers [Feature Clean Architecture]
@@ -261,7 +261,7 @@ flowchart TD
     subgraph NextJSArch [Next.js 16 App Router Production Architecture]
         EdgeMiddleware["middleware.ts (Edge Session & RBAC Verification)"]
         
-        subgraph ServerRuntime [Node.js 22 LTS Server Runtime]
+        subgraph ServerRuntime [Node.js 26.13.0 Server Runtime]
             RSCShell["React Server Components Shell (/dashboard)"]
             MetadataCompiler["UI Config Compiler (/api/v1/admin/ui-config)"]
             ServerActions["Mutating Server Actions (Zod Validated + Idempotency-Key)"]
@@ -280,7 +280,7 @@ flowchart TD
 
 | Framework / Library Name | Version | Architectural Responsibility | Upstream License |
 |---|---|---|---|
-| **Node.js Runtime** | `22.x LTS` | Server-side execution engine for Next.js standalone container deployment. | MIT |
+| **Node.js Runtime** | `26.13.0` | Server-side execution engine for Next.js standalone container deployment. | MIT |
 | **Next.js Framework** | `16.0.x` | React enterprise framework utilizing App Router, RSC, and streaming SSR. | MIT |
 | **React Framework** | `19.0.x` | UI component library utilizing Actions, `useActionState`, and optimistic hooks. | MIT |
 | **TypeScript** | `5.8.x` | Strict type checking, interface definitions, and contract mapping. | Apache 2.0 |
@@ -491,7 +491,7 @@ To protect platform intellectual property and ensure uninterrupted operational c
 | **Next.js Framework** | Vercel Inc. | `16.0.x` | MIT | **Permitted** (Standard) |
 | **React Framework** | Meta Platforms Inc. | `19.0.x` | MIT | **Permitted** (Standard) |
 | **TypeScript** | Microsoft Corp. | `5.8.x` | Apache 2.0 | **Permitted** (Standard) |
-| **PostgreSQL Database** | PostgreSQL Global Dev Group | `18.4` | PostgreSQL License | **Permitted** (Standard) |
+| **PostgreSQL Database** | PostgreSQL Global Dev Group | `18.6` | PostgreSQL License | **Permitted** (Standard) |
 | **PostGIS Extension** | PostGIS Development Group | `3.4.2` | GPLv2 | **Permitted** (Isolated DB Extension) |
 | **Valkey In-Memory Engine** | Linux Foundation | `8.0-alpine` | BSD-3-Clause | **Permitted** (Standard) |
 | **SeaweedFS Distributed S3**| Chris Lu / SeaweedFS Authors | `v3.70+` | Apache 2.0 | **Permitted** (Standard) |

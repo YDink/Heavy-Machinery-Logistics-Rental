@@ -115,7 +115,7 @@ sequenceDiagram
     participant UI as OperatorCertificationWorkbench ('use client')
     participant SA as adjudicateOperatorCertAction ('use server')
     participant GoAPI as Go Operator Compliance Interactor
-    participant DB as PostgreSQL 18.4 (pgx.Tx)
+    participant DB as PostgreSQL 18.6 (pgx.Tx)
 
     Auditor->>UI: Selects [END_EARTHMOVING_TRACK, END_LIFTING_CRANE] + Expiry 2028-03-10 + Clicks Grant
     UI->>SA: adjudicateOperatorCertAction(formData)

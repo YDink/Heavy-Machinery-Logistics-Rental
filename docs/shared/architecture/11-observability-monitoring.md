@@ -98,8 +98,8 @@ flowchart TD
     end
 
     subgraph PersistenceTier [Persistence & Infrastructure Tier - Zone 3]
-        PGHost["PostgreSQL 18.4 + PostGIS<br/>postgres_exporter"]
-        ValkeyHost["Valkey 8.0 Cache Cluster<br/>valkey_exporter"]
+        PGHost["PostgreSQL 18.6 + PostGIS<br/>postgres_exporter"]
+        ValkeyHost["Valkey 9.1.3 Cache Cluster<br/>valkey_exporter"]
         LinuxHost["Linux Host OS (Debian 12)<br/>node_exporter"]
     end
 
@@ -339,8 +339,8 @@ sequenceDiagram
     participant Traefik as Traefik Gateway
     participant GoHTTP as Monolith Ingress (Chi)
     participant BookingMod as Booking Module Interactor
-    participant DB as PostgreSQL 18.4 (pgxpool)
-    participant VK as Valkey 8.0 Cache
+    participant DB as PostgreSQL 18.6 (pgxpool)
+    participant VK as Valkey 9.1.3 Cache
     participant OTel as OpenTelemetry Collector
 
     Client->>Traefik: POST /api/v1/bookings (traceparent header)

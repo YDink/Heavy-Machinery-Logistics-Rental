@@ -32,10 +32,10 @@ All execution steps must strictly comply with the following architectural invari
 | Subsystem | Technology & Version | Directory | Primary Output Artifacts | Verification Command |
 |---|---|---|---|---|
 | **Local Infrastructure** | Docker Compose / Traefik 3.x | Root | `docker-compose.yml`, local volumes | `docker compose ps` |
-| **Primary Persistence** | PostgreSQL 18.4 + PostGIS 3.4 | `migrations/` | `000001_init_platform_schema.up.sql` | `psql -c "\dx"` |
-| **Ephemeral Cache** | Valkey 8.0-alpine | Root | Distributed lock & rate-limit cluster | `redis-cli ping` |
+| **Primary Persistence** | PostgreSQL 18.6 + PostGIS 3.6.4 | `migrations/` | `000001_init_platform_schema.up.sql` | `psql -c "\dx"` |
+| **Ephemeral Cache** | Valkey 9.1.3-alpine | Root | Distributed lock & rate-limit cluster | `redis-cli ping` |
 | **Backend Core** | Go 1.27.3 Modular Monolith | `backend/` | `go.mod`, `go.sum`, `cmd/api/main.go`, `sqlc.yaml` | `go test -race ./...` |
-| **Cross-Platform Mobile** | Flutter 3.44 / Dart 3.9 | `mobile/` | `pubspec.yaml`, `pubspec.lock`, Clean Arch tree | `flutter test` |
+| **Cross-Platform Mobile** | Flutter 3.47.8 / Dart 3.9 | `mobile/` | `pubspec.yaml`, `pubspec.lock`, Clean Arch tree | `flutter test` |
 | **Admin Web Console** | Next.js 16 (React 19, App Router) | `admin/` | `package.json`, `package-lock.json`, Tailwind v4 | `npm run build` |
 | **Governance Hooks** | Lefthook 1.8+ / Commitlint | Root | `lefthook.yml`, `.github/commitlint.config.js` | `lefthook run pre-commit` |
 
@@ -141,7 +141,7 @@ cd ..
 
 ---
 
-### Step 5: Flutter 3.44 Mobile Workspace Scaffolding
+### Step 5: Flutter 3.47.8 Mobile Workspace Scaffolding
 Scaffold the mobile client with BLoC state management, Isar local database, and feature-first structuring:
 ```bash
 flutter create --org com.dinkmachinery --project-name dink_mobile mobile
@@ -234,7 +234,7 @@ Before closing Phase 1, confirm that every item below satisfies the requirements
 - [ ] **Country Baseline:** `country_configs` seeded with valid `ET` and `KE` records containing integer tax basis points.
 - [ ] **Backend Code Generation:** `internal/transport/http/generated/api.gen.go` generated without manual edits; `sqlc` models compiled into `internal/platform/database/db/`.
 - [ ] **Backend Compilation:** `go build ./cmd/api` compiles cleanly; zero warnings on `golangci-lint run`.
-- [ ] **Mobile Workspace:** Flutter 3.44 workspace passes `flutter analyze` and `flutter test`; `pubspec.lock` committed.
+- [ ] **Mobile Workspace:** Flutter 3.47.8 workspace passes `flutter analyze` and `flutter test`; `pubspec.lock` committed.
 - [ ] **Admin Console:** Next.js 16 builds with zero TypeScript errors (`npm run build`); `src/types/api.generated.ts` synchronized with `openapi.yaml`.
 - [ ] **Zero-PII Compliance:** Static log audit passes with zero unmasked PII log occurrences.
 - [ ] **Governance Hooks:** Lefthook pre-commit and commit-msg hooks operational.
@@ -252,8 +252,8 @@ Upon completing all verification criteria:
    git add .
    git commit -m "[BOOTSTRAP] feat(platform): complete phase 1 subsystem initialization
 
-   Bootstrapped Go 1.27.3 modular monolith, Flutter 3.44 client, Next.js 16 admin,
-   PostgreSQL 18.4 + PostGIS baseline schema, Valkey 8.0, and Lefthook governance.
+   Bootstrapped Go 1.27.3 modular monolith, Flutter 3.47.8 client, Next.js 16 admin,
+   PostgreSQL 18.6 + PostGIS baseline schema, Valkey 9.1.3, and Lefthook governance.
 
    Tests: All subsystem builds and test suites passing.
    Docs: CONTEXT.md, BOOTSTRAP.md, docs/quality/BOOTSTRAP_CHECKLIST.md

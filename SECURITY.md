@@ -13,8 +13,8 @@ sequenceDiagram
   actor User as Client (Flutter / Next.js)
   participant Gateway as Traefik Ingress
   participant Auth as Auth Module
-  participant Valkey as Valkey 8.0 Cache
-  participant DB as PostgreSQL 18.4
+  participant Valkey as Valkey 9.1.3 Cache
+  participant DB as PostgreSQL 18.6
 
   User->>Gateway: POST /auth/login (phone/email + password)
   Gateway->>Auth: Validate Credentials

@@ -117,8 +117,8 @@ sequenceDiagram
     participant Modal as ManualInterventionModal ('use client')
     participant SA as executeManualBookingOverrideAction ('use server')
     participant GoAPI as Go Admin Booking Override Interactor
-    participant VK as Valkey 8.0 Cache
-    participant DB as PostgreSQL 18.4 (pgx.Tx)
+    participant VK as Valkey 9.1.3 Cache
+    participant DB as PostgreSQL 18.6 (pgx.Tx)
 
     Admin->>Modal: Selects Target="CANCELLED", Reversal="CREDIT_OWNER_WALLET", Enters Ticket & Phrase
     Modal->>SA: executeManualBookingOverrideAction(formData)

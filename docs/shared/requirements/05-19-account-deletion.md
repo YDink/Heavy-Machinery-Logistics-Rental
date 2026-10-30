@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Data Governance Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§5.1, §5.9, §5.10, §5.11, §5.13, §5.17, §5.18, §8, §10, §12), `FLOW-ENTRY-DINK-CORE-V7.0` (Interaction Flow 01), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `FLOW-COMMISSION-DEBT-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
 **Target Personas:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Equipment Fleet Owner (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Certified Field Operator (*Mulugeta Tadesse* / *Juma Omwamba*), Compliance Officer & Data Protection Officer (*Yohannes Bekele*), Finance Controller & Revenue Auditor (*Solomon Kassa*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Data Purging, Cryptographic Erasure & Audit Trail Immutability), Apple App Store Review Guidelines §5.1.1(v) (Account Deletion Requirement), Google Play Policy (User Data Deletion), Kenya Data Protection Act 2019 (§40 Right to Erasure / Rectification), Ethiopian Communications Authority (ECA) Data Protection Directives, National Bank of Ethiopia (NBE) Financial Record Retention Directives (10-Year Statutory Floor), Kenya Revenue Authority (KRA) Tax Retention Laws  
@@ -84,7 +84,7 @@ This document formally specifies:
    - Any open damage claim docket, pending insurance claim, or administrative compliance freeze.
 3. **Double-Entry Financial Immutability Invariant (NBE / KRA Compliance):** Under no circumstance may transaction rows in `owner_wallet_transactions`, `bookings`, `booking_reconciliations`, or `admin_audit_logs` be physically deleted (`DROP` / `DELETE`). Financial records are permanently preserved, with all associated counterparty user attributes irreversibly pseudonymized into generic synthetic hashes (`ANON-USER-XXXXX`).
 4. **Permanent Cryptographic Key Destruction (Crypto-Shredding):** Any encrypted user PII stored at rest in PostgreSQL (e.g., Kebele ID, passport number, personal tax TIN) is encrypted using a unique, user-specific Data Encryption Key (DEK). Irreversible deletion is achieved by destroying the user's DEK in HashiCorp Vault / KMS, rendering historical raw database backups permanently unreadable.
-5. **Immediate Edge Search Invalidation:** Exactly at the moment deletion is confirmed (`SUSPENDED_PENDING_DELETION`), all active machinery listings owned by the user are marked `INACTIVE`, all PostGIS spatial search caches in Valkey 8.0 are evicted, and all active JWT sessions are revoked globally via Valkey token blacklisting.
+5. **Immediate Edge Search Invalidation:** Exactly at the moment deletion is confirmed (`SUSPENDED_PENDING_DELETION`), all active machinery listings owned by the user are marked `INACTIVE`, all PostGIS spatial search caches in Valkey 9.1.3 are evicted, and all active JWT sessions are revoked globally via Valkey token blacklisting.
 
 ---
 
@@ -293,7 +293,7 @@ Upon successful submission of the deletion confirmation OTP:
       updated_at = NOW()
   WHERE id = $user_id;
   ```
-* **Global Token Revocation:** The system immediately revokes all active JWT access and refresh tokens by incrementing the user's `token_version` in PostgreSQL and flushing matching session keys from Valkey 8.0:
+* **Global Token Revocation:** The system immediately revokes all active JWT access and refresh tokens by incrementing the user's `token_version` in PostgreSQL and flushing matching session keys from Valkey 9.1.3:
   ```text
   DEL session:user:{user_id}:*
   ```

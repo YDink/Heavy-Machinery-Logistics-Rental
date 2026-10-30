@@ -14,7 +14,7 @@
 
 ## 1. Executive Summary & Architectural Invariants
 
-The **Multi-Country Operational Parameters & Jurisdictional Tax Matrix Console** (`SPEC-ADM-CFG-01`) is the single administrative control plane for the PostgreSQL `country_configs` table (`LOC-01-BE`, `ADR-015`). In Dink Machinery, **zero country-specific constants (tax percentages, currencies, phone prefixes, negative wallet credit limits, booking hold timers, or payment gateway routings) are hardcoded in Go or Dart/TypeScript code**. Every operational parameter is keyed by ISO 3166-1 alpha-2 `country_code` (`ET` for Ethiopia, `KE` for Kenya) and cached in Valkey 8.0 (`country_config:{country_code}`).
+The **Multi-Country Operational Parameters & Jurisdictional Tax Matrix Console** (`SPEC-ADM-CFG-01`) is the single administrative control plane for the PostgreSQL `country_configs` table (`LOC-01-BE`, `ADR-015`). In Dink Machinery, **zero country-specific constants (tax percentages, currencies, phone prefixes, negative wallet credit limits, booking hold timers, or payment gateway routings) are hardcoded in Go or Dart/TypeScript code**. Every operational parameter is keyed by ISO 3166-1 alpha-2 `country_code` (`ET` for Ethiopia, `KE` for Kenya) and cached in Valkey 9.1.3 (`country_config:{country_code}`).
 
 ### 1.1 Canonical Jurisdictional Parameter Matrix (`country_configs`)
 
@@ -95,8 +95,8 @@ sequenceDiagram
     participant UI as Next.js 16 Country Config Form
     participant SA as Server Action (updateCountryConfigAction)
     participant GoAPI as Go Monolith (CountryConfig Handler)
-    participant PG as PostgreSQL 18.4 (country_configs)
-    participant VK as Valkey 8.0 Pub/Sub
+    participant PG as PostgreSQL 18.6 (country_configs)
+    participant VK as Valkey 9.1.3 Pub/Sub
 
     SuperAdmin->>UI: Modify ET Parameters, Enter Co-Signer TOTP & Submit
     UI->>SA: Invoke updateCountryConfigAction(formData)

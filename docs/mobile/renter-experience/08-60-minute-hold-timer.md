@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-RNT-08`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/05-05-booking-reservation-flow.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Corporate Finance Officer (*Solomon Kassa*)  
 **Associated Requirements:** `REQ-05-05` (`BK-05`, `BK-06`), `REQ-05-10` (15-Min Expiry Warning Push Notification)  
 **Associated Interaction Flows:** `FLOW-07` (`1. PENDING_PAYMENT`), `FLOW-08` (Direct P2P Commercial Bank Wire), `FLOW-15` / `FLOW-16` (Valkey 60-Min Soft-Lock Lease & Auto-Eviction)  
@@ -15,7 +15,7 @@
 
 ## 1. Domain Context, Business Formulas & Architectural Invariants
 
-Once a booking transitions to state **`1. PENDING_PAYMENT`**, the platform locks the machine exclusively for the contractor in Valkey 8.0 for **60 minutes ($3,600\text{ seconds}$)** (`BK-05`). Because Dink Machinery operates under the **Non-Custodial Financial Invariant (`ADR-010`)** in compliance with National Bank of Ethiopia (NBE) directives, the contractor transfers the rental prepayment directly into the **Fleet Owner's verified commercial bank account** (e.g., *Commercial Bank of Ethiopia (CBE)*, *Awash Bank*, *Dashen Bank*, *Bank of Abyssinia*, *KCB*, *Equity Bank*) and uploads the payment slip before the countdown expires (`BK-06`).
+Once a booking transitions to state **`1. PENDING_PAYMENT`**, the platform locks the machine exclusively for the contractor in Valkey 9.1.3 for **60 minutes ($3,600\text{ seconds}$)** (`BK-05`). Because Dink Machinery operates under the **Non-Custodial Financial Invariant (`ADR-010`)** in compliance with National Bank of Ethiopia (NBE) directives, the contractor transfers the rental prepayment directly into the **Fleet Owner's verified commercial bank account** (e.g., *Commercial Bank of Ethiopia (CBE)*, *Awash Bank*, *Dashen Bank*, *Bank of Abyssinia*, *KCB*, *Equity Bank*) and uploads the payment slip before the countdown expires (`BK-06`).
 
 ### 1.1 Timer Math & Color Interpolation Rules
 1. **Wall-Clock-Independent Monotonic Countdown (`QA Determinism Rule`):**
@@ -114,11 +114,11 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Renter as Contractor (Flutter 3.44)
+    actor Renter as Contractor (Flutter 3.47.8)
     participant HoldBloc as HoldTimerBloc
     participant Clock as AbstractedClockProvider
     participant API as Go Monolith (/api/v1/bookings/{id})
-    participant Valkey as Valkey 8.0
+    participant Valkey as Valkey 9.1.3
 
     Renter->>HoldBloc: Mount HoldTimerScreen(bookingId)
     HoldBloc->>API: GET /api/v1/bookings/{id}/hold-status

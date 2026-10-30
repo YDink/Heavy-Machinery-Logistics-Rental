@@ -24,7 +24,7 @@ The **Admin Authentication, WebAuthn Passkeys & Hardware MFA Subsystem** (`SPEC-
      - **Priority 1 — WebAuthn FIDO2 Passkey (`REG-11`):** Hardware security key (YubiKey 5) or platform authenticator (TouchID / Windows Hello) verified against the public key and monotonic signature counter stored in `user_passkeys`.
      - **Priority 2 — RFC 6238 TOTP Authenticator (`REG-12`):** 6-digit time-based one-time code (30-second window, $\pm 1$ drift step) validated against the encrypted TOTP seed in `user_mfa_factors`.
 2. **Passkey Signature Counter Regression Detection (`REG-13`, `ADR-011`):** During WebAuthn assertion verification, if the authenticator returns a `signCount` less than or equal to the last persisted counter in PostgreSQL (`user_passkeys.sign_count`), the backend immediately aborts login with `401 AUTH_INVALID_TOKEN` (`CLONED_AUTHENTICATOR_DETECTED`), revokes the passkey credential, and alerts `SUPER_ADMIN` security channels.
-3. **Zero Client-Side Token Storage (`ADR-011`):** Access JWTs (signed with `ES256`, 15-minute TTL) and single-use rotating refresh tokens (persisted in Valkey 8.0 under `refresh:{token_id}`) are never exposed to client-side JavaScript (`localStorage`, `sessionStorage`, or non-HttpOnly cookies). They are set exclusively via Next.js Server Actions as `HttpOnly; Secure; SameSite=Strict; Path=/` cookies (`dink_admin_session` and `dink_admin_refresh`).
+3. **Zero Client-Side Token Storage (`ADR-011`):** Access JWTs (signed with `ES256`, 15-minute TTL) and single-use rotating refresh tokens (persisted in Valkey 9.1.3 under `refresh:{token_id}`) are never exposed to client-side JavaScript (`localStorage`, `sessionStorage`, or non-HttpOnly cookies). They are set exclusively via Next.js Server Actions as `HttpOnly; Secure; SameSite=Strict; Path=/` cookies (`dink_admin_session` and `dink_admin_refresh`).
 4. **15-Minute Idle Session Lockout & Step-Up Re-Authentication (`REG-14`):**
    - An edge activity monitor tracks keyboard/pointer interaction and heartbeats against Valkey. After **15 minutes ($900\text{ seconds}$) of inactivity**, the session transitions to `LOCKED_IDLE`, mounting a non-dismissible modal requiring a fresh WebAuthn Passkey tap or TOTP code to resume without losing unsaved workspace context, or hard-redirecting to `/login` once the token expires.
    - High-risk mutations (manual booking state override `SPEC-ADM-BKG-04`, escrow arbitration ruling `SPEC-ADM-DSP-03`, RBAC role elevation `SPEC-ADM-SHL-03`) require a fresh `STEP_UP` MFA assertion within the last 5 minutes.
@@ -151,8 +151,8 @@ sequenceDiagram
     participant Client as LoginMfaForm ('use client')
     participant SA as verifyPasskeyMfaAction ('use server')
     participant GoAuth as Go Auth Module (/api/v1/auth)
-    participant VK as Valkey 8.0 (Session & Rate Limit)
-    participant DB as PostgreSQL 18.4 (user_passkeys)
+    participant VK as Valkey 9.1.3 (Session & Rate Limit)
+    participant DB as PostgreSQL 18.6 (user_passkeys)
 
     Admin->>Client: Clicks "Authenticate with Passkey (FIDO2)"
     Client->>SA: requestWebAuthnChallengeAction(preAuthSessionId)

@@ -1,4 +1,4 @@
-# Partition Decisions: 10-01 — Relational Schema Architecture & PostGIS 3.4 Spatial Taxonomy Architecture
+# Partition Decisions: 10-01 — Relational Schema Architecture & PostGIS 3.6.4 Spatial Taxonomy Architecture
 
 This document records localized Level 2 (L2) architectural decisions governing partition `10-01`.
 
@@ -8,7 +8,7 @@ This document records localized Level 2 (L2) architectural decisions governing p
 
 ---
 
-## D-10-01-001: Unified 111-Table Relational Schema with PostGIS 3.4 Spatial Extensions
+## D-10-01-001: Unified 111-Table Relational Schema with PostGIS 3.6.4 Spatial Extensions
 
 - **Status:** Accepted
 - **Date:** 2026-10-26
@@ -19,7 +19,7 @@ This document records localized Level 2 (L2) architectural decisions governing p
 The Dink Machinery domain spans 111 relational tables covering authentication, fleet taxonomies, attachments, bookings, inspections, disputes, dynamic configs, and double-entry accounting. Splitting into fragmented polyglot databases creates immense operational overhead and destroys ACID transactional guarantees.
 
 ### 2. Considered Alternatives
-1. **Option A:** Single unified PostgreSQL 18.4 database with PostGIS 3.4, uuid-ossp, and pgcrypto extensions managing all 111 platform tables
+1. **Option A:** Single unified PostgreSQL 18.6 database with PostGIS 3.6.4, uuid-ossp, and pgcrypto extensions managing all 111 platform tables
    - *Pros:* Single database engine to backup, tune, and replicate; ACID transactions across all bounded contexts; spatial GiST indexing.
    - *Cons:* Requires disciplined index tuning and connection pool configuration.
 2. **Option B:** Polyglot persistence: MongoDB for fleet specs, Redis for sessions, PostgreSQL for money, Neo4j for logistics routes
@@ -30,7 +30,7 @@ The Dink Machinery domain spans 111 relational tables covering authentication, f
    - *Cons:* Lacks spheroidal spatial indexing; inferior JSONB path indexing; poor window function optimization compared to PostgreSQL.
 
 ### 3. Chosen Solution & Technical Rationale
-Option A: Unified PostgreSQL 18.4 database with PostGIS 3.4. All 111 tables are deployed via sequential golang-migrate migrations, leveraging native GiST spatial indexes, JSONB GIN indexing, and pgcrypto column encryption.
+Option A: Unified PostgreSQL 18.6 database with PostGIS 3.6.4. All 111 tables are deployed via sequential golang-migrate migrations, leveraging native GiST spatial indexes, JSONB GIN indexing, and pgcrypto column encryption.
 
 ### 4. Rejected Alternatives
 - Option B: Rejected due to catastrophic operational and maintenance overhead in emerging-market infrastructure.

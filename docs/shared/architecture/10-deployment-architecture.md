@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-DEPLOY-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `ARCH-INTRO-DINK-CORE-V7.0`, `ARCH-PRIN-DINK-CORE-V7.0`, `ARCH-OVERVIEW-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-DB-DINK-CORE-V7.0`, `ARCH-COMM-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-014`  
-**Target Runtimes:** Linux AMD64 / ARM64, Docker Engine 27+, Traefik 3.x, Go 1.27.3 (`distroless/static-debian12`), Next.js 16 Standalone (Node.js 22 LTS), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine, SeaweedFS S3, ClamAV Daemon, OpenBao KMS  
+**Target Runtimes:** Linux AMD64 / ARM64, Docker Engine 27+, Traefik 3.x, Go 1.27.3 (`distroless/static-debian12`), Next.js 16 Standalone (Node.js 26.13.0), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon, OpenBao KMS  
 **Target Hosting Environments:** Sovereign On-Premise / Colocation Datacenters (Tier III Facilities, Addis Ababa) & Regional Edge (Nairobi)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, ISO/IEC 27001:2022, Ethiopian Personal Data Protection Proclamation No. 1321/2024 (Local Data Residency), NBE Directives  
 **Status:** Approved Engineering Baseline
@@ -26,8 +26,8 @@
   - 4.2 [Next.js 16 Admin Web Console Container](#42-nextjs-16-admin-web-console-container)
   - 4.3 [Production Compose Orchestration Baseline](#43-production-compose-orchestration-baseline)
 - 5. [High Availability, Clustering & Storage Topography](#5-high-availability-clustering--storage-topography)
-  - 5.1 [PostgreSQL 18.4 Streaming WAL Replication](#51-postgresql-184-streaming-wal-replication)
-  - 5.2 [Valkey 8.0 Sentinel Failover Topology](#52-valkey-80-sentinel-failover-topology)
+  - 5.1 [PostgreSQL 18.6 Streaming WAL Replication](#51-postgresql-184-streaming-wal-replication)
+  - 5.2 [Valkey 9.1.3 Sentinel Failover Topology](#52-valkey-80-sentinel-failover-topology)
   - 5.3 [SeaweedFS Distributed S3 Storage Replication](#53-seaweedfs-distributed-s3-storage-replication)
 - 6. [Local Data Residency & Regional Hosting Topology](#6-local-data-residency--regional-hosting-topology)
   - 6.1 [Statutory Data Residency Governance (Proclamation No. 1321/2024)](#61-statutory-data-residency-governance-proclamation-no-13212024)
@@ -90,7 +90,7 @@ flowchart TD
 | **Hosting Target** | Developer Workstation | Dedicated Staging Host (Addis Ababa) | Colocated Tier III DC (Addis Ababa Core + Nairobi PoP) |
 | **Compute Profile** | 4 Cores, 16GB RAM | 16 Cores, 64GB RAM | Clustered Active-Active (64 Cores, 256GB RAM) |
 | **Data Ingestion** | Synthetic Seed Fixtures | Anonymized Production Mirror | Live Citizen Data & Production Telco Rails |
-| **Database Mode** | Single PostgreSQL 18.4 Container | Replicated PostgreSQL Container | Physical Primary + Standby Streaming WAL Cluster |
+| **Database Mode** | Single PostgreSQL 18.6 Container | Replicated PostgreSQL Container | Physical Primary + Standby Streaming WAL Cluster |
 | **Object Store** | Local SeaweedFS Standalone | Replicated SeaweedFS Master/Volume | Multi-Node Replicated SeaweedFS Cluster |
 
 ### 2.2 Macro Infrastructure Topology
@@ -115,9 +115,9 @@ flowchart TD
     end
 
     subgraph DataNetwork [Isolated Persistence Network]
-        PGPrimary[("PostgreSQL 18.4 Primary<br/>Read/Write on NVMe")]
-        PGStandby[("PostgreSQL 18.4 Standby<br/>Read Replica")]
-        ValkeyCluster[("Valkey 8.0 Cache Cluster<br/>Sentinel Failover")]
+        PGPrimary[("PostgreSQL 18.6 Primary<br/>Read/Write on NVMe")]
+        PGStandby[("PostgreSQL 18.6 Standby<br/>Read Replica")]
+        ValkeyCluster[("Valkey 9.1.3 Cache Cluster<br/>Sentinel Failover")]
         SeaweedCluster[("SeaweedFS S3 Storage<br/>Replicated Volumes")]
         OpenBaoKMS["OpenBao Key Management System"]
     end
@@ -358,13 +358,13 @@ ENTRYPOINT ["/app/dink-server"]
 
 ```dockerfile
 # syntax=docker/dockerfile:1.7
-FROM node:22-alpine AS deps
+FROM node:26.13.0-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-FROM node:22-alpine AS builder
+FROM node:26.13.0-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -374,7 +374,7 @@ ENV NODE_ENV=production
 
 RUN npm run build
 
-FROM node:22-alpine AS runner
+FROM node:26.13.0-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -486,7 +486,7 @@ services:
       - monolith-primary
 
   postgres-primary:
-    image: postgis/postgis:18-3.4-alpine
+    image: postgis/postgis:18.6-3.6.4-alpine
     container_name: dink-postgres-primary
     restart: always
     environment:
@@ -502,7 +502,7 @@ services:
     shm_size: 4g
 
   valkey-primary:
-    image: valkey/valkey:8.0-alpine
+    image: valkey/valkey:9.1.3-alpine
     container_name: dink-valkey-primary
     restart: always
     command: ["valkey-server", "/etc/valkey/valkey.conf"]
@@ -537,12 +537,12 @@ services:
 
 ## 5. High Availability, Clustering & Storage Topography
 
-### 5.1 PostgreSQL 18.4 Streaming WAL Replication
+### 5.1 PostgreSQL 18.6 Streaming WAL Replication
 
 ```mermaid
 flowchart LR
-    AppPrimary["Go Monolith Primary Nodes"] -->|Write Traffic / Port 5432| MasterDB[("PostgreSQL 18.4 Primary<br/>Addis Ababa DC (Zone 3)")]
-    AppPrimary -.->|Read Splitting / Port 5432| StandbyDB[("PostgreSQL 18.4 Standby<br/>Addis Ababa DC (Zone 3)")]
+    AppPrimary["Go Monolith Primary Nodes"] -->|Write Traffic / Port 5432| MasterDB[("PostgreSQL 18.6 Primary<br/>Addis Ababa DC (Zone 3)")]
+    AppPrimary -.->|Read Splitting / Port 5432| StandbyDB[("PostgreSQL 18.6 Standby<br/>Addis Ababa DC (Zone 3)")]
     MasterDB -->|Physical Streaming WAL Replication| StandbyDB
     MasterDB -->|Continuous WAL Archiving| WALStorage[("pgBackRest Repository<br/>Local NVMe + Remote Cold Storage")]
 ```
@@ -550,7 +550,7 @@ flowchart LR
 * **Failover Orchestration:** Monitored via automated health agents and Patroni consensus. If the primary instance misses 3 consecutive 2-second heartbeats, the standby node promotes to primary and updates internal DNS / VIP routes.
 * **Synchronous Commits:** For financial transactions, `synchronous_commit = on` guarantees that transaction commits are acknowledged on disk on the primary before the client request returns.
 
-### 5.2 Valkey 8.0 Sentinel Failover Topology
+### 5.2 Valkey 9.1.3 Sentinel Failover Topology
 
 Distributed mutual exclusion locks (the 60-minute reservation hold `lock:hold:fleet:{id}`) and rate-limiting token buckets require high cache availability:
 * **Topology:** 1 Primary node, 2 Replica nodes, and 3 Sentinel instances distributed across independent host machines.
@@ -581,7 +581,7 @@ flowchart TD
         direction TB
         AddisEdge["Traefik 3.x Primary Gateway"]
         AddisMonolith["Go Monolith Replica Pool"]
-        AddisDB[("PostgreSQL 18.4 + PostGIS Cluster")]
+        AddisDB[("PostgreSQL 18.6 + PostGIS Cluster")]
         AddisS3[("SeaweedFS S3 Cluster")]
         AddisKMS["OpenBao Sovereign KMS"]
 

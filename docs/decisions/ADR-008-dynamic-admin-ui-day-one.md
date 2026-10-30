@@ -33,7 +33,7 @@ Back-office administrators, compliance officers, and financial controllers requi
   - Table columns and permissions update in real-time without redeploying the web frontend.
   - Instant server rendering of high-density data tables with minimal client JavaScript payload.
 - **Cons:**
-  - Requires maintaining a Node.js 22 LTS container runtime in the datacenter.
+  - Requires maintaining a Node.js 26.13.0 container runtime in the datacenter.
 
 ### Option 2: Client-Side Single Page Application (Vite + React SPA)
 - **Summary:** Traditional React SPA communicating directly with the Go API via browser fetch calls.

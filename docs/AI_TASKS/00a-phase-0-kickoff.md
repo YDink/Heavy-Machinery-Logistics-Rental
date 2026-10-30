@@ -110,7 +110,7 @@ Before declaring Phase 0 complete and advancing to Phase 1:
 - [ ] **Financial Double-Entry Ledger Invariants:** Explicitly defined in `CODE_STANDARDS.md § 1.4` and `contracts/README.md`.
 - [ ] **Automated Tooling Verified:** Validation scripts executed and passing locally.
 - [ ] **Zero Open Phase 0 Blockers:** All blocking open questions in `OPEN_QUESTIONS.md` resolved or scheduled for subsequent feature partitions.
-- [ ] **Bootstrap Runbook Ready:** `BOOTSTRAP.md` verified against workstation tool versions (Go `1.27.3`, Flutter `3.44`, Next.js `16.x`, PostgreSQL `18.4`, Valkey `8.0`).
+- [ ] **Bootstrap Runbook Ready:** `BOOTSTRAP.md` verified against workstation tool versions (Go `1.27.3`, Flutter `3.47.8`, Next.js `16.x`, PostgreSQL `18.6`, Valkey `9.1.3`).
 
 ---
 

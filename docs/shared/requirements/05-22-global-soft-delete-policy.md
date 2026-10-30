@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Data Lifecycle Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§5.2, §5.5, §5.9, §5.11, §5.13, §5.15, §5.17, §5.19, §8, §10, §12), `ADR-004` (Database Schema & Concurrency Design), `ADR-010` (Offline Synchronization & Local Storage Strategy), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `FLOW-FLEET-REG-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-005`, `ADR-008`  
-**Target Runtimes:** Go 1.24 Backend Monolith, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
 **Target Personas:** Equipment Fleet Owner (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Compliance Officer & Data Protection Officer (*Yohannes Bekele*), Finance Controller & Revenue Auditor (*Solomon Kassa*), Super Administrator (*Rahel Tadesse*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Data Integrity, Non-Repudiation, Cryptographic Deletion & Secure Archival), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), National Bank of Ethiopia (NBE) Financial Directives (10-Year Statutory Audit Floor), Kenya Data Protection Act 2019 (§40 Erasure & Retention Limitations), Kenya Revenue Authority (KRA) Tax Procedures Act  
@@ -26,10 +26,10 @@
   - 3.1 [Standard Soft-Delete Column Envelope (`deleted_at`, `deleted_by`, `deletion_reason`)](#31-standard-soft-delete-column-envelope-deleted_at-deleted_by-deletion_reason)
   - 3.2 [Partial Indexing Strategy (`WHERE deleted_at IS NULL`)](#32-partial-indexing-strategy-where-deleted_at-is-null)
   - 3.3 [Compound Unique Constraints with Nullable Deletion Markers](#33-compound-unique-constraints-with-nullable-deletion-markers)
-  - 3.4 [PostgreSQL 18.4 Row-Level Security (RLS) Filter Policies](#34-postgresql-184-row-level-security-rls-filter-policies)
+  - 3.4 [PostgreSQL 18.6 Row-Level Security (RLS) Filter Policies](#34-postgresql-184-row-level-security-rls-filter-policies)
 - 4. [Cascading Invalidation & Cross-Tier Cache Eviction (`DEL-CASCADE`)](#4-cascading-invalidation--cross-tier-cache-eviction-del-cascade)
   - 4.1 [Relational Cascade Rules & Foreign Key Restraints](#41-relational-cascade-rules--foreign-key-restraints)
-  - 4.2 [Valkey 8.0 In-Memory Key Eviction & Real-Time Lease Release](#42-valkey-80-in-memory-key-eviction--real-time-lease-release)
+  - 4.2 [Valkey 9.1.3 In-Memory Key Eviction & Real-Time Lease Release](#42-valkey-80-in-memory-key-eviction--real-time-lease-release)
   - 4.3 [PostGIS Spatial Radius & Clustered Viewport De-Indexing](#43-postgis-spatial-radius--clustered-viewport-de-indexing)
   - 4.4 [Server-Sent Events (SSE) Real-Time Invalidation Push](#44-server-sent-events-sse-real-time-invalidation-push)
   - 4.5 [Client-Side Isar NoSQL Tombstone Propagation (`ADR-010`)](#45-client-side-isar-nosql-tombstone-propagation-adr-010)
@@ -66,9 +66,9 @@ In a multi-sided heavy industrial plant and commercial logistics aggregator oper
 * Furthermore, conflicting legal mandates must be bridged: statutory tax/AML retention directives (National Bank of Ethiopia and Kenya Revenue Authority mandating **10 years of immutable fiscal records**) versus data protection mandates (Kenya Data Protection Act 2019 and Ethiopian Communications Authority directives requiring erasure of personal data).
 
 This document formally specifies:
-1. The universal soft-delete envelope and relational column standard applied across all non-financial business entities in PostgreSQL 18.4.
+1. The universal soft-delete envelope and relational column standard applied across all non-financial business entities in PostgreSQL 18.6.
 2. The partial indexing strategy and Row-Level Security (RLS) policies isolating live operations from soft-deleted records with zero computational query penalty.
-3. The multi-tier cascading invalidation pipeline propagating deletions across PostgreSQL relational joins, Valkey 8.0 in-memory hold leases, PostGIS spatial search clusters, and offline Isar NoSQL client databases (`ADR-010`).
+3. The multi-tier cascading invalidation pipeline propagating deletions across PostgreSQL relational joins, Valkey 9.1.3 in-memory hold leases, PostGIS spatial search clusters, and offline Isar NoSQL client databases (`ADR-010`).
 4. The pre-flight barrier evaluation engine preventing the soft-deletion of assets encumbered by active rental contracts, unconfirmed wires, or open dispute dockets.
 5. The automated, scheduled physical hard-purge batch engine (`DEL-WORKER-01`) enforcing statutory data lifecycle timelines, S3 blob destruction, and cryptographic shredding.
 
@@ -76,7 +76,7 @@ This document formally specifies:
 
 1. **Zero Raw SQL `DELETE` on Primary Business Entities Invariant:** The execution of raw SQL `DELETE` statements by application services against primary business tables (`users`, `fleets`, `attachments`, `owner_operator_memberships`, `fleet_spec_values`, `fleet_insurance_policies`) is strictly prohibited. All user- or service-initiated removals must be executed via soft-delete updates (`deleted_at = NOW()`).
 2. **Double-Entry Financial Immutability Floor (NBE / KRA Mandate):** Core transaction and financial tables—including `bookings`, `booking_attachments`, `booking_reconciliations`, `owner_wallets`, `owner_wallet_transactions`, and `admin_audit_logs`—are **completely immune to soft-deletion**. They represent immutable, append-only journals. Attempting to apply soft-delete columns or triggers to these tables is barred at the schema architecture level.
-3. **Sub-100ms Spatial Discovery Invalidation SLO:** When a fleet asset transitions to soft-deleted status (`deleted_at IS NOT NULL`), it must be completely purged from Valkey 8.0 hot query caches and excluded from PostGIS spatial discovery in $< 100\text{ ms}$ (p99).
+3. **Sub-100ms Spatial Discovery Invalidation SLO:** When a fleet asset transitions to soft-deleted status (`deleted_at IS NOT NULL`), it must be completely purged from Valkey 9.1.3 hot query caches and excluded from PostGIS spatial discovery in $< 100\text{ ms}$ (p99).
 4. **Deterministic Client Tombstone Synchronization (`ADR-010`):** Soft-deleted records generate immutable tombstone events in `entity_sync_audit_log`. When disconnected mobile clients execute two-way differential synchronization (`POST /api/v1/sync/differential-pull`), tombstones are transmitted to the embedded Isar NoSQL storage, purging deleted listings from offline client search caches.
 5. **Irreversible Physical Hard-Purge Separation:** Physical data destruction (`DROP`, `DELETE`, S3 blob removal) is decoupled from online transaction processing (OLTP) and executed exclusively by the automated background batch worker (`DEL-WORKER-01`) only after statutory retention horizons have formally lapsed.
 
@@ -158,7 +158,7 @@ All primary catalog and operational entities transition across four standardized
 
 ### 3.1 Standard Soft-Delete Column Envelope (`deleted_at`, `deleted_by`, `deletion_reason`)
 
-Every soft-deletable table in PostgreSQL 18.4 implements the standardized canonical column envelope:
+Every soft-deletable table in PostgreSQL 18.6 implements the standardized canonical column envelope:
 
 ```sql
 -- Standardized Soft-Delete Column Envelope Implementation
@@ -206,7 +206,7 @@ WHERE deleted_at IS NULL;
 
 A critical failure mode of soft-delete architectures is unique constraint collision (e.g., an owner soft-deletes a machine with plate `ET-3-99120`, but is subsequently blocked from re-registering the same plate). 
 
-PostgreSQL 18.4 resolves this via **Partial Unique Indexes**:
+PostgreSQL 18.6 resolves this via **Partial Unique Indexes**:
 
 ```sql
 -- Enforce Unique Machine Plate Number ONLY among Active (Non-Deleted) Fleets
@@ -224,7 +224,7 @@ WHERE deleted_at IS NULL;
 
 ---
 
-### 3.4 PostgreSQL 18.4 Row-Level Security (RLS) Filter Policies
+### 3.4 PostgreSQL 18.6 Row-Level Security (RLS) Filter Policies
 
 To ensure that developers cannot accidentally leak soft-deleted records through forgotten `WHERE deleted_at IS NULL` clauses in custom SQL queries:
 
@@ -293,10 +293,10 @@ CREATE TRIGGER trg_fleets_soft_delete_cascade
 
 ---
 
-### 4.2 Valkey 8.0 In-Memory Key Eviction & Real-Time Lease Release
+### 4.2 Valkey 9.1.3 In-Memory Key Eviction & Real-Time Lease Release
 
 A database soft-delete must immediately propagate to memory tiers:
-1. **Discovery Cache Invalidation:** The Go domain service purges all cached discovery keys matching `discovery:search:*` and `discovery:map:*` in Valkey 8.0.
+1. **Discovery Cache Invalidation:** The Go domain service purges all cached discovery keys matching `discovery:search:*` and `discovery:map:*` in Valkey 9.1.3.
 2. **Volatile Hold Release:** If the asset is currently held in an unconfirmed checkout lease (`hold:fleet:{id}`), the key is deleted immediately, freeing system resources.
 3. **Detail Cache Eviction:** Explicitly evicts `fleet:detail:{id}` and `fleet:specs:{id}`.
 

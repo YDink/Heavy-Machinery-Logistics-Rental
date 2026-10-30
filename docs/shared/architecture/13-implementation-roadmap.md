@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-ROADMAP-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `ARCH-INTRO-DINK-CORE-V7.0`, `ARCH-PRIN-DINK-CORE-V7.0`, `ARCH-OVERVIEW-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-DB-DINK-CORE-V7.0`, `ARCH-COMM-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `ARCH-DEPLOY-DINK-CORE-V7.0`, `ARCH-OBS-DINK-CORE-V7.0`, `ARCH-ADR-DINK-CORE-V7.0`, `contracts/openapi.yaml`  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.44 Cross-Platform Mobile Client, Next.js 16 Admin Web Console, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine, SeaweedFS S3, ClamAV Daemon, OpenBao KMS, Traefik 3.x Gateway  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon, OpenBao KMS, Traefik 3.x Gateway  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), ISO/IEC/IEEE 12207, ISO 4217, ISO 3166-1 alpha-2, Ethiopian Personal Data Protection Proclamation No. 1321/2024, National Bank of Ethiopia (NBE) Directives  
 **Status:** Approved Engineering Baseline
@@ -23,7 +23,7 @@
 - 3. [Workstream Breakdown & Architecture Mapping](#3-workstream-breakdown--architecture-mapping)
   - 3.1 [Workstream A: Backend Modular Monolith (Go 1.27.3)](#31-workstream-a-backend-modular-monolith-go-1273)
   - 3.2 [Workstream B: Persistence, Spatial & Cache (PostgreSQL + PostGIS + Valkey)](#32-workstream-b-persistence-spatial--cache-postgresql--postgis--valkey)
-  - 3.3 [Workstream C: Cross-Platform Mobile (Flutter 3.44 + BLoC + Isar)](#33-workstream-c-cross-platform-mobile-flutter-344--bloc--isar)
+  - 3.3 [Workstream C: Cross-Platform Mobile (Flutter 3.47.8 + BLoC + Isar)](#33-workstream-c-cross-platform-mobile-flutter-344--bloc--isar)
   - 3.4 [Workstream D: Administrative Operations Console (Next.js 16 + React 19 RSC)](#34-workstream-d-administrative-operations-console-nextjs-16--react-19-rsc)
   - 3.5 [Workstream E: Infrastructure, Security & SRE (Traefik + ClamAV + SeaweedFS + OTel)](#35-workstream-e-infrastructure-security--sre-traefik--clamav--seaweedfs--otel)
 - 4. [Detailed Sprint-by-Sprint Execution Schedule (Sprints 1–24)](#4-detailed-sprint-by-sprint-execution-schedule-sprints-124)
@@ -62,7 +62,7 @@ The engineering execution model adheres to three operational tenets:
 ```mermaid
 flowchart TD
     Contract["Single Source of Truth<br/>contracts/openapi.yaml"] --> BackendPod["Backend Pod<br/>Go 1.27.3 Modules"]
-    Contract --> MobilePod["Mobile Pod<br/>Flutter 3.44 Client"]
+    Contract --> MobilePod["Mobile Pod<br/>Flutter 3.47.8 Client"]
     Contract --> WebPod["Web Pod<br/>Next.js 16 Admin"]
 
     BackendPod --> IntegrationGate{"Automated Contract & Invariant Gate<br/>kin-openapi, OCC, Ledger Zero-Sum"}
@@ -132,7 +132,7 @@ gantt
 * Passwordless Phone OTP Challenges via local telcos (Ethio Telecom, Safaricom).
 * Pluggable identity framework with reference client for the Ethiopian Fayda National ID system.
 * Dynamic Category EAV Specification engine with GIN indexing (`fleet_spec_indexed`).
-* PostGIS 3.4 spheroidal radius discovery with Keyset cursor pagination.
+* PostGIS 3.6.4 spheroidal radius discovery with Keyset cursor pagination.
 * The canonical 20-state rental booking machine backed by 60-minute Valkey holds.
 * Direct peer-to-peer commercial bank transfer settlement (`MANUAL_TRANSFER`) with slip uploads.
 * Double-entry ledger accounting (`financial_ledger_entries`) and pre-funded `OwnerWallet` debits.
@@ -166,10 +166,10 @@ flowchart LR
         GoMonolith["Go 1.27.3 Modular Monolith<br/>internal/modules/*"]
     end
     subgraph StreamB [Workstream B: Persistence]
-        DB["PostgreSQL 18.4 + PostGIS 3.4<br/>Valkey 8.0 Cache & Mutex"]
+        DB["PostgreSQL 18.6 + PostGIS 3.6.4<br/>Valkey 9.1.3 Cache & Mutex"]
     end
     subgraph StreamC [Workstream C: Mobile Client]
-        Flutter["Flutter 3.44 Mobile App<br/>BLoC + Isar Outbox Sync"]
+        Flutter["Flutter 3.47.8 Mobile App<br/>BLoC + Isar Outbox Sync"]
     end
     subgraph StreamD [Workstream D: Admin Console]
         NextJS["Next.js 16 Admin Console<br/>React 19 RSC + TanStack Table"]
@@ -203,7 +203,7 @@ flowchart LR
   - Maintain monthly table partitioning for raw 30-second GPS breadcrumbs.
   - Configure Valkey Sentinel clusters for sub-3-second failover of 60-minute reservation mutexes.
 
-### 3.3 Workstream C: Cross-Platform Mobile (Flutter 3.44 + BLoC + Isar)
+### 3.3 Workstream C: Cross-Platform Mobile (Flutter 3.47.8 + BLoC + Isar)
 * **Governing Specification:** `ARCH-FLUTTER-DINK-CORE-V7.0`.
 * **Core Responsibilities:**
   - Provide a single universal binary supporting Renter, Owner, and Operator persona polymorphism.
@@ -243,9 +243,9 @@ flowchart LR
 |  MILESTONE 1: PLATFORM FOUNDATION & CORE SERVICES (MONTHS 1–2)                      |
 +------------------------------------------------------------------------------------+
 |  Sprint 1: Repository Scaffolding, Toolchains & Contract Baseline                   |
-|  - Initialize monorepo structure: Go 1.27.3, Flutter 3.44, Next.js 16 App Router.  |
+|  - Initialize monorepo structure: Go 1.27.3, Flutter 3.47.8, Next.js 16 App Router.  |
 |  - Set up contracts/openapi.yaml SSOT repository with kin-openapi CI linting.      |
-|  - Implement Docker Compose local stack: PostgreSQL 18.4, PostGIS 3.4, Valkey 8.0. |
+|  - Implement Docker Compose local stack: PostgreSQL 18.6, PostGIS 3.6.4, Valkey 9.1.3. |
 |  - Deliverable: Clean CI build pipeline running forbidden-apis and contract linter.|
 |                                                                                    |
 |  Sprint 2: Authentication Core, Phone OTP & Session Token Lifecycle                |

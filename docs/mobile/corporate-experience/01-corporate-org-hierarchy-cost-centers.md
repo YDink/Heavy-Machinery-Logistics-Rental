@@ -4,11 +4,11 @@
 **Document Identifier:** `SPEC-MOB-CRP-01`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/06-01-corporate-account-management.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Corporate Procurement Director (*Eng. Samuel Getachew*), Senior Project Manager (*Dawit Haile-Mariam*), Site Quantity Surveyor (*Bethlehem Tessema*)  
 **Associated Requirements:** `REQ-06-01` (`CORP-01`, `CORP-02`, `CORP-03`, `CORP-DB`), `REQ-06-05` (`REP-02` Cost Center & WBS Allocation)  
 **Associated Interaction Flows:** `FLOW-14` (Corporate Multi-Tenant Onboarding & Context Switching)  
-**Architectural Decisions:** `ADR-001` (PostgreSQL 18.4 RLS `organization_id` Isolation), `ADR-005` (Valkey Active Tenant Session Binding), `ADR-008` (`LOC-01-BE` Ministry of Revenues TIN / KRA PIN), `ADR-010` (Integer Minor Units)  
+**Architectural Decisions:** `ADR-001` (PostgreSQL 18.6 RLS `organization_id` Isolation), `ADR-005` (Valkey Active Tenant Session Binding), `ADR-008` (`LOC-01-BE` Ministry of Revenues TIN / KRA PIN), `ADR-010` (Integer Minor Units)  
 **Status:** Approved Technical Design Baseline
 
 ---
@@ -27,7 +27,7 @@ Tier-1 civil engineering contractors (*e.g., Sur Construction PLC, MIDROC Constr
    - `APPROVER`: Votes on requisition dockets within assigned stages; optional `has_veto_power`.
    - `REQUESTER`: Drafts requisitions; bookings $\le \text{AutoApprovalLimit}_{\text{minor}}$ bypass internal approval chains (`FLOW-14`).
    - `VIEWER`: Read-only audit visibility into site equipment and cost centers.
-4. **PostgreSQL 18.4 Row-Level Security (RLS) Tenant Isolation (`OWASP ASVS L3`):**
+4. **PostgreSQL 18.6 Row-Level Security (RLS) Tenant Isolation (`OWASP ASVS L3`):**
    Every query executed by this screen is strictly scoped to `WHERE organization_id = current_setting('app.current_organization_id')::uuid`.
 
 ---
@@ -110,12 +110,12 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Senior PM (Flutter 3.44)
+    actor User as Senior PM (Flutter 3.47.8)
     participant OrgBloc as CorporateOrgHierarchyBloc
     participant Dio as Dio Auth & Tenant Interceptor
     participant API as Go Monolith (/api/v1/auth/switch-context)
-    participant Valkey as Valkey 8.0 Session Store
-    participant PG as PostgreSQL 18.4 (RLS Enabled)
+    participant Valkey as Valkey 9.1.3 Session Store
+    participant PG as PostgreSQL 18.6 (RLS Enabled)
 
     User->>OrgBloc: Tap "Switch to SUR CONSTRUCTION PLC"
     OrgBloc->>API: POST /api/v1/auth/switch-context {targetOrganizationId: "org_sur_01"}

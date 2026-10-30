@@ -83,7 +83,7 @@ npx openapi-typescript ../contracts/openapi.yaml -o src/types/api.generated.ts
 cd ..
 ```
 
-#### C. Flutter 3.44 Mobile Client (`openapi-generator-cli`)
+#### C. Flutter 3.47.8 Mobile Client (`openapi-generator-cli`)
 Generates Dart client models, serialization adapters, and Dio API interfaces:
 ```bash
 cd mobile

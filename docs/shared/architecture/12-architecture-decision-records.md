@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-ADR-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `ARCH-INTRO-DINK-CORE-V7.0`, `ARCH-PRIN-DINK-CORE-V7.0`, `ARCH-OVERVIEW-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-DB-DINK-CORE-V7.0`, `ARCH-COMM-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `ARCH-DEPLOY-DINK-CORE-V7.0`, `ARCH-OBS-DINK-CORE-V7.0`, `contracts/openapi.yaml`  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.44 Cross-Platform Mobile Client, Next.js 16 Admin Web Console, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine, SeaweedFS S3, ClamAV Daemon, OpenBao KMS, Traefik 3.x Gateway  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon, OpenBao KMS, Traefik 3.x Gateway  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), ISO/IEC/IEEE 42010, ISO 4217, ISO 3166-1 alpha-2, Ethiopian Personal Data Protection Proclamation No. 1321/2024, National Bank of Ethiopia (NBE) Directives  
 **Status:** Approved Engineering Baseline
@@ -18,13 +18,13 @@
 - 3. [The Fourteen Canonical Architecture Decision Records](#3-the-fourteen-canonical-architecture-decision-records)
   - 3.1 [ADR-001: System Packaging — Go 1.27.3 Modular Monolith vs. Distributed Microservices](#31-adr-001-system-packaging--go-1273-modular-monolith-vs-distributed-microservices)
   - 3.2 [ADR-002: Financial Settlement — Direct Bank Transfer Rail (`MANUAL_TRANSFER`) & Pre-Funded Commission Wallet (`OwnerWallet`) vs. Platform Escrow Custody](#32-adr-002-financial-settlement--direct-bank-transfer-rail-manual_transfer--pre-funded-commission-wallet-ownerwallet-vs-platform-escrow-custody)
-  - 3.3 [ADR-003: Primary Persistence & Spatial Taxonomy — PostgreSQL 18.4 + PostGIS 3.4 vs. Polyglot Document/Search Stores](#33-adr-003-primary-persistence--spatial-taxonomy--postgresql-184--postgis-34-vs-polyglot-documentsearch-stores)
+  - 3.3 [ADR-003: Primary Persistence & Spatial Taxonomy — PostgreSQL 18.6 + PostGIS 3.6.4 vs. Polyglot Document/Search Stores](#33-adr-003-primary-persistence--spatial-taxonomy--postgresql-184--postgis-34-vs-polyglot-documentsearch-stores)
   - 3.4 [ADR-004: Concurrency Control Strategy — Optimistic Concurrency Control (OCC) vs. Distributed Pessimistic Locking](#34-adr-004-concurrency-control-strategy--optimistic-concurrency-control-occ-vs-distributed-pessimistic-locking)
   - 3.5 [ADR-005: Unstructured Media Storage — Self-Hosted SeaweedFS S3 Cluster vs. Public Cloud Blob Storage](#35-adr-005-unstructured-media-storage--self-hosted-seaweedfs-s3-cluster-vs-public-cloud-blob-storage)
-  - 3.6 [ADR-006: Mobile Client Architecture — Flutter 3.44 + BLoC + Isar NoSQL Offline Outbox vs. React Native / Native Mobile](#36-adr-006-mobile-client-architecture--flutter-344--bloc--isar-nosql-offline-outbox-vs-react-native--native-mobile)
+  - 3.6 [ADR-006: Mobile Client Architecture — Flutter 3.47.8 + BLoC + Isar NoSQL Offline Outbox vs. React Native / Native Mobile](#36-adr-006-mobile-client-architecture--flutter-344--bloc--isar-nosql-offline-outbox-vs-react-native--native-mobile)
   - 3.7 [ADR-007: Back-Office Web Architecture — Next.js 16 (App Router + React 19 RSC) with Server-Driven UI vs. Client-Side SPA](#37-adr-007-back-office-web-architecture--nextjs-16-app-router--react-19-rsc-with-server-driven-ui-vs-client-side-spa)
   - 3.8 [ADR-008: Wire Contract & Financial Precision — OpenAPI 3.1 Contract Supremacy with Minor-Unit Integers & RFC 9457 vs. GraphQL/gRPC](#38-adr-008-wire-contract--financial-precision--openapi-31-contract-supremacy-with-minor-unit-integers--rfc-9457-vs-graphqlgrpc)
-  - 3.9 [ADR-009: In-Memory Caching & Distributed Mutex Engine — Valkey 8.0-alpine vs. Redis Enterprise / Memcached](#39-adr-009-in-memory-caching--distributed-mutex-engine--valkey-80-alpine-vs-redis-enterprise--memcached)
+  - 3.9 [ADR-009: In-Memory Caching & Distributed Mutex Engine — Valkey 9.1.3-alpine vs. Redis Enterprise / Memcached](#39-adr-009-in-memory-caching--distributed-mutex-engine--valkey-80-alpine-vs-redis-enterprise--memcached)
   - 3.10 [ADR-010: Field Verification & Antivirus Defense — Synchronous ClamAV `zINSTREAM` & Camera-Enforced Reticle vs. Asynchronous Post-Upload Quarantine](#310-adr-010-field-verification--antivirus-defense--synchronous-clamav-zinstream--camera-enforced-reticle-vs-asynchronous-post-upload-quarantine)
   - 3.11 [ADR-011: Multi-Country Regulatory Parameterization — Dynamic Configuration Entity (`country_configs`) vs. Multi-Tenant Branching (`LOC-01-BE`)](#311-adr-011-multi-country-regulatory-parameterization--dynamic-configuration-entity-country_configs-vs-multi-tenant-branching-loc-01-be)
   - 3.12 [ADR-012: Infrastructure Sovereignty & Colocation — On-Premise Tier III Datacenter (Addis Ababa Core + Nairobi PoP) vs. Offshore Public Cloud](#312-adr-012-infrastructure-sovereignty--colocation--on-premise-tier-iii-datacenter-addis-ababa-core--nairobi-pop-vs-offshore-public-cloud)
@@ -60,7 +60,7 @@ Every ADR in this specification conforms to the extended MADR structure:
 flowchart TD
     subgraph CoreFoundation [Core Foundation & Runtime ADRs]
         ADR1["ADR-001: Modular Monolith vs Microservices"]
-        ADR3["ADR-003: PostgreSQL 18.4 + PostGIS vs Polyglot"]
+        ADR3["ADR-003: PostgreSQL 18.6 + PostGIS vs Polyglot"]
         ADR4["ADR-004: Versioned OCC vs Pessimistic Locks"]
         ADR8["ADR-008: OpenAPI 3.1 + Minor Units + RFC 9457"]
     end
@@ -79,7 +79,7 @@ flowchart TD
 
     subgraph SecurityAndInfra [Infrastructure & Security ADRs]
         ADR5["ADR-005: Self-Hosted SeaweedFS S3 Cluster"]
-        ADR9["ADR-009: Valkey 8.0 Cache & Mutex Rail"]
+        ADR9["ADR-009: Valkey 9.1.3 Cache & Mutex Rail"]
         ADR10["ADR-010: Synchronous ClamAV zINSTREAM Quarantine"]
         ADR14["ADR-014: Zero-PII In-Flight Log Masking"]
     end
@@ -93,13 +93,13 @@ flowchart TD
 |---|---|---|---|---|
 | **ADR-001** | System Packaging: Go Modular Monolith | Invariant 9 | `SYS-01-BE`, `SYS-02-BE` | **Approved** |
 | **ADR-002** | Settlement: Direct Bank Transfer + OwnerWallet | Invariant 3 | `BK-07-BE`, `BK-17-BE`, `CW-01-BE` | **Approved** |
-| **ADR-003** | Persistence: PostgreSQL 18.4 + PostGIS 3.4 | Invariant 5 | `SRCH-01-BE`, `FL-07-BE` | **Approved** |
+| **ADR-003** | Persistence: PostgreSQL 18.6 + PostGIS 3.6.4 | Invariant 5 | `SRCH-01-BE`, `FL-07-BE` | **Approved** |
 | **ADR-004** | Concurrency: Optimistic Concurrency Control (OCC) | Invariant 4 | `BK-04-BE`, `BK-06-BE` | **Approved** |
 | **ADR-005** | Media Storage: Self-Hosted SeaweedFS S3 | Invariant 7 | `MED-01-BE`, `MED-02-BE` | **Approved** |
-| **ADR-006** | Mobile: Flutter 3.44 + BLoC + Isar Outbox | Invariant 8 | `MOB-01-FE`, `OFF-01-MOB` | **Approved** |
+| **ADR-006** | Mobile: Flutter 3.47.8 + BLoC + Isar Outbox | Invariant 8 | `MOB-01-FE`, `OFF-01-MOB` | **Approved** |
 | **ADR-007** | Admin: Next.js 16 App Router + Dynamic UI Config | Invariant 8 | `AD-06-WEB`, `AD-09-WEB` | **Approved** |
 | **ADR-008** | API Contract: OpenAPI 3.1 + Minor Units + RFC 9457 | Invariant 1, 2, 8 | `API-01-BE`, `ERR-01-BE` | **Approved** |
-| **ADR-009** | Caching: Valkey 8.0-alpine Cache & Mutex | Invariant 4 | `BK-06-BE`, `RAT-01-BE` | **Approved** |
+| **ADR-009** | Caching: Valkey 9.1.3-alpine Cache & Mutex | Invariant 4 | `BK-06-BE`, `RAT-01-BE` | **Approved** |
 | **ADR-010** | Field Defense: Synchronous ClamAV `zINSTREAM` | Invariant 7 | `SEC-05-BE`, `AR-02-MOB` | **Approved** |
 | **ADR-011** | Localization: Dynamic `country_configs` Entity | Invariant 6 | `LOC-01-BE`, `LOC-02-BE` | **Approved** |
 | **ADR-012** | Infrastructure: Sovereign Colocation Tier III DC | Invariant 7 | `INF-01-OPS`, `REG-RES-01` | **Approved** |
@@ -154,7 +154,7 @@ flowchart TD
 
 ---
 
-### 3.3 ADR-003: Primary Persistence & Spatial Taxonomy — PostgreSQL 18.4 + PostGIS 3.4 vs. Polyglot Document/Search Stores
+### 3.3 ADR-003: Primary Persistence & Spatial Taxonomy — PostgreSQL 18.6 + PostGIS 3.6.4 vs. Polyglot Document/Search Stores
 
 * **Status:** Approved
 * **Context:** The platform requires relational consistency for double-entry financial ledgers, spatial indexing for machinery radius discovery, full-text search across catalog models, and dynamic EAV JSON schemas for specialized mechanical parameters (operating weight, boom reach, hydraulic flow).
@@ -166,7 +166,7 @@ flowchart TD
 * **Considered Alternatives:**
   * *Alternative A: Polyglot Persistence (MongoDB for dynamic specs, Elasticsearch for geo-discovery, MySQL for transactions).* Rejected due to extreme operational overhead, multi-node synchronization lag, partial consistency failures, and high RAM consumption in local hosting facilities.
   * *Alternative B: Pure Relational EAV Tables in PostgreSQL.* Rejected due to complex multi-join queries and severe query degradation on faceted filtering.
-* **Decision Outcome:** Standardize on **PostgreSQL 18.4 with PostGIS 3.4**:
+* **Decision Outcome:** Standardize on **PostgreSQL 18.6 with PostGIS 3.6.4**:
   * PostGIS `geography(POINT, 4326)` with GiST indexing for spatial radius queries.
   * Flattened `fleet_spec_indexed` table storing dynamic attributes in `JSONB` with GIN `jsonb_path_ops` indexing.
   * Generated `tsvector` columns with GIN indexing for multi-attribute full-text search.
@@ -227,7 +227,7 @@ flowchart TD
 
 ---
 
-### 3.6 ADR-006: Mobile Client Architecture — Flutter 3.44 + BLoC + Isar NoSQL Offline Outbox vs. React Native / Native Mobile
+### 3.6 ADR-006: Mobile Client Architecture — Flutter 3.47.8 + BLoC + Isar NoSQL Offline Outbox vs. React Native / Native Mobile
 
 * **Status:** Approved
 * **Context:** The mobile application serves three distinct operational personas (Renters, Fleet Owners, and Field Operators) on Android and iOS devices. The application must perform reliably on low-end hardware in remote civil construction corridors with intermittent or non-existent cellular coverage.
@@ -239,7 +239,7 @@ flowchart TD
 * **Considered Alternatives:**
   * *Alternative A: React Native (JavaScript / TypeScript).* Rejected due to JavaScript bridge serialization latency, frame drops during complex canvas signature captures, and unstable background isolate camera image compression.
   * *Alternative B: Dual Native Apps (Kotlin for Android, Swift for iOS).* Rejected because maintaining two separate native codebases doubles engineering headcount, slows feature parity, and complicates multi-persona UI synchronization across East African markets.
-* **Decision Outcome:** Standardize on **Flutter 3.44 (Dart 3.9)** utilizing:
+* **Decision Outcome:** Standardize on **Flutter 3.47.8 (Dart 3.9)** utilizing:
   * **Feature-First Clean Architecture:** Strict separation between Presentation, Domain (pure Dart), and Data layers.
   * **BLoC Pattern (`flutter_bloc` v8.1+):** Predictable event-driven state machines with `bloc_concurrency` transformers (`droppable()` for mutations, `restartable()` for search).
   * **Isar 3.1 NoSQL Local Store:** Ultra-fast embedded NoSQL database powering an offline-first **Outbox Pattern** with client-generated UUIDv4 idempotency keys.
@@ -270,7 +270,7 @@ flowchart TD
   * **Server Actions:** All data mutations execute via server actions with Zod validation, automatic idempotency key injection, and RFC 9457 error presentation.
 * **Consequences:**
   * *Positive:* Zero client-side token exposure; minimal client JavaScript hydration bundles; instantaneous data table rendering; back-office UI layout updates dynamically without frontend rebuilds.
-  * *Negative:* Requires Node.js 22 LTS container runtime in production infrastructure.
+  * *Negative:* Requires Node.js 26.13.0 container runtime in production infrastructure.
   * *Mitigation:* Next.js standalone output mode deployed in lightweight Docker containers ($< 150\text{MB}$).
 * **Traceability:** Invariant 8; `AD-06-WEB`, `AD-09-WEB`; ASVS Level 3 `V3.4`, `V4.1`.
 
@@ -300,7 +300,7 @@ flowchart TD
 
 ---
 
-### 3.9 ADR-009: In-Memory Caching & Distributed Mutex Engine — Valkey 8.0-alpine vs. Redis Enterprise / Memcached
+### 3.9 ADR-009: In-Memory Caching & Distributed Mutex Engine — Valkey 9.1.3-alpine vs. Redis Enterprise / Memcached
 
 * **Status:** Approved
 * **Context:** Dink Machinery requires a high-throughput, low-latency in-memory data store for 60-minute mutual exclusion reservation holds, sliding-window rate limiting token buckets, ephemeral WebSocket handshake ticketing, and user session token revocation families.
@@ -312,7 +312,7 @@ flowchart TD
 * **Considered Alternatives:**
   * *Alternative A: Redis (Post-v7.2.4 with RSALv2 / SSPLv1 licensing).* Rejected due to Redis Ltd.'s departure from open-source licensing, creating corporate legal exposure and future commercial licensing liabilities.
   * *Alternative B: Memcached.* Rejected due to lack of complex data structures (Sorted Sets for rate limiting, atomic hash sets for sessions) and lack of native master-replica clustering.
-* **Decision Outcome:** Standardize on **Valkey 8.0-alpine**:
+* **Decision Outcome:** Standardize on **Valkey 9.1.3-alpine**:
   * Linux Foundation open-source fork maintaining full BSD-3-Clause licensing and 100% protocol backwards compatibility with RESP3.
   * Clustered via Valkey Sentinel (1 Primary, 2 Replicas, 3 Sentinels) for sub-3-second automated failover.
 * **Consequences:**

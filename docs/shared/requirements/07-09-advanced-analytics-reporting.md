@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Enterprise Intelligence Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§1.2, §5.2, §5.6, §5.7, §5.9, §6.0, §6.1, §6.5, §7.0, §7.5, §7.6, §7.9, §8, §10, §11, §12, §13.2), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `FLOW-COMMISSION-DEBT-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, ClickHouse 24.8 / PostgreSQL 18.4 + TimescaleDB (OLAP Analytics Warehouse), Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.44 / Dart 3.9 (Executive BI Dashboards), Next.js 16 / React 19 (Web Analytics Portal), Apache Arrow / DuckDB (In-Memory Columnar Processing)  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, ClickHouse 24.8 / PostgreSQL 18.6 + TimescaleDB (OLAP Analytics Warehouse), Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.47.8 / Dart 3.9 (Executive BI Dashboards), Next.js 16.x (latest CVE security patch) / React 19 (Web Analytics Portal), Apache Arrow / DuckDB (In-Memory Columnar Processing)  
 **Target Personas:** Corporate Treasury Director & Chief Financial Officer (*Solomon Kassa* / *Patrick Kariuki*), Fleet Owner Managing Director (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Sustainability & Environmental Compliance Officer (*Yohannes Bekele*), Regional Infrastructure Project Director (*Dawit Haile-Mariam*), Equipment Maintenance & Asset Reliability Engineer (*Kassahun Mekonnen*), Super Administrator (*Rahel Tadesse*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (OLAP Data Isolation, Differential Privacy & Secure Analytical Feeds), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), International Financial Reporting Standards (IAS 16 Property, Plant and Equipment, IAS 36 Impairment of Assets, IFRS 15 Revenue), Greenhouse Gas Protocol (Corporate Standard Scope 1 & Scope 3 Category 4 Upstream Transportation and Distribution), ISO 14064-1:2018 (Greenhouse Gases Carbon Footprint Quantification), Ethiopian Environmental Protection Authority (EPA) Industrial Directives, Kenya National Environment Management Authority (NEMA) Environmental Management and Co-ordination Act (EMCA Cap 387)  
@@ -92,7 +92,7 @@ This document formally specifies:
 ```mermaid
 flowchart TD
     subgraph OperationalSources["OLTP Operational Production Data Stores"]
-        PG["PostgreSQL 18.4 Primary DB<br/>Bookings, Organizations, Invoices, Fleets"]
+        PG["PostgreSQL 18.6 Primary DB<br/>Bookings, Organizations, Invoices, Fleets"]
         TS["TimescaleDB Telematics Node<br/>High-Frequency GPS & CAN Bus Time-Series"]
     end
 
@@ -108,14 +108,14 @@ flowchart TD
 
     ClickHousePipe --> CH_Raw
 
-    StarSchema --> SemanticLayer["Dink Unified BI Semantic Layer (Go 1.24)<br/>Calculates KPIs: ROC, MTBF, Fuel Burn, GHG Scope 1/3"]
+    StarSchema --> SemanticLayer["Dink Unified BI Semantic Layer (Go 1.27.3)<br/>Calculates KPIs: ROC, MTBF, Fuel Burn, GHG Scope 1/3"]
 
-    SemanticLayer --> CacheValkey["Valkey 8.0 Analytical Cache<br/>Key: bi:kpi:{org_id}:{month} (TTL: 1 Hour)"]
+    SemanticLayer --> CacheValkey["Valkey 9.1.3 Analytical Cache<br/>Key: bi:kpi:{org_id}:{month} (TTL: 1 Hour)"]
 
     CacheValkey --> DeliveryGateways{"Consumer Delivery Channels"}
 
     DeliveryGateways -->|"REST / JSON"| NextPortal["Next.js 16 Executive Web Console<br/>(React 19 / Highcharts / WebGL Canvas)"]
-    DeliveryGateways -->|"gRPC Streams"| MobileFlutter["Flutter 3.44 Mobile Executive Dashboard<br/>(Isar NoSQL Offline Pre-Caching)"]
+    DeliveryGateways -->|"gRPC Streams"| MobileFlutter["Flutter 3.47.8 Mobile Executive Dashboard<br/>(Isar NoSQL Offline Pre-Caching)"]
     DeliveryGateways -->|"Arrow Flight"| DataScience["Apache Arrow Flight / DuckDB<br/>Corporate ERP & BI Connectors (PowerBI/Tableau)"]
 ```
 
@@ -421,7 +421,7 @@ PARTITION BY toYYYYMM(timestamp)
 ORDER BY (organization_id, emission_scope, fleet_id, timestamp);
 ```
 
-#### 2. PostgreSQL 18.4 Metadata & Valuation Tables
+#### 2. PostgreSQL 18.6 Metadata & Valuation Tables
 ```sql
 -- PostgreSQL Table: Asset Depreciation & Residual Valuation Ledger
 CREATE TABLE fleet_valuation_ledgers (

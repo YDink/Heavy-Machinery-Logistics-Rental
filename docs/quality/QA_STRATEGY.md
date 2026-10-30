@@ -3,7 +3,7 @@
 **System:** Heavy Machinery & Logistics Rental Marketplace  
 **Specification:** Unified Verification, Validation & Test Governance Framework  
 **Compliance Standard:** ISO/IEC/IEEE 29119 (Software Testing), OWASP ASVS 4.0.3 Level 3, W3C WCAG 2.1/2.2 AA, ISO/IEC 25010  
-**Subsystems Covered:** Go 1.27.3 Backend Modular Monolith, Flutter 3.44 Cross-Platform Mobile Client, Next.js 16 Admin Web Console, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine  
+**Subsystems Covered:** Go 1.27.3 Backend Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine  
 **Governing Documents:** `AGENTS.md`, `TECH_STACK.md`, `CODE_STANDARDS.md`, `API_CONVENTIONS.md`, `ERROR_CATALOG.md`, `DEFINITION_OF_DONE.md`
 
 ---
@@ -39,7 +39,7 @@ Dink Machinery organizes testing into a strict five-tier pyramid adhering to ISO
                          Prism Dynamic Mocking, Dio Interceptors
                                          │
                              [Level 2: Integration Tests]
-                        Real PostgreSQL 18.4 + PostGIS & Valkey
+                        Real PostgreSQL 18.6 + PostGIS & Valkey
                         via Testcontainers; Isar Local DB Tests
                                          │
                              [Level 1: Unit & Static Tests]
@@ -102,7 +102,7 @@ func TestBooking_ConfirmPayment_Transition(t *testing.T) {
 ```
 
 #### B. Integration Testing via Testcontainers (`testcontainers-go`)
-Integration suites must execute against real, containerized PostgreSQL 18.4 + PostGIS 3.4 and Valkey 8.0 instances. Mocks for database drivers are prohibited.
+Integration suites must execute against real, containerized PostgreSQL 18.6 + PostGIS 3.6.4 and Valkey 9.1.3 instances. Mocks for database drivers are prohibited.
 - Migrations are applied sequentially to the testcontainer instance from `migrations/`.
 - Repositories compiled by `sqlc` are exercised against the schema.
 - Spatial radius queries assert accurate Euclidean/spheroidal distance filtering via PostGIS.
@@ -111,7 +111,7 @@ Integration suites must execute against real, containerized PostgreSQL 18.4 + Po
 ```go
 func TestLedger_DoubleEntry_Atomicity(t *testing.T) {
 	ctx := context.Background()
-	pgContainer := testutils.SetupPostgresContainer(t) // Starts Postgres 18.4 + PostGIS
+	pgContainer := testutils.SetupPostgresContainer(t) // Starts Postgres 18.6 + PostGIS
 	defer pgContainer.Terminate(ctx)
 
 	pool := testutils.NewTestPool(t, pgContainer.ConnectionString())
@@ -136,7 +136,7 @@ func TestLedger_DoubleEntry_Atomicity(t *testing.T) {
 
 ---
 
-### 3.2. Flutter 3.44 Mobile Subsystem
+### 3.2. Flutter 3.47.8 Mobile Subsystem
 
 The mobile application tests Renter, Fleet Owner, and Field Operator user journeys using BLoC state management and local Isar persistence.
 

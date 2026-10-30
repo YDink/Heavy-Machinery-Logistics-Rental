@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-OWN-11`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (§5.7.3–§5.7.6, `RC-03` to `RC-07`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Equipment Fleet Owner & Depot Yard Manager (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*)  
 **Associated Requirements:** `REQ-05-07` (`RC-03` Excess Hour Surcharge, `RC-04` Statutory 24-Hour Itemized Damage Claim Docket, `RC-05` Final Balance Reconciliation Statement, `RC-06` Non-Custodial Final Wire Settlement, `RC-07` Double-Blind Mutual Rating)  
 **Associated Interaction Flows:** `FLOW-10` (Return Inspection, 24h Damage Triage & Final Reconciliation), `FLOW-13` (Damage Arbitration Workbench), `FLOW-19` (Catastrophic Loss CPAR Insurance Escalation)  

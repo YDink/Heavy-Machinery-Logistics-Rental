@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-RNT-01`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/05-04-fleet-discovery-search-comparison.md`, `05-15-search-discovery-enhancements.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Civil Engineering Contractor (*Dawit Haile-Mariam* — Ethiopia `ET` / *Patrick Kariuki* — Kenya `KE`), Corporate Site Requester (*Bethlehem Tessema*)  
 **Associated Requirements:** `REQ-05-04` (`FD-01`..`FD-05`, `SR-01`, `SR-02`, `SR-04`, `SR-05`), `REQ-05-15` (`SR-12`), `REQ-06-01` (`CORP-03`)  
 **Associated Interaction Flows:** `FLOW-04` (`FLOW-DISCOVERY-DINK-CORE-V7.0`), `FLOW-12` (Commission Delinquency Exclusion)  
@@ -25,7 +25,7 @@ The Renter Discovery Home Screen (`RenterHomeDiscoveryScreen`) is the primary la
 2. **Commission Delinquency Exclusion Invariant (`FLOW-12`):**
    Any machinery owned by a Fleet Owner whose `owner_wallets.overdue_balance_minor > 0` for $> 30\text{ days}$ is strictly excluded at the PostgreSQL query layer. If an asset is cached in the mobile client's local Isar database and subsequently becomes delinquent, the background refresh delta tombstones the card immediately.
 3. **Real-Time Valkey Lease Badge Overlay (`FD-05`):**
-   Each fleet card displays its live concurrency state by interrogating `MGET hold:fleet:{id}` in Valkey 8.0:
+   Each fleet card displays its live concurrency state by interrogating `MGET hold:fleet:{id}` in Valkey 9.1.3:
    - `AVAILABLE_NOW`: Unencumbered in PostgreSQL `hire_period` and no active Valkey hold key.
    - `HELD_PENDING_WIRE`: Active 60-minute soft-lock (`TTL > 0`) held by another renter; card renders an Amber countdown pill and allows "Join Waitlist" (`SD-03`).
 4. **Integer Minor Unit Money Representation (`ADR-010`):**
@@ -125,12 +125,12 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Renter as Contractor (Flutter 3.44)
+    actor Renter as Contractor (Flutter 3.47.8)
     participant BLoC as RenterDiscoveryBloc
     participant Isar as Isar Local Cache
     participant API as Go Monolith (/api/v1/discovery)
-    participant Valkey as Valkey 8.0 Cache & Leases
-    participant PG as PostgreSQL 18.4 + PostGIS 3.4
+    participant Valkey as Valkey 9.1.3 Cache & Leases
+    participant PG as PostgreSQL 18.6 + PostGIS 3.6.4
 
     Renter->>BLoC: Open Discovery Home (Mount)
     BLoC->>Isar: queryCachedDiscoveryFeed(woredaId / latLng)

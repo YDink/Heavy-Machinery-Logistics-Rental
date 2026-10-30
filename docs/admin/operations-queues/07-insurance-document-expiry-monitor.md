@@ -109,7 +109,7 @@ sequenceDiagram
     participant MonitorUI as InsuranceExpiryWorkbench ('use client')
     participant SA as verifyInsuranceRenewalAction ('use server')
     participant GoAPI as Go Fleet Compliance Interactor
-    participant DB as PostgreSQL 18.4 (pgx.Tx)
+    participant DB as PostgreSQL 18.6 (pgx.Tx)
 
     Officer->>MonitorUI: Inspects EIC Policy PDF, Enters Expiry 2027-10-28, Clicks "Verify Renewal & Reactivate"
     MonitorUI->>SA: verifyInsuranceRenewalAction(formData)

@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Telematics Engineering Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§5.2, §5.6, §5.7, §5.12, §6.4, §7.0, §7.4, §7.6, §8, §10, §12, §13.2), `FLOW-FLEET-REG-DINK-CORE-V7.0`, `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `FLOW-COMMISSION-DEBT-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, Python 3.12 Protocol Decoding Worker, PostgreSQL 18.4 + PostGIS 3.4 / TimescaleDB, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Python 3.12 Protocol Decoding Worker, PostgreSQL 18.6 + PostGIS 3.6.4 / TimescaleDB, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
 **Target Personas:** Equipment Fleet Owner (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Certified Field Operator (*Mulugeta Tadesse* / *Juma Omwamba*), Depot Maintenance Yard Supervisor (*Kassahun Mekonnen*), Civil Engineering Project Manager (*Dawit Haile-Mariam* / *Patrick Kariuki*), Compliance Officer & Forensic Telematics Auditor (*Yohannes Bekele*), Super Administrator (*Rahel Tadesse*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Hardware Identity Attestation, Encrypted M2M Protocols & Non-Repudiation), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), SAE J1939 / ISO 11898 (Commercial Vehicle CAN Bus Communications), ISO 15143-3 (AEMP 2.0 Telematics Data Standard for Earthmoving Equipment), National Bank of Ethiopia (NBE) Asset Pledging Chattel Directives, Kenya Computer Misuse and Cybercrimes Act 2018  
@@ -80,7 +80,7 @@ This document formally specifies:
 3. **Strict Monotonic Engine Hour Invariant:** Ingested cumulative engine hours transmitted by IoT hardware terminals must never regress:
    $$\mathcal{M}_{\text{telematics}}(t_2) \ge \mathcal{M}_{\text{telematics}}(t_1) \quad \forall \ t_2 > t_1$$
    Any packet reporting a lower cumulative hour reading triggers an immediate security alert (`ERR_METER_ROLLBACK_DETECTED`), freezing automated reconciliations.
-4. **Sub-100ms Ingestion Latency & Valkey Hot Snapshots:** Inbound telemetry packets must be parsed, validated, and cached in Valkey 8.0 hot memory (`telematics:live:{fleet_id}`) within $< 100\text{ ms}$ (p99), ensuring live map tracking layers reflect active site coordinates without perceptible visual latency.
+4. **Sub-100ms Ingestion Latency & Valkey Hot Snapshots:** Inbound telemetry packets must be parsed, validated, and cached in Valkey 9.1.3 hot memory (`telematics:live:{fleet_id}`) within $< 100\text{ ms}$ (p99), ensuring live map tracking layers reflect active site coordinates without perceptible visual latency.
 5. **Encrypted M2M Communication & Mutual TLS (mTLS):** Hardware terminals communicating directly with Dink Machinery ingestion endpoints must negotiate TLS 1.3 with hardware-backed client certificate attestation or pre-shared AES-256 HMAC cryptographic token signatures. Unauthenticated TCP/UDP packets are rejected at the Traefik edge boundary.
 
 ---
@@ -106,7 +106,7 @@ flowchart TD
 
     CodecDecoder --> ExtractMetrics["Extract Parsed Telemetry Data<br/>- GNSS Fix (Lat, Lng, Alt, Spd, Heading, HDOP)<br/>- CAN Bus Metrics (SPN 247, SPN 96, SPN 183)<br/>- I/O Status (Ignition, Battery, Relay Output)"]
 
-    ExtractMetrics --> UpdateValkeyHot["Step 3: Update Valkey 8.0 Hot Cache<br/>HSET telematics:live:{fleet_id} (TTL: 24h)<br/>ZADD fleet:geospatial:live {lng} {lat} {fleet_id}"]
+    ExtractMetrics --> UpdateValkeyHot["Step 3: Update Valkey 9.1.3 Hot Cache<br/>HSET telematics:live:{fleet_id} (TTL: 24h)<br/>ZADD fleet:geospatial:live {lng} {lat} {fleet_id}"]
 
     UpdateValkeyHot --> CheckGeofence{"Step 4: Real-Time Geofence Check<br/>ST_Contains(depot_boundary, current_gps)?"}
 
@@ -155,7 +155,7 @@ flowchart TD
 ### 2.4 TimescaleDB Hypertables & Partitioned High-Frequency Time-Series Storage
 
 Telemetry streams produce millions of rows daily. The storage layer partitions data efficiently:
-* Backed by PostgreSQL 18.4 with the **TimescaleDB extension**:
+* Backed by PostgreSQL 18.6 with the **TimescaleDB extension**:
   - `fleet_telematics_timeseries` is converted into a hypertable partitioned by `time` (1-day chunk intervals).
   - Data older than **7 days** is automatically compressed using TimescaleDB columnar compression, reducing disk storage footprint by over $85\%$.
   - Continuous aggregates maintain hourly and daily rollups (`avg_rpm`, `total_fuel_burn`, `delta_engine_hours`).
@@ -622,7 +622,7 @@ X-Organization-ID: org_019a8fe0-8812-7b9a-bc21-4491204812aa
 
 ### 7.3 `GET /api/v1/telematics/fleets/{fleetId}/live`
 
-Retrieves instantaneous machine operational telemetry from Valkey 8.0 hot memory cache.
+Retrieves instantaneous machine operational telemetry from Valkey 9.1.3 hot memory cache.
 
 #### Request Headers
 ```http
@@ -772,7 +772,7 @@ flowchart TD
 2. **SAE J1939 CAN Bus Decoding Fuzzing Test:** Streams 5,000 raw binary CAN identifier frames with random bit flips, asserting that PGN 65248 (Hours), PGN 65276 (Fuel), and PGN 61444 (RPM) decode with zero numerical drift or memory panics.
 3. **Zero-Speed Safety Interlock Gate:** Simulates 500 remote immobilization command dispatches against vehicles reporting varying speeds ($0.1\text{ to }45.0\text{ km/h}$) and RPMs ($950\text{ to }2,200\text{ RPM}$). Asserts that $100\%$ of in-motion commands are blocked with HTTP 422 `ERR_SAFETY_SPEED_VIOLATION`.
 4. **Monotonic Meter Non-Regression Test:** Ingests packets with retrogressed engine hours ($\mathcal{M}_{\text{packet}} < \mathcal{M}_{\text{stored}}$), verifying that the database transaction rejects the update, triggers `ERR_METER_ROLLBACK_DETECTED`, and locks the fleet asset for manual forensic audit.
-5. **High-Throughput Ingestion Latency SLO Benchmark:** Dispatches 10,000 parallel telemetry packets per second through the Go ingestion pipeline into TimescaleDB and Valkey 8.0, asserting that p95 latency remains $< 35\text{ ms}$ and p99 latency strictly $< 100\text{ ms}$.
+5. **High-Throughput Ingestion Latency SLO Benchmark:** Dispatches 10,000 parallel telemetry packets per second through the Go ingestion pipeline into TimescaleDB and Valkey 9.1.3, asserting that p95 latency remains $< 35\text{ ms}$ and p99 latency strictly $< 100\text{ ms}$.
 
 ---
 

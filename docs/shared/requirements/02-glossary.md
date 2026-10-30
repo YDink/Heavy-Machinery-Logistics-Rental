@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Domain Glossary (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (Full Suite §1–§14), `FLOW-ENTRY-DINK-CORE-V7.0` through `FLOW-INSURANCE-CLAIM-DINK-CORE-V7.0` (Interaction Flows 01–19), `FLOW-APPENDIX-NOTIF-OFFLINE-DINK-CORE-V7.0`, `FLOW-APPENDIX-AUTH-SEC-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), RFC 7519 (JWT), RFC 6238 (TOTP), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), National Bank of Ethiopia (NBE) Directives, Kenya Data Protection Act 2019  
 **Status:** Approved Engineering Baseline
@@ -45,8 +45,8 @@ This specification establishes the canonical **Universal Glossary and Domain Ter
 
 The definitions codified herein are legally, architecturally, and procedurally binding across:
 * **Wire Protocol Schemas:** Exact entity property names, status strings, and enumeration constants in `contracts/openapi.yaml`.
-* **Database Relational Models:** PostgreSQL 18.4 table structures, PostGIS functions, and column constraints.
-* **Client-Side Domain Models:** Dart classes in Flutter 3.44, TypeScript interfaces in Next.js 16, and Isar NoSQL collection schemas.
+* **Database Relational Models:** PostgreSQL 18.6 table structures, PostGIS functions, and column constraints.
+* **Client-Side Domain Models:** Dart classes in Flutter 3.47.8, TypeScript interfaces in Next.js 16, and Isar NoSQL collection schemas.
 * **Operational Legal Contracts:** Binding rental terms, damage claims, transport manifests, and arbitration rulings.
 
 ### 1.2 Taxonomic Boundaries
@@ -237,7 +237,7 @@ The automatic system process crediting previously debited commission fees back t
 ### 6.1 Concurrency, Locking & Spatial Indexing
 
 #### Two-Tier Concurrency Control
-The hybrid locking architecture combining an in-memory, volatile 60-minute lease in Valkey 8.0 (`SET hold:fleet:{id} {renter} EX 3600 NX`) with permanent storage-layer range exclusion constraints in PostgreSQL 18.4 (`EXCLUDE USING gist`).
+The hybrid locking architecture combining an in-memory, volatile 60-minute lease in Valkey 9.1.3 (`SET hold:fleet:{id} {renter} EX 3600 NX`) with permanent storage-layer range exclusion constraints in PostgreSQL 18.6 (`EXCLUDE USING gist`).
 
 #### GiST Temporal Exclusion Constraint
 A PostgreSQL disk-level constraint utilizing generalized search trees to enforce zero overlapping rental windows (`daterange && daterange`) for any single physical fleet asset:

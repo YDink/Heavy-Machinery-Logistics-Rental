@@ -22,7 +22,7 @@ The **Admin Web Console QA Test Matrix, G0–G4 Gates & Playwright E2E Protocol*
    - **High-Liability Financial, RBAC & Ledger Modules (`currency.ts`, `sms-encoding.ts`, `errors.ts`, Bank Slip Reconciliation, Payout Maker-Checker, OwnerWallet Credit Lockout, Country Tax BPS):** Minimum **95% branch coverage**.
 2. **Strict Test Determinism & Frozen Time:**
    - Wall-clock dependencies (`new Date()`, `Date.now()`) are banned in countdown and hold-timer tests; tests inject `vi.setSystemTime('2026-10-30T09:00:00Z')`.
-   - Zero live external network calls in CI (`G0`/`G1`/`G2`); API responses are intercepted via Mock Service Worker (`msw` v2) or run against an ephemeral containerized Go + PostgreSQL 18.4 testcontainers stack in `G3`.
+   - Zero live external network calls in CI (`G0`/`G1`/`G2`); API responses are intercepted via Mock Service Worker (`msw` v2) or run against an ephemeral containerized Go + PostgreSQL 18.6 testcontainers stack in `G3`.
 3. **Desktop & Field-Tablet Viewport Matrix:**
    - Every Playwright E2E spec executes across four canonical viewports: **Control Room Dual-Monitor (`1920x1080`)**, **Standard Operations Laptop (`1440x900`)**, **Yard Inspector iPad Pro 12.9" (`1024x1366`)**, and **Surface Pro Field Tablet (`1368x912`)** across Chromium, Edge, Firefox, and WebKit.
 
@@ -76,7 +76,7 @@ sequenceDiagram
     participant Hook as Lefthook G0 (Local)
     participant CI as GitHub Actions G1/G2
     participant PW as Playwright + Axe-Core Runner
-    participant GoTest as Ephemeral Go + Postgres 18.4 Service
+    participant GoTest as Ephemeral Go + Postgres 18.6 Service
 
     Dev->>Hook: git commit -m "[REQ-05-09] feat(admin): ..."
     Hook->>Hook: Verify CONTEXT.md staged & Docs: footer present
@@ -85,7 +85,7 @@ sequenceDiagram
     Dev->>CI: git push origin feature/05-09-commission-owner-wallet
     CI->>CI: Verify openapi-typescript zero git diff against contracts/openapi.yaml
     CI->>CI: Run Vitest with Coverage Ratchet (Assert >= 95% on finance/auth)
-    CI->>GoTest: Boot Ephemeral Go Monolith + PostgreSQL 18.4 + Valkey 8.0
+    CI->>GoTest: Boot Ephemeral Go Monolith + PostgreSQL 18.6 + Valkey 9.1.3
     CI->>PW: Execute Playwright E2E Matrix (Chromium, Firefox, WebKit, iPad Pro)
     PW->>GoTest: Test Idempotent Bank Slip Approval, Maker-Checker SoD & Zero-PII Leak
     PW-->>CI: 0 Failed Specs, 0 Axe-Core Violations, 0 Unmasked PII Matches

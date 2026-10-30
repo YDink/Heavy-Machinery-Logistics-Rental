@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Architecture Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§5.4, §10, §11), `FLOW-DISCOVERY-DINK-CORE-V7.0` (Interaction Flow 06), `FLOW-FLEET-REG-DINK-CORE-V7.0`, `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `FLOW-CONCURRENCY-LOCKING-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
 **Target Personas:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Corporate Procurement Director (*Eng. Samuel Getachew*), Equipment Fleet Owner (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Compliance Officer & Risk Auditor (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Data Queries, Injection Defense & Access Control), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), National Bank of Ethiopia (NBE) Directives, Kenya Data Protection Act 2019  
@@ -26,7 +26,7 @@
   - 3.2 [Full-Text Trigram Search Engine (`SR-02`)](#32-full-text-trigram-search-engine-sr-02)
   - 3.3 [Multi-Faceted Parametric Filtering Engine (`SR-03`)](#33-multi-faceted-parametric-filtering-engine-sr-03)
   - 3.4 [Deterministic Ranking & Sorting Algorithms (`SR-04`)](#34-deterministic-ranking--sorting-algorithms-sr-04)
-- 4. [Spatial Geodesic Indexing & Geofencing (PostGIS 3.4)](#4-spatial-geodesic-indexing--geofencing-postgis-34)
+- 4. [Spatial Geodesic Indexing & Geofencing (PostGIS 3.6.4)](#4-spatial-geodesic-indexing--geofencing-postgis-34)
   - 4.1 [Geodesic Radius & Bounding-Box Viewport Calculations](#41-geodesic-radius--bounding-box-viewport-calculations)
   - 4.2 [PostGIS Spatial Query Structure & GiST Execution Plan](#42-postgis-spatial-query-structure--gist-execution-plan)
   - 4.3 [Regional Geofencing & Cross-Border Guardrails (`LOC-01-BE`)](#43-regional-geofencing--cross-border-guardrails-loc-01-be)
@@ -60,10 +60,10 @@ This specification establishes **Section 05.04 (Fleet Discovery, Spatial Search,
 Civil infrastructure development across East Africa unfolds in logistically constrained environments. Sourcing a 30-ton hydraulic crawler excavator, an all-wheel-drive motor grader, or a tri-axle lowboy trailer has historically taken days of informal phone calls through unregulated intermediaries (*"delalas"*). Contractors face unpredictable pricing, unverifiable mechanical roadworthiness, and severe project delay penalties ($25,000.00\text{ to }60,000.00\text{ ETB/day}$).
 
 This document establishes the technical blueprint for the discovery engine powering Dink Machinery:
-1. High-throughput, sub-50ms spatial search querying machine depot locations via PostGIS 3.4 geography points (`ST_DWithin`, `ST_MakeEnvelope`).
+1. High-throughput, sub-50ms spatial search querying machine depot locations via PostGIS 3.6.4 geography points (`ST_DWithin`, `ST_MakeEnvelope`).
 2. Trigram-accelerated full-text lexical search indexing machinery makes, models, chassis specs, and regional locations in Amharic, Afaan Oromoo, Swahili, and English.
 3. Parametric multi-filtering parsing pricing intervals, subcategories, crew options, fuel systems, and temporal calendar windows simultaneously.
-4. Pre-flight concurrency detection interrogating volatile Valkey 8.0 hold leases (`SET ... NX EX 3600`) and PostgreSQL temporal range constraints (`daterange && daterange`).
+4. Pre-flight concurrency detection interrogating volatile Valkey 9.1.3 hold leases (`SET ... NX EX 3600`) and PostgreSQL temporal range constraints (`daterange && daterange`).
 5. A dynamic side-by-side comparison engine executing relational pivoting over EAV attributes flagged `is_comparable = true`.
 
 ### 1.2 Architectural Principles & Performance Invariants
@@ -90,9 +90,9 @@ flowchart TD
     ParseParams --> CheckCache{"Valkey Query Cache Hit?<br/>Key: discovery:search:{hash(params)}"}
     CheckCache -->|"Hit (TTL <= 15s)"| ReturnCached["Return Cached JSON Results<br/>X-Cache-Status: HIT (< 5ms)"]
     
-    CheckCache -->|"Miss"| ExecPipeline["Execute PostgreSQL 18.4 + PostGIS Query Pipeline"]
+    CheckCache -->|"Miss"| ExecPipeline["Execute PostgreSQL 18.6 + PostGIS Query Pipeline"]
     
-    subgraph QueryExecution["PostgreSQL 18.4 Execution Core"]
+    subgraph QueryExecution["PostgreSQL 18.6 Execution Core"]
         direction TB
         Q1["Spatial Filtering: ST_DWithin(geog_location, ST_Point(lng, lat), radius_meters)<br/>Utilizes Spatial GiST Index (idx_fleets_geog)"]
         Q2["Full-Text Matching: gin_trgm_ops over (make || ' ' || model || ' ' || search_keywords)"]
@@ -211,7 +211,7 @@ When multiple machines satisfy all parametric criteria, the result set is sorted
 
 ---
 
-## 4. Spatial Geodesic Indexing & Geofencing (PostGIS 3.4)
+## 4. Spatial Geodesic Indexing & Geofencing (PostGIS 3.6.4)
 
 ### 4.1 Geodesic Radius & Bounding-Box Viewport Calculations
 
@@ -303,8 +303,8 @@ sequenceDiagram
     autonumber
     actor Client as Flutter Search Feed
     participant Backend as Go Monolith Core
-    participant DB as PostgreSQL 18.4
-    participant Valkey as Valkey 8.0 Cache
+    participant DB as PostgreSQL 18.6
+    participant Valkey as Valkey 9.1.3 Cache
 
     Client->>Backend: GET /api/v1/discovery/search?startDate=2026-11-05&endDate=2026-11-12
     Backend->>DB: Execute PostGIS & GiST Range Query

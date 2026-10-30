@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-OPR-04`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (§5.6.3, §5.17, Appendix A `AR-02`, `OF-04`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Certified Heavy Machinery Operator (*Mulugeta Tadesse*) & Contractor Site Supervisor (*Dawit Haile-Mariam*)  
 **Associated Requirements:** `REQ-05-06` (`AR-02` Cryptographic Dual Challenge PIN Handover), `REQ-05-17` (`OF-04` Offline Peer-to-Peer Dynamic QR Handshake & Outbox Sync)  
 **Associated Interaction Flows:** `FLOW-09` (Handover Activation), `FLOW-APPENDIX-A` (Offline Cryptographic P2P QR Voucher Exchange)  

@@ -2,7 +2,7 @@
 
 **System:** Heavy Machinery & Logistics Rental Marketplace  
 **Specification:** Canonical Engineering Completion & Acceptance Standards  
-**Subsystems:** Go 1.27.3 Backend, Flutter 3.44 Mobile, Next.js 16 Admin, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0  
+**Subsystems:** Go 1.27.3 Backend, Flutter 3.47.8 Mobile, Next.js 16 Admin, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3  
 **Governing Documents:** `AGENTS.md`, `TECH_STACK.md`, `CODE_STANDARDS.md`, `API_CONVENTIONS.md`, `ERROR_CATALOG.md`  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), ISO/IEC/IEEE 29119, W3C WCAG 2.1/2.2 AA
 
@@ -54,7 +54,7 @@ Before any unit of work is considered complete within an individual subsystem, i
   - `govulncheck ./...` reports 0 reachable vulnerabilities.
 - [ ] **Concurrency & Race Conditions:** Tests pass with the race detector enabled: `go test -v -race ./...`.
 
-### 3.2. Flutter 3.44 Mobile Subsystem
+### 3.2. Flutter 3.47.8 Mobile Subsystem
 - [ ] **BLoC Unidirectional Data Flow:** Presentation components emit BLoC events; UI state rebuilds exclusively from immutable `freezed` state unions.
 - [ ] **Network & Error Mapping:** All remote I/O flows through `Dio` configured with `AuthInterceptor`, `CountryCodeInterceptor`, `IdempotencyInterceptor`, and `ProblemDetailsInterceptor`.
 - [ ] **Offline Schema Alignment:** Local caching tables in `isar` match corresponding backend DTO versions.
@@ -97,7 +97,7 @@ When completing a feature partition (e.g., `05-01` Auth, `05-04` Machinery, `05-
   $$\text{feeMinor} = \frac{\text{amountMinor} \times \text{feeBps}}{10000}$$
 
 ### 4.4. Integration Test Suites
-- [ ] **Real Engine Integration:** Integration tests run against containerized PostgreSQL 18.4 + PostGIS and Valkey instances using `testcontainers-go`. Mocking database engines in integration suites is forbidden.
+- [ ] **Real Engine Integration:** Integration tests run against containerized PostgreSQL 18.6 + PostGIS and Valkey instances using `testcontainers-go`. Mocking database engines in integration suites is forbidden.
 - [ ] **Idempotency Verification:** Replaying mutating requests with the same `Idempotency-Key` returns the cached response envelope without duplicate side effects or duplicate ledger writes.
 - [ ] **Wire Schema Conformance:** Provider tests validate HTTP responses against `contracts/openapi.yaml` schemas using `kin-openapi`.
 

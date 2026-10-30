@@ -77,7 +77,7 @@ Every test report must verify adherence to the seven core Dink Machinery archite
 | **L1: Mobile Unit** | `mobile/test/features/...` | 0 | 0 | 0 | 0 | 0 | 0.0s |
 | **L1: Admin Unit** | `admin/src/**/*.test.ts` | 0 | 0 | 0 | 0 | 0 | 0.0s |
 | **L2: DB Integration** | `testcontainers-go` (PostgreSQL + PostGIS) | 0 | 0 | 0 | 0 | 0 | 0.0s |
-| **L2: Cache Integration** | `testcontainers-go` (Valkey 8.0-alpine) | 0 | 0 | 0 | 0 | 0 | 0.0s |
+| **L2: Cache Integration** | `testcontainers-go` (Valkey 9.1.3-alpine) | 0 | 0 | 0 | 0 | 0 | 0.0s |
 | **L3: Provider Wire** | `kin-openapi` Chi Handler Tests | 0 | 0 | 0 | 0 | 0 | 0.0s |
 | **L3: Consumer Wire** | Mobile Dio / Admin Prism Mock Tests | 0 | 0 | 0 | 0 | 0 | 0.0s |
 | **L4: Security & Static** | Gitleaks, Semgrep, Govulncheck, npm audit | 0 | 0 | 0 | 0 | 0 | 0.0s |

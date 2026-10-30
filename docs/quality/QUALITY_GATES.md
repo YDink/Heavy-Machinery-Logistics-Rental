@@ -3,7 +3,7 @@
 **System:** Heavy Machinery & Logistics Rental Marketplace  
 **Specification:** Formal Gate Definitions, Automated Verification Gates & Release Controls  
 **Compliance Standards:** ISO/IEC/IEEE 29119, OWASP ASVS 4.0.3 Level 3, W3C WCAG 2.1/2.2 AA, ISO/IEC 25010  
-**Subsystems Covered:** Go 1.27.3 Backend Modular Monolith, Flutter 3.44 Mobile Client, Next.js 16 Admin Web Console, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine  
+**Subsystems Covered:** Go 1.27.3 Backend Modular Monolith, Flutter 3.47.8 Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine  
 **Governing Documents:** `AGENTS.md`, `TECH_STACK.md`, `CODE_STANDARDS.md`, `API_CONVENTIONS.md`, `ERROR_CATALOG.md`, `DEFINITION_OF_DONE.md`, `QA_STRATEGY.md`
 
 ---
@@ -145,7 +145,7 @@ The quality lifecycle comprises seven sequential gates executed between the deve
    - Static analysis: `golangci-lint run ./...` (0 warnings).
    - Domain unit suite: `go test -v -race -coverprofile=coverage.out ./internal/modules/...`.
    - Thread safety: Zero race conditions detected by `-race`.
-2. **Flutter 3.44 Mobile Suite:**
+2. **Flutter 3.47.8 Mobile Suite:**
    - Static analyzer: `flutter analyze` (0 issues).
    - BLoC unit tests: `flutter test --coverage` (100% pass rate).
    - Touch target and semantic widget assertions (`androidTapTargetGuideline` $\ge 48\text{ dp}$).
@@ -166,7 +166,7 @@ The quality lifecycle comprises seven sequential gates executed between the deve
 
 #### Automated Checkpoints & Invariant Assertions
 1. **Real Infrastructure Verification (`testcontainers-go`):**
-   - Tests execute against containerized PostgreSQL 18.4 + PostGIS 3.4 and Valkey 8.0-alpine.
+   - Tests execute against containerized PostgreSQL 18.6 + PostGIS 3.6.4 and Valkey 9.1.3-alpine.
    - Migrations from `migrations/` applied sequentially (`up` and `down`).
 2. **In-Transaction Ledger Atomicity Invariant (`BK-17-BE`):**
    - Every booking state change that mutates funds asserts balanced debit and credit entries in `financial_ledger_entries` summing to 0 minor units.
@@ -327,7 +327,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26.13.0
       - run: npm install -g @stoplight/spectral-cli
       - run: npx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
       - name: Audit Breaking Changes
@@ -400,7 +400,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26.13.0
       - run: cd admin && npm ci
       - run: cd admin && npm run lint
       - run: cd admin && npm run build
@@ -436,7 +436,7 @@ Before submitting or reviewing a pull request, affirm compliance with every gate
 - [ ] **Gate G0 Cleared:** Local `lefthook` hooks executed; Spectral lint clean; `CONTEXT.md` updated and staged in this commit.
 - [ ] **Gate G1 Cleared:** `openapi.yaml` passes Spectral; `oasdiff` reports 0 breaking changes; code-gen drift is 0.
 - [ ] **Gate G2 Cleared:** All unit tests pass with `-race`; coverage satisfies thresholds ($\ge 80\%$ general, $\ge 95\%$ financial/auth); coverage did not decrease.
-- [ ] **Gate G3 Cleared:** Integration tests against PostgreSQL 18.4 + PostGIS and Valkey pass; ledger balance invariant asserted inside single `pgx.Tx` transactions; wire responses conform to OpenAPI schemas.
+- [ ] **Gate G3 Cleared:** Integration tests against PostgreSQL 18.6 + PostGIS and Valkey pass; ledger balance invariant asserted inside single `pgx.Tx` transactions; wire responses conform to OpenAPI schemas.
 - [ ] **Gate G4 Cleared:** Gitleaks reports 0 secrets; static regex confirms 0 unmasked PII logs; Semgrep reports 0 high/critical vulnerabilities.
 - [ ] **Gate G5 Prepared:** Load tests and accessibility checks verified against latency ($< 80\text{ ms}$ P95) and WCAG 2.1 AA benchmarks.
 - [ ] **Gate G6 Prepared:** Staging acceptance test plans documented for Patrol and Playwright automated journeys.

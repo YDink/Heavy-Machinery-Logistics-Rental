@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-SEC-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `ARCH-INTRO-DINK-CORE-V7.0`, `ARCH-PRIN-DINK-CORE-V7.0`, `ARCH-OVERVIEW-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-DB-DINK-CORE-V7.0`, `ARCH-COMM-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-014`  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine, ClamAV Daemon, OpenBao KMS, Traefik 3.x Gateway  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, ClamAV Daemon, OpenBao KMS, Traefik 3.x Gateway  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Enterprise Verification), RFC 9457 (Problem Details), RFC 8446 (TLS 1.3), FIDO2 / WebAuthn, ISO/IEC 27001:2022, Ethiopian Personal Data Protection Proclamation No. 1321/2024, National Bank of Ethiopia (NBE) Directives  
 **Status:** Approved Engineering Baseline
@@ -101,8 +101,8 @@ flowchart TD
     end
 
     subgraph StorageTrustZone [Isolated Persistence Trust Zone]
-        PostgresCore[("PostgreSQL 18.4 + PostGIS 3.4<br/>Encrypted Relational Store")]
-        ValkeyCore[("Valkey 8.0 Cache & Mutex Rail")]
+        PostgresCore[("PostgreSQL 18.6 + PostGIS 3.6.4<br/>Encrypted Relational Store")]
+        ValkeyCore[("Valkey 9.1.3 Cache & Mutex Rail")]
         SeaweedCore[("SeaweedFS S3 Blob Store")]
         ClamAVDaemon["ClamAV Daemon Stream Scanner"]
         OpenBaoKMS["OpenBao Key Management System"]

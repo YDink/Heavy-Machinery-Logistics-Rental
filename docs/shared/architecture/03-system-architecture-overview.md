@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-OVERVIEW-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `ARCH-INTRO-DINK-CORE-V7.0`, `ARCH-PRIN-DINK-CORE-V7.0`, `FLOW-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-014`  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.44 Cross-Platform Mobile Client, Next.js 16 Admin Web Console, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine, SeaweedFS S3, ClamAV Daemon  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), W3C WCAG 2.2 AA / AAA (Outdoor Mode), ISO/IEC/IEEE 42010, ISO 4217, ISO 3166-1 alpha-2  
 **Status:** Approved Engineering Baseline
@@ -47,8 +47,8 @@ The Dink Machinery software ecosystem operates as an integrated, multi-persona d
 The macro architecture combines:
 1. **Edge-Hardened Single Ingress:** All public HTTP, WebSocket, and media streams terminate at Traefik 3.x, enforcing TLS 1.3, rate-limiting, and DDoS shielding.
 2. **Compiled Go Modular Monolith:** A single stateless static binary (`net/http`, Chi router) organizing business domains into clean internal packages (`internal/modules/*`) with zero network hops between bounded contexts.
-3. **Multi-Model Data Persistence:** PostgreSQL 18.4 manages relational state, PostGIS 3.4 spatial indexes, GIN-indexed JSONB dynamic specs, and immutable double-entry ledgers. Valkey 8.0 manages distributed holds, session states, and rate-limiting. SeaweedFS S3 provides high-throughput object storage, guarded by synchronous ClamAV stream inspection.
-4. **Resilient Edge Clients:** Cross-platform Flutter 3.44 mobile applications for Renters, Owners, and Field Operators featuring local NoSQL (Isar) outboxes for remote site operations, alongside a Next.js 16 server-driven admin web console.
+3. **Multi-Model Data Persistence:** PostgreSQL 18.6 manages relational state, PostGIS 3.6.4 spatial indexes, GIN-indexed JSONB dynamic specs, and immutable double-entry ledgers. Valkey 9.1.3 manages distributed holds, session states, and rate-limiting. SeaweedFS S3 provides high-throughput object storage, guarded by synchronous ClamAV stream inspection.
+4. **Resilient Edge Clients:** Cross-platform Flutter 3.47.8 mobile applications for Renters, Owners, and Field Operators featuring local NoSQL (Isar) outboxes for remote site operations, alongside a Next.js 16 server-driven admin web console.
 
 ```mermaid
 flowchart TD
@@ -71,9 +71,9 @@ flowchart TD
 ```mermaid
 flowchart TD
     subgraph Clients [Client Workstations and Edge Personas]
-        RenterApp["Renter Mobile App<br/>Flutter 3.44"]
-        OwnerApp["Fleet Owner App<br/>Flutter 3.44"]
-        OperatorApp["Operator Mobile App<br/>Flutter 3.44"]
+        RenterApp["Renter Mobile App<br/>Flutter 3.47.8"]
+        OwnerApp["Fleet Owner App<br/>Flutter 3.47.8"]
+        OperatorApp["Operator Mobile App<br/>Flutter 3.47.8"]
         AdminWeb["Admin Web Console<br/>NextJS 16 RSC"]
     end
 
@@ -94,8 +94,8 @@ flowchart TD
     end
 
     subgraph Persistence [Data Persistence and Cache Tier]
-        PostgreSQL[("PostgreSQL 18.4 and PostGIS 3.4<br/>ACID Relational and Spatial")]
-        ValkeyCluster[("Valkey 8.0 Cache<br/>60-Min Holds and Sessions")]
+        PostgreSQL[("PostgreSQL 18.6 and PostGIS 3.6.4<br/>ACID Relational and Spatial")]
+        ValkeyCluster[("Valkey 9.1.3 Cache<br/>60-Min Holds and Sessions")]
         SeaweedStorage[("SeaweedFS S3 Storage<br/>Photos and Trade Docs")]
         ClamAVScanner["ClamAV Daemon<br/>zINSTREAM Scanner"]
     end
@@ -136,14 +136,14 @@ flowchart TD
 * **Bounded Context Isolation:** Domain modules (`auth`, `catalog`, `booking`, `finance`, `inspection`, `logistics`, `telematics`) interact solely through exported Go interfaces and in-process typed events.
 
 ### 2.3 Persistence & Cache Tier
-* **PostgreSQL 18.4 + PostGIS 3.4:** Primary relational source of truth operating on NVMe storage. Connection pooling is orchestrated via `jackc/pgx/v5/pgxpool` with health checks, prepared statement caches, and query timeouts.
-* **Valkey 8.0-alpine:** Open-source high-throughput in-memory datastore running RESP3. Manages 60-minute mutual exclusion locks (`lock:hold:fleet:{id}`), session revoking lists, and sliding window rate limits.
+* **PostgreSQL 18.6 + PostGIS 3.6.4:** Primary relational source of truth operating on NVMe storage. Connection pooling is orchestrated via `jackc/pgx/v5/pgxpool` with health checks, prepared statement caches, and query timeouts.
+* **Valkey 9.1.3-alpine:** Open-source high-throughput in-memory datastore running RESP3. Manages 60-minute mutual exclusion locks (`lock:hold:fleet:{id}`), session revoking lists, and sliding window rate limits.
 * **SeaweedFS S3:** Horizontally scalable object storage with distributed volume servers. Replaces proprietary cloud blob stores with local S3-compliant storage.
 * **ClamAV Daemon:** Synchronous streaming antivirus scanner listening on `tcp://clamav:3310`. Scans file payloads before they are committed to SeaweedFS.
 
 ### 2.4 Client Tier (Mobile & Web)
-* **Mobile Client (Flutter 3.44 / Dart 3.9):** Universal binary targeting Android (API 26+) and iOS (15+). Implements Feature-First Clean Architecture, BLoC state management, Isar NoSQL local cache, and over-the-air font loading (`ADR-013`).
-* **Admin Web Console (Next.js 16 / React 19):** High-density back-office interface using React Server Components, Server Actions, TanStack Table, and dynamic metadata loading (`/api/v1/admin/ui-config`).
+* **Mobile Client (Flutter 3.47.8 / Dart 3.9):** Universal binary targeting Android (API 26+) and iOS (15+). Implements Feature-First Clean Architecture, BLoC state management, Isar NoSQL local cache, and over-the-air font loading (`ADR-013`).
+* **Admin Web Console (Next.js 16.x (latest CVE security patch) / React 19):** High-density back-office interface using React Server Components, Server Actions, TanStack Table, and dynamic metadata loading (`/api/v1/admin/ui-config`).
 
 ### 2.5 External Integration & Telco Rail Tier
 * **National ID Registries:** Connects to the Ethiopian Fayda ID verification API (`REG-IDP-01-BE`) with fallbacks for manual review queues.
@@ -278,7 +278,7 @@ sequenceDiagram
     actor Renter as Contractor Client
     participant Traefik as Traefik Gateway
     participant GeoModule as Spatial Search Module
-    participant DB as PostgreSQL 18.4 PostGIS
+    participant DB as PostgreSQL 18.6 PostGIS
 
     Renter->>Traefik: GET /api/v1/geo/fleets/radius-search?lat=9.03&lng=38.74&radiusKm=50
     Traefik->>GeoModule: Forward authenticated request with country context
@@ -415,8 +415,8 @@ flowchart TD
     end
 
     subgraph SecureDataZone [Secure Data Storage Tier]
-        PostgresCore[("PostgreSQL 18.4<br/>Encrypted at Rest")]
-        ValkeyCore[("Valkey 8.0 Cache")]
+        PostgresCore[("PostgreSQL 18.6<br/>Encrypted at Rest")]
+        ValkeyCore[("Valkey 9.1.3 Cache")]
         SeaweedCore[("SeaweedFS S3")]
         VaultCore["OpenBao Secrets Engine"]
     end

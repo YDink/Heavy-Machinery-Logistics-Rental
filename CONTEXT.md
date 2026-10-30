@@ -3,7 +3,7 @@
 **Project Phase:** Phase 0 (Docs-First & Pre-Development Governance)  
 **Active Requirement Partition:** `00-foundations-governance`  
 **Active Branch:** `main` (Pre-bootstrap baseline)  
-**Current Stop Point:** `docs/quality/BOOTSTRAP_CHECKLIST.md` Phase 0 verification complete
+**Current Stop Point:** Technology Stack Version Standardization & Canonical Toolchain Pinning Complete
 
 ---
 
@@ -23,7 +23,19 @@
 - **Admin Subsystem Specifications Expanded:** Populated 38 dedicated operational console specifications covering the admin shell, operations queues, booking operations, dispute arbitration lightbox, double-entry financial ledger, dynamic metadata schema engine, and QA benchmarks alongside master `INDEX.md` under `docs/admin/`.
 - **Zero Empty Files Verified:** Automated recursive audit confirms 0 empty (0-byte) files remain across the entire codebase.
 - **Quality Assurance OS:** QA strategy, quality gates (G0–G4), security QA, and accessibility protocols articulated under `docs/quality/`.
-- **Infrastructure Stacks:** Docker Compose defined for PostgreSQL 18.4 + PostGIS, Valkey 8.0, SeaweedFS S3, and ClamAV.
+- **Canonical Toolchain & Version Standardization:**
+  - Root `.tool-versions` established (`golang 1.27.3`, `flutter 3.47.8`, `nodejs 26.13.0`).
+  - `docs/TECH_STACK.md` updated as authoritative Single Source of Truth (SSOT).
+  - Pinned exact infrastructure runtimes across `docker-compose.yml`, `.env.example`, `.env.dev`:
+    - Go: `1.27.3`
+    - Flutter: `3.47.8`
+    - Node.js: `26.13.0`
+    - Next.js: `16.x` (strict requirement to track latest patch release to mitigate frequent CVEs)
+    - PostgreSQL: `18.6`
+    - PostGIS: `3.6.4` (`postgis/postgis:18.6-3.6.4-alpine`)
+    - Valkey: `9.1.3` (`valkey/valkey:9.1.3-alpine`)
+  - Batch-migrated and harmonized 208 specification files across `docs/`, `contracts/`, `scripts/`, `.github/`, ensuring zero outdated version references remain.
+  - Validated architectural decision templates (`validate-decision-template.sh`) and links (`validate-decision-links.sh`) with 0 errors.
 
 ### In Progress
 - Formal verification and sign-off of `docs/quality/BOOTSTRAP_CHECKLIST.md` Gate G0.
@@ -45,25 +57,30 @@
 ### Decisions Formulated
 - `ADR-001` through `ADR-015` recorded and verified in `docs/decisions/`.
 - `D-05-01-001` through `D-11-01-002` (80 decisions across 40 partitions) recorded and verified in `docs/decisions/partitions/`.
-- `D-05-23-001`: Multi-country operational parameters resolved via `country_configs` table and `X-Country-Code` middleware.
-- `D-05-05-001`: In-transaction synchronous financial atomicity (`BK-17-BE`) selected over asynchronous event bus for ledger mutations.
+- Canonical Toolchain Resolution: Pinned Go `1.27.3`, Flutter `3.47.8`, Node.js `26.13.0`, Next.js `16.x` (latest CVE security patch), PostgreSQL `18.6` + PostGIS `3.6.4`, and Valkey `9.1.3`.
 
 ### Blockers
-- None. Phase 0 documentation, contracts, decisions, and specifications are 100% complete and validated.
+- None. Phase 0 documentation, contracts, decisions, specifications, and toolchain configurations are 100% complete and validated.
 
 ---
 
 ## 4. Files Touched in Current Session
 
-- `docs/shared/requirements/12-tech-stack.md`
-- `docs/shared/requirements/13-roadmap.md`
-- `docs/shared/requirements/14-appendices.md`
-- `docs/shared/requirements/INDEX.md`
-- `docs/decisions/ADR-001-modular-monolith-mvp.md` through `ADR-015-multi-country-parameterization.md`
-- `docs/decisions/ADR-TEMPLATE.md`
-- `docs/decisions/INDEX.md`
-- `docs/decisions/partitions/05-01-...` through `11-dynamic-config.md` (40 files)
-- `docs/decisions/partitions/PARTITION_DECISIONS_TEMPLATE.md`
-- `docs/decisions/partitions/README.md`
-- `scripts/validate-decision-links.sh`
+- `.tool-versions` (created)
+- `docs/TECH_STACK.md` (updated SSOT)
+- `docker-compose.yml`
+- `.env.example`
+- `.env.dev`
+- `docs/CODE_STANDARDS.md`
+- `docs/quality/BOOTSTRAP_CHECKLIST.md`
+- `ARCHITECTURE.md`, `CODE_STYLE.md`, `DATABASE.md`, `ROADMAP.md`, `SECURITY.md`, `TESTING.md`
+- `contracts/README.md`
+- `docs/source/**` (6 canonical specifications)
+- `docs/shared/architecture/**` (15 files)
+- `docs/shared/flows/**` (22 files)
+- `docs/shared/requirements/**` (37 files)
+- `docs/shared/design/**` (3 files)
+- `docs/decisions/**` (ADRs & partition decisions)
+- `docs/mobile/**` (mobile subsystem specifications)
+- `docs/admin/**` (admin console specifications)
 - `CONTEXT.md`

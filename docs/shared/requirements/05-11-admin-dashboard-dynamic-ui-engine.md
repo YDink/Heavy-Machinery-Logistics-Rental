@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Architecture Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§5.11, §10, §11, §12), `FLOW-ADMIN-CONSOLE-DINK-CORE-V7.0` (Interaction Flow 13), `FLOW-OWNER-KYC-DINK-CORE-V7.0`, `FLOW-FLEET-REG-DINK-CORE-V7.0`, `FLOW-WIRE-DISPUTE-DINK-CORE-V7.0`, `FLOW-COMMISSION-DEBT-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Next.js 16 / React 19 (Web Admin Portal), Go 1.24 Backend Monolith, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
+**Target Runtimes:** Next.js 16.x (latest CVE security patch) / React 19 (Web Admin Portal), Go 1.27.3 Backend Monolith, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
 **Target Personas:** Super Administrator (*Rahel Tadesse*), Compliance Officer & Arbitrator (*Yohannes Bekele*), Finance Controller & Revenue Auditor (*Solomon Kassa*), Fleet Inspector & Catalog Manager (*Ato Tewodros Mengistu*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Role-Based Access Control, Administrative Audit Logging, Four-Eyes Authorization & Session Management), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AA (Admin Web), National Bank of Ethiopia (NBE) Financial Directives, Kenya Data Protection Act 2019  
@@ -21,7 +21,7 @@
 - 2. [Dynamic UI Engine Topology & Metadata Compilation](#2-dynamic-ui-engine-topology--metadata-compilation)
   - 2.1 [Server-Driven UI (SDUI) Compilation Pipeline](#21-server-driven-ui-sdui-compilation-pipeline)
   - 2.2 [Relational Schema: Dynamic Layouts, Columns & Actions](#22-relational-schema-dynamic-layouts-columns--actions)
-  - 2.3 [Client-Side Generic UI Renderer (Next.js 16 / React 19)](#23-client-side-generic-ui-renderer-nextjs-16--react-19)
+  - 2.3 [Client-Side Generic UI Renderer (Next.js 16.x (latest CVE security patch) / React 19)](#23-client-side-generic-ui-renderer-nextjs-16--react-19)
 - 3. [Role-Based Access Control (RBAC) & Administrative Identity](#3-role-based-access-control-rbac--administrative-identity)
   - 3.1 [Hierarchical RBAC Model (`Role`, `Permission`, `RolePermission`)](#31-hierarchical-rbac-model-role-permission-rolepermission)
   - 3.2 [Canonical Internal Admin Roles & Scopes](#32-canonical-internal-admin-roles--scopes)
@@ -110,7 +110,7 @@ flowchart TD
 
 ### 2.2 Relational Schema: Dynamic Layouts, Columns & Actions
 
-The administrative layout and action configuration is stored across eight normalized tables in PostgreSQL 18.4:
+The administrative layout and action configuration is stored across eight normalized tables in PostgreSQL 18.6:
 
 ```mermaid
 erDiagram
@@ -206,7 +206,7 @@ erDiagram
 
 ---
 
-### 2.3 Client-Side Generic UI Renderer (Next.js 16 / React 19)
+### 2.3 Client-Side Generic UI Renderer (Next.js 16.x (latest CVE security patch) / React 19)
 
 The Next.js 16 Web Admin Console implements a dynamic component factory pattern:
 1. **Dynamic Grid Factory:** Evaluates `AdminTableColumn.data_type` and injects specialized cell renderers:
@@ -295,7 +295,7 @@ sequenceDiagram
     actor Admin1 as Finance Controller (Solomon)
     participant Console as Next.js Admin Console
     participant Core as Go Monolith Core
-    participant DB as PostgreSQL 18.4
+    participant DB as PostgreSQL 18.6
     actor Admin2 as Super Admin (Rahel)
 
     Admin1->>Console: Taps "Expand Credit Limit to 150k ETB"

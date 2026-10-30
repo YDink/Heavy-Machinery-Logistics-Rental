@@ -1,9 +1,9 @@
 # Mobile Client System Design & Architectural Specification (`mobile/`) — Dink Machinery
 
-**Subsystem:** Flutter 3.44 Cross-Platform Mobile Client (`mobile/`)  
+**Subsystem:** Flutter 3.47.8 Cross-Platform Mobile Client (`mobile/`)  
 **Specification:** System Architecture, Feature-First Clean Architecture, BLoC State Topology & Offline Data Lifecycle  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Mobile Verification), W3C WCAG 2.1/2.2 Level AA, RFC 9457 (Problem Details), ISO/IEC 25010  
-**Target Runtimes:** Flutter 3.44.x (Dart 3.9.x), Android 8.0+ (API 26+), iOS 15.0+  
+**Target Runtimes:** Flutter 3.47.8 (Dart 3.9.x), Android 8.0+ (API 26+), iOS 15.0+  
 **Governing Documents:** `AGENTS.md`, `TECH_STACK.md`, `CODE_STANDARDS.md`, `API_CONVENTIONS.md`, `ERROR_CATALOG.md`, `DEFINITION_OF_DONE.md`, `docs/components/mobile/AGENTS.md`
 
 ---
@@ -41,7 +41,7 @@ The mobile application is designed around **Feature-First Clean Architecture**, 
 
 ```mermaid
 flowchart TD
-  subgraph PresentationLayer["Presentation Layer (Flutter 3.44)"]
+  subgraph PresentationLayer["Presentation Layer (Flutter 3.47.8)"]
     UI[Screens & Widgets] -->|Dispatch Events| Bloc[Feature BLoCs]
     Bloc -->|Emit Immutable States| UI
   end

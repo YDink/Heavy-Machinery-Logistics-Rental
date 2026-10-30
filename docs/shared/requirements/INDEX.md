@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Traceability Matrix (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `docs/source/Heavy_Machinery_Rental_SRS_v2.md`, `docs/shared/architecture/INDEX.md`, `docs/shared/flows/INDEX.md`, `docs/decisions/INDEX.md`, `contracts/openapi.yaml`  
-**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.44 Mobile Client, Next.js 16 Admin Console, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 Mobile Client, Next.js 16.x Admin Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), ISO 4217, ISO 3166-1 alpha-2  
 **Status:** Approved Engineering Baseline

@@ -1,6 +1,6 @@
 # Architecture Blueprint — Dink Machinery
 
-**Target Architecture (Generated at Bootstrap):** Feature-Based Modular Monolith in Go 1.27.3, Flutter 3.44 Mobile, Next.js 16 Admin.  
+**Target Architecture (Generated at Bootstrap):** Feature-Based Modular Monolith in Go 1.27.3, Flutter 3.47.8 Mobile, Next.js 16 Admin.  
 **Canonical Source:** `docs/source/Architecture_Design_Document.md`
 
 ---
@@ -45,8 +45,8 @@ graph TD
   Middleware --> Modules
 
   subgraph Persistence [Storage & Telemetry Layer]
-    Postgres[(PostgreSQL 18.4 + PostGIS)]
-    Valkey[(Valkey 8.0 Cache & Sessions)]
+    Postgres[(PostgreSQL 18.6 + PostGIS)]
+    Valkey[(Valkey 9.1.3 Cache & Sessions)]
     SeaweedFS[(SeaweedFS S3 Storage)]
     Tempo["Grafana Tempo (Traces)"]
   end

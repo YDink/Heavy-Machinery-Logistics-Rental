@@ -3,7 +3,7 @@
 **Subsystem:** Next.js 16 Administrative Web Console & Operational Back-Office  
 **Specification:** System Architecture, Server-Driven UI Engine, Component Hierarchy & State Life Cycle  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, W3C WCAG 2.1/2.2 Level AA, RFC 9457 (Problem Details), ISO/IEC 25010  
-**Target Runtimes:** Next.js 16.x (React 19, App Router), TypeScript 5.7+, Tailwind CSS v4, Node.js 22.x LTS  
+**Target Runtimes:** Next.js 16.x (React 19, App Router), TypeScript 5.7+, Tailwind CSS v4, Node.js 26.13.0  
 **Governing Documents:** `AGENTS.md`, `TECH_STACK.md`, `CODE_STANDARDS.md`, `API_CONVENTIONS.md`, `ERROR_CATALOG.md`, `DEFINITION_OF_DONE.md`, `docs/components/admin/AGENTS.md`
 
 ---
@@ -44,7 +44,7 @@ The Admin Console executes as a Next.js 16 App Router application within a secur
 flowchart TD
   Browser[Administrator Browser] -->|HTTPS / TLS 1.3| Ingress[Traefik 3.x Ingress Gateway]
   
-  subgraph NextJS["Admin Subsystem (Next.js 16 / Node.js 22.x)"]
+  subgraph NextJS["Admin Subsystem (Next.js 16 / Node.js 26.13.0)"]
     Ingress --> Middleware[Next.js Auth & RBAC Middleware]
     Middleware --> RSCPage[React Server Component (RSC Page)]
     
@@ -62,8 +62,8 @@ flowchart TD
     ServerAction -->|REST / OpenAPI 3.1.0 + Idempotency-Key| AdminHTTP[Chi Admin HTTP Handlers]
     RSCPage -->|Fetch /api/v1/admin/ui-config| AdminHTTP
     AdminHTTP --> AdminApp[Admin Application Interactors]
-    AdminApp --> Postgres[(PostgreSQL 18.4 + PostGIS)]
-    AdminApp --> Valkey[(Valkey 8.0 Distributed Cache)]
+    AdminApp --> Postgres[(PostgreSQL 18.6 + PostGIS)]
+    AdminApp --> Valkey[(Valkey 9.1.3 Distributed Cache)]
   end
 ```
 

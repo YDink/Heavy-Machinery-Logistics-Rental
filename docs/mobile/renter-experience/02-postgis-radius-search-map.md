@@ -4,18 +4,18 @@
 **Document Identifier:** `SPEC-MOB-RNT-02`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/05-04-fleet-discovery-search-comparison.md`, `05-15-search-discovery-enhancements.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Regional Project Director  
 **Associated Requirements:** `REQ-05-04` (`FD-06`..`FD-09`, `SR-03`, `SR-05`), `REQ-05-15` (`SR-09`, `ST_ClusterKMeans`)  
 **Associated Interaction Flows:** `FLOW-04` (`FLOW-DISCOVERY-DINK-CORE-V7.0`), `FLOW-06`  
-**Architectural Decisions:** `ADR-004` (PostGIS 3.4 `GEOGRAPHY(Point, 4326)` GiST Indexing), `ADR-005` (Valkey 15s Spatial Cache & Lease Overlay), `ADR-008` (`LOC-01-BE` Regional Geofencing), `ADR-010` (Integer Minor Units & Offline Resilience)  
+**Architectural Decisions:** `ADR-004` (PostGIS 3.6.4 `GEOGRAPHY(Point, 4326)` GiST Indexing), `ADR-005` (Valkey 15s Spatial Cache & Lease Overlay), `ADR-008` (`LOC-01-BE` Regional Geofencing), `ADR-010` (Integer Minor Units & Offline Resilience)  
 **Status:** Approved Technical Design Baseline
 
 ---
 
 ## 1. Domain Context, Business Formulas & Architectural Invariants
 
-Heavy machinery mobilization costs scale nonlinearly with lowboy haulage distance. A 32-ton crawler excavator stationed $12\text{ km}$ from a highway cut in Adama costs a fraction to mobilize compared to an identical unit $140\text{ km}$ away across mountain grades. The **PostGIS Geodesic Radius Search & Interactive Cluster Map (`PostgisRadiusSearchMapScreen`)** provides contractors with a spatial radar viewport backed by PostgreSQL 18.4 + PostGIS 3.4.
+Heavy machinery mobilization costs scale nonlinearly with lowboy haulage distance. A 32-ton crawler excavator stationed $12\text{ km}$ from a highway cut in Adama costs a fraction to mobilize compared to an identical unit $140\text{ km}$ away across mountain grades. The **PostGIS Geodesic Radius Search & Interactive Cluster Map (`PostgisRadiusSearchMapScreen`)** provides contractors with a spatial radar viewport backed by PostgreSQL 18.6 + PostGIS 3.6.4.
 
 ### 1.1 Spatial Formulas & Architectural Invariants
 1. **Spheroidal Geodesic Radius Filtering (`FD-06`):**
@@ -108,11 +108,11 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Renter as Contractor (Flutter 3.44)
+    actor Renter as Contractor (Flutter 3.47.8)
     participant MapBloc as RadiusSearchMapBloc
     participant API as Go Monolith (/api/v1/discovery/map/clusters)
-    participant Valkey as Valkey 8.0 (Spatial Cache + Hold Leases)
-    participant PG as PostgreSQL 18.4 + PostGIS 3.4
+    participant Valkey as Valkey 9.1.3 (Spatial Cache + Hold Leases)
+    participant PG as PostgreSQL 18.6 + PostGIS 3.6.4
 
     Renter->>MapBloc: Drag Radius Slider to 50 km & Release
     MapBloc->>API: GET /api/v1/discovery/map/clusters?lat=8.586&lng=39.121&radiusKm=50&zoom=11&bbox=38.8,8.2,39.5,8.9

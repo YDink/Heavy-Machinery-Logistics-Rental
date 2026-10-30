@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-RNT-06`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/05-05-booking-reservation-flow.md`, `05-23-ethiopian-public-holiday-calendar.md`, `06-01-corporate-account-management.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Corporate Site Requester (*Bethlehem Tessema*)  
 **Associated Requirements:** `REQ-05-05` (`BK-01`..`BK-03`), `REQ-05-23` (Ethiopian 13-Month Ge'ez Calendar & Holiday Overlay), `REQ-05-08` (`LG-01` Self-Move vs Lowboy Selection), `REQ-06-01` (`CORP-02` Cost-Center & PO Tagging)  
 **Associated Interaction Flows:** `FLOW-07` (`FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`), `FLOW-15` (Concurrency Locking)  
@@ -115,11 +115,11 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Renter as Contractor (Flutter 3.44)
+    actor Renter as Contractor (Flutter 3.47.8)
     participant FlowBloc as BookingReservationBloc
     participant API as Go Monolith (/api/v1/bookings)
-    participant Valkey as Valkey 8.0
-    participant PG as PostgreSQL 18.4
+    participant Valkey as Valkey 9.1.3
+    participant PG as PostgreSQL 18.6
 
     Renter->>FlowBloc: Select Oct 30 to Nov 06 (8 Days) + Breaker Attachment
     FlowBloc->>FlowBloc: Verify 8 >= minRentalDays (3) & No Local Blackout Overlap

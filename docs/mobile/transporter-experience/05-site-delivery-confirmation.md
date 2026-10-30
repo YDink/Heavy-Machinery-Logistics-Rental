@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-TRN-05`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (§5.8.5, §5.8.6, §5.9.7, `LG-07`, `LG-08`, `FLOW-18`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Heavy Haulage Lowboy Transporter (*Ato Girma Wolde*), Contractor Site Supervisor (*Dawit Haile-Mariam*), Equipment Fleet Owner (*W/ro Almaz Tesfaye*)  
 **Associated Requirements:** `REQ-05-08` (`LG-07` Job Site Arrival GPS Check, Offloading Inspection & Contractor Delivery Sign-Off, `LG-08` Roadside Transshipment & Bidirectional / Reverse Cancellation Cascade Engine), `REQ-05-09` (§7.1 Commission Restitution on Force Majeure Cascade)  
 **Associated Interaction Flows:** `FLOW-11` (Site Offloading & Transition to `10. READY_FOR_PICKUP`), `FLOW-18` (Roadside Transshipment, Carrier Default & Reverse Failure Cascade)  
@@ -143,7 +143,7 @@ sequenceDiagram
     participant UI as SiteDeliveryConfirmationScreen
     participant Bloc as SiteDeliveryBloc
     participant API as Go Monolith (/api/v1)
-    participant DB as PostgreSQL 18.4 (pgx.Tx)
+    participant DB as PostgreSQL 18.6 (pgx.Tx)
 
     alt Smooth Transit & Site Offloading (LG-07)
         Carrier->>UI: Arrive at Mojo Site B (GPS <= 45m), Lower Ramps & Offload CAT 320D

@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Quality Attributes Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 25010:2023 (Systems and Software Quality Requirements and Evaluation — SQuaRE)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§1.2, §5.2, §5.6, §6.3, §7.0, §8, §9, §10, §11, §12, §13.2), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
 **Target Personas:** Site Reliability Engineer (SRE), Chief Information Security Officer (CISO), Corporate Infrastructure Director, Mobile Platform Lead, Legal Counsel & Compliance Auditor (*Yohannes Bekele*), Super Administrator (*Rahel Tadesse*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Complete Verification), ISO/IEC 27001:2022 (Information Security Controls), RFC 9457 (Problem Details for HTTP APIs), W3C WCAG 2.2 Level AAA (Mobile Field Interfaces) & Level AA (Admin Portals), ISO 9241-110 (Ergonomics of Human-System Interaction), National Bank of Ethiopia (NBE) Financial Cloud Directives, Kenya Data Protection Act (KDPA) 2019  
@@ -21,7 +21,7 @@
 - 2. [Performance & Latency Service Level Objectives (`NFR-PERF`)](#2-performance--latency-service-level-objectives-nfr-perf)
   - 2.1 [API Response Time Thresholds & Latency Envelopes](#21-api-response-time-thresholds--latency-envelopes)
   - 2.2 [Spatial Indexing Throughput & Concurrency Bounds](#22-spatial-indexing-throughput--concurrency-bounds)
-  - 2.3 [Edge Caching & Valkey 8.0 Eviction Topology](#23-edge-caching--valkey-80-eviction-topology)
+  - 2.3 [Edge Caching & Valkey 9.1.3 Eviction Topology](#23-edge-caching--valkey-80-eviction-topology)
   - 2.4 [Mobile Cold-Start & Network Payload Quotas](#24-mobile-cold-start--network-payload-quotas)
 - 3. [Scalability, Elasticity & Capacity Planning (`NFR-SCALE`)](#3-scalability-elasticity--capacity-planning-nfr-scale)
   - 3.1 [Transaction Processing Throughput Targets (TPS)](#31-transaction-processing-throughput-targets-tps)
@@ -84,7 +84,7 @@ While functional specifications define *what* the system executes, this document
 
 ### 1.2 Non-Functional Architectural Invariants
 
-1. **Monolithic Process Execution Invariant (`ADR-001`):** All business logic, spatial query handling, state transitions, and background domain workers must execute within a unified Go 1.24 process monolith. Cross-module communications occur strictly via Go in-memory interfaces and strongly typed channels; out-of-process distributed RPCs for internal domain logic are prohibited.
+1. **Monolithic Process Execution Invariant (`ADR-001`):** All business logic, spatial query handling, state transitions, and background domain workers must execute within a unified Go 1.27.3 process monolith. Cross-module communications occur strictly via Go in-memory interfaces and strongly typed channels; out-of-process distributed RPCs for internal domain logic are prohibited.
 2. **Offline-First Deterministic Replay Invariant (`ADR-010`):** Any field action executed on mobile clients while disconnected (e.g., shift check-ins, return inspection photo captures, condition punch-lists) must commit locally to Isar NoSQL and replay deterministically upon reconnection without loss of chronological integrity or data corruption.
 3. **Integer Currency Invariant:** Floating-point representations for currency values are barred across all network payloads, database schemas, and application logic. Monetary amounts must be handled as 64-bit signed integers representing currency minor units ($100\text{ Cents} = 1\text{ ETB/KES/USD}$).
 4. **Zero-Trust Input Sanitization (OWASP ASVS §5.1):** All data ingress points (REST API payloads, uploaded documents, incoming webhook triggers, and telematics packets) must undergo strict validation, schema conformance verification via `kin-openapi`, and ClamAV in-flight anti-malware scanning prior to persistence or execution.
@@ -105,7 +105,7 @@ The system enforces strict Service Level Objectives (SLOs) under normal and peak
 | OPERATION CLASSIFICATION    | TARGET P95 (MS)   | TARGET P99 (MS)   | MEASUREMENT BOUNDARY         |
 +-----------------------------+-------------------+-------------------+------------------------------+
 | Geospatial Catalog Search   | <= 25 ms          | <= 50 ms          | Edge Gateway -> JSON Wire    |
-| Single Fleet Details Fetch  | <= 10 ms          | <= 20 ms          | Hot Cache Hit in Valkey 8.0  |
+| Single Fleet Details Fetch  | <= 10 ms          | <= 20 ms          | Hot Cache Hit in Valkey 9.1.3  |
 | State Machine Mutation      | <= 50 ms          | <= 100 ms         | Complete ACID DB Transaction |
 | Dynamic Pricing Surge Eval  | <= 20 ms          | <= 45 ms          | Valkey Spatial H3 Read       |
 | Document Upload & Ingestion | <= 800 ms         | <= 1,500 ms       | ClamAV + S3 SeaweedFS Commit |
@@ -117,22 +117,22 @@ The system enforces strict Service Level Objectives (SLOs) under normal and peak
 
 ### 2.2 Spatial Indexing Throughput & Concurrency Bounds
 
-* **PostGIS Indexing Standard:** Spatial bounding searches must utilize PostGIS 3.4 GiST indexes over geometry/geography types with spatial reference system identifier `SRID 4326` (WGS 84).
+* **PostGIS Indexing Standard:** Spatial bounding searches must utilize PostGIS 3.6.4 GiST indexes over geometry/geography types with spatial reference system identifier `SRID 4326` (WGS 84).
 * **Throughput Bound:** The spatial search engine must sustain **$1,200\text{ complex spatial queries per second}$** within a $50\text{ km}$ radius buffer without query response times exceeding $50\text{ ms}$.
 * **Lock Free Concurrency:** Spatial queries must never take exclusive locks on asset inventory tables; searches execute under `READ COMMITTED` isolation levels utilizing MVCC semantics.
 
-### 2.3 Edge Caching & Valkey 8.0 Eviction Topology
+### 2.3 Edge Caching & Valkey 9.1.3 Eviction Topology
 
 ```mermaid
 flowchart LR
     ClientRequest["Client Search Query<br/>GET /api/v1/fleets/search"] --> EdgeIngress["Traefik Ingress Gateway"]
     
-    EdgeIngress --> CheckValkey{"Valkey 8.0 Hot Cache<br/>Key: discovery:search:hash"}
+    EdgeIngress --> CheckValkey{"Valkey 9.1.3 Hot Cache<br/>Key: discovery:search:hash"}
     
     CheckValkey -->|"Cache Hit (< 5ms)"| ReturnCache["Return Fast JSON Payload"]
     CheckValkey -->|"Cache Miss"| GoMonolith["Go Monolith Engine"]
     
-    GoMonolith --> QueryDB["PostgreSQL 18.4 + PostGIS<br/>Read Replica Pool (GiST)"]
+    GoMonolith --> QueryDB["PostgreSQL 18.6 + PostGIS<br/>Read Replica Pool (GiST)"]
     QueryDB --> PopulateCache["HSET discovery:search:hash<br/>TTL: 60 Seconds"]
     PopulateCache --> ReturnWire["Return Assembled Response"]
     

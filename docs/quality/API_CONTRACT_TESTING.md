@@ -3,7 +3,7 @@
 **System:** Heavy Machinery & Logistics Rental Marketplace  
 **Specification:** Contract Testing, Wire Conformance & Drift Elimination Protocol  
 **Compliance Standard:** ISO/IEC/IEEE 29119 (Software Testing), OpenAPI 3.1.0, RFC 9457 (Problem Details), OWASP ASVS Level 3  
-**Target Subsystems:** Go 1.27.3 Backend (Provider), Flutter 3.44 Mobile (Consumer), Next.js 16 Admin (Consumer)
+**Target Subsystems:** Go 1.27.3 Backend (Provider), Flutter 3.47.8 Mobile (Consumer), Next.js 16 Admin (Consumer)
 
 ---
 
@@ -383,7 +383,7 @@ describe('Admin Fleet Client Contract Verification', () => {
 });
 ```
 
-### 6.2. Flutter 3.44 Mobile Consumer Test (Dart / Dio)
+### 6.2. Flutter 3.47.8 Mobile Consumer Test (Dart / Dio)
 The mobile app verifies that the Dio HTTP client interceptor properly deserializes an RFC 9457 error into a typed `ProblemDetails` model:
 
 ```dart
@@ -493,7 +493,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26.13.0
 
       - name: Install Linting Tooling
         run: npm install -g @stoplight/spectral-cli @stoplight/prism-cli
@@ -527,7 +527,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26.13.0
 
       - name: Install Code Generators
         run: |

@@ -104,7 +104,7 @@ sequenceDiagram
     participant PageRSC as BookingsRegisterPage (RSC)
     participant GridClient as DynamicTable ('use client')
     participant GoAPI as Go Booking Admin Interactor
-    participant DB as PostgreSQL 18.4 (idx_bookings_created_at_id)
+    participant DB as PostgreSQL 18.6 (idx_bookings_created_at_id)
 
     Ops->>PageRSC: GET /bookings?status=HOLD_PENDING&cursor=eyJjcmVhdGVkQXQiOi...
     par Parallel RSC Requests

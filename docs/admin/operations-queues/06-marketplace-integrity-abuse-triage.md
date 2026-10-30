@@ -117,8 +117,8 @@ sequenceDiagram
     participant TriageUI as IntegrityTriageWorkbench ('use client')
     participant SA as executeIntegritySanctionAction ('use server')
     participant GoAPI as Go Marketplace Integrity Interactor
-    participant VK as Valkey 8.0 Session Store
-    participant DB as PostgreSQL 18.4 (pgx.Tx)
+    participant VK as Valkey 9.1.3 Session Store
+    participant DB as PostgreSQL 18.6 (pgx.Tx)
 
     Officer->>TriageUI: Reviews SHA-256 Bank Slip Collision (#FLG-7012) & Selects "PERMANENT_ACCOUNT_SUSPENSION"
     TriageUI->>SA: executeIntegritySanctionAction(formData)

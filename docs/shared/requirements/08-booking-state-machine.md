@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Core Transactional State Machine Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§1.2, §5.2, §5.5, §5.6, §5.7, §5.8, §5.9, §6.3, §7.0, §7.1, §7.2, §7.3, §7.4, §8, §9, §10, §12, §13.2), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `FLOW-COMMISSION-DEBT-DINK-CORE-V7.0`, `FLOW-WIRE-DISPUTE-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
 **Target Personas:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Equipment Fleet Owner (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Certified Field Plant Operator (*Mulugeta Tadesse* / *Juma Omwamba*), Heavy Haulage Logistics Carrier (*Ato Girma Wolde* / *Samuel Odhiambo*), Dispute Arbitration & Legal Officer (*Yohannes Bekele*), Finance Controller & Ledger Auditor (*Solomon Kassa*), Super Administrator (*Rahel Tadesse*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Business Logic Integrity, Concurrency Race-Condition Defense & Non-Repudiation), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), Commercial Code of Ethiopia (Sales on Account, Bailment of Chattels & Contract Formation), National Bank of Ethiopia (NBE) Directives, Kenya Law of Contract Act (Cap 23), International Financial Reporting Standards (IFRS 15 Revenue from Contracts with Customers)  
@@ -33,7 +33,7 @@
   - 4.4 [Stage IV: Active Handover, Shift Execution & Telematics (State 11)](#44-stage-iv-active-handover-shift-execution--telematics-state-11)
   - 4.5 [Stage V: Return Reconciliation, Final Invoicing & Termination (States 12–16)](#45-stage-v-return-reconciliation-final-invoicing--termination-states-1216)
 - 5. [Concurrency Control, Atomic Locking & Distributed Race Defenses (`BSM-04`)](#5-concurrency-control-atomic-locking--distributed-race-defenses-bsm-04)
-  - 5.1 [Two-Tier Locking: Valkey 8.0 Distributed Mutex + PostgreSQL Row Locks](#51-two-tier-locking-valkey-80-distributed-mutex--postgresql-row-locks)
+  - 5.1 [Two-Tier Locking: Valkey 9.1.3 Distributed Mutex + PostgreSQL Row Locks](#51-two-tier-locking-valkey-80-distributed-mutex--postgresql-row-locks)
   - 5.2 [Deterministic Idempotency Key Encasement (`Idempotency-Key`)](#52-deterministic-idempotency-key-encasement-idempotency-key)
   - 5.3 [Timeout Sweeper Daemon & Distributed Dead-Man Switches](#53-timeout-sweeper-daemon--distributed-dead-man-switches)
 - 6. [Relational Database Schema & Immutable Audit Logging (`BSM-DB`)](#6-relational-database-schema--immutable-audit-logging-bsm-db)
@@ -494,10 +494,10 @@ flowchart TD
 
 ## 5. Concurrency Control, Atomic Locking & Distributed Race Defenses (`BSM-04`)
 
-### 5.1 Two-Tier Locking: Valkey 8.0 Distributed Mutex + PostgreSQL Row Locks
+### 5.1 Two-Tier Locking: Valkey 9.1.3 Distributed Mutex + PostgreSQL Row Locks
 
 To prevent race conditions where two contractors attempt to book the same excavator at 10:00:00.000:
-1. **Tier 1: Valkey 8.0 Distributed Spinlock:**
+1. **Tier 1: Valkey 9.1.3 Distributed Spinlock:**
    The Go domain handler acquires an atomic Redlock:
    ```text
    SET lock:booking:transition:{booking_id} "MUTATING" NX PX 5000

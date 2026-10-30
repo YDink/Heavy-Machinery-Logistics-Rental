@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-CRP-05`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/06-05-corporate-reporting.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.44 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Corporate Finance Controller (*Solomon Kassa*), Regional Project Director (*Dawit Haile-Mariam*), Corporate Fleet Owner Executive (*W/ro Almaz Tesfaye*)  
 **Associated Requirements:** `REQ-06-05` (`REP-01`..`REP-04`, OLAP Read-Replica Segregation, Cost-Center/WBS Spend Disaggregation, Asset Utilization Rate $\mathcal{U}_{\text{asset}}$, RSA-4096 Signed PDF/A-3 & XLSX ERP Exports)  
 **Associated Interaction Flows:** `FLOW-14` (Executive Cost-Center Audit & ERP Export Pipeline)  
@@ -109,10 +109,10 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Exec as Finance Controller (Flutter 3.44)
+    actor Exec as Finance Controller (Flutter 3.47.8)
     participant RepBloc as CorporateReportingBloc
     participant API as Go Monolith (/api/v1/corporate)
-    participant Replica as PostgreSQL 18.4 Read Replica (dink-ro-replica-01)
+    participant Replica as PostgreSQL 18.6 Read Replica (dink-ro-replica-01)
     participant Worker as Async Report Worker + SeaweedFS S3
 
     Exec->>RepBloc: Open Reports Screen (Period: 2026-10)

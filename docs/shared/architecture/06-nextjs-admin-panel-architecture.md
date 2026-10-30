@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `ARCH-INTRO-DINK-CORE-V7.0`, `ARCH-PRIN-DINK-CORE-V7.0`, `ARCH-OVERVIEW-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `FLOW-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-014`  
-**Target Runtimes:** Next.js 16 (App Router), React 19, TypeScript 5.8+, Node.js 22 LTS / Edge Runtime, `@tanstack/react-table` v8, Tailwind CSS v4, Go 1.27.3 Backend Monolith  
+**Target Runtimes:** Next.js 16.x (latest CVE security patch, App Router), React 19, TypeScript 5.8+, Node.js 26.13.0 / Edge Runtime, `@tanstack/react-table` v8, Tailwind CSS v4, Go 1.27.3 Backend Monolith  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Web Applications), RFC 9457 (Problem Details), W3C WCAG 2.2 Level AA, ISO 4217, ISO 3166-1 alpha-2  
 **Status:** Approved Engineering Baseline

@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-PRIN-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `ARCH-INTRO-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-014`  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.44 Cross-Platform Mobile Client, Next.js 16 Admin Web Console, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0-alpine, SeaweedFS S3, ClamAV Daemon  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), W3C WCAG 2.2 AA / AAA (Outdoor Mode), ISO/IEC/IEEE 42010, ISO 4217, ISO 3166-1 alpha-2  
 **Status:** Approved Engineering Baseline
@@ -45,7 +45,7 @@ flowchart TD
     Tenet3["3. Physical Frontier Resilience<br/>Offline Outbox, Glare, Vibration"]
     Tenet4["4. Statutory & Regulatory Sovereignty<br/>Non-Custodial Direct Transfers"]
 
-    CoreEngine["Dink Machinery Production Core Engine<br/>Go 1.27.3 + PostgreSQL 18.4 + Flutter 3.44"]
+    CoreEngine["Dink Machinery Production Core Engine<br/>Go 1.27.3 + PostgreSQL 18.6 + Flutter 3.47.8"]
 
     Tenet1 --> CoreEngine
     Tenet2 --> CoreEngine
@@ -372,10 +372,10 @@ The architectural decisions in Dink Machinery reflect deliberate trade-offs eval
 |---|---|---|---|
 | **System Packaging** | **Modular Monolith (Go 1.27.3)** | Microservices Architecture | **Pros:** Zero network hops between modules, atomic transactions (`pgx.Tx`), simple single-binary deployment.<br>**Cons:** Shared runtime resources.<br>**Mitigation:** Strict internal package barriers and CI linter checks. |
 | **Financial Settlement** | **Manual Direct Transfer Model (`MANUAL_TRANSFER`)** | Platform-Held Escrow Model | **Pros:** Complies with National Bank of Ethiopia rules, platform takes zero customer fund custody, low barrier for large B2B wires.<br>**Cons:** Requires manual payment receipt review.<br>**Mitigation:** 60-min Valkey hold, OCR receipt analysis, and pre-funded owner wallet commission debits. |
-| **Database Engine** | **PostgreSQL 18.4 + PostGIS 3.4** | MongoDB / Elasticsearch + MySQL | **Pros:** PostGIS provides spheroidal geospatial queries, JSONB handles dynamic EAV specs, ACID protects ledger integrity.<br>**Cons:** Requires careful index tuning.<br>**Mitigation:** GiST spatial indexes and GIN path-ops indexes on JSONB fields. |
+| **Database Engine** | **PostgreSQL 18.6 + PostGIS 3.6.4** | MongoDB / Elasticsearch + MySQL | **Pros:** PostGIS provides spheroidal geospatial queries, JSONB handles dynamic EAV specs, ACID protects ledger integrity.<br>**Cons:** Requires careful index tuning.<br>**Mitigation:** GiST spatial indexes and GIN path-ops indexes on JSONB fields. |
 | **Concurrency Control** | **Optimistic Concurrency Control (OCC)** | Distributed Locking / Pessimistic Locking | **Pros:** Prevents database connection pool exhaustion and deadlocks under high search loads.<br>**Cons:** Concurrent updates fail and require client retries.<br>**Mitigation:** Clients receive clear RFC 9457 error details with automated retry strategies. |
 | **Blob Persistence** | **SeaweedFS S3 Storage** | AWS S3 / Cloudian | **Pros:** Self-hosted S3-compatible storage with low latency for small and medium images, zero vendor lock-in.<br>**Cons:** Self-managed operational overhead.<br>**Mitigation:** Deployed with automated volume replication and daily offsite backups. |
-| **Mobile Architecture** | **Flutter 3.44 + BLoC + Isar** | React Native / Kotlin + Swift Native | **Pros:** Single codebase for Android and iOS, high-performance rendering (60fps), built-in offline NoSQL storage.<br>**Cons:** Larger initial app bundle.<br>**Mitigation:** OTA dynamic font loading (`ADR-013`) and ProGuard tree-shaking. |
+| **Mobile Architecture** | **Flutter 3.47.8 + BLoC + Isar** | React Native / Kotlin + Swift Native | **Pros:** Single codebase for Android and iOS, high-performance rendering (60fps), built-in offline NoSQL storage.<br>**Cons:** Larger initial app bundle.<br>**Mitigation:** OTA dynamic font loading (`ADR-013`) and ProGuard tree-shaking. |
 
 ---
 

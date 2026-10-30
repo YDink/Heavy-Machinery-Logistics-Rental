@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Architecture Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§5.10, §8, §10, §12), `FLOW-NOTIF-OFFLINE-DINK-CORE-V7.0` (Appendix A), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
 **Target Personas:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Equipment Fleet Owner (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Certified Field Operator (*Mulugeta Tadesse* / *Juma Omwamba*), Compliance Officer & Arbitrator (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Secure Notifications, Session Scopes & Data Leakage Defense), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), Ethiopian Communications Authority (ECA) Directives, Kenya Data Protection Act 2019  
@@ -75,7 +75,7 @@ This document formally specifies:
 1. **Zero Hardcoded Notification Payloads:** All notification content, headers, deep links, and localized translations are retrieved dynamically from PostgreSQL (`notification_templates`). The Go backend engine compiles payloads via token interpolation without requiring code redeployments.
 2. **Immutable Delivery of P0 Financial & Safety Alerts:** Critical transaction events—including OTP challenges, bank wire payment declines, dispute openings, emergency breakdown freezes, and security freezes—bypass user quiet hours and toggle switches. Delivery is mandatory across both In-App and Telephony (SMS/Push) channels.
 3. **Deterministic Deep-Link Routing (`DeepLinkURI`):** Every notification record incorporates an immutable, standardized internal URI (e.g., `dink://bookings/bk_019a8f60/verify-payment`). Tapping the notification on mobile or web routes directly to the corresponding action viewport.
-4. **Idempotent Dispatch & Deduplication (`EventKey` + `RecipientID`):** Notifications evaluate a cryptographic deduplication key in Valkey 8.0:
+4. **Idempotent Dispatch & Deduplication (`EventKey` + `RecipientID`):** Notifications evaluate a cryptographic deduplication key in Valkey 9.1.3:
    $$\text{dedup\_key} = \text{SHA-256}(\text{event\_key} \parallel \text{booking\_id} \parallel \text{recipient\_id} \parallel \text{status})$$
    Keys maintain a 5-minute TTL to prevent duplicate push alerts from network retries.
 5. **Frontier Offline Resiliency (`ADR-010`):** In-app notification center state is persisted locally in Isar NoSQL on client devices, allowing contractors and operators to inspect notifications and triage historical alerts when working off-grid.
@@ -125,7 +125,7 @@ flowchart TD
 
 ### 2.2 Relational Schema: Dynamic Rule Engine & Template Matrix
 
-The notification subsystem is configured dynamically in PostgreSQL 18.4:
+The notification subsystem is configured dynamically in PostgreSQL 18.6:
 
 ```mermaid
 erDiagram

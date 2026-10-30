@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Engineering Roadmap Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§13), `ARCH-INTRO-DINK-CORE-V7.0`, `ARCH-PRIN-DINK-CORE-V7.0`, `ARCH-ROADMAP-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-006`, `ADR-007`, `ADR-008`, `ADR-010`, `ADR-012`, `ADR-013`  
-**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.44 Mobile Client, Next.js 16 Admin Console, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0, SeaweedFS S3, ClamAV  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 Mobile Client, Next.js 16.x Admin Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, SeaweedFS S3, ClamAV  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), National Bank of Ethiopia (NBE) Directives  
 **Status:** Approved Engineering Baseline
@@ -49,7 +49,7 @@ The Dink Machinery implementation executes across three structured delivery phas
 
 | Sprint Cluster | Focus Area | Deliverables & Milestones | Duration | Target Partitions |
 |---|---|---|---|---|
-| **Sprints 1–2** | Platform Scaffold & Environments | Base Go modular monolith scaffold, CI/CD pipelines, Docker Compose, Traefik gateway, PostgreSQL 18.4 + PostGIS setup, baseline database migrations. | 1.0 Month | `00-governance`, `12-tech-stack` |
+| **Sprints 1–2** | Platform Scaffold & Environments | Base Go modular monolith scaffold, CI/CD pipelines, Docker Compose, Traefik gateway, PostgreSQL 18.6 + PostGIS setup, baseline database migrations. | 1.0 Month | `00-governance`, `12-tech-stack` |
 | **Sprints 3–5** | Identity, Auth & KYC Engine | Phone OTP challenges, ES256 JWT lifecycle, Valkey sessions, Fayda identity adapter, owner KYC queues, Argon2id password derivation. | 1.5 Months | `05-01`, `05-19` |
 | **Sprints 6–9** | Fleet Registry & Dynamic Specs | Category taxonomies, dynamic EAV spec engine, photo upload pipeline with ClamAV stream scanning, availability calendar. | 2.0 Months | `05-02`, `05-03` |
 | **Sprints 10–13**| Discovery & Spatial Search | PostGIS radius search, dynamic category filter facets, sorting queries, compare tables, wishlist, keyset pagination. | 2.0 Months | `05-04` |

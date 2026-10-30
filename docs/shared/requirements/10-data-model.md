@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Master Data Architecture Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§1.2, §5.2, §5.5, §5.6, §5.7, §5.8, §5.9, §6.0, §6.1, §6.3, §6.4, §6.5, §7.0, §7.1, §7.2, §7.3, §7.4, §7.5, §7.6, §7.7, §7.8, §7.9, §8, §9, §10, §11, §12, §13.2), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `FLOW-COMMISSION-DEBT-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, PostgreSQL 18.4 + PostGIS 3.4 / TimescaleDB 2.16+, ClickHouse 24.8 (OLAP), Valkey 8.0, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, PostgreSQL 18.6 + PostGIS 3.6.4 / TimescaleDB 2.16+, ClickHouse 24.8 (OLAP), Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
 **Target Personas:** Lead Database Architect & SRE, Chief Financial Officer & Auditor (*Solomon Kassa*), Compliance Officer & Data Protection Officer (*Yohannes Bekele*), Super Administrator (*Rahel Tadesse*), Civil Engineering Project Manager (*Dawit Haile-Mariam* / *Patrick Kariuki*), Equipment Fleet Owner (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Data Integrity, Transactional Isolation, Cryptographic Storage & Multi-Tenant Separation), ISO/IEC 27001:2022 (A.8.24 Use of Cryptography & A.8.28 Secure Coding), RFC 9457 (Problem Details), ISO 4217 (Currency Codes), ISO 8601 (Universal Date/Time), National Bank of Ethiopia (NBE) Financial Cloud Directives, Kenya Data Protection Act 2019, International Financial Reporting Standards (IFRS 15 & IAS 16/36)  
@@ -56,7 +56,7 @@ This specification establishes **Section 10 (Relational Database Schema, Unified
 Dink Machinery V7.0 consolidates heavy equipment plant hire, commercial logistics freight transport, certified operator labor management, non-custodial financial settlements, AI-driven surge tariffs, and IoT telematics across Ethiopia and Kenya. Operating at enterprise scale requires a hardened, unified relational and temporal data foundation that:
 * Eliminates schema fragmentation between the MVP (52 core tables) and Phase 2/3 enterprise expansion modules, establishing an exhaustive, unified data model.
 * Enforces mathematical double-entry accounting integrity down to the exact minor currency unit ($100\text{ Cents} = 1\text{ ETB/KES/USD}$), eliminating floating-point rounding divergence.
-* Bridges high-throughput transactional OLTP workflows (PostgreSQL 18.4) with high-frequency time-series telematics ingestion (TimescaleDB) and spatial indexing (PostGIS 3.4).
+* Bridges high-throughput transactional OLTP workflows (PostgreSQL 18.6) with high-frequency time-series telematics ingestion (TimescaleDB) and spatial indexing (PostGIS 3.6.4).
 * Guarantees strict multi-tenant Row-Level Security (RLS) and cryptographic immutability across audit ledgers, preventing unauthorized cross-organization visibility.
 
 ### 1.2 Core Data Model Invariants & Relational Constraints
@@ -179,7 +179,7 @@ flowchart TD
 To combine the global uniqueness of UUIDs with the sequential index locality of auto-incrementing integers, Dink Machinery standardizes on **UUIDv7** (RFC 9562):
 
 ```sql
--- PostgreSQL 18.4 Native UUIDv7 Generator Function
+-- PostgreSQL 18.6 Native UUIDv7 Generator Function
 CREATE OR REPLACE FUNCTION uuid_generate_v7()
 RETURNS uuid AS $$
 DECLARE
@@ -980,7 +980,7 @@ CREATE INDEX idx_highway_edges_spatial ON highway_network_edges USING gist (geom
 ### 6.2 Valkey Distributed Locks & Atomic Checkouts
 
 Before executing ACID transactions on the PostgreSQL master:
-* The Go monolith acquires a distributed Redlock mutex in Valkey 8.0:
+* The Go monolith acquires a distributed Redlock mutex in Valkey 9.1.3:
   ```text
   SET lock:fleet:checkout:{fleet_id} {uuid} NX PX 5000
   ```
@@ -992,9 +992,9 @@ Before executing ACID transactions on the PostgreSQL master:
 
 ```mermaid
 flowchart LR
-    GoBackend["Go 1.24 Backend Monolith"] --> PgBouncer["PgBouncer Connection Pooler<br/>Transaction Mode (Max: 500 Clients)"]
+    GoBackend["Go 1.27.3 Backend Monolith"] --> PgBouncer["PgBouncer Connection Pooler<br/>Transaction Mode (Max: 500 Clients)"]
 
-    PgBouncer --> MasterNode["PostgreSQL 18.4 Primary Write Master<br/>(Writes: INSERT, UPDATE, DELETE, FOR UPDATE)"]
+    PgBouncer --> MasterNode["PostgreSQL 18.6 Primary Write Master<br/>(Writes: INSERT, UPDATE, DELETE, FOR UPDATE)"]
 
     MasterNode -->|"Synchronous Physical Streaming WAL"| ReplicaSync["PostgreSQL Read Replica 01 (Sync)<br/>(RPO = 0 Seconds)"]
     MasterNode -->|"Asynchronous Streaming WAL"| ReplicaAsync["PostgreSQL Read Replica 02 (Async OLAP)<br/>(Reporting & Catalog Queries)"]
@@ -1026,7 +1026,7 @@ flowchart TD
     Gate5 -->|Fail| Abort["Reject PR: Hypertable Partitioning Flaw"]
 ```
 
-1. **Migration Determinism Gate (`golang-migrate`):** Executes all sequential migrations up, reverses them completely down, and re-executes them up on an ephemeral PostgreSQL 18.4 instance, asserting zero schema drift.
+1. **Migration Determinism Gate (`golang-migrate`):** Executes all sequential migrations up, reverses them completely down, and re-executes them up on an ephemeral PostgreSQL 18.6 instance, asserting zero schema drift.
 2. **Zero-Lock DDL Safety Gate:** Verifies that all indexes are added with `CONCURRENTLY` and that `ALTER TABLE` operations carry zero exclusive table locks on production tables.
 3. **Double-Entry Financial Parity Gate:** Executes 1,000 synthetic transaction cycles across `payment_ledger_entries` and `commission_debt_ledger`, asserting that $\sum \text{Debits} - \sum \text{Credits} \equiv 0\text{ Minor Units}$.
 4. **Spatial GiST Performance Benchmark:** Executes 10,000 spatial KNN nearest-neighbor queries against a database pre-seeded with 50,000 machine coordinates, asserting that p95 query latency remains $< 15\text{ ms}$.

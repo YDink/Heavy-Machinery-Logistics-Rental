@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Operational Configuration Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§1.2, §5.2, §5.5, §5.6, §5.7, §5.8, §5.9, §6.1, §6.3, §7.0, §7.1, §7.2, §7.3, §7.4, §7.5, §7.6, §7.7, §7.8, §7.9, §8, §9, §10, §11, §12, §13.2), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `FLOW-COMMISSION-DEBT-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Runtimes:** Go 1.24 Backend Monolith, PostgreSQL 18.4 + PostGIS 3.4, Valkey 8.0 (Distributed Memory Cache), ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.44 / Dart 3.9 (Cross-Platform Mobile), Next.js 16 / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3 (Distributed Memory Cache), ClamAV Daemon (:3310), SeaweedFS S3, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), Isar NoSQL 3.1+  
 **Target Personas:** Super Administrator (*Rahel Tadesse*), Legal Counsel & Sovereign Regulatory Auditor (*Yohannes Bekele*), Corporate Treasury Director (*Solomon Kassa*), Regional Fleet Operations Manager (*Kassahun Mekonnen*), Site Reliability Engineer (SRE), Lead Database Architect  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Configuration Integrity, Secrets Protection & Audit Non-Repudiation), RFC 9457 (Problem Details), ISO 4217 (Currency Codes), ISO 3166-1 alpha-2 (Country Codes), ISO 8601 (Universal Time Representation), National Bank of Ethiopia (NBE) Financial Cloud Directives, Central Bank of Kenya (CBK) Prudential Guidelines, Kenya Data Protection Act 2019  
@@ -66,8 +66,8 @@ Dink Machinery operates across jurisdictions that exhibit profound disparities i
 ### 1.2 Core Configuration Invariants & Governance Principles
 
 1. **Zero-Code-Deployment Policy Invariant:** No operational policy parameter (tax percentage, statutory overtime multiplier, cancellation fee schedule, hold lease timeout, or payment gateway routing priority) shall require a software recompilation or container restart to update. All parameters must resolve dynamically from the database and distributed cache.
-2. **Deterministic Fallback Floor (Hardcoded In-Memory Safe Defaults):** If both Valkey 8.0 and PostgreSQL 18.4 become unreachable or corrupted, the configuration resolution layer must fall back immediately to immutable, hardcoded in-memory safe defaults, guaranteeing that the application cannot crash due to missing configuration keys.
-3. **Sub-1ms Read Resolution SLO (p99):** Because configuration parameters are queried during every API execution (auth validation, search filtering, pricing calculation, state machine transitions), parameter resolution must resolve in $< 1.0\text{ ms}$ (p99) via local thread-safe in-memory caching synchronized with Valkey 8.0.
+2. **Deterministic Fallback Floor (Hardcoded In-Memory Safe Defaults):** If both Valkey 9.1.3 and PostgreSQL 18.6 become unreachable or corrupted, the configuration resolution layer must fall back immediately to immutable, hardcoded in-memory safe defaults, guaranteeing that the application cannot crash due to missing configuration keys.
+3. **Sub-1ms Read Resolution SLO (p99):** Because configuration parameters are queried during every API execution (auth validation, search filtering, pricing calculation, state machine transitions), parameter resolution must resolve in $< 1.0\text{ ms}$ (p99) via local thread-safe in-memory caching synchronized with Valkey 9.1.3.
 4. **Mandatory Four-Eyes Authorization Floor:** Any mutation affecting financial balances, platform commission fees, sovereign tax carve-outs, or legal safety buffers requires a formal two-party drafting and approval sequence (*Four-Eyes Principle*) before taking effect in production.
 5. **Immutable Historical Auditability:** Every configuration change, whether enacted automatically by progressive rollout algorithms or manually by administrators, must generate an un-updatable, un-deletable audit record in `config_audit_ledgers` capturing actor identity, cryptographic hashes, previous values, new values, and legal justifications.
 
@@ -82,13 +82,13 @@ flowchart TD
     Req["Incoming Transaction Context<br/>(Actor, Country: ET/KE, OrgID, FleetID)"] --> L1["1. Local In-Memory Cache Lookup<br/>(sync.Map / Thread-Safe Read < 0.05ms)"]
 
     L1 -->|"Cache Hit"| ValidateTTL{"Is Memory Stale?<br/>(Pub/Sub Invalidation Check)"}
-    L1 -->|"Cache Miss"| L2["2. Valkey 8.0 Hot Cache Lookup<br/>HGET config:runtime:{country_code} {key}"]
+    L1 -->|"Cache Miss"| L2["2. Valkey 9.1.3 Hot Cache Lookup<br/>HGET config:runtime:{country_code} {key}"]
 
     ValidateTTL -->|"Fresh"| ReturnParam["Return Evaluated Parameter Value"]
     ValidateTTL -->|"Stale Flag Set"| L2
 
     L2 -->|"Valkey Hit (< 1.5ms)"| PopulateLocal["Populate Local Memory Cache"]
-    L2 -->|"Valkey Miss"| L3["3. PostgreSQL 18.4 Relational Store<br/>Evaluate Waterfall Query (Hierarchical Resolution)"]
+    L2 -->|"Valkey Miss"| L3["3. PostgreSQL 18.6 Relational Store<br/>Evaluate Waterfall Query (Hierarchical Resolution)"]
 
     PopulateLocal --> ReturnParam
 
@@ -101,7 +101,7 @@ flowchart TD
     subgraph MutationBroadcast["Dynamic Configuration Mutation Pipeline"]
         AdminMutate["Admin Updates Parameter via Next.js Console"] --> FourEyesCheck{"Passed Four-Eyes Approval?"}
         FourEyesCheck -->|"No"| BlockMutation["Reject: Pending Second Signature"]
-        FourEyesCheck -->|"Yes"| CommitPG["Commit to PostgreSQL 18.4<br/>Write to config_audit_ledgers"]
+        FourEyesCheck -->|"Yes"| CommitPG["Commit to PostgreSQL 18.6<br/>Write to config_audit_ledgers"]
         CommitPG --> PublishPubSub["PUBLISH config:invalidation:channel {country, key}"]
         PublishPubSub --> SyncDaemon["All Go Monolith Nodes Receive Invalidation<br/>Evict Local Memory & Refresh Valkey"]
     end

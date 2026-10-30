@@ -4,7 +4,7 @@
 **Document Identifier:** `SRS-DINK-CORE-V7.0-SEC-12`  
 **Classification:** Canonical System Requirements Specification & Infrastructure Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
-**Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§12), `ARCH-DEPLOY-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-DB-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-003`, `ADR-005`, `ADR-006`, `ADR-007`, `ADR-009`, `ADR-010`, `ADR-012`  
+**Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§12), `ARCH-DEPLOY-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-DB-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-003`, `ADR-005`, `ADR-006`, `ADR-007`, `ADR-009`, `ADR-010`, `ADR-012`, `ADR-016`, `ADR-017`  
 **Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.9 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Traefik 3.x  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), ISO 27001, Ethiopian Personal Data Protection Proclamation No. 1321/2024  
@@ -48,7 +48,7 @@
 |---|---|---|---|
 | **Backend Core** | Go (`net/http`, `go-chi/v5`) | `1.27.3` | Modular monolith with Clean Architecture. High concurrency, low memory footprint ($\le 256\text{MB}$ RSS baseline). Zero runtime reflection overhead. |
 | **API Gateway** | Traefik / Envoy | `3.x` | Lightweight edge routing, TLS 1.3 termination, rate-limiting, and Gzip/Brotli compression. |
-| **Mobile Client** | Flutter (Dart) | `3.44.x` (Dart `3.9.x`) | Feature-First Clean Architecture, BLoC state management (`flutter_bloc`), Isar 3.1 NoSQL offline transactional store. |
+| **Mobile Client** | Flutter (Dart) | `3.47.9` (Dart `3.9.x`) | Feature-First Clean Architecture, BLoC state management (`flutter_bloc`), Isar 3.1 NoSQL offline transactional store. Managed via FVM. |
 | **Admin Web Console** | Next.js (React 19 App Router) | `16.x` (latest CVE patch) | React Server Components by default, Tailwind CSS v4, dynamic data grids via `@tanstack/react-table`, dynamic UI schema engine. |
 | **Relational Database** | PostgreSQL + PostGIS | `18.6` + PostGIS `3.6.4` | Spatial WGS 84 (`SRID 4326`) distance queries via GiST indexing, `TIMESTAMPTZ` UTC storage, double-entry ledgers. |
 | **Database Driver** | `jackc/pgx/v5` | `v5.7.1` | Native binary protocol encoding with connection pooling (`pgxpool`). Heavy ORMs strictly prohibited. |
@@ -77,3 +77,25 @@
 - All network ingress terminates TLS 1.3 at the Traefik edge.
 - Symmetric AES-256-GCM column encryption is applied to citizen identity numbers (National ID, TIN, phone numbers) before persistence.
 - JWT access tokens are signed using asymmetric ECDSA P-256 (`ES256`) with a 15-minute expiration, paired with 30-day Valkey-tracked refresh token rotation families.
+
+---
+
+## 4. Multi-Environment Deployment & Flavor Specifications (`ADR-017`)
+
+The platform implements three strictly isolated tiers:
+
+| Subsystem | Development (`dev`) | Staging (`staging`) | Production (`prod`) |
+|---|---|---|---|
+| **Go Backend** | `http://localhost:8080/api/v1` (Mock OTP, Debug logs) | `https://staging-api.dinkmachinery.com/api/v1` (Sandbox SMS/payments) | `https://api.dinkmachinery.com/api/v1` (Live telco/bank rails, Zero-PII) |
+| **Admin Console** | `http://localhost:3000` (`.env.development`) | `https://staging-admin.dinkmachinery.com` (`.env.staging`) | `https://admin.dinkmachinery.com` (Strict CSP, MFA) |
+| **Mobile Client** | `com.dinkmachinery.dink_mobile.dev` (`main_dev.dart`) | `com.dinkmachinery.dink_mobile.staging` (`main_staging.dart`) | `com.dinkmachinery.dink_mobile` (`main_prod.dart`) |
+| **Mobile Storage** | `isar_dev` | `isar_staging` | `isar_prod` |
+
+---
+
+## 5. Modular OpenAPI Contract Architecture & Toolchain (`ADR-016`)
+
+- **Granular Endpoint Files:** Contracts reside in `contracts/endpoints/<domain>/<action>.yaml` referencing shared schemas in `contracts/components/`.
+- **Redocly Compilation:** `@redocly/cli bundle` compiles the modular specifications into `contracts/openapi.bundled.yaml` in $< 25\text{ms}$.
+- **Code Generation:** `oapi-codegen` compiles Go router and types; `openapi-typescript` generates Next.js TypeScript definitions.
+- **Pre-Commit Verification:** Stoplight Spectral lints `contracts/openapi.bundled.yaml` against `.spectral.yaml`.

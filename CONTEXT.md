@@ -34,30 +34,31 @@
 - **Lockfile Determinism:** All 3 subsystems committed with reproducible lockfiles (`backend/go.sum`, `mobile/pubspec.lock`, `admin/pnpm-lock.yaml`).
 
 ### In Progress
-- Opening initial Phase 2 partition feature branch: `feature/05-01-core-identity-auth`.
+- Refactoring `contracts/` into modular per-endpoint specifications with Redocly bundling (`ADR-016`).
+- Multi-environment setup (Development, Staging, Production) across Backend, Admin, and Mobile (`ADR-017`).
 
 ---
 
 ## 2. Next Immediate Tasks (In Order)
 
-1. Create feature branch: `feature/05-01-core-identity-auth`.
-2. Load partition requirements (`docs/shared/requirements/05-01-registration-authentication.md`), interaction flow (`docs/shared/flows/02-renter-registration-authentication.md`), and decisions (`docs/decisions/partitions/05-01.md`).
-3. Implement Domain layer: `internal/modules/auth/domain/` (User, VerificationSession, Role, CountryCode).
-4. Implement Application layer: OTP request & verification use cases with time provider injection.
-5. Implement Infrastructure layer: Database repository using `sqlc`, SMS gateway adapter, JWT token generator.
-6. Implement Transport layer: Register generated Chi router handlers connecting to application handlers.
-7. Implement mobile auth presentation BLoC & screens in `mobile/lib/features/auth/`.
-8. Implement admin identity inspection table in `admin/src/app/users/`.
-9. Verify all quality gates (G0–G3) prior to rebase-merge into `main`.
+1. Decompose `contracts/openapi.yaml` into per-endpoint modular files (`contracts/endpoints/` and `contracts/components/`).
+2. Configure Redocly bundler pipeline producing `contracts/openapi.bundled.yaml`.
+3. Update code generation commands in `backend/` (`oapi-codegen`) and `admin/` (`openapi-typescript`).
+4. Re-run Spectral linting against the bundled contract.
+5. Setup multi-environment configuration files and mobile flavors (`dev`, `staging`, `prod`).
+6. Verify all test suites and compilation across Go, Flutter, and Next.js.
+7. Commit and push documentation and contract architecture updates.
 
 ---
 
 ## 3. Active Decisions & Open Blockers
 
 ### Decisions Formulated
-- `ADR-001` through `ADR-015` recorded and verified in `docs/decisions/`.
+- `ADR-001` through `ADR-017` recorded and verified in `docs/decisions/`.
+  - `ADR-016`: Modular OpenAPI Contract Architecture & Per-Endpoint Specification with Redocly Bundling.
+  - `ADR-017`: Multi-Environment Architecture & Flavor Strategy (Dev, Staging, Prod across Backend, Admin, Mobile).
 - `D-05-01-001` through `D-11-01-002` (80 decisions across 40 partitions) recorded and verified in `docs/decisions/partitions/`.
-- Canonical Toolchain Resolution: Pinned Go `1.27.3`, Flutter `3.47.9` (via FVM), Node.js `26.13.0`, `pnpm 11.x`, Next.js `16.x` (latest CVE patch), PostgreSQL `18.6` + PostGIS `3.6.4`, and Valkey `9.1.3`.
+- Canonical Toolchain Resolution: Pinned Go `1.27.3`, Flutter `3.47.9` (via FVM), Node.js `26.13.0`, `pnpm 12.16.1`, Next.js `16.x` (latest CVE patch: `16.4.3`), PostgreSQL `18.6` + PostGIS `3.6.4`, and Valkey `9.1.3`.
 
 ### Blockers
 - None. Phase 0 documentation, contracts, decisions, specifications, toolchains, FVM, and pnpm configurations are 100% complete and validated.
@@ -66,23 +67,15 @@
 
 ## 4. Files Touched in Current Session
 
-- `.fvmrc` (created)
-- `.fvm/fvm_config.json` (created)
-- `.tool-versions` (updated with pnpm)
-- `.gitignore` (updated for FVM)
-- `AGENTS.md` (updated for FVM and pnpm)
-- `lefthook.yml` (updated to pnpm dlx)
-- `docs/TECH_STACK.md` (updated SSOT)
-- `docs/BOOTSTRAP.md`
-- `docs/quality/BOOTSTRAP_CHECKLIST.md`
-- `docs/quality/QUALITY_GATES.md`
-- `docs/quality/API_CONTRACT_TESTING.md`
-- `docs/quality/DEFINITION_OF_DONE.md`
-- `docs/quality/SECURITY_QA.md`
-- `docs/quality/TEST_REPORT_TEMPLATE.md`
-- `docs/CODE_STANDARDS.md`
-- `docs/AI_TASKS/**`
-- `docs/components/**`
-- `.github/workflows/**`
-- `TESTING.md`
-- `CONTEXT.md`
+- `docs/decisions/ADR-016-modular-openapi-contract-architecture.md` (created)
+- `docs/decisions/ADR-017-multi-environment-topology.md` (created)
+- `docs/decisions/INDEX.md` (updated with ADR-016 & ADR-017)
+- `docs/source/Architecture_Design_Document.md` (updated §10.4, §10.5, ADR-015, ADR-016, ADR-017)
+- `docs/source/Heavy_Machinery_Rental_SRS_v2.md` (updated §12.1, §12.2)
+- `docs/shared/architecture/08-communication-patterns-api-design.md` (updated §13)
+- `docs/shared/architecture/10-deployment-architecture.md` (updated §2.3)
+- `docs/shared/architecture/12-architecture-decision-records.md` (updated §3.15, §3.16, §3.17)
+- `docs/shared/requirements/12-tech-stack.md` (updated §4, §5, fixed Flutter 3.47.9)
+- `docs/API_CONVENTIONS.md` (updated §11)
+- `docs/TECH_STACK.md` (updated §8, §9)
+- `CONTEXT.md` (updated session state)

@@ -1511,6 +1511,22 @@ The platform enforces a strict automated quality assurance pipeline in the CI/CD
 | **Telemetry & Observability** | OpenTelemetry, Zap, Loki, Vector | Structured JSON logging with Zap PII-masking core, distributed tracing, and RED metrics. |
 | **Secrets Management** | OpenBao | Open-source Vault fork managing column-encryption master keys and JWT signing credentials. |
 
+### 12.1 Target Deployment Environments & Promotion Strategy
+The system operates across three strictly isolated environments:
+
+| Dimension | Development (`dev`) | Staging (`staging`) | Production (`prod`) |
+|---|---|---|---|
+| **Backend Monolith** | `http://localhost:8080/api/v1` (Docker Compose, Mock OTP, Debug logs) | `https://staging-api.dinkmachinery.com/api/v1` (Staging host, Sandbox SMS/payments) | `https://api.dinkmachinery.com/api/v1` (Tier III DC, Live telco rails, Zero-PII logs) |
+| **Admin Web Console** | `http://localhost:3000` (`.env.development`, React DevTools, Auth mock) | `https://staging-admin.dinkmachinery.com` (`.env.staging`, E2E test harness) | `https://admin.dinkmachinery.com` (Strict CSP, Mandatory MFA, Audit logs) |
+| **Mobile Client** | `com.dinkmachinery.dink_mobile.dev` (`lib/main_dev.dart`, `Dink (Dev)`) | `com.dinkmachinery.dink_mobile.staging` (`lib/main_staging.dart`, `Dink (Staging)`) | `com.dinkmachinery.dink_mobile` (`lib/main_prod.dart`, `Dink Machinery`) |
+| **Local Storage** | Embedded Isar `isar_dev` | Embedded Isar `isar_staging` | Embedded Isar `isar_prod` (Encrypted) |
+
+### 12.2 Modular OpenAPI Contract Architecture & Per-Endpoint Specifications
+To eliminate Git merge collisions and ensure deterministic cross-subsystem type safety:
+- **Contract Source Tree (`contracts/`):** Each endpoint is maintained in an isolated file under `contracts/endpoints/<domain>/<action>.yaml` referencing shared domain entities and RFC 9457 Problem Details in `contracts/components/`.
+- **Distribution Bundle:** High-speed bundling via `@redocly/cli bundle` generates `contracts/openapi.bundled.yaml` in $< 25\text{ms}$.
+- **Downstream Codegen:** `oapi-codegen` compiles Go HTTP transport routers and request/response types; `openapi-typescript` generates Next.js TypeScript definitions.
+
 ---
 
 ## 13. MVP Scope & Implementation Roadmap

@@ -432,6 +432,24 @@ flowchart TD
   * *Mitigation:* Pre-compiled regular expressions in Go and optimized Promtail pipeline stages.
 * **Traceability:** Invariant 7; `SEC-08-BE`, `LOG-04-OPS`; Proclamation No. 1321/2024.
 
+### 3.15 [ADR-015: Multi-Country Regulatory Parameterization — Dynamic Configuration Entity (`country_configs`)](#adr-015)
+* **Problem & Context:** Supporting Ethiopia and Kenya requires dynamic tax rates, holiday calendars, and currency formats without hardcoded `if/else` logic.
+* **Decision Outcome:** Parameterize all national rules via `country_configs` table queried via `/api/v1/admin/countries`.
+* **Consequences:** Adding a new market requires zero application code modifications.
+* **Traceability:** `LOC-01-BE`, `ADR-015`.
+
+### 3.16 [ADR-016: Modular OpenAPI Contract Architecture & Per-Endpoint Specification with Redocly Bundling](#adr-016)
+* **Problem & Context:** A monolithic 1,600+ line OpenAPI contract causes severe Git merge collisions across concurrent partition feature branches.
+* **Decision Outcome:** Decompose the contract into granular per-endpoint files (`contracts/endpoints/`) bundled deterministically via Redocly for Go and TypeScript code generation.
+* **Consequences:** Eliminates merge conflicts, provides atomic requirement traceability, and enables clean PR reviews.
+* **Traceability:** `SYS-02-BE`, `INF-02-OPS`, `CONTRACT-01-API`, `ADR-016`.
+
+### 3.17 [ADR-017: Multi-Environment Architecture & Flavor Strategy (Dev, Staging, Prod across Backend, Admin, Mobile)](#adr-017)
+* **Problem & Context:** Financial ledgers, real-money escrow, and legal data residency under Proclamation No. 1321/2024 prohibit mixing test and production traffic.
+* **Decision Outcome:** Implement strict 3-tier isolation (Dev, Staging, Prod) across Go backend, Next.js admin, and Flutter mobile flavors (`.dev`, `.staging`, prod).
+* **Consequences:** Eliminates accidental production ledger corruption, enables side-by-side mobile installations on single physical devices, and guarantees regulatory compliance.
+* **Traceability:** `INF-01-OPS`, `ENV-01-OPS`, `SEC-05-BE`, `ADR-017`.
+
 ---
 
 ## 4. ADR Revision Lifecycle & Deprecation Governance

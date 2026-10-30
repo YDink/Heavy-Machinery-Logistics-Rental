@@ -125,3 +125,26 @@ The administrative dashboard provides operations teams, dispute managers, and pl
    - Next.js: `admin/package.json` + `admin/pnpm-lock.yaml` (Next.js `16.x` latest CVE patch, Node.js `26.13.0`, `pnpm`)
 2. **Runtime Consistency:** Developer machines and CI runners align runtimes using FVM for Flutter (`.fvmrc`, `fvm use 3.47.9`), `pnpm` for Node packages, and root `.tool-versions` (Go `1.27.3`, Node.js `26.13.0`).
 3. **Major Version Governance:** Upgrading major versions of Go, Flutter, Next.js, PostgreSQL, or Valkey requires an approved **L1 ADR** evaluating breaking changes, database migration compatibility, and performance profiles.
+
+---
+
+## 8. Multi-Environment Topology & Mobile Flavor Strategy (`ADR-017`)
+
+The platform operates across three isolated environments:
+
+| Dimension | Development (`dev`) | Staging (`staging`) | Production (`prod`) |
+|---|---|---|---|
+| **Go Backend** | `http://localhost:8080/api/v1` (Docker Compose, Mock OTP, Debug logs) | `https://staging-api.dinkmachinery.com/api/v1` (Dedicated host, Sandbox SMS/payment rails) | `https://api.dinkmachinery.com/api/v1` (Tier III DC, Live telco/bank rails, Zero-PII) |
+| **Admin Console** | `http://localhost:3000` (`.env.development`) | `https://staging-admin.dinkmachinery.com` (`.env.staging`) | `https://admin.dinkmachinery.com` (Strict CSP, MFA) |
+| **Mobile Client** | `com.dinkmachinery.dink_mobile.dev` (`main_dev.dart`, `Dink (Dev)`) | `com.dinkmachinery.dink_mobile.staging` (`main_staging.dart`, `Dink (Staging)`) | `com.dinkmachinery.dink_mobile` (`main_prod.dart`, `Dink Machinery`) |
+| **Mobile Storage** | Embedded Isar `isar_dev` | Embedded Isar `isar_staging` | Embedded Isar `isar_prod` (Encrypted) |
+| **Mobile SSL Pinning**| Disabled (allows proxy inspection) | Disabled (allows QA proxy inspection) | Enforced (strict public key pinning) |
+
+---
+
+## 9. Modular OpenAPI Contract Architecture & Toolchain (`ADR-016`)
+
+- **Granular Endpoint Files:** Contracts reside in `contracts/endpoints/<domain>/<action>.yaml` referencing shared schemas in `contracts/components/`.
+- **Redocly Compilation:** `@redocly/cli bundle` compiles the modular specifications into `contracts/openapi.bundled.yaml` in $< 25\text{ms}$.
+- **Code Generation:** `oapi-codegen` compiles Go router and types; `openapi-typescript` generates Next.js TypeScript definitions.
+- **Pre-Commit Verification:** Stoplight Spectral lints `contracts/openapi.bundled.yaml` against `.spectral.yaml` in `lefthook.yml`.

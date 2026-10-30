@@ -369,3 +369,34 @@ GET /api/v1/geo/fleets/radius-search?latitude=9.0300&longitude=38.7400&radiusKm=
 | **Tax / Basis Points** | Integer Basis Points | `1500` | Integer minor units representing hundredths of a percent ($1500\text{ bps} = 15.00\%$). |
 | **Coordinates** | Object (Lat / Long) | `{"latitude": 9.03, "longitude": 38.74}` | WGS 84 (`EPSG:4326`). |
 | **Media Attachments** | Secure URI (HTTPS) | `"https://media.dinkmachinery.com/..."` | Pre-signed S3/SeaweedFS object URL passing ClamAV antivirus clearance. |
+
+---
+
+## 11. Modular Contract Architecture & Per-Endpoint Standards (`ADR-016`)
+
+To eliminate merge collisions and enforce partition boundaries, the OpenAPI contract is structured as a modular tree:
+
+### 11.1 Directory Hierarchy
+```text
+contracts/
+├── openapi.yaml                          # Root entrypoint: API metadata, servers, tags, security, and path $refs
+├── openapi.bundled.yaml                  # Deterministic distribution artifact (consumed by codegen & linters)
+├── components/                           # Shared cross-cutting components
+│   ├── parameters/                       # Reusable headers and query parameters (X-Country-Code, Idempotency-Key)
+│   ├── responses/                        # Standard RFC 9457 error responses (400, 401, 403, 404, 409, 429, 500)
+│   └── schemas/                          # Shared domain entities (MoneyAmount, ResponseMeta, PaginationMeta, Fleet)
+└── endpoints/                            # 1:1 Isolated per-endpoint specifications
+    ├── auth/                             # Identity, OTP, session lifecycle
+    ├── machinery/                        # Fleet catalog, categories, specifications
+    ├── geo/                              # PostGIS geospatial search
+    ├── bookings/                         # 20-state reservation lifecycle & inspections
+    ├── payments/                         # Double-entry ledger & payment initiation
+    ├── wallets/                          # Owner wallet & transactions
+    └── admin/                            # Dynamic UI config & country registries
+```
+
+### 11.2 Per-Endpoint Specification Invariants
+1. **Dedicated File per Path Item:** Each route is declared in `contracts/endpoints/<domain>/<action>.yaml`.
+2. **Local Schema Encapsulation:** Operation-specific request bodies and responses are defined directly in the endpoint specification.
+3. **Shared Primitive Reuse:** Financial values, metadata, and error responses MUST reference shared definitions (`$ref: '../../components/schemas/money-amount.yaml'`).
+4. **Compilation Rule:** The canonical distribution bundle (`contracts/openapi.bundled.yaml`) is generated via `@redocly/cli bundle` prior to running Go `oapi-codegen` and TypeScript `openapi-typescript`. Direct editing of `openapi.bundled.yaml` is prohibited.

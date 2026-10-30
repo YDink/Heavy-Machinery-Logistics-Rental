@@ -147,6 +147,68 @@ flowchart TD
     PGPrimary -->|Streaming WAL Replication| PGStandby
 ```
 
+### 2.3 Tier-Specific Multi-Environment Implementation Matrix (`ADR-017`)
+
+#### 1. Go 1.27.3 Backend Monolith
+- **Development (`dev`):**
+  - Host & Base URL: `http://localhost:8080/api/v1`
+  - Infrastructure: Local Docker Compose (`localhost:5432`, `localhost:6379`, `localhost:8333`, `localhost:3310`).
+  - Runtime Flags: `ENV=development`, `LOG_LEVEL=debug` (human-readable console output).
+  - External Integrations: Mock phone OTP challenge mode (fixed code `123456` or console output), synthetic Fayda identity responses, mock payment webhook simulator.
+  - CORS Policy: Permissive for `localhost:3000` and mobile simulator IP addresses.
+- **Staging (`stage`):**
+  - Host & Base URL: `https://staging-api.dinkmachinery.com/api/v1`
+  - Infrastructure: Dedicated staging PostgreSQL 18.6 with sanitized production mirror data, Valkey 9.1.3 Sentinel, and SeaweedFS volume server.
+  - Runtime Flags: `ENV=staging`, `LOG_LEVEL=info` (structured JSON).
+  - External Integrations: Telco sandbox SMS aggregators (Ethio Telecom / Safaricom test shortcodes), Fayda identity sandbox environment, Chapa / Telebirr test API rails.
+  - CORS Policy: Locked to `https://staging-admin.dinkmachinery.com` and staging mobile clients.
+- **Production (`prod`):**
+  - Host & Base URL: `https://api.dinkmachinery.com/api/v1`
+  - Infrastructure: Clustered active-active Go nodes behind Traefik 3.x, primary-replica streaming WAL PostgreSQL 18.6 on NVMe storage, distributed SeaweedFS S3 in Tier III Addis Ababa datacenter.
+  - Runtime Flags: `ENV=production`, `LOG_LEVEL=info` with Zap in-memory PII-masking core.
+  - External Integrations: Production SMS aggregators, live Fayda eKYC verification, live Telebirr / Commercial Bank of Ethiopia (CBE) / M-Pesa banking rails.
+  - CORS Policy: Strictly restricted to `https://admin.dinkmachinery.com`.
+
+#### 2. Next.js 16 Administrative Console
+- **Development (`dev`):**
+  - Ingress URL: `http://localhost:3000`
+  - Environment File: `admin/.env.development` (`NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1`, `NEXT_PUBLIC_ENVIRONMENT=development`).
+  - Features: React DevTools active, Turbopack HMR enabled, mock authentication bypass for rapid UI design.
+- **Staging (`stage`):**
+  - Ingress URL: `https://staging-admin.dinkmachinery.com`
+  - Environment File: `admin/.env.staging` (`NEXT_PUBLIC_API_URL=https://staging-api.dinkmachinery.com/api/v1`, `NEXT_PUBLIC_ENVIRONMENT=staging`).
+  - Features: Prominent amber "STAGING ENVIRONMENT" watermark banner, access to automated Playwright E2E testing credentials.
+- **Production (`prod`):**
+  - Ingress URL: `https://admin.dinkmachinery.com`
+  - Environment File: Injected via CI/CD secrets (`NEXT_PUBLIC_API_URL=https://api.dinkmachinery.com/api/v1`, `NEXT_PUBLIC_ENVIRONMENT=production`).
+  - Features: Zero debug indicators, strict Content Security Policy (CSP), mandatory Multi-Factor Authentication (MFA / WebAuthn hardware keys), full immutable audit logging on all Server Actions.
+
+#### 3. Flutter 3.47.9 Mobile Client
+- **Flavored Build Matrix & Application Identifiers:**
+  - **Development (`dev`):**
+    - Application ID: `com.dinkmachinery.dink_mobile.dev`
+    - Display Name: `Dink (Dev)`
+    - Entrypoint: `mobile/lib/main_dev.dart`
+    - Command: `fvm flutter run --flavor dev -t lib/main_dev.dart`
+    - Storage: Isolated embedded Isar instance (`isar_dev`).
+    - Security: SSL certificate pinning disabled (permits Charles/Proxyman traffic analysis).
+  - **Staging (`stage`):**
+    - Application ID: `com.dinkmachinery.dink_mobile.staging`
+    - Display Name: `Dink (Staging)`
+    - Entrypoint: `mobile/lib/main_staging.dart`
+    - Command: `fvm flutter run --flavor staging -t lib/main_staging.dart`
+    - Distribution: TestFlight (iOS) and Google Play Internal App Sharing / Firebase App Distribution.
+    - Storage: Isolated embedded Isar instance (`isar_staging`). Sentry staging DSN.
+  - **Production (`prod`):**
+    - Application ID: `com.dinkmachinery.dink_mobile`
+    - Display Name: `Dink Machinery`
+    - Entrypoint: `mobile/lib/main_prod.dart`
+    - Command: `fvm flutter build appbundle --flavor prod -t lib/main_prod.dart`
+    - Distribution: Apple App Store & Google Play Store release tracks.
+    - Security: Strict SSL certificate pinning, root/jailbreak detection enabled, encrypted Isar database.
+```
+```
+
 ---
 
 ## 3. Production Network Architecture & Edge Ingress

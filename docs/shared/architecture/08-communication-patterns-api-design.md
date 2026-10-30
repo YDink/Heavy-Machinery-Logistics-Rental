@@ -922,4 +922,34 @@ flowchart TD
 
 ---
 
+## 13. Modular OpenAPI Contract Architecture & Per-Endpoint Specification Standards (`ADR-016`)
+
+To eliminate Git merge collisions across concurrent partition feature branches and mirror SRS modular boundaries, contract specifications are decomposed into granular, self-contained files:
+
+```text
+contracts/
+├── openapi.yaml                          # Root entrypoint: API metadata, servers, tags, security, and path $refs
+├── openapi.bundled.yaml                  # Deterministic distribution artifact (consumed by codegen & linters)
+├── components/                           # Shared cross-cutting components
+│   ├── parameters/                       # Reusable headers and query parameters (X-Country-Code, Idempotency-Key)
+│   ├── responses/                        # Standard RFC 9457 error responses (400, 401, 403, 404, 409, 429, 500)
+│   └── schemas/                          # Shared domain entities (MoneyAmount, ResponseMeta, PaginationMeta, Fleet)
+└── endpoints/                            # 1:1 Isolated per-endpoint specifications
+    ├── auth/                             # Identity, OTP, session lifecycle
+    ├── machinery/                        # Fleet catalog, categories, specifications
+    ├── geo/                              # PostGIS geospatial search
+    ├── bookings/                         # 20-state reservation lifecycle & inspections
+    ├── payments/                         # Double-entry ledger & payment initiation
+    ├── wallets/                          # Owner wallet & transactions
+    └── admin/                            # Dynamic UI config & country registries
+```
+
+### Build & Codegen Automation Pipeline
+1. **Compilation Step:** `@redocly/cli bundle contracts/openapi.yaml -o contracts/openapi.bundled.yaml` resolves all multi-file references in $< 25\text{ms}$.
+2. **Backend Router & Types:** `oapi-codegen -package generated -generate types,chi-server contracts/openapi.bundled.yaml > backend/internal/transport/http/generated/api.gen.go`.
+3. **Admin TypeScript Types:** `pnpm --dir admin dlx openapi-typescript contracts/openapi.bundled.yaml -o src/types/api.generated.ts`.
+4. **Pre-Commit Verification:** Stoplight Spectral lints `contracts/openapi.bundled.yaml` against `.spectral.yaml` in pre-commit hooks (`lefthook.yml`).
+
+---
+
 *This document defines the canonical communication patterns and API design specifications for Dink Machinery Version 7.0. All downstream service controllers, client network layers, and integration adapters must strictly adhere to these standards.*

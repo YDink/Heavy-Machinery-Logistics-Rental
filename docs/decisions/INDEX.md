@@ -46,6 +46,8 @@ Before authoring an L1 System ADR, the decision must evaluate against the five c
 | [`ADR-013`](./ADR-013-server-driven-ota-localization.md) | Server-Driven OTA Translation Bundles & Dynamic Ethiopic Font Delivery Pipeline | Accepted | `05-14`, `05-16`, `05-20`, `05-23` | App bundle size optimization ($< 25\text{MB}$); dynamic Ge'ez typography injection. |
 | [`ADR-014`](./ADR-014-auth-registration-partition.md) | Dual-Token ES256 JWT Session Architecture & Valkey Refresh Token Family Rotation | Accepted | `04`, `05-01`, `06-01`, `09` | Asymmetric token verification; immediate family revocation on refresh token replay. |
 | [`ADR-015`](./ADR-015-multi-country-parameterization.md) | Dynamic Multi-Country Regulatory & Fiscal Parameterization via `country_configs` | Accepted | `05-09`, `05-20`, `05-23`, `11` | Zero country `if/else` branching; dynamic VAT/WHT basis points and holiday calendars. |
+| [`ADR-016`](./ADR-016-modular-openapi-contract-architecture.md) | Modular OpenAPI Contract Architecture & Per-Endpoint Specification with Redocly Bundling | Accepted | `09`, `12` | Elimination of Git merge collisions; 1:1 SRS mapping; deterministic compilation for Go and TypeScript. |
+| [`ADR-017`](./ADR-017-multi-environment-topology.md) | Multi-Environment Architecture & Flavor Strategy (Dev, Staging, Prod across Backend, Admin, Mobile) | Accepted | `09`, `10`, `12` | Strict isolation of ledgers and PII; parallel side-by-side mobile testing via build flavors; sovereign residency. |
 
 ---
 

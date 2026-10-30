@@ -48,6 +48,8 @@
   - 10.1 [Production Container Deployment Topology](#101-production-container-deployment-topology)
   - 10.2 [High Availability, Backups & Disaster Recovery (RPO/RTO)](#102-high-availability-backups--disaster-recovery-rport)
   - 10.3 [Observability, Structured Logging & RED Metrics](#103-observability-structured-logging--red-metrics)
+  - 10.4 [Multi-Environment Architecture & Promotion Matrix (Dev, Staging, Prod)](#104-multi-environment-architecture--promotion-matrix-dev-staging-prod)
+  - 10.5 [Modular OpenAPI Contract Pipeline & Distribution Architecture](#105-modular-openapi-contract-pipeline--distribution-architecture)
 - 11. [Architectural Decision Records (ADR Log)](#11-architectural-decision-records-adr-log)
 
 ---
@@ -642,6 +644,38 @@ The platform deploys as containerized workloads orchestrated via Docker Compose 
   * **Duration:** Request latency histograms tracking P50, P90, P95, and P99 percentiles.
 * **Distributed Tracing:** Trace contexts propagate across client and server boundaries using W3C `traceparent` headers.
 
+### 10.4 Multi-Environment Architecture & Promotion Matrix (Dev, Staging, Prod)
+The platform enforces strict isolation across three operational environments (`dev`, `staging`, `prod`) spanning all application tiers (`ADR-017`):
+
+| Dimension | Development (`dev`) | Staging (`staging`) | Production (`prod`) |
+|---|---|---|---|
+| **Go Backend URL** | `http://localhost:8080/api/v1` | `https://staging-api.dinkmachinery.com/api/v1` | `https://api.dinkmachinery.com/api/v1` |
+| **Go Log Level** | `DEBUG` (human-readable / console) | `INFO` (structured JSON) | `INFO` (structured JSON + Zap PII masking) |
+| **Go DB Ingress** | Local Docker Compose (`localhost:5432`) | Staging PostgreSQL (NVMe, Dedicated Host) | Clustered Primary-Replica WAL (Tier III DC) |
+| **Go OTP / SMS** | Mock Mode (fixed `123456` or console log) | Telco Sandbox APIs (Ethio Tel / Safaricom) | Live Telco Production Aggregator |
+| **Go Payment Rails** | Mock Payment Webhook Simulator | Chapa / Telebirr Sandbox Gateway | Live Telebirr / CBE / M-Pesa Rails |
+| **Admin Web URL** | `http://localhost:3000` | `https://staging-admin.dinkmachinery.com` | `https://admin.dinkmachinery.com` |
+| **Admin Env File** | `admin/.env.development` | `admin/.env.staging` | `admin/.env.production` (Secrets Injection) |
+| **Admin Features** | Mock auth bypass, React DevTools | "STAGING" banner watermark, E2E harness | Strict CSP, Mandatory MFA, Audit Log |
+| **Mobile Flavor** | `dev` | `staging` | `prod` |
+| **Mobile App ID** | `com.dinkmachinery.dink_mobile.dev` | `com.dinkmachinery.dink_mobile.staging` | `com.dinkmachinery.dink_mobile` |
+| **Mobile App Name** | `Dink (Dev)` | `Dink (Staging)` | `Dink Machinery` |
+| **Mobile Entrypoint**| `mobile/lib/main_dev.dart` | `mobile/lib/main_staging.dart` | `mobile/lib/main_prod.dart` |
+| **Mobile Storage** | Embedded Isar `isar_dev` | Embedded Isar `isar_staging` | Embedded Isar `isar_prod` |
+| **Mobile SSL Pinning**| Disabled (allows Charles/Proxyman) | Disabled (allows QA proxy inspection) | Enforced (strict public key pinning) |
+
+### 10.5 Modular OpenAPI Contract Pipeline & Distribution Architecture
+To eliminate Git merge collisions and support concurrent partition development, contract specifications are modularized into granular per-endpoint files (`ADR-016`):
+* **Source Tree (`contracts/`):**
+  * `contracts/openapi.yaml`: Root document declaring metadata, servers, securitySchemes, and relative path `$ref`s.
+  * `contracts/components/`: Reusable primitives (`parameters/`, `responses/`, and `schemas/` like `MoneyAmount`, `ResponseMeta`, and RFC 9457 Problem Details).
+  * `contracts/endpoints/<domain>/<action>.yaml`: Discrete Path Item specifications defining operations, request bodies, and response envelopes.
+* **Compilation Pipeline (`Redocly Bundle`):**
+  * `@redocly/cli bundle` compiles the source tree into `contracts/openapi.bundled.yaml` in $< 25\text{ms}$.
+  * `backend/`: `oapi-codegen` compiles `openapi.bundled.yaml` into `internal/transport/http/generated/api.gen.go`.
+  * `admin/`: `openapi-typescript` compiles `openapi.bundled.yaml` into `src/types/api.generated.ts`.
+  * `Quality Gate`: Stoplight Spectral validates `openapi.bundled.yaml` against `.spectral.yaml` in pre-commit hooks (`lefthook.yml`).
+
 ---
 
 ## 11. Architectural Decision Records (ADR Log)
@@ -715,6 +749,21 @@ The platform deploys as containerized workloads orchestrated via Docker Compose 
 * **Context:** Financial audits require provable mathematical tracking of all money movements.
 * **Decision:** All payments, wallet debits, and adjustments post to `financial_ledger_entries` inside the same database transaction mutating the domain entity, enforcing zero-sum balancing.
 * **Consequences:** Guarantees zero ledger drift, unalterable audit trails, and automated accounting reconciliation.
+
+### ADR-015: Multi-Country Parameterization — Dynamic Configuration Engine
+* **Context:** Operating across Ethiopia and Kenya requires dynamic tax rates, holiday calendars, and currency formats without hardcoded `if/else` logic.
+* **Decision:** Parameterize all national rules via `country_configs` table queried via `/api/v1/admin/countries`.
+* **Consequences:** Adding a new market requires zero application code modifications.
+
+### ADR-016: Modular OpenAPI Contract Architecture & Per-Endpoint Specification
+* **Context:** A monolithic 1,600+ line OpenAPI contract causes severe Git merge collisions across concurrent partition feature branches.
+* **Decision:** Decompose the contract into granular per-endpoint files (`contracts/endpoints/`) bundled deterministically via Redocly for Go and TypeScript code generation.
+* **Consequences:** Eliminates merge conflicts, provides atomic requirement traceability, and enables clean PR reviews.
+
+### ADR-017: Multi-Environment Architecture & Flavor Strategy (Dev, Staging, Prod)
+* **Context:** Financial ledgers, real-money escrow, and legal data residency under Proclamation No. 1321/2024 prohibit mixing test and production traffic.
+* **Decision:** Implement strict 3-tier isolation (Dev, Staging, Prod) across Go backend, Next.js admin, and Flutter mobile flavors (`.dev`, `.staging`, prod).
+* **Consequences:** Eliminates accidental production ledger corruption, enables side-by-side mobile installations on single physical devices, and guarantees regulatory compliance.
 
 ---
 

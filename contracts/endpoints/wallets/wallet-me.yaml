@@ -1,0 +1,18 @@
+get:
+  tags: [payment]
+  summary: Retrieve owner wallet balance and escrow stats
+  description: Returns live available balance and locked escrow amounts for the authenticated asset owner.
+  operationId: getMyWallet
+  security:
+    - BearerAuth: []
+  responses:
+    '200':
+      description: Wallet details returned.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/wallet.yaml#/WalletSuccessResponse'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

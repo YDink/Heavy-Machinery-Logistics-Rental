@@ -1,0 +1,26 @@
+post:
+  tags: [auth]
+  summary: Refresh active JWT access token
+  description: Exchanges a cryptographically valid refresh token for a renewed access token.
+  operationId: refreshSession
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [refreshToken]
+          properties:
+            refreshToken:
+              type: string
+  responses:
+    '200':
+      description: Token refreshed.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/auth.yaml#/AuthTokenSuccessResponse'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

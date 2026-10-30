@@ -1,0 +1,5 @@
+description: Too Many Requests — Ingress rate-limit quota exceeded for caller.
+content:
+  application/json:
+    schema:
+      $ref: '../schemas/common.yaml#/ErrorEnvelope'

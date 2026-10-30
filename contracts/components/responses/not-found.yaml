@@ -1,0 +1,5 @@
+description: Not Found — Specified resource entity does not exist or has been soft-deleted.
+content:
+  application/json:
+    schema:
+      $ref: '../schemas/common.yaml#/ErrorEnvelope'

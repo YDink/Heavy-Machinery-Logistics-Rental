@@ -1,0 +1,173 @@
+BookingStatus:
+  type: string
+  enum:
+    - DRAFT
+    - PENDING_HOLD
+    - PENDING_PAYMENT
+    - PAYMENT_PROCESSING
+    - CONFIRMED
+    - SITE_DISPATCHED
+    - CHECKED_IN
+    - ACTIVE_OPERATION
+    - INSPECTION_PENDING
+    - DISPUTED
+    - EXTENSION_REQUESTED
+    - COMPLETED
+    - CANCELLED
+    - EXPIRED
+
+Booking:
+  type: object
+  required: [id, fleetId, renterId, status, startDate, endDate, totalCost, depositHold, version, createdAt]
+  properties:
+    id:
+      type: string
+      format: uuid
+    fleetId:
+      type: string
+      format: uuid
+    renterId:
+      type: string
+      format: uuid
+    status:
+      $ref: '#/BookingStatus'
+    startDate:
+      type: string
+      format: date
+      example: "2026-11-01"
+    endDate:
+      type: string
+      format: date
+      example: "2026-11-07"
+    totalCost:
+      $ref: './common.yaml#/MoneyAmount'
+    depositHold:
+      $ref: './common.yaml#/MoneyAmount'
+    siteLocationAddress:
+      type: string
+      example: "Kilinto Industrial Park, Addis Ababa"
+    version:
+      type: integer
+      example: 1
+    createdAt:
+      type: string
+      format: date-time
+
+CreateBookingRequest:
+  type: object
+  required: [fleetId, startDate, endDate, siteLocationAddress]
+  properties:
+    fleetId:
+      type: string
+      format: uuid
+    startDate:
+      type: string
+      format: date
+    endDate:
+      type: string
+      format: date
+    siteLocationAddress:
+      type: string
+      example: "Bole Lemi Industrial Zone Phase 2"
+
+SubmitInspectionRequest:
+  type: object
+  required: [stage, operatingHoursMeter, fuelLevelPercent, conditionReport, mediaUrls, passed]
+  properties:
+    stage:
+      type: string
+      enum: [CHECK_IN, CHECK_OUT]
+    operatingHoursMeter:
+      type: integer
+      example: 1250
+    fuelLevelPercent:
+      type: integer
+      minimum: 0
+      maximum: 100
+      example: 85
+    conditionReport:
+      type: string
+      example: "Clean operational state. Tracks verified intact."
+    mediaUrls:
+      type: array
+      items:
+        type: string
+        format: uri
+    passed:
+      type: boolean
+      example: true
+
+InspectionRecord:
+  type: object
+  required: [id, bookingId, stage, operatingHoursMeter, passed, createdAt]
+  properties:
+    id:
+      type: string
+      format: uuid
+    bookingId:
+      type: string
+      format: uuid
+    stage:
+      type: string
+      enum: [CHECK_IN, CHECK_OUT]
+    operatingHoursMeter:
+      type: integer
+    fuelLevelPercent:
+      type: integer
+    conditionReport:
+      type: string
+    passed:
+      type: boolean
+    createdAt:
+      type: string
+      format: date-time
+
+BookingListSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      type: array
+      items:
+        $ref: '#/Booking'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+BookingDetailSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/Booking'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+InspectionDetailSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/InspectionRecord'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'

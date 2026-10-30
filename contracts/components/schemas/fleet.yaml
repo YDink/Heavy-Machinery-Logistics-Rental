@@ -1,0 +1,156 @@
+Category:
+  type: object
+  required: [id, code, name, iconUrl]
+  properties:
+    id:
+      type: string
+      format: uuid
+    code:
+      type: string
+      example: "EXCAVATOR"
+    name:
+      type: string
+      example: "Crawler Excavators"
+    parentId:
+      type: string
+      format: uuid
+      nullable: true
+    iconUrl:
+      type: string
+      format: uri
+
+FleetAsset:
+  type: object
+  required: [id, ownerId, categoryId, model, registrationNumber, dailyRate, status, location, version]
+  properties:
+    id:
+      type: string
+      format: uuid
+    ownerId:
+      type: string
+      format: uuid
+    categoryId:
+      type: string
+      format: uuid
+    make:
+      type: string
+      example: "Caterpillar"
+    model:
+      type: string
+      example: "320D3"
+    manufacturingYear:
+      type: integer
+      example: 2022
+    registrationNumber:
+      type: string
+      example: "AA-3-98234"
+    dailyRate:
+      $ref: './common.yaml#/MoneyAmount'
+    status:
+      type: string
+      enum: [AVAILABLE, RENTED, UNDER_MAINTENANCE, DECOMMISSIONED]
+      example: "AVAILABLE"
+    location:
+      type: object
+      required: [latitude, longitude, addressText]
+      properties:
+        latitude:
+          type: number
+          format: double
+          example: 9.0300
+        longitude:
+          type: number
+          format: double
+          example: 38.7400
+        addressText:
+          type: string
+          example: "Bole Subcity, Addis Ababa"
+    version:
+      type: integer
+      example: 1
+
+CreateFleetRequest:
+  type: object
+  required: [categoryId, make, model, manufacturingYear, registrationNumber, dailyRate, location]
+  properties:
+    categoryId:
+      type: string
+      format: uuid
+    make:
+      type: string
+      example: "Komatsu"
+    model:
+      type: string
+      example: "PC200-8"
+    manufacturingYear:
+      type: integer
+      example: 2021
+    registrationNumber:
+      type: string
+      example: "ET-MACH-0921"
+    dailyRate:
+      $ref: './common.yaml#/MoneyAmount'
+    location:
+      type: object
+      required: [latitude, longitude, addressText]
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        addressText:
+          type: string
+
+CategoryListSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      type: array
+      items:
+        $ref: '#/Category'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+FleetListSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      type: array
+      items:
+        $ref: '#/FleetAsset'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+FleetDetailSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/FleetAsset'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'

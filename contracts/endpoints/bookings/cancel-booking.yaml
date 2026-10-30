@@ -1,0 +1,44 @@
+post:
+  tags: [booking]
+  summary: Cancel a pending or active booking
+  description: Traces cancellation rules, evaluates cancellation grace periods, and calculates refunds.
+  operationId: cancelBooking
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [expectedVersion, reason]
+          properties:
+            expectedVersion:
+              type: integer
+              example: 2
+            reason:
+              type: string
+              example: "Site excavation delayed due to heavy rainfall."
+  responses:
+    '200':
+      description: Booking successfully cancelled.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/booking.yaml#/BookingDetailSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

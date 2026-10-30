@@ -112,16 +112,16 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Query machinery fleet inventory
-         * @description Returns cursor-paginated active machinery listings matching filter parameters.
+         * List available fleet equipment
+         * @description Returns a cursor-paginated list of registered machinery filtered by parameters.
          */
         get: operations["listFleets"];
         put?: never;
         /**
-         * Register a new machinery fleet asset
-         * @description Onboards a physical piece of heavy equipment into the owner's fleet.
+         * Register a new machinery asset to fleet
+         * @description Adds a new equipment asset under the authenticated owner.
          */
-        post: operations["createFleet"];
+        post: operations["createFleetAsset"];
         delete?: never;
         options?: never;
         head?: never;
@@ -136,8 +136,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Retrieve specific machinery fleet asset
-         * @description Fetches complete specifications, location, owner profile, and verified documentation.
+         * Retrieve detailed fleet asset by ID
+         * @description Fetches full specification, current operational status, and pricing rules for an equipment item.
          */
         get: operations["getFleetById"];
         put?: never;
@@ -157,9 +157,9 @@ export interface paths {
         };
         /**
          * Spatial radius search for machinery
-         * @description PostGIS spatial point radius query returning available machinery within given kilometers.
+         * @description Executes a PostGIS spatial distance query to locate machinery within a specified kilometer radius.
          */
-        get: operations["searchFleetsInRadius"];
+        get: operations["searchFleetsByRadius"];
         put?: never;
         post?: never;
         delete?: never;
@@ -176,15 +176,14 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List user bookings
-         * @description Returns cursor-paginated booking history filtered by user role.
+         * List current user bookings
+         * @description Returns paginated reservation records for the authenticated renter or equipment owner.
          */
         get: operations["listBookings"];
         put?: never;
         /**
-         * Initialize a booking hold reservation
-         * @description Places a temporal hold on the designated machinery asset and initiates the
-         *     20-state reservation lifecycle in state PENDING_PAYMENT.
+         * Create a booking reservation hold
+         * @description Places a temporal Valkey lock and creates an initial booking in PENDING_HOLD state.
          */
         post: operations["createBooking"];
         delete?: never;
@@ -201,8 +200,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Retrieve booking details
-         * @description Fetches complete booking entity including snapshots, transitions, and payment status.
+         * Retrieve detailed booking state by ID
+         * @description Returns complete 20-state lifecycle status, inspection timeline, and financial breakdown.
          */
         get: operations["getBookingById"];
         put?: never;
@@ -223,9 +222,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Transition booking upon payment verification
-         * @description Atomically shifts booking state from PENDING_PAYMENT to CONFIRMED.
-         *     Guaranteed in-transaction ledger mutation (BK-17-BE).
+         * Confirm payment and transition booking to CONFIRMED
+         * @description Validates escrow hold, posts ledger legs, and transitions state machine to CONFIRMED.
          */
         post: operations["confirmBookingPayment"];
         delete?: never;
@@ -244,8 +242,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Cancel an active or pending booking
-         * @description Transitions booking to CANCELLED and evaluates refund obligations according to policy window.
+         * Cancel a pending or active booking
+         * @description Traces cancellation rules, evaluates cancellation grace periods, and calculates refunds.
          */
         post: operations["cancelBooking"];
         delete?: never;
@@ -264,8 +262,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Submit machinery physical inspection record
-         * @description Records site handover inspection checklist, media attachments, and meter readings.
+         * Submit check-in or check-out inspection
+         * @description Records hours meter, fuel reading, condition notes, and media URLs for an inspection phase.
          */
         post: operations["submitBookingInspection"];
         delete?: never;
@@ -284,8 +282,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Initiate external gateway payment
-         * @description Generates a payment intent or checkout redirect for Telebirr, CBEBirr, or MPESA.
+         * Initiate payment gateway transaction
+         * @description Triggers payment orchestration via Telebirr, CBE Birr, or Chapa.
          */
         post: operations["initiatePayment"];
         delete?: never;
@@ -302,10 +300,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Retrieve authenticated owner wallet summary
-         * @description Returns live balance and currency details derived from verified ledger aggregates.
+         * Retrieve owner wallet balance and escrow stats
+         * @description Returns live available balance and locked escrow amounts for the authenticated asset owner.
          */
-        get: operations["getOwnerWallet"];
+        get: operations["getMyWallet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -322,8 +320,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List wallet transaction ledger
-         * @description Returns cursor-paginated history of immutable double-entry ledger items for this wallet.
+         * List owner wallet transaction ledger entries
+         * @description Returns paginated double-entry financial transaction history for the owner wallet.
          */
         get: operations["listWalletTransactions"];
         put?: never;
@@ -342,9 +340,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Retrieve server-driven dynamic UI schema
-         * @description Delivers table column definitions, form fields, action buttons, and navigation
-         *     hierarchies to dynamically drive the Next.js administrative console (AD-06-BE).
+         * Retrieve dynamic metadata-driven UI configuration
+         * @description Returns navigation schema, table column definitions, and active feature flags for administrative shell.
          */
         get: operations["getAdminUiConfig"];
         put?: never;
@@ -363,10 +360,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List supported operational countries
-         * @description Returns registry of country configurations, dialing codes, currencies, and tax rates.
+         * List supported operational country configurations
+         * @description Returns registry of operating countries, dialing codes, currencies, and tax rates.
          */
-        get: operations["listCountries"];
+        get: operations["listCountryConfigs"];
         put?: never;
         post?: never;
         delete?: never;
@@ -382,10 +379,14 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
         /**
-         * Update country configuration parameters
-         * @description Updates regulatory parameters, tax basis points, and feature status for a jurisdiction.
+         * Retrieve specific country configuration by ISO code
+         * @description Returns tax basis points, currency rules, and feature flags for an operating country.
+         */
+        get: operations["getCountryConfigByCode"];
+        /**
+         * Update operating parameters for country configuration
+         * @description Adjusts standard tax basis points, payment hold timeout, or country activation status.
          */
         put: operations["updateCountryConfig"];
         post?: never;
@@ -494,6 +495,35 @@ export interface components {
             /** @example 900 */
             expiresInSeconds: number;
         };
+        OtpRequestSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: {
+                /** Format: uuid */
+                verificationSessionId: string;
+                /** @example 120 */
+                timeoutSeconds: number;
+            };
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        AuthTokenSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["AuthTokenPair"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        UserProfileSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["UserProfile"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
         Category: {
             /** Format: uuid */
             id: string;
@@ -564,6 +594,30 @@ export interface components {
                 addressText: string;
             };
         };
+        CategoryListSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["Category"][];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        FleetListSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["FleetAsset"][];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        FleetDetailSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["FleetAsset"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
         /** @enum {string} */
         BookingStatus: "DRAFT" | "PENDING_HOLD" | "PENDING_PAYMENT" | "PAYMENT_PROCESSING" | "CONFIRMED" | "SITE_DISPATCHED" | "CHECKED_IN" | "ACTIVE_OPERATION" | "INSPECTION_PENDING" | "DISPUTED" | "EXTENSION_REQUESTED" | "COMPLETED" | "CANCELLED" | "EXPIRED";
         Booking: {
@@ -630,6 +684,30 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
+        BookingListSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["Booking"][];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        BookingDetailSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["Booking"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        InspectionDetailSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["InspectionRecord"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
         OwnerWallet: {
             /** Format: uuid */
             id: string;
@@ -667,6 +745,30 @@ export interface components {
             /** Format: date-time */
             expiresAt: string;
         };
+        PaymentInitiateSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["PaymentInitiateResult"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        WalletSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["OwnerWallet"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        WalletTransactionListSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["WalletTransaction"][];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
         CountryConfig: {
             /** @example ET */
             countryCode: string;
@@ -702,6 +804,22 @@ export interface components {
             /** @example true */
             isEnabled: boolean;
         };
+        CountryConfigListSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["CountryConfig"][];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        CountryConfigDetailSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["CountryConfig"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
         AdminUiConfig: {
             navigation: {
                 key: string;
@@ -721,107 +839,6 @@ export interface components {
                 [key: string]: boolean;
             };
         };
-        OtpRequestSuccessResponse: {
-            /** @enum {boolean} */
-            success: true;
-            data: {
-                /** Format: uuid */
-                verificationSessionId: string;
-                /** @example 120 */
-                timeoutSeconds: number;
-            };
-            /** @default null */
-            error: Record<string, never> | null;
-            meta: components["schemas"]["ResponseMeta"];
-        };
-        AuthTokenSuccessResponse: {
-            /** @enum {boolean} */
-            success: true;
-            data: components["schemas"]["AuthTokenPair"];
-            /** @default null */
-            error: Record<string, never> | null;
-            meta: components["schemas"]["ResponseMeta"];
-        };
-        UserProfileSuccessResponse: {
-            /** @enum {boolean} */
-            success: true;
-            data: components["schemas"]["UserProfile"];
-            /** @default null */
-            error: Record<string, never> | null;
-            meta: components["schemas"]["ResponseMeta"];
-        };
-        CategoryListSuccessResponse: {
-            /** @enum {boolean} */
-            success: true;
-            data: components["schemas"]["Category"][];
-            /** @default null */
-            error: Record<string, never> | null;
-            meta: components["schemas"]["ResponseMeta"];
-        };
-        FleetListSuccessResponse: {
-            /** @enum {boolean} */
-            success: true;
-            data: components["schemas"]["FleetAsset"][];
-            /** @default null */
-            error: Record<string, never> | null;
-            meta: components["schemas"]["ResponseMeta"];
-        };
-        FleetDetailSuccessResponse: {
-            /** @enum {boolean} */
-            success: true;
-            data: components["schemas"]["FleetAsset"];
-            /** @default null */
-            error: Record<string, never> | null;
-            meta: components["schemas"]["ResponseMeta"];
-        };
-        BookingListSuccessResponse: {
-            /** @enum {boolean} */
-            success: true;
-            data: components["schemas"]["Booking"][];
-            /** @default null */
-            error: Record<string, never> | null;
-            meta: components["schemas"]["ResponseMeta"];
-        };
-        BookingDetailSuccessResponse: {
-            /** @enum {boolean} */
-            success: true;
-            data: components["schemas"]["Booking"];
-            /** @default null */
-            error: Record<string, never> | null;
-            meta: components["schemas"]["ResponseMeta"];
-        };
-        InspectionDetailSuccessResponse: {
-            /** @enum {boolean} */
-            success: true;
-            data: components["schemas"]["InspectionRecord"];
-            /** @default null */
-            error: Record<string, never> | null;
-            meta: components["schemas"]["ResponseMeta"];
-        };
-        PaymentInitiateSuccessResponse: {
-            /** @enum {boolean} */
-            success: true;
-            data: components["schemas"]["PaymentInitiateResult"];
-            /** @default null */
-            error: Record<string, never> | null;
-            meta: components["schemas"]["ResponseMeta"];
-        };
-        WalletSuccessResponse: {
-            /** @enum {boolean} */
-            success: true;
-            data: components["schemas"]["OwnerWallet"];
-            /** @default null */
-            error: Record<string, never> | null;
-            meta: components["schemas"]["ResponseMeta"];
-        };
-        WalletTransactionListSuccessResponse: {
-            /** @enum {boolean} */
-            success: true;
-            data: components["schemas"]["WalletTransaction"][];
-            /** @default null */
-            error: Record<string, never> | null;
-            meta: components["schemas"]["ResponseMeta"];
-        };
         AdminUiConfigSuccessResponse: {
             /** @enum {boolean} */
             success: true;
@@ -830,62 +847,52 @@ export interface components {
             error: Record<string, never> | null;
             meta: components["schemas"]["ResponseMeta"];
         };
-        CountryConfigListSuccessResponse: {
-            /** @enum {boolean} */
-            success: true;
-            data: components["schemas"]["CountryConfig"][];
-            /** @default null */
-            error: Record<string, never> | null;
-            meta: components["schemas"]["ResponseMeta"];
-        };
-        CountryConfigDetailSuccessResponse: {
-            /** @enum {boolean} */
-            success: true;
-            data: components["schemas"]["CountryConfig"];
-            /** @default null */
-            error: Record<string, never> | null;
-            meta: components["schemas"]["ResponseMeta"];
-        };
     };
     responses: {
-        /** @description Bad Request — Request failed initial edge schema or syntactic validation. */
         BadRequestError: {
             headers: {
                 [name: string]: unknown;
             };
-            content: {
-                "application/json": components["schemas"]["ErrorEnvelope"];
-            };
+            content?: never;
         };
-        /** @description Unauthorized — Authentication credentials missing, invalid, or expired. */
         UnauthorizedError: {
             headers: {
                 [name: string]: unknown;
             };
-            content: {
-                "application/json": components["schemas"]["ErrorEnvelope"];
-            };
+            content?: never;
         };
-        /** @description Forbidden — Authenticated principal lacks RBAC permission to access this resource. */
         ForbiddenError: {
             headers: {
                 [name: string]: unknown;
             };
-            content: {
-                "application/json": components["schemas"]["ErrorEnvelope"];
-            };
+            content?: never;
         };
-        /** @description Not Found — Specified resource entity does not exist or has been soft-deleted. */
         NotFoundError: {
             headers: {
                 [name: string]: unknown;
             };
-            content: {
-                "application/json": components["schemas"]["ErrorEnvelope"];
-            };
+            content?: never;
         };
-        /** @description Conflict — Invariant violation, state machine failure, or optimistic concurrency conflict. */
         ConflictError: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content?: never;
+        };
+        TooManyRequestsError: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content?: never;
+        };
+        InternalServerError: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content?: never;
+        };
+        /** @description Bad Request — Request failed initial edge schema or syntactic validation. */
+        "bad-request": {
             headers: {
                 [name: string]: unknown;
             };
@@ -894,7 +901,7 @@ export interface components {
             };
         };
         /** @description Too Many Requests — Ingress rate-limit quota exceeded for caller. */
-        TooManyRequestsError: {
+        "too-many-requests": {
             headers: {
                 [name: string]: unknown;
             };
@@ -903,7 +910,43 @@ export interface components {
             };
         };
         /** @description Internal Server Error — Unhandled server failure (anonymized error token emitted). */
-        InternalServerError: {
+        "internal-server-error": {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorEnvelope"];
+            };
+        };
+        /** @description Unauthorized — Authentication credentials missing, invalid, or expired. */
+        unauthorized: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorEnvelope"];
+            };
+        };
+        /** @description Conflict — Invariant violation, state machine failure, or optimistic concurrency conflict. */
+        conflict: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorEnvelope"];
+            };
+        };
+        /** @description Not Found — Specified resource entity does not exist or has been soft-deleted. */
+        "not-found": {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorEnvelope"];
+            };
+        };
+        /** @description Forbidden — Authenticated principal lacks RBAC permission to access this resource. */
+        forbidden: {
             headers: {
                 [name: string]: unknown;
             };
@@ -913,14 +956,18 @@ export interface components {
         };
     };
     parameters: {
-        /** @description ISO 3166-1 alpha-2 operational country code driving multi-country logic. */
         XCountryCodeHeader: string;
-        /** @description Unique mutation request key preventing duplicate execution. */
         IdempotencyKeyHeader: string;
-        /** @description Opaque cursor identifier for deterministic keyset pagination. */
         CursorQueryParam: string;
+        LimitQueryParam: string;
+        /** @description ISO 3166-1 alpha-2 operational country code driving multi-country logic. */
+        "country-code-header": string;
+        /** @description Opaque cursor identifier for deterministic keyset pagination. */
+        "cursor-query-param": string;
         /** @description Maximum number of records to return per page. */
-        LimitQueryParam: number;
+        "limit-query-param": number;
+        /** @description Unique mutation request key preventing duplicate execution. */
+        "idempotency-key-header": string;
     };
     requestBodies: never;
     headers: never;
@@ -933,7 +980,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description ISO 3166-1 alpha-2 operational country code driving multi-country logic. */
-                "X-Country-Code"?: components["parameters"]["XCountryCodeHeader"];
+                "X-Country-Code"?: components["parameters"]["country-code-header"];
             };
             path?: never;
             cookie?: never;
@@ -961,9 +1008,9 @@ export interface operations {
                     "application/json": components["schemas"]["OtpRequestSuccessResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            429: components["responses"]["TooManyRequestsError"];
-            500: components["responses"]["InternalServerError"];
+            400: components["responses"]["bad-request"];
+            429: components["responses"]["too-many-requests"];
+            500: components["responses"]["internal-server-error"];
         };
     };
     verifyOtp: {
@@ -971,7 +1018,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description ISO 3166-1 alpha-2 operational country code driving multi-country logic. */
-                "X-Country-Code"?: components["parameters"]["XCountryCodeHeader"];
+                "X-Country-Code"?: components["parameters"]["country-code-header"];
             };
             path?: never;
             cookie?: never;
@@ -996,9 +1043,9 @@ export interface operations {
                     "application/json": components["schemas"]["AuthTokenSuccessResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            401: components["responses"]["UnauthorizedError"];
-            500: components["responses"]["InternalServerError"];
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            500: components["responses"]["internal-server-error"];
         };
     };
     refreshSession: {
@@ -1025,8 +1072,8 @@ export interface operations {
                     "application/json": components["schemas"]["AuthTokenSuccessResponse"];
                 };
             };
-            401: components["responses"]["UnauthorizedError"];
-            500: components["responses"]["InternalServerError"];
+            401: components["responses"]["unauthorized"];
+            500: components["responses"]["internal-server-error"];
         };
     };
     getCurrentUserProfile: {
@@ -1047,8 +1094,8 @@ export interface operations {
                     "application/json": components["schemas"]["UserProfileSuccessResponse"];
                 };
             };
-            401: components["responses"]["UnauthorizedError"];
-            500: components["responses"]["InternalServerError"];
+            401: components["responses"]["unauthorized"];
+            500: components["responses"]["internal-server-error"];
         };
     };
     listCategories: {
@@ -1060,7 +1107,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Category hierarchy retrieved. */
+            /** @description Category taxonomy returned. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1069,29 +1116,26 @@ export interface operations {
                     "application/json": components["schemas"]["CategoryListSuccessResponse"];
                 };
             };
-            500: components["responses"]["InternalServerError"];
+            500: components["responses"]["internal-server-error"];
         };
     };
     listFleets: {
         parameters: {
             query?: {
                 /** @description Opaque cursor identifier for deterministic keyset pagination. */
-                cursor?: components["parameters"]["CursorQueryParam"];
+                cursor?: components["parameters"]["cursor-query-param"];
                 /** @description Maximum number of records to return per page. */
-                limit?: components["parameters"]["LimitQueryParam"];
+                limit?: components["parameters"]["limit-query-param"];
                 categoryId?: string;
                 status?: "AVAILABLE" | "RENTED" | "UNDER_MAINTENANCE";
             };
-            header?: {
-                /** @description ISO 3166-1 alpha-2 operational country code driving multi-country logic. */
-                "X-Country-Code"?: components["parameters"]["XCountryCodeHeader"];
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Machinery inventory query results. */
+            /** @description Paginated fleet catalog returned. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1100,18 +1144,15 @@ export interface operations {
                     "application/json": components["schemas"]["FleetListSuccessResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            500: components["responses"]["InternalServerError"];
+            500: components["responses"]["internal-server-error"];
         };
     };
-    createFleet: {
+    createFleetAsset: {
         parameters: {
             query?: never;
             header: {
                 /** @description Unique mutation request key preventing duplicate execution. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKeyHeader"];
-                /** @description ISO 3166-1 alpha-2 operational country code driving multi-country logic. */
-                "X-Country-Code"?: components["parameters"]["XCountryCodeHeader"];
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
             };
             path?: never;
             cookie?: never;
@@ -1131,10 +1172,10 @@ export interface operations {
                     "application/json": components["schemas"]["FleetDetailSuccessResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            401: components["responses"]["UnauthorizedError"];
-            409: components["responses"]["ConflictError"];
-            500: components["responses"]["InternalServerError"];
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            409: components["responses"]["conflict"];
+            500: components["responses"]["internal-server-error"];
         };
     };
     getFleetById: {
@@ -1148,7 +1189,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Fleet asset retrieved. */
+            /** @description Fleet asset details returned. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1157,31 +1198,28 @@ export interface operations {
                     "application/json": components["schemas"]["FleetDetailSuccessResponse"];
                 };
             };
-            404: components["responses"]["NotFoundError"];
-            500: components["responses"]["InternalServerError"];
+            404: components["responses"]["not-found"];
+            500: components["responses"]["internal-server-error"];
         };
     };
-    searchFleetsInRadius: {
+    searchFleetsByRadius: {
         parameters: {
             query: {
                 latitude: number;
                 longitude: number;
                 radiusKm: number;
                 /** @description Maximum number of records to return per page. */
-                limit?: components["parameters"]["LimitQueryParam"];
+                limit?: components["parameters"]["limit-query-param"];
                 /** @description Opaque cursor identifier for deterministic keyset pagination. */
-                cursor?: components["parameters"]["CursorQueryParam"];
+                cursor?: components["parameters"]["cursor-query-param"];
             };
-            header?: {
-                /** @description ISO 3166-1 alpha-2 operational country code driving multi-country logic. */
-                "X-Country-Code"?: components["parameters"]["XCountryCodeHeader"];
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Spatial query execution results. */
+            /** @description Machinery located within target radius returned. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1190,17 +1228,17 @@ export interface operations {
                     "application/json": components["schemas"]["FleetListSuccessResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            500: components["responses"]["InternalServerError"];
+            400: components["responses"]["bad-request"];
+            500: components["responses"]["internal-server-error"];
         };
     };
     listBookings: {
         parameters: {
             query?: {
                 /** @description Opaque cursor identifier for deterministic keyset pagination. */
-                cursor?: components["parameters"]["CursorQueryParam"];
+                cursor?: components["parameters"]["cursor-query-param"];
                 /** @description Maximum number of records to return per page. */
-                limit?: components["parameters"]["LimitQueryParam"];
+                limit?: components["parameters"]["limit-query-param"];
                 status?: components["schemas"]["BookingStatus"];
             };
             header?: never;
@@ -1209,7 +1247,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Bookings retrieved successfully. */
+            /** @description User bookings returned. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1218,8 +1256,8 @@ export interface operations {
                     "application/json": components["schemas"]["BookingListSuccessResponse"];
                 };
             };
-            401: components["responses"]["UnauthorizedError"];
-            500: components["responses"]["InternalServerError"];
+            401: components["responses"]["unauthorized"];
+            500: components["responses"]["internal-server-error"];
         };
     };
     createBooking: {
@@ -1227,9 +1265,7 @@ export interface operations {
             query?: never;
             header: {
                 /** @description Unique mutation request key preventing duplicate execution. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKeyHeader"];
-                /** @description ISO 3166-1 alpha-2 operational country code driving multi-country logic. */
-                "X-Country-Code"?: components["parameters"]["XCountryCodeHeader"];
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
             };
             path?: never;
             cookie?: never;
@@ -1240,7 +1276,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Booking hold established. */
+            /** @description Booking created and hold lock established. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -1249,10 +1285,10 @@ export interface operations {
                     "application/json": components["schemas"]["BookingDetailSuccessResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            401: components["responses"]["UnauthorizedError"];
-            409: components["responses"]["ConflictError"];
-            500: components["responses"]["InternalServerError"];
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            409: components["responses"]["conflict"];
+            500: components["responses"]["internal-server-error"];
         };
     };
     getBookingById: {
@@ -1266,7 +1302,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Booking retrieved. */
+            /** @description Booking entity returned. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1275,9 +1311,9 @@ export interface operations {
                     "application/json": components["schemas"]["BookingDetailSuccessResponse"];
                 };
             };
-            401: components["responses"]["UnauthorizedError"];
-            404: components["responses"]["NotFoundError"];
-            500: components["responses"]["InternalServerError"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            500: components["responses"]["internal-server-error"];
         };
     };
     confirmBookingPayment: {
@@ -1285,7 +1321,7 @@ export interface operations {
             query?: never;
             header: {
                 /** @description Unique mutation request key preventing duplicate execution. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKeyHeader"];
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
             };
             path: {
                 id: string;
@@ -1295,18 +1331,18 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** Format: uuid */
-                    paymentTransactionId: string;
                     /**
-                     * @description Optimistic concurrency control lock version.
+                     * @description Optimistic concurrency control check.
                      * @example 1
                      */
-                    version: number;
+                    expectedVersion: number;
+                    /** @example TXN-ETB-902348 */
+                    paymentReference: string;
                 };
             };
         };
         responses: {
-            /** @description Booking confirmed. */
+            /** @description Booking transitioned to CONFIRMED and escrow recorded. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1315,10 +1351,10 @@ export interface operations {
                     "application/json": components["schemas"]["BookingDetailSuccessResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            401: components["responses"]["UnauthorizedError"];
-            409: components["responses"]["ConflictError"];
-            500: components["responses"]["InternalServerError"];
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            409: components["responses"]["conflict"];
+            500: components["responses"]["internal-server-error"];
         };
     };
     cancelBooking: {
@@ -1326,7 +1362,7 @@ export interface operations {
             query?: never;
             header: {
                 /** @description Unique mutation request key preventing duplicate execution. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKeyHeader"];
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
             };
             path: {
                 id: string;
@@ -1336,10 +1372,10 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @example Project site construction delayed indefinitely. */
+                    /** @example 2 */
+                    expectedVersion: number;
+                    /** @example Site excavation delayed due to heavy rainfall. */
                     reason: string;
-                    /** @example 1 */
-                    version: number;
                 };
             };
         };
@@ -1353,10 +1389,10 @@ export interface operations {
                     "application/json": components["schemas"]["BookingDetailSuccessResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            401: components["responses"]["UnauthorizedError"];
-            409: components["responses"]["ConflictError"];
-            500: components["responses"]["InternalServerError"];
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            409: components["responses"]["conflict"];
+            500: components["responses"]["internal-server-error"];
         };
     };
     submitBookingInspection: {
@@ -1364,7 +1400,7 @@ export interface operations {
             query?: never;
             header: {
                 /** @description Unique mutation request key preventing duplicate execution. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKeyHeader"];
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
             };
             path: {
                 id: string;
@@ -1377,7 +1413,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Inspection logged. */
+            /** @description Inspection recorded. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -1386,9 +1422,9 @@ export interface operations {
                     "application/json": components["schemas"]["InspectionDetailSuccessResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            401: components["responses"]["UnauthorizedError"];
-            500: components["responses"]["InternalServerError"];
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            500: components["responses"]["internal-server-error"];
         };
     };
     initiatePayment: {
@@ -1396,9 +1432,7 @@ export interface operations {
             query?: never;
             header: {
                 /** @description Unique mutation request key preventing duplicate execution. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKeyHeader"];
-                /** @description ISO 3166-1 alpha-2 operational country code driving multi-country logic. */
-                "X-Country-Code"?: components["parameters"]["XCountryCodeHeader"];
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
             };
             path?: never;
             cookie?: never;
@@ -1412,17 +1446,12 @@ export interface operations {
                      * @example TELEBIRR
                      * @enum {string}
                      */
-                    gatewayIdentifier: "TELEBIRR" | "CBEBIRR" | "MPESA" | "STRIPE";
-                    /**
-                     * Format: uri
-                     * @example https://dinkmachinery.com/payments/return
-                     */
-                    returnUrl: string;
+                    paymentMethod: "TELEBIRR" | "CBE_BIRR" | "CHAPA" | "DIRECT_TRANSFER";
                 };
             };
         };
         responses: {
-            /** @description Payment transaction initiated. */
+            /** @description Gateway transaction initialized. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1431,12 +1460,12 @@ export interface operations {
                     "application/json": components["schemas"]["PaymentInitiateSuccessResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            401: components["responses"]["UnauthorizedError"];
-            500: components["responses"]["InternalServerError"];
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            500: components["responses"]["internal-server-error"];
         };
     };
-    getOwnerWallet: {
+    getMyWallet: {
         parameters: {
             query?: never;
             header?: never;
@@ -1445,7 +1474,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Wallet summary retrieved. */
+            /** @description Wallet details returned. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1454,17 +1483,17 @@ export interface operations {
                     "application/json": components["schemas"]["WalletSuccessResponse"];
                 };
             };
-            401: components["responses"]["UnauthorizedError"];
-            500: components["responses"]["InternalServerError"];
+            401: components["responses"]["unauthorized"];
+            500: components["responses"]["internal-server-error"];
         };
     };
     listWalletTransactions: {
         parameters: {
             query?: {
                 /** @description Opaque cursor identifier for deterministic keyset pagination. */
-                cursor?: components["parameters"]["CursorQueryParam"];
+                cursor?: components["parameters"]["cursor-query-param"];
                 /** @description Maximum number of records to return per page. */
-                limit?: components["parameters"]["LimitQueryParam"];
+                limit?: components["parameters"]["limit-query-param"];
             };
             header?: never;
             path?: never;
@@ -1472,7 +1501,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Transactions retrieved. */
+            /** @description Wallet transaction entries returned. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1481,8 +1510,8 @@ export interface operations {
                     "application/json": components["schemas"]["WalletTransactionListSuccessResponse"];
                 };
             };
-            401: components["responses"]["UnauthorizedError"];
-            500: components["responses"]["InternalServerError"];
+            401: components["responses"]["unauthorized"];
+            500: components["responses"]["internal-server-error"];
         };
     };
     getAdminUiConfig: {
@@ -1494,7 +1523,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description UI configuration metadata fetched. */
+            /** @description Dynamic UI configuration metadata returned. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1503,12 +1532,12 @@ export interface operations {
                     "application/json": components["schemas"]["AdminUiConfigSuccessResponse"];
                 };
             };
-            401: components["responses"]["UnauthorizedError"];
-            403: components["responses"]["ForbiddenError"];
-            500: components["responses"]["InternalServerError"];
+            401: components["responses"]["unauthorized"];
+            403: components["responses"]["forbidden"];
+            500: components["responses"]["internal-server-error"];
         };
     };
-    listCountries: {
+    listCountryConfigs: {
         parameters: {
             query?: never;
             header?: never;
@@ -1517,7 +1546,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Country configs retrieved. */
+            /** @description Country configs returned. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1526,13 +1555,42 @@ export interface operations {
                     "application/json": components["schemas"]["CountryConfigListSuccessResponse"];
                 };
             };
-            500: components["responses"]["InternalServerError"];
+            401: components["responses"]["unauthorized"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    getCountryConfigByCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                countryCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Country configuration returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountryConfigDetailSuccessResponse"];
+                };
+            };
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            500: components["responses"]["internal-server-error"];
         };
     };
     updateCountryConfig: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
             path: {
                 countryCode: string;
             };
@@ -1544,7 +1602,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Country configuration updated. */
+            /** @description Country configuration successfully updated. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1553,11 +1611,11 @@ export interface operations {
                     "application/json": components["schemas"]["CountryConfigDetailSuccessResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            401: components["responses"]["UnauthorizedError"];
-            403: components["responses"]["ForbiddenError"];
-            404: components["responses"]["NotFoundError"];
-            500: components["responses"]["InternalServerError"];
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            403: components["responses"]["forbidden"];
+            404: components["responses"]["not-found"];
+            500: components["responses"]["internal-server-error"];
         };
     };
 }

@@ -1,0 +1,5 @@
+description: Bad Request — Request failed initial edge schema or syntactic validation.
+content:
+  application/json:
+    schema:
+      $ref: '../schemas/common.yaml#/ErrorEnvelope'

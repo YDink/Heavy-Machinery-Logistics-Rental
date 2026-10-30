@@ -1,0 +1,45 @@
+get:
+  tags: [geo]
+  summary: Spatial radius search for machinery
+  description: Executes a PostGIS spatial distance query to locate machinery within a specified kilometer radius.
+  operationId: searchFleetsByRadius
+  parameters:
+    - name: latitude
+      in: query
+      required: true
+      schema:
+        type: number
+        format: double
+        minimum: -90.0
+        maximum: 90.0
+        example: 9.0300
+    - name: longitude
+      in: query
+      required: true
+      schema:
+        type: number
+        format: double
+        minimum: -180.0
+        maximum: 180.0
+        example: 38.7400
+    - name: radiusKm
+      in: query
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 500
+        example: 50
+    - $ref: '../../components/parameters/limit-query-param.yaml'
+    - $ref: '../../components/parameters/cursor-query-param.yaml'
+  responses:
+    '200':
+      description: Machinery located within target radius returned.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/fleet.yaml#/FleetListSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

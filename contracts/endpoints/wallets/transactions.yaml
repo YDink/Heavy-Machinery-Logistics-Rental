@@ -1,0 +1,21 @@
+get:
+  tags: [payment]
+  summary: List owner wallet transaction ledger entries
+  description: Returns paginated double-entry financial transaction history for the owner wallet.
+  operationId: listWalletTransactions
+  security:
+    - BearerAuth: []
+  parameters:
+    - $ref: '../../components/parameters/cursor-query-param.yaml'
+    - $ref: '../../components/parameters/limit-query-param.yaml'
+  responses:
+    '200':
+      description: Wallet transaction entries returned.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/wallet.yaml#/WalletTransactionListSuccessResponse'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

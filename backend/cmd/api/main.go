@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/dinkmachinery/dink-core/internal/platform/config"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
@@ -18,7 +19,17 @@ type HealthResponse struct {
 }
 
 func main() {
-	logger, _ := zap.NewProduction()
+	cfg, err := config.Load()
+	if err != nil {
+		panic("failed to load runtime configuration: " + err.Error())
+	}
+
+	var logger *zap.Logger
+	if cfg.IsDevelopment() {
+		logger, _ = zap.NewDevelopment()
+	} else {
+		logger, _ = zap.NewProduction()
+	}
 	defer logger.Sync()
 
 	r := chi.NewRouter()
@@ -30,8 +41,9 @@ func main() {
 		resp := HealthResponse{
 			Success: true,
 			Data: map[string]interface{}{
-				"status":  "healthy",
-				"version": "1.0.0-phase1",
+				"status":      "healthy",
+				"version":     "1.0.0-phase1",
+				"environment": string(cfg.Env),
 			},
 			Error: nil,
 			Meta: map[string]interface{}{
@@ -44,6 +56,12 @@ func main() {
 		_ = json.NewEncoder(w).Encode(resp)
 	})
 
-	logger.Info("Backend modular monolith initialized", zap.String("port", "8080"))
-	_ = http.ListenAndServe(":8080", r)
+	logger.Info("Backend modular monolith initialized",
+		zap.String("environment", string(cfg.Env)),
+		zap.String("port", cfg.Port),
+		zap.Bool("mockOTP", cfg.MockOTP),
+	)
+
+	serverAddr := ":" + cfg.Port
+	_ = http.ListenAndServe(serverAddr, r)
 }

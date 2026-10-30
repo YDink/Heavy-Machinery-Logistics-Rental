@@ -1,0 +1,5 @@
+description: Unauthorized — Authentication credentials missing, invalid, or expired.
+content:
+  application/json:
+    schema:
+      $ref: '../schemas/common.yaml#/ErrorEnvelope'

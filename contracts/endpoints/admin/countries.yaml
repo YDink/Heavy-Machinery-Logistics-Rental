@@ -1,0 +1,18 @@
+get:
+  tags: [admin]
+  summary: List supported operational country configurations
+  description: Returns registry of operating countries, dialing codes, currencies, and tax rates.
+  operationId: listCountryConfigs
+  security:
+    - BearerAuth: []
+  responses:
+    '200':
+      description: Country configs returned.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/admin.yaml#/CountryConfigListSuccessResponse'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

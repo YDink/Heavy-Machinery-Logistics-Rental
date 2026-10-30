@@ -1,0 +1,6 @@
+name: cursor
+in: query
+required: false
+schema:
+  type: string
+description: Opaque cursor identifier for deterministic keyset pagination.

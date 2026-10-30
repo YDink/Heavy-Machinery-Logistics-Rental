@@ -1,0 +1,14 @@
+get:
+  tags: [machinery]
+  summary: List machinery taxonomy categories
+  description: Fetches hierarchical category nodes for machinery classification.
+  operationId: listCategories
+  responses:
+    '200':
+      description: Category taxonomy returned.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/fleet.yaml#/CategoryListSuccessResponse'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

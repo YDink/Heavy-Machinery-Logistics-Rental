@@ -1,0 +1,105 @@
+MoneyAmount:
+  type: object
+  required: [amountMinor, currency]
+  description: Integer minor currency units preventing precision truncation.
+  properties:
+    amountMinor:
+      type: integer
+      format: int64
+      description: Amount in minor units (e.g., 500000 = 5,000.00 ETB).
+      example: 500000
+    currency:
+      type: string
+      pattern: '^[A-Z]{3}$'
+      description: ISO 4217 three-letter currency symbol.
+      example: "ETB"
+
+ResponseMeta:
+  type: object
+  required: [version, requestId, timestamp]
+  properties:
+    version:
+      type: string
+      example: "1.0"
+    requestId:
+      type: string
+      example: "req_01HP8XYZ12345678"
+    timestamp:
+      type: string
+      format: date-time
+      example: "2026-10-26T07:12:00Z"
+    pagination:
+      $ref: '#/PaginationMeta'
+    warnings:
+      type: array
+      items:
+        type: string
+
+PaginationMeta:
+  type: object
+  required: [hasMore]
+  nullable: true
+  properties:
+    nextCursor:
+      type: string
+      nullable: true
+      example: "ZXhhbXBsZS1jdXJzb3ItdmFsdWU="
+    prevCursor:
+      type: string
+      nullable: true
+      example: null
+    hasMore:
+      type: boolean
+      example: true
+
+RFC9457ProblemDetails:
+  type: object
+  required: [type, title, status, detail, code]
+  properties:
+    type:
+      type: string
+      format: uri
+      example: "https://api.dinkmachinery.com/errors/invalid-booking-state"
+    title:
+      type: string
+      example: "Invalid Booking State Transition"
+    status:
+      type: integer
+      example: 409
+    detail:
+      type: string
+      example: "Cannot transition booking from CANCELLED to CONFIRMED."
+    code:
+      type: string
+      example: "BOOKING_INVALID_STATE_TRANSITION"
+    invalidParams:
+      type: array
+      items:
+        $ref: '#/InvalidParam'
+
+InvalidParam:
+  type: object
+  required: [name, reason]
+  properties:
+    name:
+      type: string
+      example: "status"
+    reason:
+      type: string
+      example: "Current status is terminal."
+
+ErrorEnvelope:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [false]
+    data:
+      type: object
+      nullable: true
+      default: null
+    error:
+      $ref: '#/RFC9457ProblemDetails'
+    meta:
+      $ref: '#/ResponseMeta'

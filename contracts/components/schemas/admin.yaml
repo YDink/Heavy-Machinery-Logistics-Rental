@@ -1,0 +1,142 @@
+CountryConfig:
+  type: object
+  required: [countryCode, countryName, dialingPrefix, defaultCurrency, standardTaxRateBps, isEnabled]
+  properties:
+    countryCode:
+      type: string
+      pattern: '^[A-Z]{2}$'
+      example: "ET"
+    countryName:
+      type: string
+      example: "Ethiopia"
+    dialingPrefix:
+      type: string
+      example: "+251"
+    defaultCurrency:
+      type: string
+      example: "ETB"
+    currencyMinorUnitExponent:
+      type: integer
+      example: 2
+    defaultTimezone:
+      type: string
+      example: "Africa/Addis_Ababa"
+    taxLabel:
+      type: string
+      example: "VAT"
+    standardTaxRateBps:
+      type: integer
+      description: Standard tax basis points (1500 bps = 15.00%).
+      example: 1500
+    minAgeDefault:
+      type: integer
+      example: 18
+    paymentHoldTimeoutMins:
+      type: integer
+      example: 60
+    isEnabled:
+      type: boolean
+      example: true
+
+UpdateCountryConfigRequest:
+  type: object
+  required: [standardTaxRateBps, paymentHoldTimeoutMins, isEnabled]
+  properties:
+    standardTaxRateBps:
+      type: integer
+      example: 1500
+    paymentHoldTimeoutMins:
+      type: integer
+      example: 60
+    isEnabled:
+      type: boolean
+      example: true
+
+AdminUiConfig:
+  type: object
+  required: [navigation, tables, featureToggles]
+  properties:
+    navigation:
+      type: array
+      items:
+        type: object
+        required: [key, label, route]
+        properties:
+          key:
+            type: string
+          label:
+            type: string
+          route:
+            type: string
+    tables:
+      type: object
+      additionalProperties:
+        type: object
+        required: [columns]
+        properties:
+          columns:
+            type: array
+            items:
+              type: object
+              required: [key, header, type]
+              properties:
+                key:
+                  type: string
+                header:
+                  type: string
+                type:
+                  type: string
+    featureToggles:
+      type: object
+      additionalProperties:
+        type: boolean
+
+AdminUiConfigSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/AdminUiConfig'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+CountryConfigListSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      type: array
+      items:
+        $ref: '#/CountryConfig'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+CountryConfigDetailSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/CountryConfig'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'

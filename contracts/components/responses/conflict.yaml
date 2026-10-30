@@ -1,0 +1,5 @@
+description: Conflict — Invariant violation, state machine failure, or optimistic concurrency conflict.
+content:
+  application/json:
+    schema:
+      $ref: '../schemas/common.yaml#/ErrorEnvelope'

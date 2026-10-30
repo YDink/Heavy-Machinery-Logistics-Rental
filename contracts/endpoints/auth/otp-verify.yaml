@@ -1,0 +1,35 @@
+post:
+  tags: [auth]
+  summary: Verify OTP and acquire user session tokens
+  description: Validates supplied code against pending challenge and returns authenticated session tokens.
+  operationId: verifyOtp
+  parameters:
+    - $ref: '../../components/parameters/country-code-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [verificationSessionId, code]
+          properties:
+            verificationSessionId:
+              type: string
+              format: uuid
+            code:
+              type: string
+              pattern: '^[0-9]{6}$'
+              example: "123456"
+  responses:
+    '200':
+      description: Verification successful, tokens generated.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/auth.yaml#/AuthTokenSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

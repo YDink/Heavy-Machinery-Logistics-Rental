@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "bundle:contract": "redocly bundle ../contracts/openapi.yaml --output ../contracts/openapi.bundled.yaml",
+    "codegen:api": "openapi-typescript ../contracts/openapi.bundled.yaml -o src/types/api.generated.ts",
+    "generate": "pnpm run bundle:contract && pnpm run codegen:api"
   },
   "dependencies": {
     "@hookform/resolvers": "^6.0.2",
@@ -23,12 +26,14 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@redocly/cli": "^2.72.1",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
+    "openapi-typescript": "^7.13.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   },

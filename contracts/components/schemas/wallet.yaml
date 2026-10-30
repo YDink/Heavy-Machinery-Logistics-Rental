@@ -1,0 +1,109 @@
+OwnerWallet:
+  type: object
+  required: [id, ownerId, availableBalance, escrowBalance, currency, updatedAt]
+  properties:
+    id:
+      type: string
+      format: uuid
+    ownerId:
+      type: string
+      format: uuid
+    availableBalance:
+      $ref: './common.yaml#/MoneyAmount'
+    escrowBalance:
+      $ref: './common.yaml#/MoneyAmount'
+    currency:
+      type: string
+      example: "ETB"
+    updatedAt:
+      type: string
+      format: date-time
+
+WalletTransaction:
+  type: object
+  required: [id, walletId, entryType, amount, runningBalance, referenceId, createdAt]
+  properties:
+    id:
+      type: string
+      format: uuid
+    walletId:
+      type: string
+      format: uuid
+    entryType:
+      type: string
+      enum: [RENTAL_PAYOUT, ESCROW_RELEASE, PLATFORM_FEE, DISPUTE_DEBIT]
+    amount:
+      $ref: './common.yaml#/MoneyAmount'
+    runningBalance:
+      $ref: './common.yaml#/MoneyAmount'
+    referenceId:
+      type: string
+      format: uuid
+    createdAt:
+      type: string
+      format: date-time
+
+PaymentInitiateResult:
+  type: object
+  required: [transactionId, checkoutUrl, expiresAt]
+  properties:
+    transactionId:
+      type: string
+      format: uuid
+    checkoutUrl:
+      type: string
+      format: uri
+      example: "https://telebirr.et/pay?token=ab897cd0"
+    expiresAt:
+      type: string
+      format: date-time
+
+PaymentInitiateSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/PaymentInitiateResult'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+WalletSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/OwnerWallet'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+WalletTransactionListSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      type: array
+      items:
+        $ref: '#/WalletTransaction'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'

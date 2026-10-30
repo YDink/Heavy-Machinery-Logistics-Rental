@@ -1,0 +1,36 @@
+post:
+  tags: [auth]
+  summary: Request an OTP verification code
+  description: Issues a time-bound verification code to a validated mobile telephone number.
+  operationId: requestOtp
+  parameters:
+    - $ref: '../../components/parameters/country-code-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [phoneNumber, purpose]
+          properties:
+            phoneNumber:
+              type: string
+              pattern: '^\+[1-9]\d{1,14}$'
+              example: "+251911223344"
+            purpose:
+              type: string
+              enum: [REGISTRATION, LOGIN, PASSWORD_RESET, STEP_UP]
+              example: "LOGIN"
+  responses:
+    '200':
+      description: OTP dispatched successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/auth.yaml#/OtpRequestSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '429':
+      $ref: '../../components/responses/too-many-requests.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

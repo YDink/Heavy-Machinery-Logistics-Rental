@@ -1,0 +1,18 @@
+get:
+  tags: [auth]
+  summary: Retrieve current authenticated user profile
+  description: Returns the user aggregate belonging to the active Bearer token.
+  operationId: getCurrentUserProfile
+  security:
+    - BearerAuth: []
+  responses:
+    '200':
+      description: User profile retrieved.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/auth.yaml#/UserProfileSuccessResponse'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

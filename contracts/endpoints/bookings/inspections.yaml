@@ -1,0 +1,34 @@
+post:
+  tags: [booking]
+  summary: Submit check-in or check-out inspection
+  description: Records hours meter, fuel reading, condition notes, and media URLs for an inspection phase.
+  operationId: submitBookingInspection
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/booking.yaml#/SubmitInspectionRequest'
+  responses:
+    '201':
+      description: Inspection recorded.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/booking.yaml#/InspectionDetailSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

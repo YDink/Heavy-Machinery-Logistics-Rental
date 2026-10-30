@@ -1,0 +1,67 @@
+get:
+  tags: [admin]
+  summary: Retrieve specific country configuration by ISO code
+  description: Returns tax basis points, currency rules, and feature flags for an operating country.
+  operationId: getCountryConfigByCode
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: countryCode
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[A-Z]{2}$'
+        example: "ET"
+  responses:
+    '200':
+      description: Country configuration returned.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/admin.yaml#/CountryConfigDetailSuccessResponse'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'
+
+put:
+  tags: [admin]
+  summary: Update operating parameters for country configuration
+  description: Adjusts standard tax basis points, payment hold timeout, or country activation status.
+  operationId: updateCountryConfig
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: countryCode
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[A-Z]{2}$'
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/admin.yaml#/UpdateCountryConfigRequest'
+  responses:
+    '200':
+      description: Country configuration successfully updated.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/admin.yaml#/CountryConfigDetailSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/forbidden.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

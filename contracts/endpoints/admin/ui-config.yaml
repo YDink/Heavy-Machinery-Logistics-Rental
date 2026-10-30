@@ -1,0 +1,20 @@
+get:
+  tags: [admin]
+  summary: Retrieve dynamic metadata-driven UI configuration
+  description: Returns navigation schema, table column definitions, and active feature flags for administrative shell.
+  operationId: getAdminUiConfig
+  security:
+    - BearerAuth: []
+  responses:
+    '200':
+      description: Dynamic UI configuration metadata returned.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/admin.yaml#/AdminUiConfigSuccessResponse'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/forbidden.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

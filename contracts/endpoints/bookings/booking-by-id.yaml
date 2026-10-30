@@ -1,0 +1,27 @@
+get:
+  tags: [booking]
+  summary: Retrieve detailed booking state by ID
+  description: Returns complete 20-state lifecycle status, inspection timeline, and financial breakdown.
+  operationId: getBookingById
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    '200':
+      description: Booking entity returned.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/booking.yaml#/BookingDetailSuccessResponse'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

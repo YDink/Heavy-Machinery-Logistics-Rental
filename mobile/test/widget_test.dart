@@ -1,16 +1,22 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dink_mobile/core/config/app_config.dart';
 import 'package:dink_mobile/main.dart';
 
 void main() {
+  setUp(() {
+    AppConfig.initialize(
+      const AppConfig(
+        environment: Environment.dev,
+        appName: 'Dink (Dev)',
+        apiBaseUrl: 'http://10.0.2.2:8080/api/v1',
+        enableSslPinning: false,
+        isarDbName: 'isar_dev',
+      ),
+    );
+  });
+
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp());

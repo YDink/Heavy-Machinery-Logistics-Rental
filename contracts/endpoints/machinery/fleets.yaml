@@ -1,0 +1,60 @@
+get:
+  tags: [machinery]
+  summary: List available fleet equipment
+  description: Returns a cursor-paginated list of registered machinery filtered by parameters.
+  operationId: listFleets
+  parameters:
+    - $ref: '../../components/parameters/cursor-query-param.yaml'
+    - $ref: '../../components/parameters/limit-query-param.yaml'
+    - name: categoryId
+      in: query
+      required: false
+      schema:
+        type: string
+        format: uuid
+    - name: status
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [AVAILABLE, RENTED, UNDER_MAINTENANCE]
+  responses:
+    '200':
+      description: Paginated fleet catalog returned.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/fleet.yaml#/FleetListSuccessResponse'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'
+
+post:
+  tags: [machinery]
+  summary: Register a new machinery asset to fleet
+  description: Adds a new equipment asset under the authenticated owner.
+  operationId: createFleetAsset
+  security:
+    - BearerAuth: []
+  parameters:
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/fleet.yaml#/CreateFleetRequest'
+  responses:
+    '201':
+      description: Asset successfully registered.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/fleet.yaml#/FleetDetailSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

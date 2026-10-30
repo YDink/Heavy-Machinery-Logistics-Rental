@@ -1,0 +1,5 @@
+description: Internal Server Error — Unhandled server failure (anonymized error token emitted).
+content:
+  application/json:
+    schema:
+      $ref: '../schemas/common.yaml#/ErrorEnvelope'

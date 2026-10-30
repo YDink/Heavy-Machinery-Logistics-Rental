@@ -4,18 +4,11 @@
 package generated
 
 import (
-	"bytes"
-	"compress/flate"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
-	"path"
-	"strings"
 	"time"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
 	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -489,22 +482,22 @@ func (e ListFleetsParamsStatus) Valid() bool {
 	}
 }
 
-// Defines values for InitiatePaymentJSONBodyGatewayIdentifier.
+// Defines values for InitiatePaymentJSONBodyPaymentMethod.
 const (
-	CBEBIRR  InitiatePaymentJSONBodyGatewayIdentifier = "CBEBIRR"
-	MPESA    InitiatePaymentJSONBodyGatewayIdentifier = "MPESA"
-	STRIPE   InitiatePaymentJSONBodyGatewayIdentifier = "STRIPE"
-	TELEBIRR InitiatePaymentJSONBodyGatewayIdentifier = "TELEBIRR"
+	CBEBIRR        InitiatePaymentJSONBodyPaymentMethod = "CBE_BIRR"
+	CHAPA          InitiatePaymentJSONBodyPaymentMethod = "CHAPA"
+	DIRECTTRANSFER InitiatePaymentJSONBodyPaymentMethod = "DIRECT_TRANSFER"
+	TELEBIRR       InitiatePaymentJSONBodyPaymentMethod = "TELEBIRR"
 )
 
-// Valid indicates whether the value is a known member of the InitiatePaymentJSONBodyGatewayIdentifier enum.
-func (e InitiatePaymentJSONBodyGatewayIdentifier) Valid() bool {
+// Valid indicates whether the value is a known member of the InitiatePaymentJSONBodyPaymentMethod enum.
+func (e InitiatePaymentJSONBodyPaymentMethod) Valid() bool {
 	switch e {
 	case CBEBIRR:
 		return true
-	case MPESA:
+	case CHAPA:
 		return true
-	case STRIPE:
+	case DIRECTTRANSFER:
 		return true
 	case TELEBIRR:
 		return true
@@ -943,38 +936,44 @@ type WalletTransactionListSuccessResponse struct {
 // WalletTransactionListSuccessResponseSuccess defines model for WalletTransactionListSuccessResponse.Success.
 type WalletTransactionListSuccessResponseSuccess bool
 
-// CursorQueryParam defines model for CursorQueryParam.
+// CountryCodeHeader defines model for country-code-header.
+type CountryCodeHeader = string
+
+// CursorQueryParam defines model for cursor-query-param.
 type CursorQueryParam = string
 
-// IdempotencyKeyHeader defines model for IdempotencyKeyHeader.
+// IdempotencyKeyHeader defines model for idempotency-key-header.
 type IdempotencyKeyHeader = openapi_types.UUID
 
-// LimitQueryParam defines model for LimitQueryParam.
+// LimitQueryParam defines model for limit-query-param.
 type LimitQueryParam = int
 
-// XCountryCodeHeader defines model for XCountryCodeHeader.
-type XCountryCodeHeader = string
+// BadRequest defines model for bad-request.
+type BadRequest = ErrorEnvelope
 
-// BadRequestError defines model for BadRequestError.
-type BadRequestError = ErrorEnvelope
+// Conflict defines model for conflict.
+type Conflict = ErrorEnvelope
 
-// ConflictError defines model for ConflictError.
-type ConflictError = ErrorEnvelope
+// Forbidden defines model for forbidden.
+type Forbidden = ErrorEnvelope
 
-// ForbiddenError defines model for ForbiddenError.
-type ForbiddenError = ErrorEnvelope
-
-// InternalServerError defines model for InternalServerError.
+// InternalServerError defines model for internal-server-error.
 type InternalServerError = ErrorEnvelope
 
-// NotFoundError defines model for NotFoundError.
-type NotFoundError = ErrorEnvelope
+// NotFound defines model for not-found.
+type NotFound = ErrorEnvelope
 
-// TooManyRequestsError defines model for TooManyRequestsError.
-type TooManyRequestsError = ErrorEnvelope
+// TooManyRequests defines model for too-many-requests.
+type TooManyRequests = ErrorEnvelope
 
-// UnauthorizedError defines model for UnauthorizedError.
-type UnauthorizedError = ErrorEnvelope
+// Unauthorized defines model for unauthorized.
+type Unauthorized = ErrorEnvelope
+
+// UpdateCountryConfigParams defines parameters for UpdateCountryConfig.
+type UpdateCountryConfigParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
 
 // RequestOtpJSONBody defines parameters for RequestOtp.
 type RequestOtpJSONBody struct {
@@ -985,7 +984,7 @@ type RequestOtpJSONBody struct {
 // RequestOtpParams defines parameters for RequestOtp.
 type RequestOtpParams struct {
 	// XCountryCode ISO 3166-1 alpha-2 operational country code driving multi-country logic.
-	XCountryCode *XCountryCodeHeader `json:"X-Country-Code,omitempty"`
+	XCountryCode *CountryCodeHeader `json:"X-Country-Code,omitempty"`
 }
 
 // RequestOtpJSONBodyPurpose defines parameters for RequestOtp.
@@ -1000,7 +999,7 @@ type VerifyOtpJSONBody struct {
 // VerifyOtpParams defines parameters for VerifyOtp.
 type VerifyOtpParams struct {
 	// XCountryCode ISO 3166-1 alpha-2 operational country code driving multi-country logic.
-	XCountryCode *XCountryCodeHeader `json:"X-Country-Code,omitempty"`
+	XCountryCode *CountryCodeHeader `json:"X-Country-Code,omitempty"`
 }
 
 // RefreshSessionJSONBody defines parameters for RefreshSession.
@@ -1022,9 +1021,6 @@ type ListBookingsParams struct {
 type CreateBookingParams struct {
 	// IdempotencyKey Unique mutation request key preventing duplicate execution.
 	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
-
-	// XCountryCode ISO 3166-1 alpha-2 operational country code driving multi-country logic.
-	XCountryCode *XCountryCodeHeader `json:"X-Country-Code,omitempty"`
 }
 
 // SubmitBookingInspectionParams defines parameters for SubmitBookingInspection.
@@ -1035,8 +1031,8 @@ type SubmitBookingInspectionParams struct {
 
 // CancelBookingJSONBody defines parameters for CancelBooking.
 type CancelBookingJSONBody struct {
-	Reason  string `json:"reason"`
-	Version int    `json:"version"`
+	ExpectedVersion int    `json:"expectedVersion"`
+	Reason          string `json:"reason"`
 }
 
 // CancelBookingParams defines parameters for CancelBooking.
@@ -1047,10 +1043,9 @@ type CancelBookingParams struct {
 
 // ConfirmBookingPaymentJSONBody defines parameters for ConfirmBookingPayment.
 type ConfirmBookingPaymentJSONBody struct {
-	PaymentTransactionId openapi_types.UUID `json:"paymentTransactionId"`
-
-	// Version Optimistic concurrency control lock version.
-	Version int `json:"version"`
+	// ExpectedVersion Optimistic concurrency control check.
+	ExpectedVersion  int    `json:"expectedVersion"`
+	PaymentReference string `json:"paymentReference"`
 }
 
 // ConfirmBookingPaymentParams defines parameters for ConfirmBookingPayment.
@@ -1068,25 +1063,19 @@ type ListFleetsParams struct {
 	Limit      *LimitQueryParam        `form:"limit,omitempty" json:"limit,omitempty"`
 	CategoryId *openapi_types.UUID     `form:"categoryId,omitempty" json:"categoryId,omitempty"`
 	Status     *ListFleetsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
-
-	// XCountryCode ISO 3166-1 alpha-2 operational country code driving multi-country logic.
-	XCountryCode *XCountryCodeHeader `json:"X-Country-Code,omitempty"`
 }
 
 // ListFleetsParamsStatus defines parameters for ListFleets.
 type ListFleetsParamsStatus string
 
-// CreateFleetParams defines parameters for CreateFleet.
-type CreateFleetParams struct {
+// CreateFleetAssetParams defines parameters for CreateFleetAsset.
+type CreateFleetAssetParams struct {
 	// IdempotencyKey Unique mutation request key preventing duplicate execution.
 	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
-
-	// XCountryCode ISO 3166-1 alpha-2 operational country code driving multi-country logic.
-	XCountryCode *XCountryCodeHeader `json:"X-Country-Code,omitempty"`
 }
 
-// SearchFleetsInRadiusParams defines parameters for SearchFleetsInRadius.
-type SearchFleetsInRadiusParams struct {
+// SearchFleetsByRadiusParams defines parameters for SearchFleetsByRadius.
+type SearchFleetsByRadiusParams struct {
 	Latitude  float64 `form:"latitude" json:"latitude"`
 	Longitude float64 `form:"longitude" json:"longitude"`
 	RadiusKm  int     `form:"radiusKm" json:"radiusKm"`
@@ -1096,29 +1085,22 @@ type SearchFleetsInRadiusParams struct {
 
 	// Cursor Opaque cursor identifier for deterministic keyset pagination.
 	Cursor *CursorQueryParam `form:"cursor,omitempty" json:"cursor,omitempty"`
-
-	// XCountryCode ISO 3166-1 alpha-2 operational country code driving multi-country logic.
-	XCountryCode *XCountryCodeHeader `json:"X-Country-Code,omitempty"`
 }
 
 // InitiatePaymentJSONBody defines parameters for InitiatePayment.
 type InitiatePaymentJSONBody struct {
-	BookingId         openapi_types.UUID                       `json:"bookingId"`
-	GatewayIdentifier InitiatePaymentJSONBodyGatewayIdentifier `json:"gatewayIdentifier"`
-	ReturnUrl         string                                   `json:"returnUrl"`
+	BookingId     openapi_types.UUID                   `json:"bookingId"`
+	PaymentMethod InitiatePaymentJSONBodyPaymentMethod `json:"paymentMethod"`
 }
 
 // InitiatePaymentParams defines parameters for InitiatePayment.
 type InitiatePaymentParams struct {
 	// IdempotencyKey Unique mutation request key preventing duplicate execution.
 	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
-
-	// XCountryCode ISO 3166-1 alpha-2 operational country code driving multi-country logic.
-	XCountryCode *XCountryCodeHeader `json:"X-Country-Code,omitempty"`
 }
 
-// InitiatePaymentJSONBodyGatewayIdentifier defines parameters for InitiatePayment.
-type InitiatePaymentJSONBodyGatewayIdentifier string
+// InitiatePaymentJSONBodyPaymentMethod defines parameters for InitiatePayment.
+type InitiatePaymentJSONBodyPaymentMethod string
 
 // ListWalletTransactionsParams defines parameters for ListWalletTransactions.
 type ListWalletTransactionsParams struct {
@@ -1153,21 +1135,24 @@ type CancelBookingJSONRequestBody CancelBookingJSONBody
 // ConfirmBookingPaymentJSONRequestBody defines body for ConfirmBookingPayment for application/json ContentType.
 type ConfirmBookingPaymentJSONRequestBody ConfirmBookingPaymentJSONBody
 
-// CreateFleetJSONRequestBody defines body for CreateFleet for application/json ContentType.
-type CreateFleetJSONRequestBody = CreateFleetRequest
+// CreateFleetAssetJSONRequestBody defines body for CreateFleetAsset for application/json ContentType.
+type CreateFleetAssetJSONRequestBody = CreateFleetRequest
 
 // InitiatePaymentJSONRequestBody defines body for InitiatePayment for application/json ContentType.
 type InitiatePaymentJSONRequestBody InitiatePaymentJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// ListCountries List supported operational countries
+	// ListCountryConfigs List supported operational country configurations
 	// (GET /admin/countries)
-	ListCountries(w http.ResponseWriter, r *http.Request)
-	// UpdateCountryConfig Update country configuration parameters
+	ListCountryConfigs(w http.ResponseWriter, r *http.Request)
+	// GetCountryConfigByCode Retrieve specific country configuration by ISO code
+	// (GET /admin/countries/{countryCode})
+	GetCountryConfigByCode(w http.ResponseWriter, r *http.Request, countryCode string)
+	// UpdateCountryConfig Update operating parameters for country configuration
 	// (PUT /admin/countries/{countryCode})
-	UpdateCountryConfig(w http.ResponseWriter, r *http.Request, countryCode string)
-	// GetAdminUiConfig Retrieve server-driven dynamic UI schema
+	UpdateCountryConfig(w http.ResponseWriter, r *http.Request, countryCode string, params UpdateCountryConfigParams)
+	// GetAdminUiConfig Retrieve dynamic metadata-driven UI configuration
 	// (GET /admin/ui-config)
 	GetAdminUiConfig(w http.ResponseWriter, r *http.Request)
 	// RequestOtp Request an OTP verification code
@@ -1182,46 +1167,46 @@ type ServerInterface interface {
 	// GetCurrentUserProfile Retrieve current authenticated user profile
 	// (GET /auth/users/me)
 	GetCurrentUserProfile(w http.ResponseWriter, r *http.Request)
-	// ListBookings List user bookings
+	// ListBookings List current user bookings
 	// (GET /bookings)
 	ListBookings(w http.ResponseWriter, r *http.Request, params ListBookingsParams)
-	// CreateBooking Initialize a booking hold reservation
+	// CreateBooking Create a booking reservation hold
 	// (POST /bookings)
 	CreateBooking(w http.ResponseWriter, r *http.Request, params CreateBookingParams)
-	// GetBookingById Retrieve booking details
+	// GetBookingById Retrieve detailed booking state by ID
 	// (GET /bookings/{id})
 	GetBookingById(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
-	// SubmitBookingInspection Submit machinery physical inspection record
+	// SubmitBookingInspection Submit check-in or check-out inspection
 	// (POST /bookings/{id}/inspections)
 	SubmitBookingInspection(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params SubmitBookingInspectionParams)
-	// CancelBooking Cancel an active or pending booking
+	// CancelBooking Cancel a pending or active booking
 	// (POST /bookings/{id}:cancel)
 	CancelBooking(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params CancelBookingParams)
-	// ConfirmBookingPayment Transition booking upon payment verification
+	// ConfirmBookingPayment Confirm payment and transition booking to CONFIRMED
 	// (POST /bookings/{id}:confirm-payment)
 	ConfirmBookingPayment(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params ConfirmBookingPaymentParams)
 	// ListCategories List machinery taxonomy categories
 	// (GET /categories)
 	ListCategories(w http.ResponseWriter, r *http.Request)
-	// ListFleets Query machinery fleet inventory
+	// ListFleets List available fleet equipment
 	// (GET /fleets)
 	ListFleets(w http.ResponseWriter, r *http.Request, params ListFleetsParams)
-	// CreateFleet Register a new machinery fleet asset
+	// CreateFleetAsset Register a new machinery asset to fleet
 	// (POST /fleets)
-	CreateFleet(w http.ResponseWriter, r *http.Request, params CreateFleetParams)
-	// GetFleetById Retrieve specific machinery fleet asset
+	CreateFleetAsset(w http.ResponseWriter, r *http.Request, params CreateFleetAssetParams)
+	// GetFleetById Retrieve detailed fleet asset by ID
 	// (GET /fleets/{id})
 	GetFleetById(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
-	// SearchFleetsInRadius Spatial radius search for machinery
+	// SearchFleetsByRadius Spatial radius search for machinery
 	// (GET /geo/fleets/radius-search)
-	SearchFleetsInRadius(w http.ResponseWriter, r *http.Request, params SearchFleetsInRadiusParams)
-	// InitiatePayment Initiate external gateway payment
+	SearchFleetsByRadius(w http.ResponseWriter, r *http.Request, params SearchFleetsByRadiusParams)
+	// InitiatePayment Initiate payment gateway transaction
 	// (POST /payments/initiate)
 	InitiatePayment(w http.ResponseWriter, r *http.Request, params InitiatePaymentParams)
-	// GetOwnerWallet Retrieve authenticated owner wallet summary
+	// GetMyWallet Retrieve owner wallet balance and escrow stats
 	// (GET /wallets/me)
-	GetOwnerWallet(w http.ResponseWriter, r *http.Request)
-	// ListWalletTransactions List wallet transaction ledger
+	GetMyWallet(w http.ResponseWriter, r *http.Request)
+	// ListWalletTransactions List owner wallet transaction ledger entries
 	// (GET /wallets/me/transactions)
 	ListWalletTransactions(w http.ResponseWriter, r *http.Request, params ListWalletTransactionsParams)
 }
@@ -1230,19 +1215,25 @@ type ServerInterface interface {
 
 type Unimplemented struct{}
 
-// ListCountries List supported operational countries
+// ListCountryConfigs List supported operational country configurations
 // (GET /admin/countries)
-func (_ Unimplemented) ListCountries(w http.ResponseWriter, r *http.Request) {
+func (_ Unimplemented) ListCountryConfigs(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// UpdateCountryConfig Update country configuration parameters
+// GetCountryConfigByCode Retrieve specific country configuration by ISO code
+// (GET /admin/countries/{countryCode})
+func (_ Unimplemented) GetCountryConfigByCode(w http.ResponseWriter, r *http.Request, countryCode string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateCountryConfig Update operating parameters for country configuration
 // (PUT /admin/countries/{countryCode})
-func (_ Unimplemented) UpdateCountryConfig(w http.ResponseWriter, r *http.Request, countryCode string) {
+func (_ Unimplemented) UpdateCountryConfig(w http.ResponseWriter, r *http.Request, countryCode string, params UpdateCountryConfigParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// GetAdminUiConfig Retrieve server-driven dynamic UI schema
+// GetAdminUiConfig Retrieve dynamic metadata-driven UI configuration
 // (GET /admin/ui-config)
 func (_ Unimplemented) GetAdminUiConfig(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
@@ -1272,37 +1263,37 @@ func (_ Unimplemented) GetCurrentUserProfile(w http.ResponseWriter, r *http.Requ
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// ListBookings List user bookings
+// ListBookings List current user bookings
 // (GET /bookings)
 func (_ Unimplemented) ListBookings(w http.ResponseWriter, r *http.Request, params ListBookingsParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// CreateBooking Initialize a booking hold reservation
+// CreateBooking Create a booking reservation hold
 // (POST /bookings)
 func (_ Unimplemented) CreateBooking(w http.ResponseWriter, r *http.Request, params CreateBookingParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// GetBookingById Retrieve booking details
+// GetBookingById Retrieve detailed booking state by ID
 // (GET /bookings/{id})
 func (_ Unimplemented) GetBookingById(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// SubmitBookingInspection Submit machinery physical inspection record
+// SubmitBookingInspection Submit check-in or check-out inspection
 // (POST /bookings/{id}/inspections)
 func (_ Unimplemented) SubmitBookingInspection(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params SubmitBookingInspectionParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// CancelBooking Cancel an active or pending booking
+// CancelBooking Cancel a pending or active booking
 // (POST /bookings/{id}:cancel)
 func (_ Unimplemented) CancelBooking(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params CancelBookingParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// ConfirmBookingPayment Transition booking upon payment verification
+// ConfirmBookingPayment Confirm payment and transition booking to CONFIRMED
 // (POST /bookings/{id}:confirm-payment)
 func (_ Unimplemented) ConfirmBookingPayment(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params ConfirmBookingPaymentParams) {
 	w.WriteHeader(http.StatusNotImplemented)
@@ -1314,43 +1305,43 @@ func (_ Unimplemented) ListCategories(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// ListFleets Query machinery fleet inventory
+// ListFleets List available fleet equipment
 // (GET /fleets)
 func (_ Unimplemented) ListFleets(w http.ResponseWriter, r *http.Request, params ListFleetsParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// CreateFleet Register a new machinery fleet asset
+// CreateFleetAsset Register a new machinery asset to fleet
 // (POST /fleets)
-func (_ Unimplemented) CreateFleet(w http.ResponseWriter, r *http.Request, params CreateFleetParams) {
+func (_ Unimplemented) CreateFleetAsset(w http.ResponseWriter, r *http.Request, params CreateFleetAssetParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// GetFleetById Retrieve specific machinery fleet asset
+// GetFleetById Retrieve detailed fleet asset by ID
 // (GET /fleets/{id})
 func (_ Unimplemented) GetFleetById(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// SearchFleetsInRadius Spatial radius search for machinery
+// SearchFleetsByRadius Spatial radius search for machinery
 // (GET /geo/fleets/radius-search)
-func (_ Unimplemented) SearchFleetsInRadius(w http.ResponseWriter, r *http.Request, params SearchFleetsInRadiusParams) {
+func (_ Unimplemented) SearchFleetsByRadius(w http.ResponseWriter, r *http.Request, params SearchFleetsByRadiusParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// InitiatePayment Initiate external gateway payment
+// InitiatePayment Initiate payment gateway transaction
 // (POST /payments/initiate)
 func (_ Unimplemented) InitiatePayment(w http.ResponseWriter, r *http.Request, params InitiatePaymentParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// GetOwnerWallet Retrieve authenticated owner wallet summary
+// GetMyWallet Retrieve owner wallet balance and escrow stats
 // (GET /wallets/me)
-func (_ Unimplemented) GetOwnerWallet(w http.ResponseWriter, r *http.Request) {
+func (_ Unimplemented) GetMyWallet(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// ListWalletTransactions List wallet transaction ledger
+// ListWalletTransactions List owner wallet transaction ledger entries
 // (GET /wallets/me/transactions)
 func (_ Unimplemented) ListWalletTransactions(w http.ResponseWriter, r *http.Request, params ListWalletTransactionsParams) {
 	w.WriteHeader(http.StatusNotImplemented)
@@ -1365,11 +1356,37 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
-// ListCountries operation middleware
-func (siw *ServerInterfaceWrapper) ListCountries(w http.ResponseWriter, r *http.Request) {
+// ListCountryConfigs operation middleware
+func (siw *ServerInterfaceWrapper) ListCountryConfigs(w http.ResponseWriter, r *http.Request) {
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.ListCountries(w, r)
+		siw.Handler.ListCountryConfigs(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetCountryConfigByCode operation middleware
+func (siw *ServerInterfaceWrapper) GetCountryConfigByCode(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "countryCode" -------------
+	var countryCode string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "countryCode", chi.URLParam(r, "countryCode"), &countryCode, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "countryCode", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetCountryConfigByCode(w, r, countryCode)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1394,8 +1411,36 @@ func (siw *ServerInterfaceWrapper) UpdateCountryConfig(w http.ResponseWriter, r 
 		return
 	}
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateCountryConfigParams
+
+	headers := r.Header
+
+	// ------------- Required header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKeyHeader
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: "uuid"})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = IdempotencyKey
+
+	} else {
+		err := fmt.Errorf("Header parameter Idempotency-Key is required, but not found")
+		siw.ErrorHandlerFunc(w, r, &RequiredHeaderError{ParamName: "Idempotency-Key", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.UpdateCountryConfig(w, r, countryCode)
+		siw.Handler.UpdateCountryConfig(w, r, countryCode, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1432,7 +1477,7 @@ func (siw *ServerInterfaceWrapper) RequestOtp(w http.ResponseWriter, r *http.Req
 
 	// ------------- Optional header parameter "X-Country-Code" -------------
 	if valueList, found := headers[http.CanonicalHeaderKey("X-Country-Code")]; found {
-		var XCountryCode XCountryCodeHeader
+		var XCountryCode CountryCodeHeader
 		n := len(valueList)
 		if n != 1 {
 			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-Country-Code", Count: n})
@@ -1473,7 +1518,7 @@ func (siw *ServerInterfaceWrapper) VerifyOtp(w http.ResponseWriter, r *http.Requ
 
 	// ------------- Optional header parameter "X-Country-Code" -------------
 	if valueList, found := headers[http.CanonicalHeaderKey("X-Country-Code")]; found {
-		var XCountryCode XCountryCodeHeader
+		var XCountryCode CountryCodeHeader
 		n := len(valueList)
 		if n != 1 {
 			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-Country-Code", Count: n})
@@ -1620,25 +1665,6 @@ func (siw *ServerInterfaceWrapper) CreateBooking(w http.ResponseWriter, r *http.
 		err := fmt.Errorf("Header parameter Idempotency-Key is required, but not found")
 		siw.ErrorHandlerFunc(w, r, &RequiredHeaderError{ParamName: "Idempotency-Key", Err: err})
 		return
-	}
-
-	// ------------- Optional header parameter "X-Country-Code" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Country-Code")]; found {
-		var XCountryCode XCountryCodeHeader
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-Country-Code", Count: n})
-			return
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Country-Code", valueList[0], &XCountryCode, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
-		if err != nil {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-Country-Code", Err: err})
-			return
-		}
-
-		params.XCountryCode = &XCountryCode
-
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -1915,27 +1941,6 @@ func (siw *ServerInterfaceWrapper) ListFleets(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	headers := r.Header
-
-	// ------------- Optional header parameter "X-Country-Code" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Country-Code")]; found {
-		var XCountryCode XCountryCodeHeader
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-Country-Code", Count: n})
-			return
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Country-Code", valueList[0], &XCountryCode, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
-		if err != nil {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-Country-Code", Err: err})
-			return
-		}
-
-		params.XCountryCode = &XCountryCode
-
-	}
-
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.ListFleets(w, r, params)
 	}))
@@ -1947,14 +1952,14 @@ func (siw *ServerInterfaceWrapper) ListFleets(w http.ResponseWriter, r *http.Req
 	handler.ServeHTTP(w, r)
 }
 
-// CreateFleet operation middleware
-func (siw *ServerInterfaceWrapper) CreateFleet(w http.ResponseWriter, r *http.Request) {
+// CreateFleetAsset operation middleware
+func (siw *ServerInterfaceWrapper) CreateFleetAsset(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 	_ = err
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params CreateFleetParams
+	var params CreateFleetAssetParams
 
 	headers := r.Header
 
@@ -1981,27 +1986,8 @@ func (siw *ServerInterfaceWrapper) CreateFleet(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// ------------- Optional header parameter "X-Country-Code" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Country-Code")]; found {
-		var XCountryCode XCountryCodeHeader
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-Country-Code", Count: n})
-			return
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Country-Code", valueList[0], &XCountryCode, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
-		if err != nil {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-Country-Code", Err: err})
-			return
-		}
-
-		params.XCountryCode = &XCountryCode
-
-	}
-
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.CreateFleet(w, r, params)
+		siw.Handler.CreateFleetAsset(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2037,14 +2023,14 @@ func (siw *ServerInterfaceWrapper) GetFleetById(w http.ResponseWriter, r *http.R
 	handler.ServeHTTP(w, r)
 }
 
-// SearchFleetsInRadius operation middleware
-func (siw *ServerInterfaceWrapper) SearchFleetsInRadius(w http.ResponseWriter, r *http.Request) {
+// SearchFleetsByRadius operation middleware
+func (siw *ServerInterfaceWrapper) SearchFleetsByRadius(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 	_ = err
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params SearchFleetsInRadiusParams
+	var params SearchFleetsByRadiusParams
 
 	// ------------- Required query parameter "latitude" -------------
 
@@ -2111,29 +2097,8 @@ func (siw *ServerInterfaceWrapper) SearchFleetsInRadius(w http.ResponseWriter, r
 		return
 	}
 
-	headers := r.Header
-
-	// ------------- Optional header parameter "X-Country-Code" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Country-Code")]; found {
-		var XCountryCode XCountryCodeHeader
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-Country-Code", Count: n})
-			return
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Country-Code", valueList[0], &XCountryCode, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
-		if err != nil {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-Country-Code", Err: err})
-			return
-		}
-
-		params.XCountryCode = &XCountryCode
-
-	}
-
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.SearchFleetsInRadius(w, r, params)
+		siw.Handler.SearchFleetsByRadius(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2177,25 +2142,6 @@ func (siw *ServerInterfaceWrapper) InitiatePayment(w http.ResponseWriter, r *htt
 		return
 	}
 
-	// ------------- Optional header parameter "X-Country-Code" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Country-Code")]; found {
-		var XCountryCode XCountryCodeHeader
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-Country-Code", Count: n})
-			return
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Country-Code", valueList[0], &XCountryCode, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
-		if err != nil {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-Country-Code", Err: err})
-			return
-		}
-
-		params.XCountryCode = &XCountryCode
-
-	}
-
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.InitiatePayment(w, r, params)
 	}))
@@ -2207,11 +2153,11 @@ func (siw *ServerInterfaceWrapper) InitiatePayment(w http.ResponseWriter, r *htt
 	handler.ServeHTTP(w, r)
 }
 
-// GetOwnerWallet operation middleware
-func (siw *ServerInterfaceWrapper) GetOwnerWallet(w http.ResponseWriter, r *http.Request) {
+// GetMyWallet operation middleware
+func (siw *ServerInterfaceWrapper) GetMyWallet(w http.ResponseWriter, r *http.Request) {
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetOwnerWallet(w, r)
+		siw.Handler.GetMyWallet(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2399,13 +2345,13 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/fleets", wrapper.ListFleets)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/fleets", wrapper.CreateFleet)
+		r.Post(options.BaseURL+"/fleets", wrapper.CreateFleetAsset)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/fleets/{id}", wrapper.GetFleetById)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/geo/fleets/radius-search", wrapper.SearchFleetsInRadius)
+		r.Get(options.BaseURL+"/geo/fleets/radius-search", wrapper.SearchFleetsByRadius)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/bookings", wrapper.ListBookings)
@@ -2429,7 +2375,7 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/payments/initiate", wrapper.InitiatePayment)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/wallets/me", wrapper.GetOwnerWallet)
+		r.Get(options.BaseURL+"/wallets/me", wrapper.GetMyWallet)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/wallets/me/transactions", wrapper.ListWalletTransactions)
@@ -2438,220 +2384,14 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/admin/ui-config", wrapper.GetAdminUiConfig)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/admin/countries", wrapper.ListCountries)
+		r.Get(options.BaseURL+"/admin/countries", wrapper.ListCountryConfigs)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/admin/countries/{countryCode}", wrapper.GetCountryConfigByCode)
 	})
 	r.Group(func(r chi.Router) {
 		r.Put(options.BaseURL+"/admin/countries/{countryCode}", wrapper.UpdateCountryConfig)
 	})
 
 	return r
-}
-
-// Base64 encoded, compressed with deflate, json marshaled OpenAPI spec.
-// Stored as a slice of fixed-width chunks rather than one concatenated
-// const string: with thousands of chunks the chained `+` fold is several
-// times slower for the Go compiler than parsing a slice literal.
-var swaggerSpec = []string{
-	"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",
-	"5K1WcBoSqcq9Shygb2TfXd799wA=",
-}
-
-// decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,
-// after base64-decoding and flate-decompressing the embedded blob.
-func decodeSpec() ([]byte, error) {
-	encoded := strings.Join(swaggerSpec, "")
-	compressed, err := base64.StdEncoding.DecodeString(encoded)
-	if err != nil {
-		return nil, fmt.Errorf("error base64 decoding spec: %w", err)
-	}
-	zr := flate.NewReader(bytes.NewReader(compressed))
-	var buf bytes.Buffer
-	if _, err := buf.ReadFrom(zr); err != nil {
-		return nil, fmt.Errorf("read flate: %w", err)
-	}
-	if err := zr.Close(); err != nil {
-		return nil, fmt.Errorf("close flate reader: %w", err)
-	}
-
-	return buf.Bytes(), nil
-}
-
-var rawSpec = decodeSpecCached()
-
-// a naive cache of the decoded OpenAPI spec
-func decodeSpecCached() func() ([]byte, error) {
-	data, err := decodeSpec()
-	return func() ([]byte, error) {
-		return data, err
-	}
-}
-
-// Constructs a synthetic filesystem for resolving external references when loading openapi specifications.
-func PathToRawSpec(pathToFile string) map[string]func() ([]byte, error) {
-	res := make(map[string]func() ([]byte, error))
-	if len(pathToFile) > 0 {
-		res[pathToFile] = rawSpec
-	}
-
-	return res
-}
-
-// GetSpec returns the OpenAPI specification corresponding to the generated
-// code in this file. External references in the spec are resolved through
-// PathToRawSpec; externally-referenced files must be embedded in their
-// corresponding Go packages (via the import-mapping feature). URL-based
-// external refs are not supported.
-func GetSpec() (swagger *openapi3.T, err error) {
-	resolvePath := PathToRawSpec("")
-
-	loader := openapi3.NewLoader()
-	loader.IsExternalRefsAllowed = true
-	loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
-		pathToFile := url.String()
-		pathToFile = path.Clean(pathToFile)
-		getSpec, ok := resolvePath[pathToFile]
-		if !ok {
-			err1 := fmt.Errorf("path not found: %s", pathToFile)
-			return nil, err1
-		}
-		return getSpec()
-	}
-	var specData []byte
-	specData, err = rawSpec()
-	if err != nil {
-		return
-	}
-	swagger, err = loader.LoadFromData(specData)
-	if err != nil {
-		return
-	}
-	return
-}
-
-// GetSpecJSON returns the raw JSON bytes of the embedded OpenAPI
-// specification: decompressed but not unmarshaled. External references
-// are not resolved here; the bytes are the spec exactly as embedded by
-// codegen. The result is cached at package init time, so repeated calls
-// are cheap.
-func GetSpecJSON() ([]byte, error) {
-	return rawSpec()
-}
-
-// GetSwagger returns the OpenAPI specification corresponding to the
-// generated code in this file.
-//
-// Deprecated: GetSwagger predates kin-openapi renaming openapi3.Swagger
-// to openapi3.T. Use [GetSpec] instead. This wrapper is retained for
-// backwards compatibility.
-func GetSwagger() (*openapi3.T, error) {
-	return GetSpec()
 }

@@ -1,0 +1,57 @@
+get:
+  tags: [booking]
+  summary: List current user bookings
+  description: Returns paginated reservation records for the authenticated renter or equipment owner.
+  operationId: listBookings
+  security:
+    - BearerAuth: []
+  parameters:
+    - $ref: '../../components/parameters/cursor-query-param.yaml'
+    - $ref: '../../components/parameters/limit-query-param.yaml'
+    - name: status
+      in: query
+      required: false
+      schema:
+        $ref: '../../components/schemas/booking.yaml#/BookingStatus'
+  responses:
+    '200':
+      description: User bookings returned.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/booking.yaml#/BookingListSuccessResponse'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'
+
+post:
+  tags: [booking]
+  summary: Create a booking reservation hold
+  description: Places a temporal Valkey lock and creates an initial booking in PENDING_HOLD state.
+  operationId: createBooking
+  security:
+    - BearerAuth: []
+  parameters:
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/booking.yaml#/CreateBookingRequest'
+  responses:
+    '201':
+      description: Booking created and hold lock established.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/booking.yaml#/BookingDetailSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

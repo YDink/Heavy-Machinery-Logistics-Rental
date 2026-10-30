@@ -3,51 +3,55 @@
 **Project Phase:** Phase 1 Complete $\rightarrow$ Transitioning to Phase 2 (Partition Feature Development)  
 **Active Requirement Partition:** `05-01-core-identity-auth`  
 **Active Branch:** `main` (Ready for partition branching: `feature/05-01-core-identity-auth`)  
-**Current Stop Point:** Phase 1 Machine Bootstrap Complete & Certified Across All Three Subsystems
+**Current Stop Point:** Modular OpenAPI Pipeline & Multi-Environment Architecture Implemented & Verified
 
 ---
 
 ## 1. Current Progress Snapshot
 
-### Completed (Phase 1 Subsystem Bootstrap & Infrastructure)
-- **Gate G0 Contracts & Governance:** OpenAPI 3.1.0 contract validated via Spectral (0 errors), 15 L1 ADRs and 80 L2 Decisions verified, zero empty files.
-- **Gate G1-A Containerized Infrastructure:** PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, SeaweedFS S3-compatible storage, and ClamAV running and healthy via Docker Compose.
-- **Gate G1-B Database Baseline & PostGIS:** Migration `000001_init_platform_schema.up.sql` applied; `uuid-ossp`, `pgcrypto`, and `postgis` active; `country_configs` table created and seeded (`ET`, `KE`).
+### Completed (Phase 1 Subsystem Bootstrap, Modular Contracts & Multi-Environment Setup)
+- **Gate G0 Contracts & Governance:**
+  - Decomposed monolithic OpenAPI contract into per-endpoint modular YAMLs (`contracts/endpoints/` and `contracts/components/`).
+  - Implemented Redocly bundler generating `contracts/openapi.bundled.yaml` (54ms build).
+  - Spectral linting passed with 0 errors across all operations and schemas.
+  - 17 L1 ADRs (including ADR-016 and ADR-017) and 80 L2 Decisions verified; zero broken links.
+- **Gate G1-A Containerized Infrastructure:**
+  - PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, SeaweedFS, and ClamAV running and healthy via Docker Compose.
+- **Gate G1-B Database Baseline & PostGIS:**
+  - Migration `000001_init_platform_schema.up.sql` applied; `country_configs` seeded (`ET`, `KE`).
 - **Gate G1-C Backend Modular Monolith (`backend/`):**
-  - Go `1.27.3` module initialized with Chi v5, pgx v5, zap, and OpenTelemetry.
-  - HTTP transport router bindings generated via `oapi-codegen` (`internal/transport/http/generated/api.gen.go`).
-  - Repository data layer generated via `sqlc` (`internal/platform/database/db/`).
-  - Health endpoint implemented (`GET /healthz`) conforming to platform universal envelope.
-  - `go build` and `go test ./...` compiled and passed cleanly.
+  - Go `1.27.3` module with Chi v5, pgx v5, zap, and OpenTelemetry.
+  - Multi-environment configuration package implemented in `internal/platform/config/config.go`.
+  - Enforced production safety invariants (panics on `MOCK_OTP=true` or insecure SSL in `production`).
+  - Unit tests in `internal/platform/config/config_test.go` pass (100% pass rate).
+  - HTTP router bindings generated from bundled contract (`internal/transport/http/generated/api.gen.go`).
+  - `go build ./...` and `go test ./...` compiled and passed cleanly.
 - **Gate G1-D Flutter Mobile Subsystem (`mobile/`):**
-  - Flutter `3.47.9` (Dart `3.13.7`) workspace scaffolded via FVM (`com.dinkmachinery.dink_mobile`).
-  - Architecture dependencies pinned: `flutter_bloc`, `bloc`, `dio`, `isar_community`, `isar_community_generator`, `freezed_annotation`, `flutter_secure_storage`, `geolocator`.
-  - Feature-first Clean Architecture folders established.
-  - `fvm flutter test` and `fvm flutter analyze` passed with 0 issues.
+  - Flutter `3.47.9` (Dart `3.13.7`) managed strictly via FVM.
+  - Multi-flavor configuration in `lib/core/config/app_config.dart` supporting `dev`, `staging`, `prod`.
+  - Flavor entrypoints created: `main_dev.dart`, `main_staging.dart`, `main_prod.dart`.
+  - Android product flavors configured in `android/app/build.gradle.kts`:
+    - `dev`: `com.dinkmachinery.dink_mobile.dev`, app name `Dink (Dev)`.
+    - `staging`: `com.dinkmachinery.dink_mobile.staging`, app name `Dink (Staging)`.
+    - `prod`: `com.dinkmachinery.dink_mobile`, app name `Dink Machinery`.
+  - `fvm flutter test` (5 tests) and `fvm flutter analyze` passed with 0 errors.
 - **Gate G1-E Next.js Admin Web Console (`admin/`):**
-  - Next.js `16.4.3` App Router scaffolded with TypeScript, Tailwind CSS v4, and ESLint via pnpm.
-  - Administrative UI libraries installed: `@tanstack/react-table`, `@tanstack/react-query`, `react-hook-form`, `zod`, `lucide-react`, `sonner`.
-  - Contract TypeScript types generated from `contracts/openapi.yaml` (`src/types/api.generated.ts`).
-  - Turbopack production build (`pnpm run build`) and ESLint passed cleanly.
-- **Gate G2-A Security & Zero-PII Audit:** Verified zero unmasked PII logging in application code; zero floating-point currency representations.
-- **Gate G2-B Git Governance:** `lefthook` v2.2.2 pre-commit and commit-msg hooks active, intercepting commits, and validating atomic doc updates, decision links, and Conventional Commits.
-- **Lockfile Determinism:** All 3 subsystems committed with reproducible lockfiles (`backend/go.sum`, `mobile/pubspec.lock`, `admin/pnpm-lock.yaml`).
-
-### In Progress
-- Refactoring `contracts/` into modular per-endpoint specifications with Redocly bundling (`ADR-016`).
-- Multi-environment setup (Development, Staging, Production) across Backend, Admin, and Mobile (`ADR-017`).
+  - Next.js `16.4.3` App Router with TypeScript, Tailwind CSS v4, ESLint, pnpm.
+  - Multi-environment configuration in `src/lib/config.ts` loading `.env.development`, `.env.staging`, `.env.production`.
+  - Bundler scripts added to `package.json`: `bundle:contract`, `codegen:api`, `generate`.
+  - TypeScript types generated from bundled contract (`src/types/api.generated.ts`).
+  - Production Turbopack build (`pnpm run build`) and ESLint passed cleanly.
+- **Gate G2 Git Governance:**
+  - `lefthook` configured for `contracts/**/*.yaml` bundling and validation.
+  - Atomic doc-commit rule maintained across every commit.
 
 ---
 
 ## 2. Next Immediate Tasks (In Order)
 
-1. Decompose `contracts/openapi.yaml` into per-endpoint modular files (`contracts/endpoints/` and `contracts/components/`).
-2. Configure Redocly bundler pipeline producing `contracts/openapi.bundled.yaml`.
-3. Update code generation commands in `backend/` (`oapi-codegen`) and `admin/` (`openapi-typescript`).
-4. Re-run Spectral linting against the bundled contract.
-5. Setup multi-environment configuration files and mobile flavors (`dev`, `staging`, `prod`).
-6. Verify all test suites and compilation across Go, Flutter, and Next.js.
-7. Commit and push documentation and contract architecture updates.
+1. Commit modular contract architecture, backend config, admin config, and mobile flavor implementations.
+2. Initialize first feature partition branch: `feature/05-01-core-identity-auth`.
+3. Implement Partition 05-01 (OTP Authentication, phone verification, and session management) across Backend, Mobile, and Admin.
 
 ---
 
@@ -57,25 +61,37 @@
 - `ADR-001` through `ADR-017` recorded and verified in `docs/decisions/`.
   - `ADR-016`: Modular OpenAPI Contract Architecture & Per-Endpoint Specification with Redocly Bundling.
   - `ADR-017`: Multi-Environment Architecture & Flavor Strategy (Dev, Staging, Prod across Backend, Admin, Mobile).
-- `D-05-01-001` through `D-11-01-002` (80 decisions across 40 partitions) recorded and verified in `docs/decisions/partitions/`.
-- Canonical Toolchain Resolution: Pinned Go `1.27.3`, Flutter `3.47.9` (via FVM), Node.js `26.13.0`, `pnpm 12.16.1`, Next.js `16.x` (latest CVE patch: `16.4.3`), PostgreSQL `18.6` + PostGIS `3.6.4`, and Valkey `9.1.3`.
+- `D-05-01-001` through `D-11-01-002` (80 decisions across 40 partitions) in `docs/decisions/partitions/`.
 
 ### Blockers
-- None. Phase 0 documentation, contracts, decisions, specifications, toolchains, FVM, and pnpm configurations are 100% complete and validated.
+- None. System is ready for Partition 05-01 feature implementation.
 
 ---
 
-## 4. Files Touched in Current Session
+## 4. Files Modified in Current Task
 
-- `docs/decisions/ADR-016-modular-openapi-contract-architecture.md` (created)
-- `docs/decisions/ADR-017-multi-environment-topology.md` (created)
-- `docs/decisions/INDEX.md` (updated with ADR-016 & ADR-017)
-- `docs/source/Architecture_Design_Document.md` (updated §10.4, §10.5, ADR-015, ADR-016, ADR-017)
-- `docs/source/Heavy_Machinery_Rental_SRS_v2.md` (updated §12.1, §12.2)
-- `docs/shared/architecture/08-communication-patterns-api-design.md` (updated §13)
-- `docs/shared/architecture/10-deployment-architecture.md` (updated §2.3)
-- `docs/shared/architecture/12-architecture-decision-records.md` (updated §3.15, §3.16, §3.17)
-- `docs/shared/requirements/12-tech-stack.md` (updated §4, §5, fixed Flutter 3.47.9)
-- `docs/API_CONVENTIONS.md` (updated §11)
-- `docs/TECH_STACK.md` (updated §8, §9)
+- `contracts/openapi.yaml` (refactored into modular root referencing components and endpoints)
+- `contracts/openapi.bundled.yaml` (generated distribution bundle)
+- `contracts/components/parameters/` (reusable query and header parameters)
+- `contracts/components/responses/` (RFC 9457 standard problem details responses)
+- `contracts/components/schemas/` (isolated domain schemas: auth, fleet, booking, wallet, admin, common)
+- `contracts/endpoints/` (19 endpoint YAML files across auth, machinery, geo, bookings, payments, wallets, admin)
+- `backend/internal/platform/config/config.go` (backend multi-environment config)
+- `backend/internal/platform/config/config_test.go` (backend config tests)
+- `backend/cmd/api/main.go` (wired backend config)
+- `backend/internal/transport/http/generated/api.gen.go` (regenerated from bundled contract)
+- `backend/.env.example`, `backend/.env.dev`, `backend/.env.staging` (backend env templates)
+- `admin/src/lib/config.ts` (admin multi-environment config)
+- `admin/src/app/page.tsx` (environment banner and status display)
+- `admin/src/types/api.generated.ts` (regenerated TypeScript types)
+- `admin/.env.example`, `admin/.env.development`, `admin/.env.staging` (admin env templates)
+- `admin/package.json`, `admin/pnpm-lock.yaml`, `admin/.gitignore` (added redocly, openapi-typescript)
+- `mobile/lib/core/config/app_config.dart` (mobile multi-flavor config)
+- `mobile/lib/main.dart` (updated to consume AppConfig)
+- `mobile/lib/main_dev.dart`, `mobile/lib/main_staging.dart`, `mobile/lib/main_prod.dart` (flavor entrypoints)
+- `mobile/test/core/config/app_config_test.dart` (mobile config tests)
+- `mobile/test/widget_test.dart` (updated widget test with config setup)
+- `mobile/android/app/build.gradle.kts` (configured productFlavors dev, staging, prod)
+- `mobile/android/app/src/main/AndroidManifest.xml` (dynamic app label from flavor resValue)
+- `lefthook.yml` (updated contract bundling and linting hooks)
 - `CONTEXT.md` (updated session state)

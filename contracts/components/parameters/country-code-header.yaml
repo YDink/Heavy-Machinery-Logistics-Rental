@@ -1,0 +1,8 @@
+name: X-Country-Code
+in: header
+required: false
+schema:
+  type: string
+  pattern: '^[A-Z]{2}$'
+  default: "ET"
+description: ISO 3166-1 alpha-2 operational country code driving multi-country logic.

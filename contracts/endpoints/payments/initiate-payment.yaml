@@ -1,0 +1,37 @@
+post:
+  tags: [payment]
+  summary: Initiate payment gateway transaction
+  description: Triggers payment orchestration via Telebirr, CBE Birr, or Chapa.
+  operationId: initiatePayment
+  security:
+    - BearerAuth: []
+  parameters:
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [bookingId, paymentMethod]
+          properties:
+            bookingId:
+              type: string
+              format: uuid
+            paymentMethod:
+              type: string
+              enum: [TELEBIRR, CBE_BIRR, CHAPA, DIRECT_TRANSFER]
+              example: "TELEBIRR"
+  responses:
+    '200':
+      description: Gateway transaction initialized.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/wallet.yaml#/PaymentInitiateSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

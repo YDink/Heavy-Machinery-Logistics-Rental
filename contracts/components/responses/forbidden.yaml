@@ -1,0 +1,5 @@
+description: Forbidden — Authenticated principal lacks RBAC permission to access this resource.
+content:
+  application/json:
+    schema:
+      $ref: '../schemas/common.yaml#/ErrorEnvelope'

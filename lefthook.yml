@@ -16,5 +16,5 @@ pre-commit:
       run: bash scripts/validate-decision-template.sh
 
     spectral-openapi-lint:
-      glob: "contracts/openapi.yaml"
-      run: pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
+      glob: "contracts/**/*.yaml"
+      run: pnpm --dir admin run bundle:contract && pnpm dlx @stoplight/spectral-cli lint contracts/openapi.bundled.yaml --ruleset .spectral.yaml

@@ -1,0 +1,97 @@
+UserProfile:
+  type: object
+  required: [id, phoneNumber, role, status, createdAt]
+  properties:
+    id:
+      type: string
+      format: uuid
+    phoneNumber:
+      type: string
+      example: "+251911223344"
+    fullName:
+      type: string
+      example: "Abebe Bikila"
+    role:
+      type: string
+      enum: [RENTER, OWNER, OPERATOR, ADMIN]
+      example: "RENTER"
+    status:
+      type: string
+      enum: [ACTIVE, SUSPENDED, PENDING_VERIFICATION]
+      example: "ACTIVE"
+    createdAt:
+      type: string
+      format: date-time
+
+AuthTokenPair:
+  type: object
+  required: [accessToken, refreshToken, tokenType, expiresInSeconds]
+  properties:
+    accessToken:
+      type: string
+      example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    refreshToken:
+      type: string
+      example: "def50200abcd..."
+    tokenType:
+      type: string
+      example: "Bearer"
+    expiresInSeconds:
+      type: integer
+      example: 900
+
+OtpRequestSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      type: object
+      required: [verificationSessionId, timeoutSeconds]
+      properties:
+        verificationSessionId:
+          type: string
+          format: uuid
+        timeoutSeconds:
+          type: integer
+          example: 120
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+AuthTokenSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/AuthTokenPair'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+UserProfileSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/UserProfile'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'

@@ -1,0 +1,45 @@
+post:
+  tags: [booking]
+  summary: Confirm payment and transition booking to CONFIRMED
+  description: Validates escrow hold, posts ledger legs, and transitions state machine to CONFIRMED.
+  operationId: confirmBookingPayment
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [expectedVersion, paymentReference]
+          properties:
+            expectedVersion:
+              type: integer
+              description: Optimistic concurrency control check.
+              example: 1
+            paymentReference:
+              type: string
+              example: "TXN-ETB-902348"
+  responses:
+    '200':
+      description: Booking transitioned to CONFIRMED and escrow recorded.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/booking.yaml#/BookingDetailSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-INTRO-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `FLOW-DINK-CORE-V7.0`, `UIUX-DINK-CORE-V7.0`, `contracts/openapi.yaml`  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.9 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), W3C WCAG 2.2 AA / AAA (Outdoor Mode), ISO/IEC/IEEE 42010, ISO 4217, ISO 3166-1 alpha-2  
 **Status:** Approved Engineering Baseline
@@ -95,7 +95,7 @@ In developing African markets, heavy equipment utilization remains inefficient d
 
 ```mermaid
 flowchart TD
-    subgraph MobilePersonas [Mobile Client Personas Flutter 3.47.8]
+    subgraph MobilePersonas [Mobile Client Personas Flutter 3.47.9]
         Renter["Civil Contractor / Site PM<br/>Role: renter<br/>Goal: Find & reserve verified machinery"]
         Owner["Fleet Owner / Yard Manager<br/>Role: owner<br/>Goal: Monetize idle equipment & verify cash"]
         Operator["Field Technician / Driver<br/>Role: operator<br/>Goal: Document handovers & track run hours"]
@@ -218,7 +218,7 @@ This introductory document forms Part 1 of the Dink Machinery modular architectu
 * **`02-system-context.md`:** C4 Level 1 context diagrams, boundary definitions, and external API gateway topologies.
 * **`03-container-architecture.md`:** C4 Level 2 container topologies, runtime allocations, network port mappings, and infrastructure configurations.
 * **`04-modular-monolith.md`:** C4 Level 3 internal component packaging (`internal/modules/*`), domain event bus mechanics, and transaction boundaries.
-* **`05-mobile-architecture.md`:** Flutter 3.47.8 feature-first structure, BLoC state lifecycles, Isar offline outbox sync, and OTA dynamic typography.
+* **`05-mobile-architecture.md`:** Flutter 3.47.9 feature-first structure, BLoC state lifecycles, Isar offline outbox sync, and OTA dynamic typography.
 * **`06-admin-console.md`:** Next.js 16 App Router architecture, dynamic table compilation, Server Actions, and fine-grained RBAC.
 * **`07-data-architecture.md`:** PostgreSQL 18.6 schema catalog, PostGIS spatial queries, GIN JSONB indexing, and immutable double-entry ledger design.
 * **`08-security-architecture.md`:** ASVS Level 3 verification, ES256 JWT lifecycle, WebAuthn ceremonies, AES-256-GCM column encryption, and zero-PII logging.

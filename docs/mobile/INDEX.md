@@ -4,7 +4,7 @@
 **Document Identifier:** `INDEX-MOB-DINK-CORE-V7.0`  
 **Classification:** Canonical Subsystem UI/UX, State Topology & Technical Behavior Index  
 **Governing Documents:** [`Dink_Machinery_UI_UX_Design_Brief.md`](../source/Dink_Machinery_UI_UX_Design_Brief.md), [`00-design-system.md`](../shared/design/00-design-system.md), [`design-tokens.json`](../shared/design/design-tokens.json), [`mobile/DESIGN.md`](../components/mobile/DESIGN.md), [`contracts/openapi.yaml`](../../contracts/openapi.yaml)  
-**Target Runtime:** Flutter 3.47.8 / Dart 3.9 Cross-Platform Mobile Client (Android 8.0+ API 26+, iOS 15.0+)  
+**Target Runtime:** Flutter 3.47.9 / Dart 3.9 Cross-Platform Mobile Client (Android 8.0+ API 26+, iOS 15.0+)  
 **Supported Personas:** Civil Engineering Contractor (*Renter*), Fleet Owner & Yard Manager (*Owner*), Certified Heavy Equipment Operator (*Operator*), Lowboy Hauler (*Transporter*), Corporate Procurement & Approver (*Corporate*)  
 **Core Architecture:** Feature-First Clean Architecture + `flutter_bloc` + `freezed` State Unions + `Isar` NoSQL Encrypted Offline Outbox + `Dio` 4-Tier Interceptor Stack  
 **Total Screen & Subsystem Specifications:** 65 Specifications across 10 Bounded Modules

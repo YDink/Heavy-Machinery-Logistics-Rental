@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-RNT-12`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/05-15-search-discovery-enhancements.md`, `05-04-fleet-discovery-search-comparison.md`, `05-10-notifications-in-app-center.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Corporate Procurement Officer  
 **Associated Requirements:** `REQ-05-15` (`SD-01`..`SD-07`, §6.1 Persistent Saved Searches, §6.2 Availability Standby Queue & Push Re-Engagement), `REQ-05-10` (Push & SMS Alert Dispatch)  
 **Associated Interaction Flows:** `FLOW-04` (`FLOW-DISCOVERY-DINK-CORE-V7.0`), `FLOW-15` / `FLOW-16` (Hold Eviction Standby Wakeup)  
@@ -98,7 +98,7 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor RenterB as Standby Contractor B (Flutter 3.47.8)
+    actor RenterB as Standby Contractor B (Flutter 3.47.9)
     participant HubBloc as SavedSearchesWaitlistBloc
     participant API as Go Monolith (/api/v1/discovery)
     participant Valkey as Valkey 9.1.3 Keyspace Events

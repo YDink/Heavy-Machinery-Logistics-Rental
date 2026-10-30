@@ -38,7 +38,7 @@ To avoid divergence between system architecture documentation and partition-leve
                                                ▼
                                   ┌─────────────────────────┐
                                   │  Multi-Tier Scaffolding │  backend/ (Go 1.27.3)
-                                  │  & Implementation       │  mobile/  (Flutter 3.47.8)
+                                  │  & Implementation       │  mobile/  (Flutter 3.47.9)
                                   └─────────────────────────┘  admin/   (Next.js 16)
 ```
 
@@ -168,7 +168,7 @@ Update the target partition specification under `docs/source/requirements/`. Eva
 ### Step 2: Update Canonical Wire Contract
 If network payloads or error codes change, update `contracts/openapi.yaml` and verify:
 ```bash
-npx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
+pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
 ```
 
 ### Step 3: Synchronize Canonical Requirements to Shared Mirror

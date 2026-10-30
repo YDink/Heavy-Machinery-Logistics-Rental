@@ -92,13 +92,13 @@ jobs:
         with:
           node-version: 26.13.0
 
-      - name: Run npm Audit
+      - name: Run pnpm Audit
         run: |
           if [ -d "admin" ] && [ -f "admin/package.json" ]; then
             cd admin
-            npm audit --audit-level=high
+            pnpm audit --audit-level=high
           else
-            echo "Phase 0 Notice: No admin package.json present. Skipping npm audit."
+            echo "Phase 0 Notice: No admin package.json present. Skipping pnpm audit."
           fi
 
   pii-leakage-check:

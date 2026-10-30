@@ -57,7 +57,7 @@ Every test report must verify adherence to the seven core Dink Machinery archite
 
 | Invariant ID | Architectural Rule | Verification Method & Test Reference | Status | Evidence / Notes |
 |---|---|---|---|---|
-| **INV-01** | **Canonical Contract Supremacy**<br>OpenAPI 3.1.0 compliant; 0 Spectral errors; 0 unapproved breaking changes. | `npx @stoplight/spectral-cli lint contracts/openapi.yaml`<br>`oasdiff breaking origin/main:...` | `[PASS / FAIL]` | Spectral passed with 0 errors, 0 warnings. |
+| **INV-01** | **Canonical Contract Supremacy**<br>OpenAPI 3.1.0 compliant; 0 Spectral errors; 0 unapproved breaking changes. | `pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml`<br>`oasdiff breaking origin/main:...` | `[PASS / FAIL]` | Spectral passed with 0 errors, 0 warnings. |
 | **INV-02** | **Deterministic Minor-Unit Money**<br>64-bit integer minor units (`MoneyAmount`); 0 floating-point money properties. | Spectral `no-floating-point-money` rule;<br>`TestMoney_BasisPoints_DivisionFloor` | `[PASS / FAIL]` | Verified in persistence models and wire schemas. |
 | **INV-03** | **In-Transaction Ledger Atomicity**<br>State transitions and ledger writes execute in single `pgx.Tx`; debit/credit sum $= 0$. | `TestLedger_DoubleEntry_Atomicity`<br>`TestBooking_Hold_RollbackOnFailure` | `[PASS / FAIL]` | `financial_ledger_entries` balanced to 0 minor units. |
 | **INV-04** | **Optimistic Concurrency Control (OCC)**<br>Stateful updates assert and increment `version INT NOT NULL DEFAULT 1`. | `TestBooking_ConcurrentUpdate_Conflict`<br>`TestFleet_VersionMismatch_Returns409` | `[PASS / FAIL]` | Second concurrent write rejected with HTTP 409. |
@@ -80,7 +80,7 @@ Every test report must verify adherence to the seven core Dink Machinery archite
 | **L2: Cache Integration** | `testcontainers-go` (Valkey 9.1.3-alpine) | 0 | 0 | 0 | 0 | 0 | 0.0s |
 | **L3: Provider Wire** | `kin-openapi` Chi Handler Tests | 0 | 0 | 0 | 0 | 0 | 0.0s |
 | **L3: Consumer Wire** | Mobile Dio / Admin Prism Mock Tests | 0 | 0 | 0 | 0 | 0 | 0.0s |
-| **L4: Security & Static** | Gitleaks, Semgrep, Govulncheck, npm audit | 0 | 0 | 0 | 0 | 0 | 0.0s |
+| **L4: Security & Static** | Gitleaks, Semgrep, Govulncheck, pnpm audit | 0 | 0 | 0 | 0 | 0 | 0.0s |
 | **L4: Accessibility** | Mobile Touch Targets & Admin Axe-core | 0 | 0 | 0 | 0 | 0 | 0.0s |
 | **L4: Performance** | k6 Load Tests & PostGIS Buffer Benchmarks | 0 | 0 | 0 | 0 | 0 | 0.0s |
 | **L5: End-to-End** | Patrol (Mobile) & Playwright (Admin) | 0 | 0 | 0 | 0 | 0 | 0.0s |
@@ -155,7 +155,7 @@ Record all defects, anomalies, or unexpected behaviors discovered during this te
 | **Zero-PII Logging** | Regex static scanner | `backend/`, `mobile/`, `admin/` | 0 unmasked logs found | 0 unmasked allowed | `[PASS/FAIL]` |
 | **Application SAST** | Semgrep | Go backend & Admin Next.js | 0 High/Critical findings | 0 High/Critical | `[PASS/FAIL]` |
 | **Go Dependency Scan** | Govulncheck | Go 1.27.3 call-tree | 0 reachable CVEs | 0 reachable CVEs | `[PASS/FAIL]` |
-| **Node Dependency Scan**| npm audit | Next.js 16 dependencies | 0 High/Critical vulnerabilities | 0 High/Critical | `[PASS/FAIL]` |
+| **Node Dependency Scan**| pnpm audit | Next.js 16 dependencies | 0 High/Critical vulnerabilities | 0 High/Critical | `[PASS/FAIL]` |
 | **Container Hardening** | Trivy | `dink-backend:latest` | 0 Critical base image CVEs | 0 Critical CVEs | `[PASS/FAIL]` |
 | **Antivirus Pipeline** | ClamAV Synthetic EICAR | Inspection upload stream | Malware stream rejected (422) | Immediate block | `[PASS/FAIL]` |
 
@@ -187,7 +187,7 @@ echo "    Reproducing Test Report: [REPORT_IDENTIFIER]                  "
 echo "=================================================================="
 
 # 1. Static Contract & Governance Verification
-npx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
+pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
 bash scripts/validate-decision-template.sh
 bash scripts/validate-decision-links.sh
 
@@ -204,14 +204,14 @@ cd ..
 
 # 4. Mobile Test Suite & Accessibility
 cd mobile
-flutter analyze
-flutter test --coverage
+fvm flutter analyze
+fvm flutter test --coverage
 cd ..
 
 # 5. Admin Web Console Linter & Build
 cd admin
-npm run lint
-npm run build
+pnpm run lint
+pnpm run build
 cd ..
 
 echo "SUCCESS: Test execution reproduced cleanly."

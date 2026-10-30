@@ -4,7 +4,7 @@
 **Document Identifier:** `FLOW-PHONE-MIGRATION-DINK-CORE-V7.0`  
 **Classification:** Canonical User Interaction Flow & Wire Protocol Specification (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (§5.1.1, §4 User Roles & Permissions, §10 Security & Identity Architecture, §11), `FLOW-ENTRY-DINK-CORE-V7.0`, `FLOW-RENTER-AUTH-DINK-CORE-V7.0`, `FLOW-OWNER-KYC-DINK-CORE-V7.0`, `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `FLOW-PAYMENT-DISPUTE-DINK-CORE-V7.0`, `FLOW-ADMIN-OPS-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-005`, `ADR-008`, `ADR-010`  
-**Target Client Runtimes:** Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Admin Web Console), Go 1.27.3 Backend Monolith, PostgreSQL 18.6, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3  
+**Target Client Runtimes:** Flutter 3.47.9 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Admin Web Console), Go 1.27.3 Backend Monolith, PostgreSQL 18.6, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3  
 **Target Personas:** Fleet Owner (*W/ro Almaz Tesfaye*), Civil Contractor (*Dawit Haile-Mariam*), Compliance Officer (*Yohannes Bekele*), Field Operator (*Mulugeta Tadesse*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Authentication Verification, Account Management & Session Termination), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mode) & Level AA (Admin Mode), Ethiopian Communications Authority (ECA) SIM Directives, National Bank of Ethiopia (NBE) Financial Crime Directives  
@@ -35,7 +35,7 @@
   - 5.2 [Recycled MSISDN Collision Handling (Prior Owner Recycling)](#52-recycled-msisdn-collision-handling-prior-owner-recycling)
   - 5.3 [Cross-Border Migration (`ET` +251 $\leftrightarrow$ `KE` +254) & Currency Ledger Safeguards](#53-cross-border-migration-et-251-leftrightarrow-ke-254--currency-ledger-safeguards)
   - 5.4 [Offline Field Interception & Outbox Queuing Prohibition](#54-offline-field-interception--outbox-queuing-prohibition)
-- 6. [Client UI/UX Ergonomic Specifications & Design Tokens (Flutter 3.47.8)](#6-client-uiux-ergonomic-specifications--design-tokens-flutter-344)
+- 6. [Client UI/UX Ergonomic Specifications & Design Tokens (Flutter 3.47.9)](#6-client-uiux-ergonomic-specifications--design-tokens-flutter-344)
   - 6.1 [Number Input Formatter & Carrier Auto-Detection ($56 \times 56\text{ dp}$)](#61-number-input-formatter--carrier-auto-detection-56-times-56text-dp)
   - 6.2 [Split 6-Digit OTP Reticle with Auto-Focus & Telephony Retriever API](#62-split-6-digit-otp-reticle-with-auto-focus--telephony-retriever-api)
   - 6.3 [Emergency Self-Service Lockout Bottom Sheet](#63-emergency-self-service-lockout-bottom-sheet)
@@ -454,7 +454,7 @@ Unlike equipment inspections and specification forms (`ADR-010`), **security and
 
 ---
 
-## 6. Client UI/UX Ergonomic Specifications & Design Tokens (Flutter 3.47.8)
+## 6. Client UI/UX Ergonomic Specifications & Design Tokens (Flutter 3.47.9)
 
 ### 6.1 Number Input Formatter & Carrier Auto-Detection ($56 \times 56\text{ dp}$)
 

@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-OWN-07`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (§5.2.4, §5.5, §5.8, `BK-05`..`BK-08`, `FL-25`..`FL-31`, `FL-38`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Equipment Fleet Owner & Depot Yard Manager (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*)  
 **Associated Requirements:** `REQ-05-05` (`BK-05` to `BK-08`), `REQ-05-02` (`FL-25`..`FL-31`, `FL-38` Linked Operator Roster Assignment), `REQ-05-08` (Logistics Sub-Booking Trigger)  
 **Associated Interaction Flows:** `FLOW-07` (Booking State Machine), `FLOW-08` (Wire Prepayment & Verification), `FLOW-11` (Lowboy Transport Coupling)  

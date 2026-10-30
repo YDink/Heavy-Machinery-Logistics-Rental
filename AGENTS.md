@@ -118,12 +118,14 @@ All client-facing errors (4xx and 5xx) must serve `application/problem+json` sem
 - Mutations use command handlers returning `Result[T, E]` or error types. Queries use specialized query handlers returning read-optimized DTOs.
 - `sqlc` is the standard for SQL generation. Raw SQL strings within application logic are prohibited.
 
-### Flutter Mobile
+### Flutter Mobile (FVM)
+- Subsystem SDK and toolchain are managed strictly via FVM (.fvmrc). All Flutter commands execute via `fvm flutter ...`.
 - State management relies strictly on the BLoC pattern (`flutter_bloc`). UI widgets emit events; state changes are received via typed states.
 - Clean separation: Presentation (Widgets/BLoC) → Domain (Use Cases/Entities) → Data (Data Sources/Repositories).
 - Network calls are routed through a configured `Dio` client with logging, auth refresh, and error-to-problem-details interceptors.
 
-### Next.js Admin Panel
+### Next.js Admin Panel (pnpm)
+- Package management relies strictly on `pnpm` (pnpm-lock.yaml). Use of `npm` or `yarn` is prohibited.
 - Next.js App Router architecture utilizing React Server Components (RSC) for reads and Server Actions for mutations.
 - Dynamic administrative panels are server-rendered from metadata schemas; no client-side hardcoded tables or dynamic form structures.
 - Forms utilize `react-hook-form` paired with strict `zod` schemas matching OpenAPI contracts.
@@ -207,7 +209,7 @@ Every L1 and L2 decision entry must strictly document:
 ### Version Management & Pinning
 - Documentation files must never hardcode ephemeral patch or framework versions.
 - At bootstrap execution, tooling will fetch the latest stable LTS releases of runtimes, libraries, and frameworks.
-- Once created, runtime versions and package trees are pinned via lockfiles (`go.sum`, `pubspec.lock`, `package-lock.json`, and `.tool-versions`). Any subsequent major version bump requires an L1 ADR.
+- Once created, runtime versions and package trees are pinned via lockfiles (`go.sum`, `pubspec.lock`, `pnpm-lock.yaml`, and `.tool-versions`). Any subsequent major version bump requires an L1 ADR.
 
 ---
 

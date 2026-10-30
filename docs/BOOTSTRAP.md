@@ -12,7 +12,7 @@ This runbook defines the exact, deterministic sequence required to transition Di
 
 ### Invariant Rules During Bootstrap
 1. **Zero Domain Logic in Phase 1:** Bootstrapping creates runtime scaffolds, dependency graphs, database extensions, code-generation pipelines, and continuous integration gates. No partition business logic (e.g., booking state transitions, payment gateway integrations) may be implemented during Phase 1.
-2. **Strict Lockfile Pinning:** Every scaffolded subsystem (`backend/`, `mobile/`, `admin/`) must generate and commit deterministic lockfiles (`go.sum`, `pubspec.lock`, `package-lock.json`).
+2. **Strict Lockfile Pinning:** Every scaffolded subsystem (`backend/`, `mobile/`, `admin/`) must generate and commit deterministic lockfiles (`go.sum`, `pubspec.lock`, `pnpm-lock.yaml`).
 3. **Canonical Verification:** The bootstrap is considered complete only when all verification gates in `docs/quality/BOOTSTRAP_CHECKLIST.md` pass without warnings.
 
 ---
@@ -24,10 +24,10 @@ Ensure the host workstation meets the required toolchain specifications before s
 | Runtime / Tool | Required Version | Verification Command | Purpose |
 |---|---|---|---|
 | **Go** | `1.27.3` | `go version` | Backend modular monolith engine |
-| **Flutter / Dart** | `3.47.8` / `3.9.x` | `flutter --version` | Cross-platform mobile client |
-| **Node.js / npm** | `26.13.0` / `10.x+` | `node -v && npm -v` | Admin web console & contract tooling |
+| **Flutter / Dart** | `3.47.9` / `3.9.x` | `flutter --version` | Cross-platform mobile client |
+| **Node.js / pnpm** | `26.13.0` / `10.x+` | `node -v && pnpm -v` | Admin web console & contract tooling |
 | **Docker Engine & Compose** | `27.x+` / `v2.x+` | `docker compose version` | Local containerized infrastructure |
-| **Spectral CLI** | `v6.x+` | `npx @stoplight/spectral-cli -v` | OpenAPI 3.1.0 contract linting |
+| **Spectral CLI** | `v6.x+` | `pnpm dlx @stoplight/spectral-cli -v` | OpenAPI 3.1.0 contract linting |
 | **sqlc** | `v1.27+` | `sqlc version` | Type-safe SQL code generation |
 | **oapi-codegen** | `v2.4+` | `oapi-codegen --version` | Go transport code generation |
 | **golang-migrate** | `v4.18+` | `migrate -version` | Database migration runner |
@@ -57,7 +57,7 @@ Before generating code or directories, run the documentation linting and archite
 
 ```bash
 # 1. Lint OpenAPI canonical contract
-npx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
+pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
 
 # 2. Audit decision records and templates
 bash scripts/validate-decision-template.sh
@@ -289,20 +289,20 @@ cd ..
 
 ---
 
-### Step 4: Flutter Mobile Subsystem Bootstrap (Flutter 3.47.8)
+### Step 4: Flutter Mobile Subsystem Bootstrap (Flutter 3.47.9)
 
 Scaffold the cross-platform mobile workspace, pin dependencies, and establish the feature-first Clean Architecture hierarchy.
 
 ```bash
-flutter create --org com.dinkmachinery --project-name dink_mobile mobile
+fvm flutter create --org com.dinkmachinery --project-name dink_mobile mobile
 cd mobile
 
 # Add core architecture dependencies
-flutter pub add flutter_bloc bloc get_it dio isar isar_flutter_libs \
+fvm flutter pub add flutter_bloc bloc get_it dio isar isar_flutter_libs \
   freezed_annotation json_annotation flutter_secure_storage geolocator \
   equatable intl
 
-flutter pub add --dev build_runner freezed json_serializable isar_generator
+fvm flutter pub add --dev build_runner freezed json_serializable isar_generator
 
 # Create Feature-First Architecture Layout
 mkdir -p lib/core/network \
@@ -323,7 +323,7 @@ mkdir -p lib/core/network \
   lib/features/inspection/data
 
 # Verify Flutter compilation and lockfile generation
-flutter test
+fvm flutter test
 cd ..
 ```
 
@@ -334,26 +334,26 @@ cd ..
 Scaffold the Next.js App Router admin application with TypeScript, Tailwind CSS v4, and Radix UI primitives.
 
 ```bash
-npx create-next-app@latest admin \
+pnpm create next-app admin \
   --typescript \
   --tailwind \
   --eslint \
   --app \
   --src-dir \
   --import-alias "@/*" \
-  --use-npm
+  --use-pnpm
 
 cd admin
 
 # Install administrative UI libraries
-npm install @tanstack/react-table @tanstack/react-query \
+pnpm add @tanstack/react-table @tanstack/react-query \
   react-hook-form @hookform/resolvers zod lucide-react sonner clsx tailwind-merge
 
 # Generate TypeScript types from canonical OpenAPI contract
-npx openapi-typescript ../contracts/openapi.yaml -o src/types/api.generated.ts
+pnpm dlx openapi-typescript ../contracts/openapi.yaml -o src/types/api.generated.ts
 
 # Verify production build and lockfile integrity
-npm run build
+pnpm run build
 cd ..
 ```
 
@@ -370,7 +370,7 @@ pre-commit:
   commands:
     spectral-lint:
       glob: "contracts/*.yaml"
-      run: npx @stoplight/spectral-cli lint {staged_files} --ruleset .spectral.yaml
+      run: pnpm dlx @stoplight/spectral-cli lint {staged_files} --ruleset .spectral.yaml
     decision-template-check:
       glob: "docs/decisions/**/*.md"
       run: bash scripts/validate-decision-template.sh
@@ -386,7 +386,7 @@ pre-commit:
 commit-msg:
   commands:
     commitlint:
-      run: npx commitlint --config .github/commitlint.config.js --edit {1}
+      run: pnpm dlx commitlint --config .github/commitlint.config.js --edit {1}
 ```
 
 Install hooks:
@@ -414,10 +414,10 @@ docker compose exec postgres psql -U postgres -d dink_machinery_dev -c "SELECT c
 cd backend && go vet ./... && go test -race ./... && cd ..
 
 # 5. Run mobile test suite
-cd mobile && flutter test && cd ..
+cd mobile && fvm flutter test && cd ..
 
 # 6. Run admin lint and type checking
-cd admin && npm run lint && cd ..
+cd admin && pnpm run lint && cd ..
 
 # 7. Run ASVS L3 Zero-PII logging check
 bash -c "grep -rEni 'logger.*\.(Info|Debug|Warn|Error).*(password|national_id|tin_number|bank_account)' backend/ admin/ mobile/ && exit 1 || echo 'Zero PII logging asserted.'"
@@ -436,7 +436,7 @@ Once all verification checks pass:
    git add .
    git commit -m "[BOOTSTRAP] feat(platform): complete phase 1 repository bootstrap
 
-   Initialized Go 1.27.3 modular monolith, Flutter 3.47.8 mobile client, Next.js 16
+   Initialized Go 1.27.3 modular monolith, Flutter 3.47.9 mobile client, Next.js 16
    admin console, PostgreSQL 18.6 + PostGIS baseline schema, and Lefthook governance.
 
    Tests: All baseline subsystem compilation and test suites passing.

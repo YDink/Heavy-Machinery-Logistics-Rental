@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-OPR-07`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (§5.6.3, §5.7.3, §5.8.5, `AR-02`, `AR-08`, `RC-02`, `LG-06`, `LG-07`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Contractor Site Supervisor (*Dawit Haile-Mariam*), Certified Operator (*Mulugeta Tadesse*), Depot Yard Manager (*W/ro Almaz Tesfaye*), Lowboy Carrier (*Ato Girma Wolde*)  
 **Associated Requirements:** `REQ-05-06` (`AR-02`, `AR-08` Vector Digital Signature & Wet/Damaged Screen OTP Fallback), `REQ-05-07` (`RC-02` Return Sign-Off), `REQ-05-08` (`LG-06` Pickup Release, `LG-07` Site Delivery Receipt)  
 **Associated Interaction Flows:** `FLOW-09` (Handover Sign-Off), `FLOW-10` (Return Sign-Off), `FLOW-11` (Logistics Loading/Offloading Sign-Off)  

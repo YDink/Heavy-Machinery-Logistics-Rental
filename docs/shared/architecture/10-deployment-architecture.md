@@ -361,8 +361,8 @@ ENTRYPOINT ["/app/dink-server"]
 FROM node:26.13.0-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 FROM node:26.13.0-alpine AS builder
 WORKDIR /app
@@ -372,7 +372,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-RUN npm run build
+RUN pnpm run build
 
 FROM node:26.13.0-alpine AS runner
 WORKDIR /app

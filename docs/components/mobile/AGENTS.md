@@ -1,6 +1,6 @@
 # Mobile Client Agent Instructions & Engineering Protocols (`mobile/`) — Dink Machinery
 
-**Subsystem:** Flutter 3.47.8 Cross-Platform Mobile Client (`mobile/`)  
+**Subsystem:** Flutter 3.47.9 Cross-Platform Mobile Client (`mobile/`)  
 **Target:** AI Agents, Mobile Systems Engineers & Flutter Architects  
 **Scope:** Architectural rules, Feature-First Clean Architecture, BLoC state management, API client generation, offline persistence, dynamic font delivery, and testing gates for `mobile/`.  
 **Governing Documents:** `AGENTS.md`, `TECH_STACK.md`, `CODE_STANDARDS.md`, `API_CONVENTIONS.md`, `ERROR_CATALOG.md`, `DEFINITION_OF_DONE.md`  
@@ -10,7 +10,7 @@
 
 ## 1. Subsystem Mission & Non-Negotiable Architectural Invariants
 
-The **Flutter 3.47.8 Mobile Client** (`mobile/`) serves as the primary operational edge for Dink Machinery across Ethiopia and Kenya. It provides role-tailored interfaces for three distinct personas:
+The **Flutter 3.47.9 Mobile Client** (`mobile/`) serves as the primary operational edge for Dink Machinery across Ethiopia and Kenya. It provides role-tailored interfaces for three distinct personas:
 1. **Equipment Renters:** Machinery catalog search, PostGIS radius discovery, 60-minute reservation holds, and Telebirr/CBEBirr/MPESA mobile checkout.
 2. **Fleet Owners:** Asset management, utilization telemetry, escrow disbursement tracking, and digital maintenance logging.
 3. **Field Operators:** Joint check-in/check-out site inspections, monotonic operating hours meter logging, ClamAV-scanned condition photo capture, and offline signature synchronization.
@@ -36,14 +36,14 @@ Any agent modifying or authoring code within `mobile/` must strictly adhere to t
      ┌───────────────────┬────────────────────┴───────────────────┬───────────────────┐
      ▼                   ▼                                        ▼                   ▼
 [Runtime & SDK]     [State & UI Architecture]                [Persistence & I/O] [Security & Hardware]
- - Flutter 3.47.8    - flutter_bloc v8.1+                     - Dio v5.7+         - flutter_secure_storage
+ - Flutter 3.47.9    - flutter_bloc v8.1+                     - Dio v5.7+         - flutter_secure_storage
  - Dart 3.9.x        - freezed & freezed_annotation v2.4+     - Isar v3.1+        - Local Auth (Biometrics)
  - Material 3 Theme  - dynamic font loader (ADR-013)          - geolocator        - image_picker / camera
 ```
 
 | Layer / Concern | Technology & Version | Purpose & Architectural Rules |
 |---|---|---|
-| **Core Framework** | Flutter `3.47.8` (Dart `3.9.x`) | Multi-platform compilation for Android (API 26+) and iOS (15.0+). |
+| **Core Framework** | Flutter `3.47.9` (Dart `3.9.x`) | Multi-platform compilation for Android (API 26+) and iOS (15.0+). |
 | **State Management** | `flutter_bloc` (`^8.1.6`) | Unidirectional reactive state machines, event-to-state mapping. |
 | **Data Immutability** | `freezed` (`^2.5.7`) | Union states, pattern matching, value equality, and copy-with semantics. |
 | **HTTP Networking** | `dio` (`^5.7.0`) | Pluggable interceptor pipeline (Auth, Country, Idempotency, RFC 9457). |
@@ -436,7 +436,7 @@ Mobile testing adheres to ISO/IEC/IEEE 29119 across unit, widget, golden, and in
 
 ```mermaid
 flowchart TD
-  MobileCI[Flutter Test Suite] --> StaticLint[flutter analyze --fatal-infos]
+  MobileCI[Flutter Test Suite] --> StaticLint[fvm flutter analyze --fatal-infos]
   MobileCI --> UnitTests[BLoC Unit Tests &bloc_test]
   MobileCI --> A11yTests[WCAG AA meetsGuideline Assertions]
   MobileCI --> GoldenTests[Golden Pixel Comparison Tests]
@@ -506,5 +506,5 @@ Before any pull request modifying `mobile/` is merged into `main`, verify compli
 - [ ] **Hardware Secure Storage:** Session tokens, refresh credentials, and biometric flags reside in `FlutterSecureStorage`.
 - [ ] **Touch Target Invariant:** All buttons and interactive controls satisfy minimum $48 \times 48\text{ dp}$ bounding box.
 - [ ] **Text Scaling Resilience:** Views scale cleanly to $200\%$ system font size without layout overflow or text truncation.
-- [ ] **Static Analysis & Tests:** `flutter analyze` reports 0 issues; `flutter test --coverage` passes with 100% success rate.
+- [ ] **Static Analysis & Tests:** `fvm flutter analyze` reports 0 issues; `fvm flutter test --coverage` passes with 100% success rate.
 - [ ] **Atomic Context Tracking:** `CONTEXT.md` updated and staged in the exact same commit.

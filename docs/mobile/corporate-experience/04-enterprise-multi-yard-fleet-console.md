@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-CRP-04`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/06-04-corporate-fleet-management-owner-side.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Corporate Fleet Owner Executive (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Regional Fleet Operations Manager (*Dawit Haile-Mariam*), Depot Yard Supervisor (*Kassahun Mekonnen*)  
 **Associated Requirements:** `REQ-06-04` (`CFM-01`..`CFM-05`, Multi-Depot PostGIS Zoning, Yard-Level RBAC Delegation, CAN Bus / J1939 Telematics Sync, Preventive Maintenance Alerts)  
 **Associated Interaction Flows:** `FLOW-FLEET-REG-DINK-CORE-V7.0`, `FLOW-09` (Active Telemetry & Meter Audit)  
@@ -106,7 +106,7 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Sup as Yard Supervisor (Flutter 3.47.8)
+    actor Sup as Yard Supervisor (Flutter 3.47.9)
     participant YardBloc as EnterpriseYardConsoleBloc
     participant API as Go Monolith (/api/v1/corporate/fleet)
     participant PG as PostgreSQL 18.6 + PostGIS 3.6.4

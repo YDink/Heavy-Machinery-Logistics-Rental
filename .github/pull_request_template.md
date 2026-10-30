@@ -46,8 +46,8 @@
 <!-- Paste exact test commands executed and relevant output snippets. -->
 ```bash
 # Example: go test -v -race -cover ./internal/booking/...
-# Example: flutter test test/unit/...
-# Example: npm run test
+# Example: fvm flutter test test/unit/...
+# Example: pnpm run test
 ```
 
 ---

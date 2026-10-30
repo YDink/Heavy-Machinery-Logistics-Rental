@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-RNT-10`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/05-08-logistics-transport-integration.md`, `05-05-booking-reservation-flow.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Equipment Fleet Owner (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*)  
 **Associated Requirements:** `REQ-05-08` (`LG-01`..`LG-08`, `FL-28`..`FL-31`), `REQ-05-05` (§8.1 `ParentBookingID`, §8.2 `AWAITING_FLEET_READINESS`, §8.3 Reverse Cancellation Cascade)  
 **Associated Interaction Flows:** `FLOW-11` (`FLOW-LOGISTICS-DINK-CORE-V7.0`), `FLOW-18` (`FLOW-REVERSE-CASCADE-DINK-CORE-V7.0`)  
@@ -109,7 +109,7 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Renter as Contractor / Owner (Flutter 3.47.8)
+    actor Renter as Contractor / Owner (Flutter 3.47.9)
     participant LogBloc as LogisticsSubBookingBloc
     participant API as Go Monolith (/api/v1/bookings/{id}/logistics)
     participant PG as PostgreSQL 18.6 + PostGIS 3.6.4

@@ -4,7 +4,7 @@
 **Document Identifier:** `DS-PERSONAS-DINK-CORE-V7.0`  
 **Classification:** Canonical Design Specification & User Experience Modeling (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `DS-DINK-CORE-V7.0` (Design System), `ARCH-INTRO-DINK-CORE-V7.0` through `ARCH-ROADMAP-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-014`  
-**Target Runtimes:** Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Desktop Admin Web Console), Android API 26+, iOS 15+  
+**Target Runtimes:** Flutter 3.47.9 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Desktop Admin Web Console), Android API 26+, iOS 15+  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** ISO 9241-110 (Ergonomics of Human-System Interaction), W3C WCAG 2.2 Level AAA (Field Mode) & Level AA (Office Mode), Ethiopian Personal Data Protection Proclamation No. 1321/2024, National Bank of Ethiopia (NBE) Financial Directives  
 **Status:** Approved Engineering Baseline

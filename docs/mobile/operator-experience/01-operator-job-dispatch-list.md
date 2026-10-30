@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-OPR-01`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (§4, §5.2.5, §5.6, §5.12, `FL-25`..`FL-27`, `FL-38`, `GPS-01`..`GPS-04`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Certified Heavy Machinery Operator (*Mulugeta Tadesse* / *Juma Omwamba*)  
 **Associated Requirements:** `REQ-04` (Operator Persona & RBAC), `REQ-05-02` (`FL-25`..`FL-27`, `FL-38` Bilateral Operator Invitation & Yard Linking), `REQ-05-12` (`GPS-01`..`GPS-04` Explicit GPS Consent & Privacy Perimeter)  
 **Associated Interaction Flows:** `FLOW-07` (Booking Assignment), `FLOW-09` (Active Rental Handover & Shift Execution)  

@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-TECH-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `ARCH-INTRO-DINK-CORE-V7.0` through `ARCH-ROADMAP-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-014`  
-**Target Runtimes:** Go 1.27.3, Flutter 3.47.8 / Dart 3.9, Next.js 16.x (latest CVE security patch) / React 19, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon, OpenBao KMS, Traefik 3.x  
+**Target Runtimes:** Go 1.27.3, Flutter 3.47.9 / Dart 3.9, Next.js 16.x (latest CVE security patch) / React 19, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon, OpenBao KMS, Traefik 3.x  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), ISO/IEC 27001:2022, ISO 4217, ISO 3166-1 alpha-2, Ethiopian Personal Data Protection Proclamation No. 1321/2024, NBE Directives  
 **Status:** Approved Engineering Baseline
@@ -18,7 +18,7 @@
 - 3. [Tier 2: Backend Application Runtime & Core Libraries (Go Monolith)](#3-tier-2-backend-application-runtime--core-libraries-go-monolith)
 - 4. [Tier 3: Persistence, Spatial Engine & Distributed Caching](#4-tier-3-persistence-spatial-engine--distributed-caching)
 - 5. [Tier 4: Object Storage & Content Security](#5-tier-4-object-storage--content-security)
-- 6. [Tier 5: Cross-Platform Mobile Client (Flutter 3.47.8)](#6-tier-5-cross-platform-mobile-client-flutter-344)
+- 6. [Tier 5: Cross-Platform Mobile Client (Flutter 3.47.9)](#6-tier-5-cross-platform-mobile-client-flutter-344)
 - 7. [Tier 6: Administrative Operations Web Console (Next.js 16)](#7-tier-6-administrative-operations-web-console-nextjs-16)
 - 8. [Tier 7: Security, Identity & Cryptography Infrastructure](#8-tier-7-security-identity--cryptography-infrastructure)
 - 9. [Tier 8: Observability, SRE & Alerting Mesh](#9-tier-8-observability-sre--alerting-mesh)
@@ -42,7 +42,7 @@ The Dink Machinery technology stack is selected to fulfill strict engineering an
 ```mermaid
 flowchart TD
     subgraph ClientLayer ["Client Runtimes"]
-        FlutterMobile["Flutter 3.47.8 / Dart 3.9 Mobile Client<br/>Android API 26+ and iOS 15+"]
+        FlutterMobile["Flutter 3.47.9 / Dart 3.9 Mobile Client<br/>Android API 26+ and iOS 15+"]
         NextAdmin["Next.js 16 Standalone / React 19 RSC<br/>Admin Web Console (Node.js 26.13.0)"]
     end
 
@@ -202,13 +202,13 @@ flowchart LR
 
 ---
 
-## 6. Tier 5: Cross-Platform Mobile Client (Flutter 3.47.8)
+## 6. Tier 5: Cross-Platform Mobile Client (Flutter 3.47.9)
 
 The mobile client is built as a single universal binary targeting Android and iOS. A cryptographic ES256 session token dynamically reconfigures the UI for Renters, Fleet Owners, or Field Operators.
 
 ```mermaid
 flowchart TD
-    subgraph FlutterCore [Flutter 3.47.8 / Dart 3.9 Mobile Client]
+    subgraph FlutterCore [Flutter 3.47.9 / Dart 3.9 Mobile Client]
         AppShell["Universal App Shell (Dynamic Persona Mounting)"]
         
         subgraph FeatureLayers [Feature Clean Architecture]

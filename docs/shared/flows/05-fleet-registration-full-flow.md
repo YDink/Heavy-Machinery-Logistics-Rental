@@ -4,7 +4,7 @@
 **Document Identifier:** `FLOW-FLEET-REG-DINK-CORE-V7.0`  
 **Classification:** Canonical Interaction Flow & Wire Protocol Specification (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (§5.2), `FLOW-ENTRY-DINK-CORE-V7.0`, `FLOW-OWNER-KYC-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-003`, `ADR-007`  
-**Target Client Runtimes:** Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Admin Web Console), PostgreSQL 18.6 + PostGIS 3.6.4, SeaweedFS S3, ClamAV Daemon  
+**Target Client Runtimes:** Flutter 3.47.9 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Admin Web Console), PostgreSQL 18.6 + PostGIS 3.6.4, SeaweedFS S3, ClamAV Daemon  
 **Target Personas:** Fleet Owner & Depot Yard Manager (*W/ro Almaz Tesfaye*), Back-Office Compliance Officer (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mode) & Level AA (Admin Mode), National Bank of Ethiopia (NBE) Directives  

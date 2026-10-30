@@ -1,7 +1,7 @@
 # Performance Quality Assurance (Performance QA) Specification & Benchmark Protocol — Dink Machinery
 
 **System:** Heavy Machinery & Logistics Rental Marketplace  
-**Subsystems:** Go 1.27.3 Backend Modular Monolith, Flutter 3.47.8 Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine  
+**Subsystems:** Go 1.27.3 Backend Modular Monolith, Flutter 3.47.9 Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine  
 **Compliance Standards:** ISO/IEC 25010 (Software Product Quality), Google Core Web Vitals, RED Metrics (Rate, Errors, Duration), USE Method (Utilization, Saturation, Errors)  
 **Operating Context:** East African cellular infrastructure (intermittent 3G/4G connectivity, high packet latency, regional CDN limits, low-tier Android hardware).
 
@@ -48,7 +48,7 @@ Performance is treated as an architectural invariant verified via automated load
 | `/api/v1/admin/ui-config` | `GET` | 100 | $\le 5\text{ ms}$ | $\le 15\text{ ms}$ | $\le 30\text{ ms}$ | $< 0.01\%$ |
 | `/api/v1/auth/otp/verify` | `POST` | 100 | $\le 35\text{ ms}$ | $\le 90\text{ ms}$ | $\le 180\text{ ms}$ | $< 0.1\%$ |
 
-### 2.2. Mobile Client Performance Budgets (Flutter 3.47.8)
+### 2.2. Mobile Client Performance Budgets (Flutter 3.47.9)
 
 | Metric | Target Threshold | Degradation Warning | Critical SLA Violation |
 |---|---|---|---|
@@ -188,7 +188,7 @@ func (s *BookingService) AcquireHoldLock(ctx context.Context, fleetID string) (b
 
 ---
 
-## 5. Mobile Subsystem Optimization & Network Economy (Flutter 3.47.8)
+## 5. Mobile Subsystem Optimization & Network Economy (Flutter 3.47.9)
 
 In low-bandwidth, high-latency edge environments (e.g., Moyale border zone, Afar construction sectors), client performance depends on bandwidth minimization and thread decoupling.
 

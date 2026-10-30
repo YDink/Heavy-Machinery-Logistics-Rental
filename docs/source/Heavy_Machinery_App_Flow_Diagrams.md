@@ -4,7 +4,7 @@
 **Document Identifier:** `FLOW-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture & Development Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `contracts/openapi.yaml`, `docs/components/mobile/DESIGN.md`, `docs/components/mobile/AGENTS.md`  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.9 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), W3C WCAG 2.1/2.2 AA, ISO/IEC/IEEE 29148, ISO 4217, ISO 3166-1 alpha-2  
 **Status:** Approved Production Architecture

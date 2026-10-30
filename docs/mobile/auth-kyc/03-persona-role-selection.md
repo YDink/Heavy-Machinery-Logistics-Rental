@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-AUTH-03`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `docs/source/Dink_Machinery_UI_UX_Design_Brief.md`, `docs/shared/design/00-design-system.md`, `docs/shared/design/design-tokens.json`, `docs/shared/requirements/04-user-roles.md`, `docs/shared/requirements/05-01-registration-authentication.md`, `docs/shared/requirements/05-14-user-onboarding-help.md`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Newly Verified MSISDN User (`account_status == ACTIVE`)  
 **Requirement Traceability:** `REQ-04` (`ROL-01`..`ROL-04`), `REQ-05-01` (`KYC-01`..`KYC-10`), `REQ-05-14` (`ONB-02`, `REG-R01`, `REG-O01`, `REG-OP01`, `REG-L01`), `REQ-05-16` (`AC-02`)  
 **Associated Interaction Flows:** `FLOW-01`, `FLOW-02`, `FLOW-03`, `FLOW-04`  

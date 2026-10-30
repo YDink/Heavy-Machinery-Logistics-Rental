@@ -224,4 +224,4 @@ Every form in `admin/` is tested against synthetic RFC 9457 Problem Details resp
 
 - [ ] **Coverage Ratchet Enforced in CI (`G1`):** Any pull request dropping overall `admin/` line coverage below `80%` or financial/auth branch coverage below `95%` fails the `ci-admin.yml` pipeline.
 - [ ] **Zero Unmasked PII Regex Scan:** Automated Playwright post-render hook scans `document.body.innerText` and browser console logs across all 21 admin screens confirming zero matches against `RAW_PII_PATTERNS`.
-- [ ] **Zero OpenAPI Contract Drift:** `npx openapi-typescript ../contracts/openapi.yaml -o src/types/api.generated.ts && git diff --exit-code` passes with zero uncommitted differences.
+- [ ] **Zero OpenAPI Contract Drift:** `pnpm dlx openapi-typescript ../contracts/openapi.yaml -o src/types/api.generated.ts && git diff --exit-code` passes with zero uncommitted differences.

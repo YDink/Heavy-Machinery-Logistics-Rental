@@ -21,7 +21,7 @@ Heavy machinery operators and site foremen across Ethiopia (`ET`) and Kenya (`KE
 | **`AGENTS.md` §1 (Coverage Ratchet)** | Minimum **80% line coverage** on all changed code; **95% branch coverage** on financial calculations, minor-unit ledger formatting, auth/RTR paths, and offline outbox sync workflows. Coverage is strictly non-decreasing. | Automated `lcov.info` audit in `G1` CI pipeline failing any PR where global coverage drops by `> 0.0%` or financial/auth packages fall below `95.0%` branch coverage. |
 | **`AGENTS.md` §1 (Determinism & Time Freezing)** | Zero dependence on wall-clock `DateTime.now()`, unseeded `Random()`, live network sockets, or shared mutable singletons. Flaky tests are quarantined within 24 hours. | Mandatory injection of `Clock` (`package:clock`) across all BLoCs (OTP timers, 24h `RC-04` damage guillotine, insurance expiry watchdogs). |
 | **`NFR-PERF-01` (Startup, Frame & Memory Budgets)** | Cold start `< 1,500ms`, warm start `< 300ms`, sustained `60fps` (`< 16.6ms` raster/UI frame time), peak Dart + native heap `< 150MB` on `2GB RAM` Tier-0 Android devices. | Automated `integration_test` macrobenchmark profile on physical Firebase Test Lab / BrowserStack Tier-0 devices during `G3`. |
-| **`ADR-013` (APK Binary & WebP Asset Budget)** | Base split-ABI (`arm64-v8a`) release APK MUST remain `< 25.0 MB` via dynamic OTA font delivery (`Noto Sans Ethiopic` subsetting); compressed inspection/catalog WebP images MUST average `< 80 KB` (`<= 120 KB` ceiling). | `flutter build apk --analyze-size` gate in `G1` blocking any PR that pushes `app-arm64-v8a-release.apk` above `25,000,000 bytes`. |
+| **`ADR-013` (APK Binary & WebP Asset Budget)** | Base split-ABI (`arm64-v8a`) release APK MUST remain `< 25.0 MB` via dynamic OTA font delivery (`Noto Sans Ethiopic` subsetting); compressed inspection/catalog WebP images MUST average `< 80 KB` (`<= 120 KB` ceiling). | `fvm flutter build apk --analyze-size` gate in `G1` blocking any PR that pushes `app-arm64-v8a-release.apk` above `25,000,000 bytes`. |
 
 ---
 
@@ -62,7 +62,7 @@ Heavy machinery operators and site foremen across Ethiopia (`ET`) and Kenya (`KE
 | **Warm Start from Background** | `<= 220 ms` | `> 300 ms` | Android Macrobenchmark / Flutter DevTools Timeline |
 | **UI & Raster Frame Budget (`60fps`)** | `<= 12.0 ms` (p95) | `> 16.6 ms` (p99 jank > 1.5% frames) | `SchedulerBinding.instance.addTimingsCallback` |
 | **Peak Resident Memory (`PSS` / Heap)** | `<= 120 MB` | `> 150 MB` (During 4-photo camera reticle capture) | `vm_service` `MemoryUsage` + Android `dumpsys meminfo` |
-| **Release Split APK (`arm64-v8a`)** | `<= 21.5 MB` | `> 25.0 MB` (`ADR-013`) | `flutter build apk --split-per-abi --analyze-size` |
+| **Release Split APK (`arm64-v8a`)** | `<= 21.5 MB` | `> 25.0 MB` (`ADR-013`) | `fvm flutter build apk --split-per-abi --analyze-size` |
 | **Isar Local Query Latency (5,000 rows)** | `<= 15 ms` | `> 40 ms` | Isar benchmark test (`NotificationInbox`, `OutboxQueue`) |
 
 ---
@@ -83,7 +83,7 @@ Every visual component and screen specification (`SPEC-MOB-*`) executes automate
 
 ```mermaid
 flowchart TD
-    G0["G0: Local Pre-Commit (lefthook.yml)<br/>• dart format --set-exit-if-changed<br/>• flutter analyze --fatal-infos --fatal-warnings<br/>• Fast unit & bloc_test (<45s)<br/>• Atomic CONTEXT.md & Docs: footer check"]
+    G0["G0: Local Pre-Commit (lefthook.yml)<br/>• dart format --set-exit-if-changed<br/>• fvm flutter analyze --fatal-infos --fatal-warnings<br/>• Fast unit & bloc_test (<45s)<br/>• Atomic CONTEXT.md & Docs: footer check"]
     G1["G1: Pull Request CI Gate<br/>• Full unit, bloc_test & 8-way Golden Suite<br/>• Coverage Ratchet (>=80% line, >=95% financial/auth branch)<br/>• OpenAPI 3.1.0 DTO Contract Schema Parity<br/>• Zero-PII Logger Static & Runtime Audit<br/>• Split APK Size Gate (<25.0 MB)"]
     G2["G2: Pre-Merge Gate<br/>• Rebase linear history verification against main<br/>• Bidirectional ADR / Partition Decision link audit<br/>• SAST & Dependency Vulnerability Scan (osv-scanner)"]
     G3["G3: Pre-Release Field & Device Gate<br/>• Tier-0 Physical Device E2E Suite (Tecno Spark / Galaxy A04)<br/>• Memory Ceiling (<150MB) & Frame Jank (<16.6ms) Profile<br/>• WCAG 2.2 AAA Semantics & Hit-Target (>=56dp) Audit<br/>• Toxiproxy Network Chaos & Outbox Replay Drill"]
@@ -240,6 +240,6 @@ void assertSixtyFpsFrameBudget(List<FrameTiming> timings) {
 
 ## 8. Verification & Acceptance Criteria
 
-1. **Zero-Warning Analyzer Gate:** `flutter analyze --fatal-infos --fatal-warnings` exits with `0` across all packages.
+1. **Zero-Warning Analyzer Gate:** `fvm flutter analyze --fatal-infos --fatal-warnings` exits with `0` across all packages.
 2. **Deterministic Golden Parity:** All 8 permutations (`dark`/`outdoorHighContrast` × `en_US`/`am_ET` × `1.0x`/`2.0x`) render with `0.0%` pixel diff across Linux CI runners using bundledhermetic fonts.
-3. **100-Run Flake-Free Certification:** Every new `bloc_test` and widget test suite must pass `flutter test --repeat=100 --test-randomize-ordering-seed=random` with zero failures before quarantine release.
+3. **100-Run Flake-Free Certification:** Every new `bloc_test` and widget test suite must pass `fvm flutter test --repeat=100 --test-randomize-ordering-seed=random` with zero failures before quarantine release.

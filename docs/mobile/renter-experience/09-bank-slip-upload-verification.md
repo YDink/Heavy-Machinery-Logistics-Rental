@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-RNT-09`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/05-05-booking-reservation-flow.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*)  
 **Associated Requirements:** `REQ-05-05` (`BK-07`, `BK-07B`, `BK-08`, `BK-11`, `BK-12`, `BK-13`)  
 **Associated Interaction Flows:** `FLOW-07` (`2. PAYMENT_EVIDENCE_UPLOADED` $\rightarrow$ `3. PAYMENT_DECLINED` $\rightarrow$ `4. DISPUTE_OPENED` / `7. CONFIRMED`), `FLOW-08` (Wire Verification & Dispute)  
@@ -125,7 +125,7 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Renter as Contractor (Flutter 3.47.8)
+    actor Renter as Contractor (Flutter 3.47.9)
     participant SlipBloc as BankSlipVerificationBloc
     participant API as Go Monolith (/api/v1/bookings/{id}/payment-evidence)
     participant ClamAV as ClamAV Daemon (:3310)

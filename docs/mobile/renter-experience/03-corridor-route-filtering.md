@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-RNT-03`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/05-04-fleet-discovery-search-comparison.md`, `05-08-logistics-transport-integration.md`, `05-15-search-discovery-enhancements.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Lowboy Procurement Coordinator (*Eng. Samuel Getachew*)  
 **Associated Requirements:** `REQ-05-04` (`FD-10`..`FD-13`, `SR-03`), `REQ-05-08` (`LG-01`, `FL-28`..`FL-30`), `REQ-05-15` (`SR-09`..`SR-11`, §4.3 Corridor Polyline Proximity)  
 **Associated Interaction Flows:** `FLOW-04` (`FLOW-DISCOVERY-DINK-CORE-V7.0`), `FLOW-11` (`FLOW-LOGISTICS-DINK-CORE-V7.0`)  
@@ -108,7 +108,7 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Renter as Contractor (Flutter 3.47.8)
+    actor Renter as Contractor (Flutter 3.47.9)
     participant FilterBloc as CorridorFilterBloc
     participant API as Go Monolith (/api/v1/discovery/search/advanced)
     participant PG as PostgreSQL 18.6 + PostGIS 3.6.4

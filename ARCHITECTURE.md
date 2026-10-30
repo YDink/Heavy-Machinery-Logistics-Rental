@@ -1,6 +1,6 @@
 # Architecture Blueprint — Dink Machinery
 
-**Target Architecture (Generated at Bootstrap):** Feature-Based Modular Monolith in Go 1.27.3, Flutter 3.47.8 Mobile, Next.js 16 Admin.  
+**Target Architecture (Generated at Bootstrap):** Feature-Based Modular Monolith in Go 1.27.3, Flutter 3.47.9 Mobile, Next.js 16 Admin.  
 **Canonical Source:** `docs/source/Architecture_Design_Document.md`
 
 ---

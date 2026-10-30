@@ -1,9 +1,9 @@
 # Mobile Client System Design & Architectural Specification (`mobile/`) — Dink Machinery
 
-**Subsystem:** Flutter 3.47.8 Cross-Platform Mobile Client (`mobile/`)  
+**Subsystem:** Flutter 3.47.9 Cross-Platform Mobile Client (`mobile/`)  
 **Specification:** System Architecture, Feature-First Clean Architecture, BLoC State Topology & Offline Data Lifecycle  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Mobile Verification), W3C WCAG 2.1/2.2 Level AA, RFC 9457 (Problem Details), ISO/IEC 25010  
-**Target Runtimes:** Flutter 3.47.8 (Dart 3.9.x), Android 8.0+ (API 26+), iOS 15.0+  
+**Target Runtimes:** Flutter 3.47.9 (Dart 3.9.x), Android 8.0+ (API 26+), iOS 15.0+  
 **Governing Documents:** `AGENTS.md`, `TECH_STACK.md`, `CODE_STANDARDS.md`, `API_CONVENTIONS.md`, `ERROR_CATALOG.md`, `DEFINITION_OF_DONE.md`, `docs/components/mobile/AGENTS.md`
 
 ---
@@ -41,7 +41,7 @@ The mobile application is designed around **Feature-First Clean Architecture**, 
 
 ```mermaid
 flowchart TD
-  subgraph PresentationLayer["Presentation Layer (Flutter 3.47.8)"]
+  subgraph PresentationLayer["Presentation Layer (Flutter 3.47.9)"]
     UI[Screens & Widgets] -->|Dispatch Events| Bloc[Feature BLoCs]
     Bloc -->|Emit Immutable States| UI
   end
@@ -583,7 +583,7 @@ Testing adheres to ISO/IEC/IEEE 29119 across unit, widget, golden, and integrati
 
 ```mermaid
 flowchart LR
-  PR[Pull Request Triggered] --> Lint[flutter analyze --fatal-infos]
+  PR[Pull Request Triggered] --> Lint[fvm flutter analyze --fatal-infos]
   Lint --> Unit[Domain Unit Tests: Math, Entities]
   Unit --> BlocTest[BLoC State Machine Tests: bloc_test]
   BlocTest --> A11y[Accessibility Tests: meetsGuideline]
@@ -657,5 +657,5 @@ Before merging pull requests affecting `mobile/`, verify compliance with every c
 - [ ] **Hardware Secure Storage:** Session tokens, refresh credentials, and biometric flags reside in `FlutterSecureStorage`.
 - [ ] **Touch Target Invariant:** All buttons and interactive controls satisfy minimum $48 \times 48\text{ dp}$ bounding box.
 - [ ] **Text Scaling Resilience:** Views scale cleanly to $200\%$ system font size without layout overflow or text truncation.
-- [ ] **Static Analysis & Tests:** `flutter analyze` reports 0 issues; `flutter test --coverage` passes with 100% success rate.
+- [ ] **Static Analysis & Tests:** `fvm flutter analyze` reports 0 issues; `fvm flutter test --coverage` passes with 100% success rate.
 - [ ] **Atomic Context Tracking:** `CONTEXT.md` updated and staged in the exact same commit.

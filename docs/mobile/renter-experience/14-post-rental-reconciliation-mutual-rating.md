@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-RNT-14`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/05-07-rental-completion-return-damage.md`, `05-05-booking-reservation-flow.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Corporate Project Manager  
 **Associated Requirements:** `REQ-05-07` (`RC-03`..`RC-07`), `REQ-05-05` (§7.2..§7.5 `12. RETURN_INITIATED` $\rightarrow$ `13. PENDING_FINAL_PAYMENT` $\rightarrow$ `14. COMPLETED` $\rightarrow$ `15. RATED`)  
 **Associated Interaction Flows:** `FLOW-10` (`FLOW-RETURN-INSPECTION-DINK-CORE-V7.0`), `FLOW-13` (Damage Claim Arbitration), `FLOW-19` (Catastrophic Loss CPAR Escalation)  
@@ -129,7 +129,7 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Renter as Contractor (Flutter 3.47.8)
+    actor Renter as Contractor (Flutter 3.47.9)
     participant RecBloc as PostRentalReconciliationBloc
     participant API as Go Monolith (/api/v1/bookings/{id})
     participant PG as PostgreSQL 18.6

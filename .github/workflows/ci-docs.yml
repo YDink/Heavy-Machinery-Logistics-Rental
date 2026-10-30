@@ -23,7 +23,7 @@ jobs:
           node-version: 26.13.0
 
       - name: Install Markdownlint CLI
-        run: npm install -g markdownlint-cli
+        run: pnpm add -g markdownlint-cli
 
       - name: Run Markdownlint
         run: |
@@ -47,7 +47,7 @@ jobs:
           node-version: 26.13.0
 
       - name: Install Spectral CLI
-        run: npm install -g @stoplight/spectral-cli
+        run: pnpm add -g @stoplight/spectral-cli
 
       - name: Lint OpenAPI Specifications
         run: |

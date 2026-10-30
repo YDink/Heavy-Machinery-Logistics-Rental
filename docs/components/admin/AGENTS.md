@@ -337,17 +337,17 @@ Every modification to `admin/` must clear the following local and CI verificatio
 ```bash
 # 1. Typecheck & OpenAPI Contract Sync
 cd admin
-npx openapi-typescript ../contracts/openapi.yaml -o src/types/api.generated.ts
-npm run lint
+pnpm dlx openapi-typescript ../contracts/openapi.yaml -o src/types/api.generated.ts
+pnpm run lint
 
 # 2. Production Build Verification (Zero TypeScript/RSC warnings)
-npm run build
+pnpm run build
 
 # 3. Unit & Component Tests (Vitest)
-npm run test:unit
+pnpm run test:unit
 
 # 4. Automated Accessibility Audit (Playwright + Axe-Core)
-npx playwright test tests/a11y/
+pnpm dlx playwright test tests/a11y/
 ```
 
 ### Pull Request Review Criteria for `admin/`
@@ -358,4 +358,4 @@ npx playwright test tests/a11y/
 - [ ] Forms bind RFC 9457 `invalidParams` into field error states.
 - [ ] Complete keyboard accessibility with visible focus rings; passes Axe scans with 0 violations.
 - [ ] Authentication handled exclusively via `HttpOnly` cookies; zero tokens in `localStorage`.
-- [ ] Production build passes cleanly: `npm run build` succeeds with zero errors.
+- [ ] Production build passes cleanly: `pnpm run build` succeeds with zero errors.

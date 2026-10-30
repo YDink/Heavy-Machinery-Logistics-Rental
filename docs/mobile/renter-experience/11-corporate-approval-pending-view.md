@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-RNT-11`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/06-02-corporate-approval-workflows.md`, `06-01-corporate-account-management.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Corporate Site Quantity Surveyor / Requester (*Bethlehem Tessema*), Senior Project Manager (*Dawit Haile-Mariam*)  
 **Associated Requirements:** `REQ-06-02` (`CA-01`..`CA-08`, `APPR-01`..`APPR-03`), `REQ-06-01` (`CORP-02` `AutoApprovalLimit`, Four-Eyes Separation of Duties)  
 **Associated Interaction Flows:** `FLOW-14` (Corporate Multi-Stage Approval Pipeline), `FLOW-07` (Transition from Corporate Hold to `1. PENDING_PAYMENT` or `7. CONFIRMED` on Net-30)  
@@ -112,7 +112,7 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Req as Site Requester (Flutter 3.47.8)
+    actor Req as Site Requester (Flutter 3.47.9)
     participant CorpBloc as CorpApprovalTrackerBloc
     participant API as Go Monolith (/api/v1/corporate/approvals)
     participant Valkey as Valkey 9.1.3

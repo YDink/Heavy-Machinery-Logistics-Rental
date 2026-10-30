@@ -4,7 +4,7 @@
 **Document Identifier:** `FLOW-OPERATOR-LINK-DINK-CORE-V7.0`  
 **Classification:** Canonical Interaction Flow & Wire Protocol Specification (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (§5.1.3, §5.2.8), `FLOW-ENTRY-DINK-CORE-V7.0`, `FLOW-RENTER-AUTH-DINK-CORE-V7.0`, `FLOW-OWNER-KYC-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-006`  
-**Target Client Runtimes:** Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile Client), Isar NoSQL Local Cache, ClamAV Daemon, SeaweedFS S3  
+**Target Client Runtimes:** Flutter 3.47.9 / Dart 3.9 (Cross-Platform Mobile Client), Isar NoSQL Local Cache, ClamAV Daemon, SeaweedFS S3  
 **Target Personas:** Certified Equipment Field Operator (*Mulugeta Tadesse* / *Juma Omwamba*), Fleet Owner & Depot Yard Manager (*W/ro Almaz Tesfaye*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Operator Mode), Ethiopian Personal Data Protection Proclamation No. 1321/2024  

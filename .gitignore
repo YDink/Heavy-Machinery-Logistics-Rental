@@ -37,7 +37,11 @@ backend/vendor/
 *.out
 cover.out
 
-# Flutter & Dart
+# Flutter & Dart (FVM)
+.fvm/flutter_sdk
+.fvm/cache
+mobile/.fvm/flutter_sdk
+mobile/.fvm/cache
 mobile/.dart_tool/
 mobile/.flutter-plugins
 mobile/.flutter-plugins-dependencies

@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-OWN-06`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (§5.2.4, §5.2.6, §5.23, `FL-16`..`FL-24`, `FL-28`..`FL-36`, `HOL-01`..`HOL-03`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Equipment Fleet Owner & Depot Yard Manager (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*)  
 **Associated Requirements:** `REQ-05-02` (`FL-16`..`FL-24`, `FL-28`..`FL-36`), `REQ-05-23` (`HOL-01`..`HOL-03` / `HC-01`..`HC-05` Ethiopian Public Holiday & Movable Feast Calendar)  
 **Associated Interaction Flows:** `FLOW-03` (Tariff & Calendar Setup), `FLOW-07` (Cancellation Penalty Tiers), `FLOW-11` (Lowboy Corridor Freight Ban Interlock)  

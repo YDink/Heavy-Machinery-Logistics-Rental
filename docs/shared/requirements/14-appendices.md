@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Reference Appendices (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§14), `FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`, `ARCH-DB-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-003`, `ADR-004`, `ADR-008`, `ADR-010`, `ADR-011`, `ADR-015`  
-**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 Mobile Client, Next.js 16.x Admin Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, SeaweedFS S3  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.9 Mobile Client, Next.js 16.x Admin Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, SeaweedFS S3  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), ISO 4217, ISO 3166-1 alpha-2  
 **Status:** Approved Engineering Baseline

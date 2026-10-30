@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-OPR-06`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (§5.7.1–§5.7.3, `RC-01` to `RC-03`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Certified Heavy Machinery Operator (*Mulugeta Tadesse*) & Contractor Site Supervisor (*Dawit Haile-Mariam*)  
 **Associated Requirements:** `REQ-05-07` (`RC-01` Return Initiation, `RC-02` Check-Out Reticle Photo Auditing & Non-Regressive Hour Meter Capture, `RC-03` Automated Excess Operating Hour Calculation Formula)  
 **Associated Interaction Flows:** `FLOW-10` (Demobilization, Return Inspection & 24-Hour Damage Window Trigger)  

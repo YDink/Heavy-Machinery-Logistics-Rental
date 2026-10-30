@@ -1,4 +1,4 @@
-# ADR-006: Flutter 3.47.8 Feature-First Clean Architecture with BLoC and Isar 3.1 Offline Outbox
+# ADR-006: Flutter 3.47.9 Feature-First Clean Architecture with BLoC and Isar 3.1 Offline Outbox
 
 - **Status:** Accepted
 - **Date:** 2026-10-26
@@ -26,7 +26,7 @@ The Dink Machinery mobile app serves three distinct operational personas (Renter
 
 ## 3. Considered Options
 
-### Option 1: Flutter 3.47.8 + BLoC + Isar 3.1 NoSQL Offline Outbox
+### Option 1: Flutter 3.47.9 + BLoC + Isar 3.1 NoSQL Offline Outbox
 - **Summary:** Flutter cross-platform client with feature-first Clean Architecture (`presentation/`, `domain/`, `data/`). State management driven by `flutter_bloc` with typed events and states. Offline drafts and sync queues persisted in local Isar NoSQL database. Image processing offloaded to Dart worker isolates (`compute`).
 - **Pros:**
   - Single unified codebase across Android (API 26+) and iOS (15+).
@@ -55,7 +55,7 @@ The Dink Machinery mobile app serves three distinct operational personas (Renter
 
 ## 4. Chosen Solution & Architectural Rationale
 
-We adopt **Option 1: Flutter 3.47.8 + BLoC + Isar 3.1 NoSQL Offline Outbox**.
+We adopt **Option 1: Flutter 3.47.9 + BLoC + Isar 3.1 NoSQL Offline Outbox**.
 
 1. **Feature-First Architecture:** Each feature folder (`features/{auth, booking, inspection, fleet}`) encapsulates its own `presentation` (Widgets, BLoCs), `domain` (UseCases, Entities), and `data` (DataSources, Repositories).
 2. **BLoC Determinism:** UI emits events (`ConfirmHandoverInspectionPressed`), BLoC executes use case, and UI renders immutable state (`InspectionState.uploading`, `InspectionState.success`). Concurrency transformers (`droppable()` for form submissions, `restartable()` for search debounce) eliminate race conditions.

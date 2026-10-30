@@ -2,7 +2,7 @@
 
 **Classification:** Platform Architecture Governance & Engineering Standards Baseline  
 **Governing Documents:** `AGENTS.md § 5`, `docs/AI_TASKS/04-new-adr.md`, `contracts/openapi.yaml`, `docs/quality/BOOTSTRAP_CHECKLIST.md`  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Mobile Client, Next.js 16.x Admin Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, SeaweedFS S3  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.9 Mobile Client, Next.js 16.x Admin Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, SeaweedFS S3  
 **Status:** Approved Engineering Baseline
 
 ---
@@ -36,7 +36,7 @@ Before authoring an L1 System ADR, the decision must evaluate against the five c
 | [`ADR-003`](./ADR-003-clean-architecture-feature-modules.md) | Strict Clean Architecture Feature Modules (`domain` $\rightarrow$ `application` $\rightarrow$ `infrastructure`) | Accepted | `05-02`, `05-03`, `05-22`, `10` | Inward dependency rule; pure domain models without database driver leakage. |
 | [`ADR-004`](./ADR-004-cqrs-inside-modules.md) | Tactical In-Process CQRS and Versioned Optimistic Concurrency Control (OCC) | Accepted | `05-04`, `05-05`, `05-07`, `05-21`, `08` | High-throughput reads; OCC `version` column preventing lost updates and deadlocks. |
 | [`ADR-005`](./ADR-005-pgx-sqlc-over-orm.md) | Type-Safe SQL Compilation (`sqlc` + `pgx/v5`) on PostgreSQL 18.6 + PostGIS 3.6.4 | Accepted | `05-02`, `05-03`, `05-04`, `05-12`, `10` | Zero runtime reflection; native binary protocol; PostGIS GiST spatial indexing. |
-| [`ADR-006`](./ADR-006-bloc-flutter-state-management.md) | Flutter 3.47.8 Feature-First Clean Architecture with BLoC and Isar 3.1 Offline Outbox | Accepted | `05-06`, `05-12`, `05-14`, `05-16`, `05-17` | Event-driven deterministic state machines; zero-connectivity field resilience. |
+| [`ADR-006`](./ADR-006-bloc-flutter-state-management.md) | Flutter 3.47.9 Feature-First Clean Architecture with BLoC and Isar 3.1 Offline Outbox | Accepted | `05-06`, `05-12`, `05-14`, `05-16`, `05-17` | Event-driven deterministic state machines; zero-connectivity field resilience. |
 | [`ADR-007`](./ADR-007-in-process-event-bus-mvp.md) | In-Process Typed Domain Event Bus with Transactional Outbox for MVP | Accepted | `05-05`, `05-08`, `05-10`, `08` | Eliminates external message broker operational overhead while preserving loose coupling. |
 | [`ADR-008`](./ADR-008-dynamic-admin-ui-day-one.md) | Next.js 16 App Router (React 19 RSC) with Server-Driven Dynamic Admin UI Engine | Accepted | `04`, `05-11`, `05-18`, `05-21`, `11` | Back-office UI synthesis from `/ui-config` metadata; zero client-side token exposure. |
 | [`ADR-009`](./ADR-009-opentelemetry-tracing-mvp.md) | OpenTelemetry Distributed Tracing, RED Metrics & In-Flight Zero-PII Log Scrubbing | Accepted | `05-10`, `05-24`, `09`, `12` | ASVS Level 3 privacy compliance; structured logging with in-memory Zap core masking. |

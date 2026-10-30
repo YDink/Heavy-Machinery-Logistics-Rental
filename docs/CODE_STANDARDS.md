@@ -1,7 +1,7 @@
 # Code Standards & Implementation Invariants — Dink Machinery
 
 **System:** Heavy Machinery & Logistics Rental Marketplace  
-**Scope:** Cross-stack engineering guidelines for Go 1.27.3, Flutter 3.47.8, Next.js 16.x (latest CVE security patch), and PostgreSQL 18.6 + PostGIS 3.6.4.  
+**Scope:** Cross-stack engineering guidelines for Go 1.27.3, Flutter 3.47.9, Next.js 16.x (latest CVE security patch), and PostgreSQL 18.6 + PostGIS 3.6.4.  
 **Compliance Target:** OWASP ASVS Level 3, RFC 9457 Problem Details, ISO/IEC/IEEE 29119 Testing Standards.
 
 ---
@@ -116,7 +116,7 @@ backend/
 
 ---
 
-## 3. Flutter Mobile Standards (Flutter 3.47.8 / Dart)
+## 3. Flutter Mobile Standards (Flutter 3.47.9 / Dart)
 
 The mobile client serves Renters, Equipment Owners, and Field Operators via a multi-persona responsive interface.
 
@@ -186,4 +186,4 @@ The administrative web console provides back-office operations, dispute settleme
 ### 4.4. Security & Authentication
 - **HTTP-Only Cookies:** Session tokens must be stored in secure, `SameSite=Strict`, `HttpOnly` cookies. Never write access tokens to `localStorage` or `sessionStorage`.
 - **RBAC Gate Enforcement:** Route handlers and Server Actions must enforce role-based access control (RBAC) prior to executing domain logic.
-- **Strict Next.js 16 CVE Mitigation:** Next.js must strictly track the latest patch fix of `16.x` due to frequent CVEs. Container images and lockfiles (`package-lock.json`) must be checked continuously with `npm audit --audit-level=high` and Trivy.
+- **Strict Next.js 16 CVE Mitigation:** Next.js must strictly track the latest patch fix of `16.x` due to frequent CVEs. Container images and lockfiles (`pnpm-lock.yaml`) must be checked continuously with `pnpm audit --audit-level=high` and Trivy.

@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-TRN-01`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (§5.8, §7.3, `LG-01`..`LG-04`, `FL-28`..`FL-31`, `HOL-03`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Heavy Haulage Lowboy Transporter & Carrier Manager (*Ato Girma Wolde* / *Samuel Odhiambo*)  
 **Associated Requirements:** `REQ-05-08` (`LG-01`..`LG-04` Linked Transport Sub-Bookings `ParentBookingID`, Dimensional Matching & 2.5% Pass-Through Commission), `REQ-07-03` (Phase 3 Full Standalone Corridor Haulage Job Radar & Bid Engine), `REQ-05-23` (`HOL-03` Federal Transport Authority Holiday Freight Ban Interlock)  
 **Associated Interaction Flows:** `FLOW-11` (Lowboy Transport Matching & Sub-Booking), `FLOW-18` (Emergency Roadside Transshipment & Reverse Cascades)  

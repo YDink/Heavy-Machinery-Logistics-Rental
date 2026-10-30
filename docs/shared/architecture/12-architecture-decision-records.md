@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-ADR-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `ARCH-INTRO-DINK-CORE-V7.0`, `ARCH-PRIN-DINK-CORE-V7.0`, `ARCH-OVERVIEW-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-DB-DINK-CORE-V7.0`, `ARCH-COMM-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `ARCH-DEPLOY-DINK-CORE-V7.0`, `ARCH-OBS-DINK-CORE-V7.0`, `contracts/openapi.yaml`  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon, OpenBao KMS, Traefik 3.x Gateway  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.9 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon, OpenBao KMS, Traefik 3.x Gateway  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), ISO/IEC/IEEE 42010, ISO 4217, ISO 3166-1 alpha-2, Ethiopian Personal Data Protection Proclamation No. 1321/2024, National Bank of Ethiopia (NBE) Directives  
 **Status:** Approved Engineering Baseline
@@ -21,7 +21,7 @@
   - 3.3 [ADR-003: Primary Persistence & Spatial Taxonomy — PostgreSQL 18.6 + PostGIS 3.6.4 vs. Polyglot Document/Search Stores](#33-adr-003-primary-persistence--spatial-taxonomy--postgresql-184--postgis-34-vs-polyglot-documentsearch-stores)
   - 3.4 [ADR-004: Concurrency Control Strategy — Optimistic Concurrency Control (OCC) vs. Distributed Pessimistic Locking](#34-adr-004-concurrency-control-strategy--optimistic-concurrency-control-occ-vs-distributed-pessimistic-locking)
   - 3.5 [ADR-005: Unstructured Media Storage — Self-Hosted SeaweedFS S3 Cluster vs. Public Cloud Blob Storage](#35-adr-005-unstructured-media-storage--self-hosted-seaweedfs-s3-cluster-vs-public-cloud-blob-storage)
-  - 3.6 [ADR-006: Mobile Client Architecture — Flutter 3.47.8 + BLoC + Isar NoSQL Offline Outbox vs. React Native / Native Mobile](#36-adr-006-mobile-client-architecture--flutter-344--bloc--isar-nosql-offline-outbox-vs-react-native--native-mobile)
+  - 3.6 [ADR-006: Mobile Client Architecture — Flutter 3.47.9 + BLoC + Isar NoSQL Offline Outbox vs. React Native / Native Mobile](#36-adr-006-mobile-client-architecture--flutter-344--bloc--isar-nosql-offline-outbox-vs-react-native--native-mobile)
   - 3.7 [ADR-007: Back-Office Web Architecture — Next.js 16 (App Router + React 19 RSC) with Server-Driven UI vs. Client-Side SPA](#37-adr-007-back-office-web-architecture--nextjs-16-app-router--react-19-rsc-with-server-driven-ui-vs-client-side-spa)
   - 3.8 [ADR-008: Wire Contract & Financial Precision — OpenAPI 3.1 Contract Supremacy with Minor-Unit Integers & RFC 9457 vs. GraphQL/gRPC](#38-adr-008-wire-contract--financial-precision--openapi-31-contract-supremacy-with-minor-unit-integers--rfc-9457-vs-graphqlgrpc)
   - 3.9 [ADR-009: In-Memory Caching & Distributed Mutex Engine — Valkey 9.1.3-alpine vs. Redis Enterprise / Memcached](#39-adr-009-in-memory-caching--distributed-mutex-engine--valkey-80-alpine-vs-redis-enterprise--memcached)
@@ -96,7 +96,7 @@ flowchart TD
 | **ADR-003** | Persistence: PostgreSQL 18.6 + PostGIS 3.6.4 | Invariant 5 | `SRCH-01-BE`, `FL-07-BE` | **Approved** |
 | **ADR-004** | Concurrency: Optimistic Concurrency Control (OCC) | Invariant 4 | `BK-04-BE`, `BK-06-BE` | **Approved** |
 | **ADR-005** | Media Storage: Self-Hosted SeaweedFS S3 | Invariant 7 | `MED-01-BE`, `MED-02-BE` | **Approved** |
-| **ADR-006** | Mobile: Flutter 3.47.8 + BLoC + Isar Outbox | Invariant 8 | `MOB-01-FE`, `OFF-01-MOB` | **Approved** |
+| **ADR-006** | Mobile: Flutter 3.47.9 + BLoC + Isar Outbox | Invariant 8 | `MOB-01-FE`, `OFF-01-MOB` | **Approved** |
 | **ADR-007** | Admin: Next.js 16 App Router + Dynamic UI Config | Invariant 8 | `AD-06-WEB`, `AD-09-WEB` | **Approved** |
 | **ADR-008** | API Contract: OpenAPI 3.1 + Minor Units + RFC 9457 | Invariant 1, 2, 8 | `API-01-BE`, `ERR-01-BE` | **Approved** |
 | **ADR-009** | Caching: Valkey 9.1.3-alpine Cache & Mutex | Invariant 4 | `BK-06-BE`, `RAT-01-BE` | **Approved** |
@@ -227,7 +227,7 @@ flowchart TD
 
 ---
 
-### 3.6 ADR-006: Mobile Client Architecture — Flutter 3.47.8 + BLoC + Isar NoSQL Offline Outbox vs. React Native / Native Mobile
+### 3.6 ADR-006: Mobile Client Architecture — Flutter 3.47.9 + BLoC + Isar NoSQL Offline Outbox vs. React Native / Native Mobile
 
 * **Status:** Approved
 * **Context:** The mobile application serves three distinct operational personas (Renters, Fleet Owners, and Field Operators) on Android and iOS devices. The application must perform reliably on low-end hardware in remote civil construction corridors with intermittent or non-existent cellular coverage.
@@ -239,7 +239,7 @@ flowchart TD
 * **Considered Alternatives:**
   * *Alternative A: React Native (JavaScript / TypeScript).* Rejected due to JavaScript bridge serialization latency, frame drops during complex canvas signature captures, and unstable background isolate camera image compression.
   * *Alternative B: Dual Native Apps (Kotlin for Android, Swift for iOS).* Rejected because maintaining two separate native codebases doubles engineering headcount, slows feature parity, and complicates multi-persona UI synchronization across East African markets.
-* **Decision Outcome:** Standardize on **Flutter 3.47.8 (Dart 3.9)** utilizing:
+* **Decision Outcome:** Standardize on **Flutter 3.47.9 (Dart 3.9)** utilizing:
   * **Feature-First Clean Architecture:** Strict separation between Presentation, Domain (pure Dart), and Data layers.
   * **BLoC Pattern (`flutter_bloc` v8.1+):** Predictable event-driven state machines with `bloc_concurrency` transformers (`droppable()` for mutations, `restartable()` for search).
   * **Isar 3.1 NoSQL Local Store:** Ultra-fast embedded NoSQL database powering an offline-first **Outbox Pattern** with client-generated UUIDv4 idempotency keys.

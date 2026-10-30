@@ -3,7 +3,7 @@
 **System:** Heavy Machinery & Logistics Rental Marketplace  
 **Specification:** Formal Gate Definitions, Automated Verification Gates & Release Controls  
 **Compliance Standards:** ISO/IEC/IEEE 29119, OWASP ASVS 4.0.3 Level 3, W3C WCAG 2.1/2.2 AA, ISO/IEC 25010  
-**Subsystems Covered:** Go 1.27.3 Backend Modular Monolith, Flutter 3.47.8 Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine  
+**Subsystems Covered:** Go 1.27.3 Backend Modular Monolith, Flutter 3.47.9 Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine  
 **Governing Documents:** `AGENTS.md`, `TECH_STACK.md`, `CODE_STANDARDS.md`, `API_CONVENTIONS.md`, `ERROR_CATALOG.md`, `DEFINITION_OF_DONE.md`, `QA_STRATEGY.md`
 
 ---
@@ -88,7 +88,7 @@ The quality lifecycle comprises seven sequential gates executed between the deve
 #### Automated Checkpoints & Invariant Assertions
 1. **Contract Schema Linting:**
    ```bash
-   npx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
+   pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
    ```
    *Threshold:* 0 errors, 0 warnings.
 2. **Architectural Decision Template Audit:**
@@ -103,7 +103,7 @@ The quality lifecycle comprises seven sequential gates executed between the deve
    *Threshold:* Zero dangling ADR references; reciprocal linkage between requirement partitions and decision records verified.
 4. **Conventional Commit Message Linting:**
    ```bash
-   npx commitlint --config .github/commitlint.config.js --edit {1}
+   pnpm dlx commitlint --config .github/commitlint.config.js --edit {1}
    ```
    *Threshold:* Must match `^(\[([A-Z0-9-]+)\]\s)?(\w+)(?:\(([^)]+)\))?:\s(.+)$`.
 5. **The Atomic Context Checkpoint Invariant:**
@@ -145,12 +145,12 @@ The quality lifecycle comprises seven sequential gates executed between the deve
    - Static analysis: `golangci-lint run ./...` (0 warnings).
    - Domain unit suite: `go test -v -race -coverprofile=coverage.out ./internal/modules/...`.
    - Thread safety: Zero race conditions detected by `-race`.
-2. **Flutter 3.47.8 Mobile Suite:**
-   - Static analyzer: `flutter analyze` (0 issues).
-   - BLoC unit tests: `flutter test --coverage` (100% pass rate).
+2. **Flutter 3.47.9 Mobile Suite:**
+   - Static analyzer: `fvm flutter analyze` (0 issues).
+   - BLoC unit tests: `fvm flutter test --coverage` (100% pass rate).
    - Touch target and semantic widget assertions (`androidTapTargetGuideline` $\ge 48\text{ dp}$).
 3. **Next.js 16 Admin Web Console Suite:**
-   - Type-checking & lint: `npm run lint` and `npm run build` (0 errors).
+   - Type-checking & lint: `pnpm run lint` and `pnpm run build` (0 errors).
    - Unit & component tests: `vitest run --coverage` (100% pass rate).
 4. **The Non-Decreasing Coverage Ratchet:**
    - Minimum total line coverage: $\ge 80.0\%$.
@@ -205,7 +205,7 @@ The quality lifecycle comprises seven sequential gates executed between the deve
    *Threshold:* 0 high or critical security findings.
 4. **Dependency Vulnerability Scanning:**
    - Go: `govulncheck ./...` (0 reachable vulnerabilities).
-   - Node: `npm audit --audit-level=high` (0 high/critical CVEs).
+   - Node: `pnpm audit --audit-level=high` (0 high/critical CVEs).
 5. **Container Base Image Hardening (Trivy):**
    ```bash
    trivy image --severity HIGH,CRITICAL dink-backend:latest
@@ -261,7 +261,7 @@ The quality lifecycle comprises seven sequential gates executed between the deve
 |---|---|---|---|---|
 | **G0** | Pre-Commit | Workstation | Lefthook, Spectral, Scripts | Broken links, unformatted commit, missing `CONTEXT.md`. |
 | **G1** | Contract | CI Pull Request | Spectral CLI, `oasdiff` | Unlinted schema, breaking change, uncommitted code-gen drift. |
-| **G2** | Static & Unit | CI Pull Request | `golangci-lint`, `flutter test`, Vitest | Linter warning, test failure, coverage drops ($< 80\%/95\%$). |
+| **G2** | Static & Unit | CI Pull Request | `golangci-lint`, `fvm flutter test`, Vitest | Linter warning, test failure, coverage drops ($< 80\%/95\%$). |
 | **G3** | Integration | CI Pull Request | Testcontainers, `kin-openapi` | DB failure, OCC failure, unbalanced ledger, schema drift. |
 | **G4** | Security | CI Pull Request | Gitleaks, Semgrep, Trivy | Leaked secret, unmasked PII log, reachable CVE, ASVS L3 fail. |
 | **G5** | Performance | CI Staging Pre-Release | k6, `@axe-core/playwright` | P95 $> 80\text{ ms}$, booking deadlock, WCAG AA violation. |
@@ -328,8 +328,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 26.13.0
-      - run: npm install -g @stoplight/spectral-cli
-      - run: npx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
+      - run: pnpm add -g @stoplight/spectral-cli
+      - run: pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
       - name: Audit Breaking Changes
         run: |
           curl -fsSL [https://raw.githubusercontent.com/tufin/oasdiff/main/install.sh](https://raw.githubusercontent.com/tufin/oasdiff/main/install.sh) | sh
@@ -355,7 +355,7 @@ jobs:
             exit 1
           fi
       - name: Run Semgrep SAST
-        run: npx semgrep --config p/owasp-top-ten --error backend/ admin/
+        run: pnpm dlx semgrep --config p/owasp-top-ten --error backend/ admin/
 
   gate-g2-unit-backend:
     name: "Gate G2: Go Backend Unit & Race"
@@ -388,10 +388,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.44.x'
+          flutter-version: '3.47.9'
           cache: true
-      - run: cd mobile && flutter analyze
-      - run: cd mobile && flutter test --coverage
+      - run: cd mobile && fvm flutter analyze
+      - run: cd mobile && fvm flutter test --coverage
 
   gate-g2-unit-admin:
     name: "Gate G2: Next.js Admin Suite"
@@ -401,9 +401,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 26.13.0
-      - run: cd admin && npm ci
-      - run: cd admin && npm run lint
-      - run: cd admin && npm run build
+      - run: cd admin && pnpm install --frozen-lockfile
+      - run: cd admin && pnpm run lint
+      - run: cd admin && pnpm run build
 
   gate-g3-integration:
     name: "Gate G3: Integration, Wire & Ledger"

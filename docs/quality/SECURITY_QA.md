@@ -3,7 +3,7 @@
 **System:** Heavy Machinery & Logistics Rental Marketplace  
 **Specification:** Security Verification, Threat Modeling, Cryptographic Controls & Vulnerability Governance  
 **Compliance Standard:** OWASP Application Security Verification Standard (ASVS) 4.0.3 Level 3 (High-Assurance / Critical Infrastructure)  
-**Target Subsystems:** Go 1.27.3 Backend Modular Monolith, Flutter 3.47.8 Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Antivirus  
+**Target Subsystems:** Go 1.27.3 Backend Modular Monolith, Flutter 3.47.9 Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Antivirus  
 **Governing Documents:** `AGENTS.md`, `TECH_STACK.md`, `CODE_STANDARDS.md`, `API_CONVENTIONS.md`, `ERROR_CATALOG.md`, `DEFINITION_OF_DONE.md`, `docs/AI_TASKS/05-security-review.md`
 
 ---
@@ -163,7 +163,7 @@ flowchart TD
   PR --> RegexPII[Static Zero-PII Regex Audit]
   PR --> Semgrep[Semgrep OWASP L3 SAST]
   PR --> Govuln[Govulncheck Go Dependencies]
-  PR --> NpmAudit[npm audit Node Dependencies]
+  PR --> NpmAudit[pnpm audit Node Dependencies]
   PR --> Trivy[Trivy Container Base Scan]
   
   Gitleaks --> Gate{All Gates Pass?}
@@ -183,7 +183,7 @@ flowchart TD
 | **Static Zero-PII Audit** | Application code (`backend/`, `mobile/`, `admin/`) | Pre-commit (`lefthook`), PR CI | $\ge 1$ unmasked logging statement targeting sensitive attributes. |
 | **Semgrep SAST** | Go & TypeScript source code | PR CI, Nightly | $\ge 1$ finding matching OWASP Top 10 or Go security rulesets. |
 | **Govulncheck** | Go module dependency call-tree | PR CI, Nightly | Known CVEs with reachable call-paths in platform binaries. |
-| **npm audit** | Admin console dependency tree | PR CI, Nightly | $\ge 1$ vulnerability with severity High or Critical. |
+| **pnpm audit** | Admin console dependency tree | PR CI, Nightly | $\ge 1$ vulnerability with severity High or Critical. |
 | **Trivy** | Container images (`dink-backend`, `dink-admin`) | Staging build, CD pipeline | $\ge 1$ Critical OS-level package vulnerability. |
 | **Spectral CLI** | `contracts/openapi.yaml` | Pre-commit (`lefthook`), PR CI | Any violation of RFC 9457 schemas or floating-point currency fields. |
 
@@ -409,5 +409,5 @@ Before any feature partition or milestone release candidate receives production 
 ### Automated Tooling & Audit Clearance
 - [ ] `semgrep` SAST reports 0 high or critical security violations.
 - [ ] `govulncheck` reports 0 reachable vulnerabilities in Go binaries.
-- [ ] `npm audit --audit-level=high` reports 0 vulnerabilities in the administrative console.
+- [ ] `pnpm audit --audit-level=high` reports 0 vulnerabilities in the administrative console.
 - [ ] `trivy` container scanning reports 0 unfixed high or critical vulnerabilities in base images.

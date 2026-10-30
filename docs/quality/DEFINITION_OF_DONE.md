@@ -2,7 +2,7 @@
 
 **System:** Heavy Machinery & Logistics Rental Marketplace  
 **Specification:** Canonical Engineering Completion & Acceptance Standards  
-**Subsystems:** Go 1.27.3 Backend, Flutter 3.47.8 Mobile, Next.js 16 Admin, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3  
+**Subsystems:** Go 1.27.3 Backend, Flutter 3.47.9 Mobile, Next.js 16 Admin, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3  
 **Governing Documents:** `AGENTS.md`, `TECH_STACK.md`, `CODE_STANDARDS.md`, `API_CONVENTIONS.md`, `ERROR_CATALOG.md`  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), ISO/IEC/IEEE 29119, W3C WCAG 2.1/2.2 AA
 
@@ -54,14 +54,14 @@ Before any unit of work is considered complete within an individual subsystem, i
   - `govulncheck ./...` reports 0 reachable vulnerabilities.
 - [ ] **Concurrency & Race Conditions:** Tests pass with the race detector enabled: `go test -v -race ./...`.
 
-### 3.2. Flutter 3.47.8 Mobile Subsystem
+### 3.2. Flutter 3.47.9 Mobile Subsystem
 - [ ] **BLoC Unidirectional Data Flow:** Presentation components emit BLoC events; UI state rebuilds exclusively from immutable `freezed` state unions.
 - [ ] **Network & Error Mapping:** All remote I/O flows through `Dio` configured with `AuthInterceptor`, `CountryCodeInterceptor`, `IdempotencyInterceptor`, and `ProblemDetailsInterceptor`.
 - [ ] **Offline Schema Alignment:** Local caching tables in `isar` match corresponding backend DTO versions.
 - [ ] **Secure Storage Separation:** JWT refresh tokens, WebAuthn keys, and biometrics flags reside exclusively in `flutter_secure_storage`.
 - [ ] **A11y & Touch Boundaries:** All actionable components satisfy the $48 \times 48\text{ dp}$ minimum touch target (`androidTapTargetGuideline` and `iOSTapTargetGuideline`).
 - [ ] **Dynamic Text Scalability:** Screen layouts accommodate $200\%$ system text scaling without overflow bars or text truncation.
-- [ ] **Static Verification:** `flutter analyze` reports 0 issues; `flutter test` executes with 100% pass rate.
+- [ ] **Static Verification:** `fvm flutter analyze` reports 0 issues; `fvm flutter test` executes with 100% pass rate.
 
 ### 3.3. Next.js 16 Admin Web Console
 - [ ] **React Server Components (RSC):** Pages utilize RSC by default; `'use client'` is confined strictly to leaf interactive components.
@@ -69,7 +69,7 @@ Before any unit of work is considered complete within an individual subsystem, i
 - [ ] **OpenAPI Schema Synchronization:** TypeScript interfaces are derived directly from `src/types/api.generated.ts`.
 - [ ] **Validation Binding:** Forms validate via `react-hook-form` paired with `@hookform/resolvers/zod`. RFC 9457 `invalidParams` bind directly to field error messages.
 - [ ] **Keyboard & Focus Integrity:** Tab navigation order is logical; focus visible rings are present; modal dialogs implement focus trapping and `Escape` key close handlers.
-- [ ] **Static Verification:** `npm run lint` and `npm run build` succeed with 0 TypeScript or linting errors.
+- [ ] **Static Verification:** `pnpm run lint` and `pnpm run build` succeed with 0 TypeScript or linting errors.
 
 ---
 
@@ -79,7 +79,7 @@ When completing a feature partition (e.g., `05-01` Auth, `05-04` Machinery, `05-
 
 ### 4.1. Contract Verification & Code Generation
 - [ ] **OpenAPI Specification Updated:** All new or altered endpoints, schemas, parameters, and response envelopes are committed to `contracts/openapi.yaml`.
-- [ ] **Spectral Lint Clean:** `npx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml` passes with 0 errors and 0 warnings.
+- [ ] **Spectral Lint Clean:** `pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml` passes with 0 errors and 0 warnings.
 - [ ] **Zero Code-Gen Drift:** Code generation scripts (`generate-contracts.sh`) have been executed, and `git diff --exit-code` confirms generated files in `backend/`, `mobile/`, and `admin/` match the contract.
 - [ ] **Error Registration:** Any new error codes used in the partition are registered in `ERROR_CATALOG.md` with HTTP status, RFC 9457 type URI, and retryability semantics.
 
@@ -120,7 +120,7 @@ Before a feature branch can be merged into `main` or promoted to an operational 
 
 | CI Gate | Command / Tool | Success Threshold |
 |---|---|---|
-| **Contract Linting** | `npx @stoplight/spectral-cli lint ...` | 0 errors, 0 warnings |
+| **Contract Linting** | `pnpm dlx @stoplight/spectral-cli lint ...` | 0 errors, 0 warnings |
 | **Breaking API Changes** | `oasdiff breaking origin/main:...` | 0 unapproved breaking changes |
 | **Decision Templates** | `bash scripts/validate-decision-template.sh` | 0 template structure errors |
 | **Decision Links** | `bash scripts/validate-decision-links.sh` | 0 broken bidirectional references |
@@ -128,8 +128,8 @@ Before a feature branch can be merged into `main` or promoted to an operational 
 | **Static Security (SAST)** | `semgrep --config p/owasp-top-ten --error` | 0 security violations |
 | **Zero-PII Logging** | Static regex audit across codebases | 0 unmasked phone/TIN/bank entries |
 | **Backend Code Coverage** | `go test -coverprofile=...` | $\ge 80\%$ overall, $\ge 95\%$ on financial/auth paths |
-| **Mobile Test Suite** | `flutter test --coverage` | 100% pass rate, zero analyzer warnings |
-| **Admin Production Build** | `npm run build` | 0 TypeScript errors, 0 lint warnings |
+| **Mobile Test Suite** | `fvm flutter test --coverage` | 100% pass rate, zero analyzer warnings |
+| **Admin Production Build** | `pnpm run build` | 0 TypeScript errors, 0 lint warnings |
 | **Accessibility Audit** | `@axe-core/playwright` | 0 WCAG 2.1 AA violations |
 
 ---

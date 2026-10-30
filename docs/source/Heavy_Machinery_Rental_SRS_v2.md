@@ -5,7 +5,7 @@
 **Version:** 7.0 – v3 National ID (Fayda / Pluggable Identity), MFA & Advanced Ads Edition  
 **Classification:** Canonical Architecture & Development Reference (Single Source of Truth)  
 **Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Multi-Country Parameterization (`LOC-01-BE`)  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.9 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), W3C WCAG 2.1/2.2 AA, ISO/IEC/IEEE 29148, ISO 4217, ISO 3166-1 alpha-2  
 **Status:** Approved Final Specification
 
@@ -98,7 +98,7 @@ This document constitutes the first partition of the canonical Software Requirem
 | **Product Managers** | Validate feature completeness, prioritise development backlog, and enforce business rules. |
 | **System Architects & Agents** | Ensure contract supremacy, zero architectural drift, and strict invariant compliance. |
 | **Backend Engineers (Go 1.27.3)** | Implement Clean Architecture interactors, `sqlc` compiled repositories, and Chi routing. |
-| **Mobile Engineers (Flutter 3.47.8)** | Build BLoC state machines, Isar offline persistence, and accessible screens. |
+| **Mobile Engineers (Flutter 3.47.9)** | Build BLoC state machines, Isar offline persistence, and accessible screens. |
 | **Frontend Engineers (Next.js 16)** | Build dynamic server-driven admin data tables (`@tanstack/react-table`) and Server Actions. |
 | **QA & Test Automation Engineers** | Derive contract tests (`kin-openapi`), integration suites, and ASVS L3 security audits. |
 | **Security & Compliance Officers** | Audit zero-PII masking, identity provider integrations, and immutable audit logs. |
@@ -1346,9 +1346,9 @@ The platform enforces a strict automated quality assurance pipeline in the CI/CD
   - **E2E Testing:** Flutter Integration Tests for core user flows (Login -> Find Fleet -> Book -> Prepayment / Payment-Evidence Upload). ("Escrow" here means the manual prepayment-evidence step — no held-funds account; see glossary.)
 - **Static Analysis & Linting:**
   - Backend must pass `golangci-lint` without warnings.
-  - Mobile client must pass `flutter analyze --fatal-warnings`.
+  - Mobile client must pass `fvm flutter analyze --fatal-warnings`.
   - Frontend web panel must pass strict ESLint rules.
-- **Security Scans:** Automated dependency vulnerability scans (`govulncheck`, `npm audit`) and static security analyses (`gosec`, `SonarQube`) on every PR build. No merge allowed with critical issues.
+- **Security Scans:** Automated dependency vulnerability scans (`govulncheck`, `pnpm audit`) and static security analyses (`gosec`, `SonarQube`) on every PR build. No merge allowed with critical issues.
 
 ### 9.8 Locale & Dual Calendar Standards
 - **Dual Calendar Integration:** System supports displaying and inputting dates in both Gregorian and Ethiopian (13-month) calendars.
@@ -1500,7 +1500,7 @@ The platform enforces a strict automated quality assurance pipeline in the CI/CD
 |---|---|---|
 | **Backend Core** | Go `1.27.3` (`net/http`, `go-chi/v5`) | Modular monolith with Clean Architecture. High concurrency, memory efficiency ($\le 256\text{MB}$ RSS). |
 | **API Gateway** | Traefik `3.x` / Envoy Gateway | Lightweight edge routing, TLS 1.3 termination, rate-limiting, and Gzip/Brotli compression. |
-| **Mobile Client** | Flutter `3.47.8` (Dart `3.9.x`) | Feature-First Clean Architecture, BLoC state management, Isar NoSQL offline store. |
+| **Mobile Client** | Flutter `3.47.9` (Dart `3.9.x`) | Feature-First Clean Architecture, BLoC state management, Isar NoSQL offline store. |
 | **Admin Web Console** | Next.js `16.x` (React 19 App Router) | React Server Components by default, Tailwind CSS v4, dynamic grids via `@tanstack/react-table`. |
 | **Relational Database** | PostgreSQL `18.6` + PostGIS `3.6.4` | Spatial WGS 84 (`SRID 4326`) distance queries via GiST indexing, `TIMESTAMPTZ` UTC storage. |
 | **Database Driver** | `jackc/pgx/v5` (`v5.7.1`) | Native binary protocol encoding with connection pooling (`pgxpool`). Heavy ORMs prohibited. |

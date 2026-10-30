@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-CRP-01`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/06-01-corporate-account-management.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Corporate Procurement Director (*Eng. Samuel Getachew*), Senior Project Manager (*Dawit Haile-Mariam*), Site Quantity Surveyor (*Bethlehem Tessema*)  
 **Associated Requirements:** `REQ-06-01` (`CORP-01`, `CORP-02`, `CORP-03`, `CORP-DB`), `REQ-06-05` (`REP-02` Cost Center & WBS Allocation)  
 **Associated Interaction Flows:** `FLOW-14` (Corporate Multi-Tenant Onboarding & Context Switching)  
@@ -110,7 +110,7 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Senior PM (Flutter 3.47.8)
+    actor User as Senior PM (Flutter 3.47.9)
     participant OrgBloc as CorporateOrgHierarchyBloc
     participant Dio as Dio Auth & Tenant Interceptor
     participant API as Go Monolith (/api/v1/auth/switch-context)

@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-RNT-07`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/05-05-booking-reservation-flow.md`, `06-03-corporate-pricing-payment.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Corporate Requester (*Bethlehem Tessema*)  
 **Associated Requirements:** `REQ-05-05` (`BK-04`, `BK-05`, `BK-06B`), `REQ-06-03` (`CORP-PRICE`, `CORP-CREDIT`), `REQ-05-20` (Contractual Terms Acceptance)  
 **Associated Interaction Flows:** `FLOW-07` (`FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`), `FLOW-08` (Direct P2P Bank Wire), `FLOW-14` (Corporate Approval Routing), `FLOW-16` (60-Min Hold Lock)  
@@ -120,7 +120,7 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Renter as Contractor (Flutter 3.47.8)
+    actor Renter as Contractor (Flutter 3.47.9)
     participant ModalBloc as CheckoutBreakdownBloc
     participant Isar as Isar Outbox & Cache
     participant API as Go Monolith (POST /api/v1/bookings)

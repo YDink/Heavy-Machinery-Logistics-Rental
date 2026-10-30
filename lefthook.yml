@@ -1,7 +1,7 @@
 commit-msg:
   commands:
     commitlint:
-      run: npx commitlint --edit {1}
+      run: pnpm dlx commitlint --edit {1}
 
 pre-commit:
   parallel: false
@@ -23,8 +23,8 @@ pre-commit:
 
     spectral-openapi-lint:
       glob: "contracts/openapi.yaml"
-      run: npx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
+      run: pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
 
     markdown-lint:
       glob: "**/*.md"
-      run: npx markdownlint-cli --ignore "node_modules" --ignore ".dart_tool" {staged_files}
+      run: pnpm dlx markdownlint-cli --ignore "node_modules" --ignore ".dart_tool" {staged_files}

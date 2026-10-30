@@ -226,6 +226,6 @@ test.describe('WCAG 2.2 Level AA & Ethiopic Ge-ez Accessibility Gate (SPEC-ADM-Q
 
 ## 7. Verification & Acceptance Criteria Checklist
 
-- [ ] **Zero Axe-Core Violations Across All 18+ Routes:** `npx playwright test tests/e2e/a11y/wcag-aa-audit.spec.ts` completes with `0` violations across Light, Dark, and Outdoor High-Contrast modes.
+- [ ] **Zero Axe-Core Violations Across All 18+ Routes:** `pnpm dlx playwright test tests/e2e/a11y/wcag-aa-audit.spec.ts` completes with `0` violations across Light, Dark, and Outdoor High-Contrast modes.
 - [ ] **Ge'ez Line-Height Computed Style Check:** When `lang="am"` is active, computed `line-height / font-size` ratio on all table cells and form labels is `>= 1.38`.
 - [ ] **100% Keyboard Path Completion:** EveryServer Action modal in Finance, Corporate Governance, Schema Engine, and Configuration can be opened, populated, submitted, or cancelled using only `Tab`, `Shift+Tab`, `Arrow` keys, `Space`, `Enter`, and `Escape`.

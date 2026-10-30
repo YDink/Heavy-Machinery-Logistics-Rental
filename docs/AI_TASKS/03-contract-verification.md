@@ -52,7 +52,7 @@ Every change touching `contracts/openapi.yaml` must pass the custom Spectral lin
 ### Running Spectral Locally
 ```bash
 # Run Spectral against canonical contract
-npx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
+pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
 ```
 *Zero errors and zero warnings are required to pass.*
 
@@ -79,15 +79,15 @@ cd ..
 Generates TypeScript interfaces and type definitions for React Server Components and Server Actions:
 ```bash
 cd admin
-npx openapi-typescript ../contracts/openapi.yaml -o src/types/api.generated.ts
+pnpm dlx openapi-typescript ../contracts/openapi.yaml -o src/types/api.generated.ts
 cd ..
 ```
 
-#### C. Flutter 3.47.8 Mobile Client (`openapi-generator-cli`)
+#### C. Flutter 3.47.9 Mobile Client (`openapi-generator-cli`)
 Generates Dart client models, serialization adapters, and Dio API interfaces:
 ```bash
 cd mobile
-npx @openapitools/openapi-generator-cli generate \
+pnpm dlx @openapitools/openapi-generator-cli generate \
   -i ../contracts/openapi.yaml \
   -g dart-dio \
   -o packages/dink_api_client \
@@ -148,7 +148,7 @@ To decouple subsystem development, mock servers and schema validation test suite
 Prism acts as a live, schema-validating HTTP mock server that simulates backend behavior for mobile and admin engineers:
 ```bash
 # Start local mock server on port 4010
-npx @stoplight/prism-cli mock contracts/openapi.yaml -p 4010 --errors
+pnpm dlx @stoplight/prism-cli mock contracts/openapi.yaml -p 4010 --errors
 ```
 - When `--errors` is active, Prism returns a `422 Unprocessable Entity` if the calling client sends a request payload that violates the contract.
 - Mobile and admin integration tests can point directly to `http://localhost:4010`.
@@ -206,7 +206,7 @@ func AssertResponseSchema(t *testing.T, req *http.Request, resp *httptest.Respon
 
 Before merging any pull request that modifies or introduces API endpoints, verify:
 
-- [ ] **Spectral Validation:** `npx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml` passes with zero errors and zero warnings.
+- [ ] **Spectral Validation:** `pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml` passes with zero errors and zero warnings.
 - [ ] **No Floating-Point Money:** All monetary values use `MoneyAmount` (`amountMinor: int64` + `currency: string`).
 - [ ] **Universal Response Envelopes:** All 2xx responses reference `SuccessResponse` wrappers; all 4xx/5xx responses reference `ErrorEnvelope` with RFC 9457 fields.
 - [ ] **Idempotency Annotations:** Mutating operations (`POST`, `PUT`, `PATCH`) declare the `Idempotency-Key` header parameter.

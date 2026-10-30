@@ -143,7 +143,7 @@ func TestFleetRepository_ExcludesSoftDeletedRecords(t *testing.T) {
 
 ---
 
-## 5. Mobile Testing Standards (Flutter 3.47.8)
+## 5. Mobile Testing Standards (Flutter 3.47.9)
 
 ### 5.1 BLoC Unit Testing
 All UI state mutations are tested via `bloc_test` asserting deterministic event-to-state streams[cite: 32]:
@@ -269,15 +269,15 @@ govulncheck ./...
 # Mobile Test Execution (Flutter)
 cd mobile
 dart run tool/generate_tokens.dart
-flutter test --coverage
-flutter analyze --fatal-warnings
+fvm flutter test --coverage
+fvm flutter analyze --fatal-warnings
 
 # Admin Web Execution (Next.js)
 cd admin
-npm run lint
-npm run test:ci
-npx axe-core-cli http://localhost:3000/admin/dashboard
+pnpm run lint
+pnpm run test:ci
+pnpm dlx axe-core-cli http://localhost:3000/admin/dashboard
 
 # Contract Specification Linter
-npx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
+pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
 ```

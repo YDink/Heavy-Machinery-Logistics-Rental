@@ -93,7 +93,7 @@ The contract is validated on every pre-commit hook and in CI via **Spectral CLI*
 ### Running Contract Linter Locally
 ```bash
 # Lint openapi.yaml against strict project standards
-npx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
+pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
 ```
 
 ### Enforced Rules
@@ -112,7 +112,7 @@ Upon transition to Phase 1 (Bootstrap), client SDKs and server scaffolding are g
 | Target | Toolchain | Output Directory | Notes |
 |---|---|---|---|
 | **Go 1.27.3 Backend** | `oapi-codegen` | `backend/internal/transport/http/` | Generates strict interfaces, chi/echo routing wrappers, and DTO structs. |
-| **Flutter 3.47.8 Mobile** | `openapi-generator-cli` | `mobile/packages/dink_api_client/` | Generates Dart models and type-safe Dio API client. |
+| **Flutter 3.47.9 Mobile** | `openapi-generator-cli` | `mobile/packages/dink_api_client/` | Generates Dart models and type-safe Dio API client. |
 | **Next.js 16 Admin** | `openapi-typescript` + `zod` | `admin/lib/api/generated/` | Generates TypeScript interfaces and runtime validation schemas. |
 
 ---

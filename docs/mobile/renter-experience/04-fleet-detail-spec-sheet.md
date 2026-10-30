@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-RNT-04`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/05-02-fleet-registration-machinery-logistics.md`, `05-03-attachment-registration-inventory.md`, `05-04-fleet-discovery-search-comparison.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Site Quantity Surveyor (*Bethlehem Tessema*)  
 **Associated Requirements:** `REQ-05-02` (`FL-05`..`FL-20`), `REQ-05-03` (Compatible Demountable Attachments), `REQ-05-04` (`FD-14`, `SR-06`), `REQ-05-13` (Verified CPAR Insurance Badge)  
 **Associated Interaction Flows:** `FLOW-04` (`FLOW-DISCOVERY-DINK-CORE-V7.0`), `FLOW-07` (`FLOW-BOOKING-STATE-MACHINE-DINK-CORE-V7.0`)  
@@ -127,7 +127,7 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Renter as Contractor (Flutter 3.47.8)
+    actor Renter as Contractor (Flutter 3.47.9)
     participant DossierBloc as FleetDetailBloc
     participant Isar as Isar Local Store
     participant API as Go Monolith (/api/v1/fleets/{id}/detail)

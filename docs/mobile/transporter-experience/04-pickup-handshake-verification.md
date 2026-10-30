@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-TRN-04`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (§5.8.5, `LG-06`, `ADR-010`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Heavy Haulage Lowboy Transporter (*Ato Girma Wolde*) & Equipment Depot Yard Manager (*W/ro Almaz Tesfaye*)  
 **Associated Requirements:** `REQ-05-08` (`LG-06` Depot Machinery Loading, Winching & Tie-Down Verification Checklist, 4-Angle Loaded Trailer Reticle Capture, Depot Release Attestation), `REQ-05-17` (Offline Outbox Sync)  
 **Associated Interaction Flows:** `FLOW-11` (Lowboy Loading & Transit Initiation), `FLOW-18` (In-Transit Telemetry & Transshipment Readiness)  

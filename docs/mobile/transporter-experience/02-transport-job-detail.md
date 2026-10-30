@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-TRN-02`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (§5.8.2–§5.8.4, `LG-03`..`LG-05`, `FL-29`..`FL-31`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Heavy Haulage Lowboy Transporter & Carrier Manager (*Ato Girma Wolde* / *Samuel Odhiambo*)  
 **Associated Requirements:** `REQ-05-08` (`LG-03`..`LG-05` Sub-Booking Manifest, EAV Dimensional & Bridge Clearance Check, `8. AWAITING_FLEET_READINESS` & `9. PENDING_ADDITIONAL_PAYMENT` Abnormal Load Escort / Toll Fee Workflow)  
 **Associated Interaction Flows:** `FLOW-11` (Lowboy Sub-Booking Execution), `FLOW-18` (Awaiting Fleet Readiness & Transshipment)  

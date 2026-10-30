@@ -60,7 +60,7 @@ Before completing this task and transitioning to Phase 1, the following platform
 ### Step 1: Contract Validation & Schema Check
 Run Spectral CLI across the canonical OpenAPI specification to verify full compliance with RFC 9457 and integer currency rules:
 ```bash
-npx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
+pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
 ```
 - **Expected Outcome:** 0 errors, 0 warnings.
 - **Remediation:** If missing `operationId`, unreferenced schemas, or floating-point monetary properties are flagged, correct `contracts/openapi.yaml` immediately.
@@ -95,7 +95,7 @@ fi
 Validate that commit lint rules and hook configurations are operational:
 ```bash
 # Verify commit message format
-echo "[BOOTSTRAP] feat(platform): test commit message" | npx commitlint --config .github/commitlint.config.js
+echo "[BOOTSTRAP] feat(platform): test commit message" | pnpm dlx commitlint --config .github/commitlint.config.js
 ```
 
 ---
@@ -110,7 +110,7 @@ Before declaring Phase 0 complete and advancing to Phase 1:
 - [ ] **Financial Double-Entry Ledger Invariants:** Explicitly defined in `CODE_STANDARDS.md § 1.4` and `contracts/README.md`.
 - [ ] **Automated Tooling Verified:** Validation scripts executed and passing locally.
 - [ ] **Zero Open Phase 0 Blockers:** All blocking open questions in `OPEN_QUESTIONS.md` resolved or scheduled for subsequent feature partitions.
-- [ ] **Bootstrap Runbook Ready:** `BOOTSTRAP.md` verified against workstation tool versions (Go `1.27.3`, Flutter `3.47.8`, Next.js `16.x`, PostgreSQL `18.6`, Valkey `9.1.3`).
+- [ ] **Bootstrap Runbook Ready:** `BOOTSTRAP.md` verified against workstation tool versions (Go `1.27.3`, Flutter `3.47.9`, Next.js `16.x`, PostgreSQL `18.6`, Valkey `9.1.3`).
 
 ---
 

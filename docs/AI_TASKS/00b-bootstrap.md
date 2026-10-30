@@ -20,7 +20,7 @@ Per platform governance invariants, **zero domain business logic** (e.g., bookin
 All execution steps must strictly comply with the following architectural invariants:
 
 1. **Zero Domain Logic:** Do not implement business rules or partition features. All endpoints must return static or stubbed platform envelopes (`/healthz`).
-2. **Deterministic Lockfile Pinning:** Every scaffolded subsystem must commit its verified lockfile (`backend/go.sum`, `mobile/pubspec.lock`, `admin/package-lock.json`).
+2. **Deterministic Lockfile Pinning:** Every scaffolded subsystem must commit its verified lockfile (`backend/go.sum`, `mobile/pubspec.lock`, `admin/pnpm-lock.yaml`).
 3. **Contract Derivation:** Transport DTOs, route signatures, and client API types must be compiled directly from `contracts/openapi.yaml` via automated code generators (`oapi-codegen`, `openapi-typescript`).
 4. **Zero-PII Static Assurance:** Logging configurations must enforce masking filters from day zero. No unmasked telephone numbers, TINs, or National IDs are permitted in structured outputs.
 5. **Universal Envelopes:** Scaffolded endpoints must adhere strictly to the platform JSON success envelope or RFC 9457 Problem Details error envelope.
@@ -35,8 +35,8 @@ All execution steps must strictly comply with the following architectural invari
 | **Primary Persistence** | PostgreSQL 18.6 + PostGIS 3.6.4 | `migrations/` | `000001_init_platform_schema.up.sql` | `psql -c "\dx"` |
 | **Ephemeral Cache** | Valkey 9.1.3-alpine | Root | Distributed lock & rate-limit cluster | `redis-cli ping` |
 | **Backend Core** | Go 1.27.3 Modular Monolith | `backend/` | `go.mod`, `go.sum`, `cmd/api/main.go`, `sqlc.yaml` | `go test -race ./...` |
-| **Cross-Platform Mobile** | Flutter 3.47.8 / Dart 3.9 | `mobile/` | `pubspec.yaml`, `pubspec.lock`, Clean Arch tree | `flutter test` |
-| **Admin Web Console** | Next.js 16 (React 19, App Router) | `admin/` | `package.json`, `package-lock.json`, Tailwind v4 | `npm run build` |
+| **Cross-Platform Mobile** | Flutter 3.47.9 / Dart 3.9 | `mobile/` | `pubspec.yaml`, `pubspec.lock`, Clean Arch tree | `fvm flutter test` |
+| **Admin Web Console** | Next.js 16 (React 19, App Router) | `admin/` | `package.json`, `pnpm-lock.yaml`, Tailwind v4 | `pnpm run build` |
 | **Governance Hooks** | Lefthook 1.8+ / Commitlint | Root | `lefthook.yml`, `.github/commitlint.config.js` | `lefthook run pre-commit` |
 
 ---
@@ -47,7 +47,7 @@ All execution steps must strictly comply with the following architectural invari
 Ensure that all Phase 0 contracts and validation scripts pass before generating files:
 ```bash
 # Verify canonical OpenAPI contract
-npx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
+pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
 
 # Verify decision templates and links
 bash scripts/validate-decision-template.sh
@@ -141,18 +141,18 @@ cd ..
 
 ---
 
-### Step 5: Flutter 3.47.8 Mobile Workspace Scaffolding
+### Step 5: Flutter 3.47.9 Mobile Workspace Scaffolding
 Scaffold the mobile client with BLoC state management, Isar local database, and feature-first structuring:
 ```bash
-flutter create --org com.dinkmachinery --project-name dink_mobile mobile
+fvm flutter create --org com.dinkmachinery --project-name dink_mobile mobile
 cd mobile
 
 # Install core runtime dependencies
-flutter pub add flutter_bloc bloc get_it dio isar isar_flutter_libs \
+fvm flutter pub add flutter_bloc bloc get_it dio isar isar_flutter_libs \
   freezed_annotation json_annotation flutter_secure_storage geolocator \
   equatable intl
 
-flutter pub add --dev build_runner freezed json_serializable isar_generator
+fvm flutter pub add --dev build_runner freezed json_serializable isar_generator
 
 # Scaffold feature-first directory layout
 mkdir -p lib/core/network \
@@ -173,8 +173,8 @@ mkdir -p lib/core/network \
   lib/features/inspection/data
 
 # Verify analyzer and test suite
-flutter analyze
-flutter test
+fvm flutter analyze
+fvm flutter test
 
 cd ..
 ```
@@ -184,26 +184,26 @@ cd ..
 ### Step 6: Next.js 16 Admin Console Scaffolding & Contract Sync
 Initialize the Next.js App Router application with React 19, Tailwind CSS v4, and dynamic table components:
 ```bash
-npx create-next-app@latest admin \
+pnpm create next-app admin \
   --typescript \
   --tailwind \
   --eslint \
   --app \
   --src-dir \
   --import-alias "@/*" \
-  --use-npm
+  --use-pnpm
 
 cd admin
 
 # Install operational UI and form validation dependencies
-npm install @tanstack/react-table @tanstack/react-query \
+pnpm add @tanstack/react-table @tanstack/react-query \
   react-hook-form @hookform/resolvers zod lucide-react sonner clsx tailwind-merge
 
 # Compile TypeScript types from canonical OpenAPI specification
-npx openapi-typescript ../contracts/openapi.yaml -o src/types/api.generated.ts
+pnpm dlx openapi-typescript ../contracts/openapi.yaml -o src/types/api.generated.ts
 
 # Verify production build and lockfile generation
-npm run build
+pnpm run build
 
 cd ..
 ```
@@ -234,8 +234,8 @@ Before closing Phase 1, confirm that every item below satisfies the requirements
 - [ ] **Country Baseline:** `country_configs` seeded with valid `ET` and `KE` records containing integer tax basis points.
 - [ ] **Backend Code Generation:** `internal/transport/http/generated/api.gen.go` generated without manual edits; `sqlc` models compiled into `internal/platform/database/db/`.
 - [ ] **Backend Compilation:** `go build ./cmd/api` compiles cleanly; zero warnings on `golangci-lint run`.
-- [ ] **Mobile Workspace:** Flutter 3.47.8 workspace passes `flutter analyze` and `flutter test`; `pubspec.lock` committed.
-- [ ] **Admin Console:** Next.js 16 builds with zero TypeScript errors (`npm run build`); `src/types/api.generated.ts` synchronized with `openapi.yaml`.
+- [ ] **Mobile Workspace:** Flutter 3.47.9 workspace passes `fvm flutter analyze` and `fvm flutter test`; `pubspec.lock` committed.
+- [ ] **Admin Console:** Next.js 16 builds with zero TypeScript errors (`pnpm run build`); `src/types/api.generated.ts` synchronized with `openapi.yaml`.
 - [ ] **Zero-PII Compliance:** Static log audit passes with zero unmasked PII log occurrences.
 - [ ] **Governance Hooks:** Lefthook pre-commit and commit-msg hooks operational.
 
@@ -252,7 +252,7 @@ Upon completing all verification criteria:
    git add .
    git commit -m "[BOOTSTRAP] feat(platform): complete phase 1 subsystem initialization
 
-   Bootstrapped Go 1.27.3 modular monolith, Flutter 3.47.8 client, Next.js 16 admin,
+   Bootstrapped Go 1.27.3 modular monolith, Flutter 3.47.9 client, Next.js 16 admin,
    PostgreSQL 18.6 + PostGIS baseline schema, Valkey 9.1.3, and Lefthook governance.
 
    Tests: All subsystem builds and test suites passing.

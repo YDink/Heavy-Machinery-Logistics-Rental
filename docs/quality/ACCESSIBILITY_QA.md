@@ -1,7 +1,7 @@
 # Accessibility Quality Assurance (A11y QA) Specification & Test Protocol — Dink Machinery
 
 **System:** Heavy Machinery & Logistics Rental Marketplace  
-**Subsystems:** Flutter 3.47.8 Mobile App (Renter, Owner, Operator) & Next.js 16 Admin Web Console  
+**Subsystems:** Flutter 3.47.9 Mobile App (Renter, Owner, Operator) & Next.js 16 Admin Web Console  
 **Compliance Standard:** W3C Web Content Accessibility Guidelines (WCAG) 2.1 & 2.2 Level AA  
 **Operational Environment:** Industrial construction corridors, high-glare outdoor environments, multilingual scripts (Amharic/Ethiopic, Oromo, Tigrinya, Somali, Arabic, English), assistive hardware.
 
@@ -32,7 +32,7 @@ Accessibility is a non-negotiable architectural invariant enforced at compile ti
                                          │
         ┌────────────────────────────────┴────────────────────────────────┐
         ▼                                                                 ▼
-[Flutter 3.47.8 Mobile Client]                            [Next.js 16 Admin Web Console]
+[Flutter 3.47.9 Mobile Client]                            [Next.js 16 Admin Web Console]
  - 48x48 dp Touch Target Guideline                       - Keyboard Tab Navigation & Focus Trapping
  - Semantics Tree & Assistive Labels                     - WAI-ARIA 1.2 Landmarks & Dialog Roles
  - Dynamic Font Scaling (textScaler)                     - Radix UI / TanStack Headless Grids

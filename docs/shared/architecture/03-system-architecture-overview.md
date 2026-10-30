@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-OVERVIEW-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `ARCH-INTRO-DINK-CORE-V7.0`, `ARCH-PRIN-DINK-CORE-V7.0`, `FLOW-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-014`  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.9 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), W3C WCAG 2.2 AA / AAA (Outdoor Mode), ISO/IEC/IEEE 42010, ISO 4217, ISO 3166-1 alpha-2  
 **Status:** Approved Engineering Baseline
@@ -48,7 +48,7 @@ The macro architecture combines:
 1. **Edge-Hardened Single Ingress:** All public HTTP, WebSocket, and media streams terminate at Traefik 3.x, enforcing TLS 1.3, rate-limiting, and DDoS shielding.
 2. **Compiled Go Modular Monolith:** A single stateless static binary (`net/http`, Chi router) organizing business domains into clean internal packages (`internal/modules/*`) with zero network hops between bounded contexts.
 3. **Multi-Model Data Persistence:** PostgreSQL 18.6 manages relational state, PostGIS 3.6.4 spatial indexes, GIN-indexed JSONB dynamic specs, and immutable double-entry ledgers. Valkey 9.1.3 manages distributed holds, session states, and rate-limiting. SeaweedFS S3 provides high-throughput object storage, guarded by synchronous ClamAV stream inspection.
-4. **Resilient Edge Clients:** Cross-platform Flutter 3.47.8 mobile applications for Renters, Owners, and Field Operators featuring local NoSQL (Isar) outboxes for remote site operations, alongside a Next.js 16 server-driven admin web console.
+4. **Resilient Edge Clients:** Cross-platform Flutter 3.47.9 mobile applications for Renters, Owners, and Field Operators featuring local NoSQL (Isar) outboxes for remote site operations, alongside a Next.js 16 server-driven admin web console.
 
 ```mermaid
 flowchart TD
@@ -71,9 +71,9 @@ flowchart TD
 ```mermaid
 flowchart TD
     subgraph Clients [Client Workstations and Edge Personas]
-        RenterApp["Renter Mobile App<br/>Flutter 3.47.8"]
-        OwnerApp["Fleet Owner App<br/>Flutter 3.47.8"]
-        OperatorApp["Operator Mobile App<br/>Flutter 3.47.8"]
+        RenterApp["Renter Mobile App<br/>Flutter 3.47.9"]
+        OwnerApp["Fleet Owner App<br/>Flutter 3.47.9"]
+        OperatorApp["Operator Mobile App<br/>Flutter 3.47.9"]
         AdminWeb["Admin Web Console<br/>NextJS 16 RSC"]
     end
 
@@ -142,7 +142,7 @@ flowchart TD
 * **ClamAV Daemon:** Synchronous streaming antivirus scanner listening on `tcp://clamav:3310`. Scans file payloads before they are committed to SeaweedFS.
 
 ### 2.4 Client Tier (Mobile & Web)
-* **Mobile Client (Flutter 3.47.8 / Dart 3.9):** Universal binary targeting Android (API 26+) and iOS (15+). Implements Feature-First Clean Architecture, BLoC state management, Isar NoSQL local cache, and over-the-air font loading (`ADR-013`).
+* **Mobile Client (Flutter 3.47.9 / Dart 3.9):** Universal binary targeting Android (API 26+) and iOS (15+). Implements Feature-First Clean Architecture, BLoC state management, Isar NoSQL local cache, and over-the-air font loading (`ADR-013`).
 * **Admin Web Console (Next.js 16.x (latest CVE security patch) / React 19):** High-density back-office interface using React Server Components, Server Actions, TanStack Table, and dynamic metadata loading (`/api/v1/admin/ui-config`).
 
 ### 2.5 External Integration & Telco Rail Tier

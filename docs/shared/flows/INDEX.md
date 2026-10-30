@@ -4,7 +4,7 @@
 **Document Identifier:** `FLOW-INDEX-DINK-CORE-V7.0`  
 **Classification:** Master Architectural Index & Flow Routing Manifest (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (§1 to §11), `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-010`  
-**Target Runtimes:** Go 1.27.3 Monolith Backend, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
+**Target Runtimes:** Go 1.27.3 Monolith Backend, Flutter 3.47.9 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, ClamAV Daemon (:3310), SeaweedFS S3, Isar NoSQL 3.1+  
 **Target Personas:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Fleet Owner & Depot Yard Manager (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Certified Field Operator (*Mulugeta Tadesse* / *Juma Omwamba*), Lowboy Transporter (*Ato Girma Wolde* / *Samuel Odhiambo*), Compliance Officer & Security Auditor (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Identity, Concurrency, Secrets & Access Control), RFC 9457 (Problem Details), RFC 7519 (JWT), RFC 6238 (TOTP), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mobile) & Level AA (Admin Web), National Bank of Ethiopia (NBE) Directives, Kenya Data Protection Act 2019  
@@ -46,7 +46,7 @@ The Dink Machinery aggregator orchestrates high-value, heavy construction plant 
 
 Every document in this directory represents an immutable, single source of truth governing:
 * **The Wire Protocol:** HTTP/3, WebSocket, and SSE message payloads strictly adhering to `contracts/openapi.yaml`.
-* **The Client UX Ergonomics:** Cross-platform Flutter 3.47.8 mobile layouts ($56 \times 56\text{ dp}$ hit targets, solar contrast modes) and Next.js 16.x (latest CVE security patch) / React 19 web admin consoles.
+* **The Client UX Ergonomics:** Cross-platform Flutter 3.47.9 mobile layouts ($56 \times 56\text{ dp}$ hit targets, solar contrast modes) and Next.js 16.x (latest CVE security patch) / React 19 web admin consoles.
 * **The Database Invariants:** PostgreSQL 18.6 relational constraints, PostGIS 3.6.4 spatial indexes, and Valkey 9.1.3 distributed memory caching.
 * **The Security Posture:** OWASP ASVS 4.0.3 Level 3 compliance across identity verification, session isolation, and cryptographic auditing.
 

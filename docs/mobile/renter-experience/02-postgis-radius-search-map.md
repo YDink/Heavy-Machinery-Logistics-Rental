@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-RNT-02`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/05-04-fleet-discovery-search-comparison.md`, `05-15-search-discovery-enhancements.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Regional Project Director  
 **Associated Requirements:** `REQ-05-04` (`FD-06`..`FD-09`, `SR-03`, `SR-05`), `REQ-05-15` (`SR-09`, `ST_ClusterKMeans`)  
 **Associated Interaction Flows:** `FLOW-04` (`FLOW-DISCOVERY-DINK-CORE-V7.0`), `FLOW-06`  
@@ -108,7 +108,7 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Renter as Contractor (Flutter 3.47.8)
+    actor Renter as Contractor (Flutter 3.47.9)
     participant MapBloc as RadiusSearchMapBloc
     participant API as Go Monolith (/api/v1/discovery/map/clusters)
     participant Valkey as Valkey 9.1.3 (Spatial Cache + Hold Leases)

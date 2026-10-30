@@ -730,4 +730,4 @@ Before merging changes into `admin/`, affirm compliance with every checkpoint:
 - [ ] **Zero-PII Compliance:** Phone numbers, TINs, and bank accounts are masked in UI grids and server logs.
 - [ ] **Accessibility Verification:** Automated `@axe-core/playwright` CI audit passes with 0 violations; visible focus rings active.
 - [ ] **Session Isolation:** Authentication operates via `HttpOnly` cookies; zero credentials stored in client storage.
-- [ ] **Production Build Clean:** `npm run lint` and `npm run build` execute with 0 TypeScript or RSC compiler warnings.
+- [ ] **Production Build Clean:** `pnpm run lint` and `pnpm run build` execute with 0 TypeScript or RSC compiler warnings.

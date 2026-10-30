@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-UIUX-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture, Sequence Choreography & UX Baseline (Single Source of Truth)  
 **Governing Specifications:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `contracts/openapi.yaml`, `ADR-013` (OTA Typography)  
-**Target Platforms:** Flutter 3.47.8 Mobile (iOS & Android), Next.js 16 Admin Web Console (Desktop & Tablet)  
+**Target Platforms:** Flutter 3.47.9 Mobile (iOS & Android), Next.js 16 Admin Web Console (Desktop & Tablet)  
 **Backend & Data Runtimes:** Go 1.27.3 Modular Monolith, PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, W3C WCAG 2.2 AA / AAA (Outdoor Mode), RFC 9457 (Problem Details), ISO 4217, ISO 3166-1 alpha-2  

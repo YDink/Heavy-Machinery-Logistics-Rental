@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-RNT-13`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/05-06-active-rental-management.md`, `05-05-booking-reservation-flow.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Certified Field Operator (*Mulugeta Tadesse*)  
 **Associated Requirements:** `REQ-05-06` (`AR-03`, `AR-04`, `AR-05`), `REQ-05-12` (Operator GPS & Roster Assignment), `REQ-05-17` (Offline Outbox Resilience)  
 **Associated Interaction Flows:** `FLOW-09` (`FLOW-ACTIVE-RENTAL-DINK-CORE-V7.0`), `FLOW-07` (`11. ACTIVE` $\rightarrow$ `12. RETURN_INITIATED`)  
@@ -113,7 +113,7 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Renter as Contractor / Operator (Flutter 3.47.8)
+    actor Renter as Contractor / Operator (Flutter 3.47.9)
     participant HudBloc as ActiveRentalHudBloc
     participant Outbox as Isar Outbox (ADR-010)
     participant API as Go Monolith (/api/v1/bookings/{id}/breakdown)

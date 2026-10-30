@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-FLUTTER-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `ARCH-INTRO-DINK-CORE-V7.0`, `ARCH-PRIN-DINK-CORE-V7.0`, `ARCH-OVERVIEW-DINK-CORE-V7.0`, `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `UIUX-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001` through `ADR-014`  
-**Target Runtimes:** Flutter 3.47.8 / Dart 3.9 (Android API 26+, iOS 15+), Isar 3.1 NoSQL Local Store, Go 1.27.3 Backend Monolith  
+**Target Runtimes:** Flutter 3.47.9 / Dart 3.9 (Android API 26+, iOS 15+), Isar 3.1 NoSQL Local Store, Go 1.27.3 Backend Monolith  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Mobile Verification), RFC 9457 (Problem Details), W3C WCAG 2.2 AA / AAA (Outdoor Mode), ISO 4217, ISO 3166-1 alpha-2  
 **Status:** Approved Engineering Baseline
@@ -54,7 +54,7 @@
 
 ## 1. Executive Summary & Design Tenets
 
-The Dink Machinery mobile client is engineered as a single, universal cross-platform application on Flutter 3.47.8 (Dart 3.9). A single compiled binary dynamically reconfigures its navigation, permissions, and operational capabilities to serve three distinct operational personas across East Africa:
+The Dink Machinery mobile client is engineered as a single, universal cross-platform application on Flutter 3.47.9 (Dart 3.9). A single compiled binary dynamically reconfigures its navigation, permissions, and operational capabilities to serve three distinct operational personas across East Africa:
 1. **Equipment Renters (Civil Contractors & Project Engineers):** Search heavy machinery using PostGIS distance sliders, lock 60-minute reservation holds, submit bank transfer evidence, and sign digital delivery attestations.
 2. **Fleet Owners (Asset Investors & Equipment Yard Managers):** Manage fleet inventory, configure dynamic EAV specifications, verify bank transfer receipts, monitor operator dispatches, and manage pre-funded `OwnerWallet` commission balances.
 3. **Field Operators (Certified Machine Drivers & Mechanics):** Perform camera-enforced pre/post-rental inspections, log monotonic physical hour meter readings, record fuel levels, counter-sign handover checklists, and stream 30-second live GPS telematics.

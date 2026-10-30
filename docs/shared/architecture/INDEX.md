@@ -4,7 +4,7 @@
 **Document Identifier:** `ARCH-INDEX-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Reference (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `contracts/openapi.yaml`, `ADR-001` through `ADR-014`  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon, OpenBao KMS, Traefik 3.x Gateway  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.9 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon, OpenBao KMS, Traefik 3.x Gateway  
 **Target Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), ISO/IEC/IEEE 42010, ISO 4217, ISO 3166-1 alpha-2, Ethiopian Personal Data Protection Proclamation No. 1321/2024, National Bank of Ethiopia (NBE) Directives  
 **Status:** Approved Engineering Baseline
@@ -111,7 +111,7 @@ The system coordinates client runtimes, edge ingress, application monolith modul
 ```mermaid
 flowchart TD
     subgraph ClientTier ["Client Runtimes Tier"]
-        FlutterApp["Flutter 3.47.8 Mobile Client<br/>Governed by: 05-flutter-mobile-app-architecture.md"]
+        FlutterApp["Flutter 3.47.9 Mobile Client<br/>Governed by: 05-flutter-mobile-app-architecture.md"]
         AdminWeb["Next.js 16 Admin Web Console<br/>Governed by: 06-nextjs-admin-panel-architecture.md"]
     end
 
@@ -215,7 +215,7 @@ The platform standardizes on production-proven runtimes with permissive open-sou
 |  Tier 3: Persistence Core    | PostgreSQL 18.6 + PostGIS 3.6.4 (NVMe RAID 10)        |
 |  Tier 4: Distributed Cache   | Valkey 9.1.3-alpine (Sentinel Failover Cluster)       |
 |  Tier 5: Object Storage      | SeaweedFS S3 Distributed Cluster (Replication 001)  |
-|  Tier 6: Mobile Client       | Flutter 3.47.8 / Dart 3.9 (Android API 26+, iOS 15+)  |
+|  Tier 6: Mobile Client       | Flutter 3.47.9 / Dart 3.9 (Android API 26+, iOS 15+)  |
 |  Tier 7: Admin Web Console   | Next.js 16.x Standalone (latest CVE security patch, React 19 RSC, Node.js 26.13.0)|
 |  Tier 8: SRE & Observability | Prometheus v3 + Loki v3 + Tempo v2 + Alertmanager   |
 +------------------------------------------------------------------------------------+

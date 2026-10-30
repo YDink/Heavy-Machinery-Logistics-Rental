@@ -5,7 +5,7 @@
 **Classification:** Canonical System Requirements Specification & Engineering Roadmap Baseline (Single Source of Truth)  
 **Governing Standard:** IEEE Std 830-1998 / IEEE/ISO/IEC 29148:2018 (Systems and Software Engineering — Requirements Engineering)  
 **Associated Artifacts:** `SRS-DINK-CORE-V7.0` (§13), `ARCH-INTRO-DINK-CORE-V7.0`, `ARCH-PRIN-DINK-CORE-V7.0`, `ARCH-ROADMAP-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-006`, `ADR-007`, `ADR-008`, `ADR-010`, `ADR-012`, `ADR-013`  
-**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 Mobile Client, Next.js 16.x Admin Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, SeaweedFS S3, ClamAV  
+**Target Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.9 Mobile Client, Next.js 16.x Admin Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, SeaweedFS S3, ClamAV  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), National Bank of Ethiopia (NBE) Directives  
 **Status:** Approved Engineering Baseline

@@ -47,19 +47,19 @@ go test -v -race -cover ./...
 cd ..
 
 # ------------------------------------------------------------------------------
-# Mobile: Flutter 3.47.8 Analyzer & Unit/Widget Suites
+# Mobile: Flutter 3.47.9 Analyzer & Unit/Widget Suites
 # ------------------------------------------------------------------------------
 cd mobile
-flutter analyze
-flutter test
+fvm flutter analyze
+fvm flutter test
 cd ..
 
 # ------------------------------------------------------------------------------
 # Admin: Next.js 16 Typecheck & Linter
 # ------------------------------------------------------------------------------
 cd admin
-npm run lint
-npm run build
+pnpm run lint
+pnpm run build
 cd ..
 ```
 
@@ -88,7 +88,7 @@ Audit structural compliance across architectural decisions and API contracts:
 
 ```bash
 # 1. Lint canonical OpenAPI 3.1.0 contract
-npx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
+pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
 
 # 2. Validate architectural decision templates (no unpopulated HTML placeholders)
 bash scripts/validate-decision-template.sh

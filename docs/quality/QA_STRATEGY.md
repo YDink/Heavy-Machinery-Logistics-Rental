@@ -3,7 +3,7 @@
 **System:** Heavy Machinery & Logistics Rental Marketplace  
 **Specification:** Unified Verification, Validation & Test Governance Framework  
 **Compliance Standard:** ISO/IEC/IEEE 29119 (Software Testing), OWASP ASVS 4.0.3 Level 3, W3C WCAG 2.1/2.2 AA, ISO/IEC 25010  
-**Subsystems Covered:** Go 1.27.3 Backend Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine  
+**Subsystems Covered:** Go 1.27.3 Backend Modular Monolith, Flutter 3.47.9 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine  
 **Governing Documents:** `AGENTS.md`, `TECH_STACK.md`, `CODE_STANDARDS.md`, `API_CONVENTIONS.md`, `ERROR_CATALOG.md`, `DEFINITION_OF_DONE.md`
 
 ---
@@ -51,7 +51,7 @@ Dink Machinery organizes testing into a strict five-tier pyramid adhering to ISO
 
 | Test Level | Scope & Objective | Subsystems | Tooling & Frameworks | Execution Trigger | SLA / Target Threshold |
 |---|---|---|---|---|---|
-| **Level 1: Static & Linters** | Schema syntax, AST rules, secrets, formatting | All Subsystems | Spectral, `golangci-lint`, `flutter analyze`, ESLint, Gitleaks | Pre-commit (`lefthook`), PR CI | 100% pass; 0 errors, 0 warnings |
+| **Level 1: Static & Linters** | Schema syntax, AST rules, secrets, formatting | All Subsystems | Spectral, `golangci-lint`, `fvm flutter analyze`, ESLint, Gitleaks | Pre-commit (`lefthook`), PR CI | 100% pass; 0 errors, 0 warnings |
 | **Level 1: Pure Unit** | Domain entities, state machines, currency math | Backend, Mobile, Admin | Go `testing`, Dart `test`, Vitest | Local dev, PR CI | $\ge 80\%$ line overall; $\ge 95\%$ on financial/auth |
 | **Level 2: Integration** | Repositories, DB transactions, cache locks | Backend, Mobile DB | `testcontainers-go`, `jackc/pgx/v5`, `isar` | Backend/Mobile CI | 100% pass; real Postgres + PostGIS & Valkey |
 | **Level 3: Contract Wire** | Schema conformance, RFC 9457 errors | Backend, Mobile, Admin | `kin-openapi`, Prism CLI, Dio interceptor | PR CI, Staging Gate | 100% route wire conformance; 0 drift |
@@ -136,7 +136,7 @@ func TestLedger_DoubleEntry_Atomicity(t *testing.T) {
 
 ---
 
-### 3.2. Flutter 3.47.8 Mobile Subsystem
+### 3.2. Flutter 3.47.9 Mobile Subsystem
 
 The mobile application tests Renter, Fleet Owner, and Field Operator user journeys using BLoC state management and local Isar persistence.
 

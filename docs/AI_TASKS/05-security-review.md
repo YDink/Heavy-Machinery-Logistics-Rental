@@ -84,9 +84,9 @@ The CI pipeline runs automated security scanning on every commit. Pull requests 
 | **Gitleaks** | Secret Detection | Git History & Working Tree | `gitleaks detect --verbose` | $\ge 1$ leaked secret, API key, private key, or credential. |
 | **Semgrep** | SAST | Go Backend & Next.js Admin | `semgrep --config p/owasp-top-ten --error` | $\ge 1$ High/Critical vulnerability or unescaped query. |
 | **Govulncheck** | Vulnerability Scan | Go Dependencies & Toolchain | `govulncheck ./...` | Known CVEs with available call-path reaches. |
-| **npm audit** | Vulnerability Scan | Node.js / Next.js Dependencies | `npm audit --audit-level=high` | High or Critical vulnerabilities in direct/transitive trees. |
+| **pnpm audit** | Vulnerability Scan | Node.js / Next.js Dependencies | `pnpm audit --audit-level=high` | High or Critical vulnerabilities in direct/transitive trees. |
 | **Trivy** | Container SAST | Dockerfiles & Base Images | `trivy image dink-backend:latest` | Critical vulnerabilities or unpatched OS packages. |
-| **Spectral CLI** | Contract Linting | `contracts/openapi.yaml` | `npx @stoplight/spectral-cli lint ...` | Schema validation errors or floating-point currency fields. |
+| **Spectral CLI** | Contract Linting | `contracts/openapi.yaml` | `pnpm dlx @stoplight/spectral-cli lint ...` | Schema validation errors or floating-point currency fields. |
 
 ---
 
@@ -121,7 +121,7 @@ cd ..
 # Step 4: Run Node Dependency Audits
 # ==============================================================================
 cd admin
-npm audit --audit-level=high
+pnpm audit --audit-level=high
 cd ..
 
 # ==============================================================================
@@ -169,6 +169,6 @@ Before any feature partition or architectural change is approved for merge into 
 
 ### Automated Tooling Gates
 - [ ] `gitleaks detect` passes with 0 leaks detected.
-- [ ] `govulncheck` and `npm audit` pass with 0 high/critical vulnerabilities.
+- [ ] `govulncheck` and `pnpm audit` pass with 0 high/critical vulnerabilities.
 - [ ] Semgrep SAST scans pass with 0 rule violations.
 - [ ] Spectral contract validation passes with 0 errors.

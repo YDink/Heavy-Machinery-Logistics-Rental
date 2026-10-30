@@ -4,7 +4,7 @@
 **Document Identifier:** `ADD-DINK-CORE-V7.0`  
 **Classification:** Canonical Architecture Specification & Engineering Blueprint (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (Parts 1–5), `FLOW-DINK-CORE-V7.0`, `UIUX-DINK-CORE-V7.0`, `contracts/openapi.yaml`  
-**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.8 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon  
+**Target Runtimes:** Go 1.27.3 Modular Monolith, Flutter 3.47.9 Cross-Platform Mobile Client, Next.js 16.x Admin Web Console (latest CVE security patch), PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3-alpine, SeaweedFS S3, ClamAV Daemon  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3, RFC 9457 (Problem Details), W3C WCAG 2.2 AA / AAA (Outdoor Mode), ISO/IEC/IEEE 42010, ISO 4217, ISO 3166-1 alpha-2  
 **Status:** Approved Engineering Baseline
 
@@ -19,7 +19,7 @@
   - 4.1 [Package & Boundary Encapsulation (`internal/modules/*`)](#41-package--boundary-encapsulation-internalmodules)
   - 4.2 [Domain Event Bus & In-Process Messaging](#42-domain-event-bus--in-process-messaging)
   - 4.3 [Transaction Boundaries & `pgx/v5` Persistence Protocol](#43-transaction-boundaries--pgxv5-persistence-protocol)
-- 5. [Mobile Client Architecture (Flutter 3.47.8)](#5-mobile-client-architecture-flutter-344)
+- 5. [Mobile Client Architecture (Flutter 3.47.9)](#5-mobile-client-architecture-flutter-344)
   - 5.1 [Feature-First Clean Architecture Layering](#51-feature-first-clean-architecture-layering)
   - 5.2 [BLoC State Management & Lifecycle](#52-bloc-state-management--lifecycle)
   - 5.3 [Offline-First Persistence (Isar NoSQL) & Outbox Sync Daemon](#53-offline-first-persistence-isar-nosql--outbox-sync-daemon)
@@ -118,7 +118,7 @@ C4Container
     }
 
     Container_Boundary(c1, "Client Applications") {
-        Container(flutter_app, "Mobile Client", "Flutter 3.47.8 / Dart 3.9", "Cross-platform mobile client for Renters, Owners, and Operators. Feature-first Clean Architecture, Isar offline store.")
+        Container(flutter_app, "Mobile Client", "Flutter 3.47.9 / Dart 3.9", "Cross-platform mobile client for Renters, Owners, and Operators. Feature-first Clean Architecture, Isar offline store.")
         Container(nextjs_admin, "Admin Web Console", "Next.js 16.x (latest CVE security patch) / React 19", "Server-driven back-office console. React Server Components, TanStack Table, dynamic metadata rendering.")
     }
 
@@ -161,7 +161,7 @@ C4Container
 | **Distributed Cache & Mutex**| Valkey | `8.0-alpine` | High-throughput open-source Redis replacement; powers 60-min reservation hold locks (`SET NX EX`) and session tokens. |
 | **Object Persistence** | SeaweedFS | `3.70+` | High-performance Go-based object storage; S3-compatible, horizontally scalable, optimized for millions of small/medium photos. |
 | **Antivirus Scanning** | ClamAV Daemon | `1.3.1` | Synchronous malware inspection (`zINSTREAM`) verifying all uploaded media before S3 persistence. |
-| **Mobile Client** | Flutter / Dart | `3.47.8` / `3.9` | Single cross-platform codebase compiling to native ARM64 for Android and iOS; 60fps animations, accessible layout tree. |
+| **Mobile Client** | Flutter / Dart | `3.47.9` / `3.9` | Single cross-platform codebase compiling to native ARM64 for Android and iOS; 60fps animations, accessible layout tree. |
 | **Admin Web Console** | Next.js / React | `16.x` / `19.x` | React Server Components by default, SSR performance, edge hydration, and dynamic data tables via `@tanstack/react-table`. |
 | **Secrets & Keys** | OpenBao | `2.0+` | Linux Foundation open-source Vault fork managing column-encryption master keys and JWT signing credentials. |
 
@@ -285,13 +285,13 @@ func (s *BookingService) ConfirmPayment(ctx context.Context, cmd ConfirmPaymentC
 
 ---
 
-## 5. Mobile Client Architecture (Flutter 3.47.8)
+## 5. Mobile Client Architecture (Flutter 3.47.9)
 
-The mobile client is built on Flutter 3.47.8 (Dart 3.9) using Feature-First Clean Architecture. A unified binary serves Renters, Fleet Owners, and Operators, dynamically altering visible tabs, navigation drawers, and actions according to the authenticated persona's active claims.
+The mobile client is built on Flutter 3.47.9 (Dart 3.9) using Feature-First Clean Architecture. A unified binary serves Renters, Fleet Owners, and Operators, dynamically altering visible tabs, navigation drawers, and actions according to the authenticated persona's active claims.
 
 ```mermaid
 flowchart TD
-    subgraph PresentationTier["Presentation Layer (Flutter 3.47.8)"]
+    subgraph PresentationTier["Presentation Layer (Flutter 3.47.9)"]
         UI["Flutter Widgets (Screen / Layout)"]
         BLoC["Business Logic Component (BLoC State Machine)"]
         UI -->|Dispatches Events| BLoC
@@ -678,7 +678,7 @@ The platform deploys as containerized workloads orchestrated via Docker Compose 
 
 ### ADR-007: Mobile Architecture — Flutter Feature-First Clean Architecture
 * **Context:** The mobile app must serve three user roles, maintain offline reliability, and execute complex state machines.
-* **Decision:** Implement Flutter 3.47.8 with Feature-First packaging, BLoC state management, and an Isar local database.
+* **Decision:** Implement Flutter 3.47.9 with Feature-First packaging, BLoC state management, and an Isar local database.
 * **Consequences:** Clean separation of concerns, isolated testing, and robust offline field inspection support.
 
 ### ADR-008: Admin Console — Server-Driven Metadata Architecture (`/admin/ui-config`)

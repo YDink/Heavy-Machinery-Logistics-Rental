@@ -8,7 +8,7 @@
 
 ## 1. Overview & Core Architectural Invariants
 
-This document establishes the mandatory API conventions for all internal and external HTTP services across Dink Machinery. Every endpoint implemented in the Go 1.27.3 modular monolith, consumed by the Flutter 3.47.8 mobile client, or called by the Next.js 16 administrative console must adhere strictly to these conventions.
+This document establishes the mandatory API conventions for all internal and external HTTP services across Dink Machinery. Every endpoint implemented in the Go 1.27.3 modular monolith, consumed by the Flutter 3.47.9 mobile client, or called by the Next.js 16 administrative console must adhere strictly to these conventions.
 
 ### Summary of Platform Invariants
 1. **Universal Response Envelope:** Raw unadorned JSON models, flat arrays, or plain text responses are forbidden. Every response must resolve to either a Success or RFC 9457 Error envelope.

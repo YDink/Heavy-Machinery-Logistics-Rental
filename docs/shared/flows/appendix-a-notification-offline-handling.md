@@ -4,7 +4,7 @@
 **Document Identifier:** `FLOW-APPENDIX-NOTIF-OFFLINE-DINK-CORE-V7.0`  
 **Classification:** Canonical Technical Appendix & Wire Protocol Specification (Single Source of Truth)  
 **Governing Documents:** `SRS-DINK-CORE-V7.0` (§5.10 Notifications, §10 Security & Identity Architecture, §11 Architecture Appendices), `FLOW-ENTRY-DINK-CORE-V7.0` through `FLOW-INSURANCE-CLAIM-DINK-CORE-V7.0` (Flows 01–19), `ARCH-BACKEND-GO-DINK-CORE-V7.0`, `ARCH-FLUTTER-DINK-CORE-V7.0`, `ARCH-ADMIN-NEXT-DINK-CORE-V7.0`, `ARCH-SEC-DINK-CORE-V7.0`, `DS-DINK-CORE-V7.0`, `DS-PERSONAS-DINK-CORE-V7.0`, `contracts/openapi.yaml`, `ADR-001`, `ADR-002`, `ADR-004`, `ADR-005`, `ADR-008`, `ADR-010` (Offline Persistence via Isar NoSQL)  
-**Target Client Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.8 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6, Valkey 9.1.3, Isar NoSQL 3.1+, Firebase Cloud Messaging (FCM HTTP v1), Twilio / Infobip / Africa's Talking / Ethio Telecom SMS Gateway  
+**Target Client Runtimes:** Go 1.27.3 Backend Monolith, Flutter 3.47.9 / Dart 3.9 (Cross-Platform Mobile), Next.js 16.x (latest CVE security patch) / React 19 (Web Admin & Corporate Portal), PostgreSQL 18.6, Valkey 9.1.3, Isar NoSQL 3.1+, Firebase Cloud Messaging (FCM HTTP v1), Twilio / Infobip / Africa's Talking / Ethio Telecom SMS Gateway  
 **Target Personas:** Civil Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Fleet Owner (*W/ro Almaz Tesfaye* / *Kamau Ndegwa*), Certified Field Operator (*Mulugeta Tadesse* / *Juma Omwamba*), Lowboy Transporter (*Ato Girma Wolde* / *Samuel Odhiambo*), Compliance Officer (*Yohannes Bekele*)  
 **Target Operating Markets:** Ethiopia (`ET`) & Kenya (`KE`) — Dynamic Multi-Country Parameterization (`LOC-01-BE`)  
 **Compliance Standards:** OWASP ASVS 4.0.3 Level 3 (Offline Cryptographic Verification, Data Integrity & Secure Queuing), RFC 9457 (Problem Details), ISO 9241-110, W3C WCAG 2.2 Level AAA (Field Mode) & Level AA (Admin Mode), Ethiopian Communications Authority (ECA) Directives, Kenya Data Protection Act 2019  
@@ -33,7 +33,7 @@
   - 5.1 [Carrier Delivery Latencies & Automated Escalation Latency Timers](#51-carrier-delivery-latencies--automated-escalation-latency-timers)
   - 5.2 [SMS Charset Transcoding (GSM-7 vs. UTF-16 UCS-2 for Ge'ez Script)](#52-sms-charset-transcoding-gsm-7-vs-utf-16-ucs-2-for-geez-script)
   - 5.3 [Aggressive Android Doze Mode & FCM High-Priority Data Wakeups](#53-aggressive-android-doze-mode--fcm-high-priority-data-wakeups)
-- 6. [Client Ergonomic Specifications & Field Sync HUD (Flutter 3.47.8)](#6-client-ergonomic-specifications--field-sync-hud-flutter-344)
+- 6. [Client Ergonomic Specifications & Field Sync HUD (Flutter 3.47.9)](#6-client-ergonomic-specifications--field-sync-hud-flutter-344)
   - 6.1 [Persistent Offline Status Pill & Sync Progress Bar ($56 \times 56\text{ dp}$)](#61-persistent-offline-status-pill--sync-progress-bar-56-times-56text-dp)
   - 6.2 [Offline QR Handover Viewfinder & Reader Viewport](#62-offline-qr-handover-viewfinder--reader-viewport)
   - 6.3 [Pending Outbox Queue Inspector & Retry Drawer](#63-pending-outbox-queue-inspector--retry-drawer)
@@ -400,7 +400,7 @@ Field operators and drivers utilize affordable Android smartphones manufactured 
 
 ---
 
-## 6. Client Ergonomic Specifications & Field Sync HUD (Flutter 3.47.8)
+## 6. Client Ergonomic Specifications & Field Sync HUD (Flutter 3.47.9)
 
 ### 6.1 Persistent Offline Status Pill & Sync Progress Bar ($56 \times 56\text{ dp}$)
 

@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-RNT-08`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/05-05-booking-reservation-flow.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Civil Engineering Contractor (*Dawit Haile-Mariam* / *Patrick Kariuki*), Corporate Finance Officer (*Solomon Kassa*)  
 **Associated Requirements:** `REQ-05-05` (`BK-05`, `BK-06`), `REQ-05-10` (15-Min Expiry Warning Push Notification)  
 **Associated Interaction Flows:** `FLOW-07` (`1. PENDING_PAYMENT`), `FLOW-08` (Direct P2P Commercial Bank Wire), `FLOW-15` / `FLOW-16` (Valkey 60-Min Soft-Lock Lease & Auto-Eviction)  
@@ -114,7 +114,7 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Renter as Contractor (Flutter 3.47.8)
+    actor Renter as Contractor (Flutter 3.47.9)
     participant HoldBloc as HoldTimerBloc
     participant Clock as AbstractedClockProvider
     participant API as Go Monolith (/api/v1/bookings/{id})

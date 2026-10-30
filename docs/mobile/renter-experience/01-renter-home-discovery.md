@@ -4,7 +4,7 @@
 **Document Identifier:** `SPEC-MOB-RNT-01`  
 **Classification:** Canonical Subsystem UI/UX & Technical Behavior Specification  
 **Governing Documents:** `Dink_Machinery_UI_UX_Design_Brief.md`, `SRS-DINK-CORE-V7.0` (`docs/shared/requirements/05-04-fleet-discovery-search-comparison.md`, `05-15-search-discovery-enhancements.md`), `docs/shared/design/design-tokens.json`, `docs/ERROR_CATALOG.md`, `contracts/openapi.yaml`  
-**Target Subsystem:** Flutter 3.47.8 / Dart 3.9 Mobile Client (iOS & Android)  
+**Target Subsystem:** Flutter 3.47.9 / Dart 3.9 Mobile Client (iOS & Android)  
 **Primary Persona / Actor:** Civil Engineering Contractor (*Dawit Haile-Mariam* — Ethiopia `ET` / *Patrick Kariuki* — Kenya `KE`), Corporate Site Requester (*Bethlehem Tessema*)  
 **Associated Requirements:** `REQ-05-04` (`FD-01`..`FD-05`, `SR-01`, `SR-02`, `SR-04`, `SR-05`), `REQ-05-15` (`SR-12`), `REQ-06-01` (`CORP-03`)  
 **Associated Interaction Flows:** `FLOW-04` (`FLOW-DISCOVERY-DINK-CORE-V7.0`), `FLOW-12` (Commission Delinquency Exclusion)  
@@ -125,7 +125,7 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Renter as Contractor (Flutter 3.47.8)
+    actor Renter as Contractor (Flutter 3.47.9)
     participant BLoC as RenterDiscoveryBloc
     participant Isar as Isar Local Cache
     participant API as Go Monolith (/api/v1/discovery)

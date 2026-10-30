@@ -3,7 +3,7 @@
 **Project Phase:** Phase 0 (Docs-First & Pre-Development Governance)  
 **Active Requirement Partition:** `00-foundations-governance`  
 **Active Branch:** `main` (Pre-bootstrap baseline)  
-**Current Stop Point:** Technology Stack Version Standardization & Canonical Toolchain Pinning Complete
+**Current Stop Point:** Technology Stack Version Standardization, FVM Configuration & pnpm Package Manager Enforcement Complete
 
 ---
 
@@ -24,17 +24,22 @@
 - **Zero Empty Files Verified:** Automated recursive audit confirms 0 empty (0-byte) files remain across the entire codebase.
 - **Quality Assurance OS:** QA strategy, quality gates (G0–G4), security QA, and accessibility protocols articulated under `docs/quality/`.
 - **Canonical Toolchain & Version Standardization:**
-  - Root `.tool-versions` established (`golang 1.27.3`, `flutter 3.47.8`, `nodejs 26.13.0`).
+  - Root `.tool-versions` established (`golang 1.27.3`, `flutter 3.47.9`, `nodejs 26.13.0`, `pnpm 11.10.0`).
   - `docs/TECH_STACK.md` updated as authoritative Single Source of Truth (SSOT).
   - Pinned exact infrastructure runtimes across `docker-compose.yml`, `.env.example`, `.env.dev`:
     - Go: `1.27.3`
-    - Flutter: `3.47.8`
+    - Flutter: `3.47.9` (configured and managed via FVM `.fvmrc`)
     - Node.js: `26.13.0`
+    - Package Manager: `pnpm` (`v11.x`, `pnpm-lock.yaml`) mandatory across repository
     - Next.js: `16.x` (strict requirement to track latest patch release to mitigate frequent CVEs)
     - PostgreSQL: `18.6`
     - PostGIS: `3.6.4` (`postgis/postgis:18.6-3.6.4-alpine`)
     - Valkey: `9.1.3` (`valkey/valkey:9.1.3-alpine`)
-  - Batch-migrated and harmonized 208 specification files across `docs/`, `contracts/`, `scripts/`, `.github/`, ensuring zero outdated version references remain.
+- **FVM & pnpm Standardization:**
+  - Configured root `.fvmrc` and `.fvm/fvm_config.json` pinning Flutter `3.47.9`.
+  - Added `.fvm/flutter_sdk` and `.fvm/cache` to `.gitignore`.
+  - Migrated all Flutter commands across documentation, bootstrap runbooks, CI workflows, and quality matrices to `fvm flutter ...`.
+  - Enforced `pnpm` as the exclusive package manager, replacing all `npm` and `npx` references with `pnpm`, `pnpm dlx`, and `pnpm-lock.yaml`.
   - Validated architectural decision templates (`validate-decision-template.sh`) and links (`validate-decision-links.sh`) with 0 errors.
 
 ### In Progress
@@ -46,7 +51,7 @@
 
 1. Verify and sign off Gate G0 in `docs/quality/BOOTSTRAP_CHECKLIST.md`.
 2. Initialize local Git pre-commit hooks via `lefthook install`.
-3. Execute Phase 1 bootstrap per `docs/BOOTSTRAP.md` to initialize `backend/`, `mobile/`, and `admin/` using the latest stable toolchains.
+3. Execute Phase 1 bootstrap per `docs/BOOTSTRAP.md` using `fvm flutter ...` and `pnpm ...`.
 4. Generate `docs/TECH_STACK.md` lockfile record from the bootstrap output.
 5. Create initial partition feature branch: `feature/05-01-registration-authentication`.
 
@@ -57,30 +62,32 @@
 ### Decisions Formulated
 - `ADR-001` through `ADR-015` recorded and verified in `docs/decisions/`.
 - `D-05-01-001` through `D-11-01-002` (80 decisions across 40 partitions) recorded and verified in `docs/decisions/partitions/`.
-- Canonical Toolchain Resolution: Pinned Go `1.27.3`, Flutter `3.47.8`, Node.js `26.13.0`, Next.js `16.x` (latest CVE security patch), PostgreSQL `18.6` + PostGIS `3.6.4`, and Valkey `9.1.3`.
+- Canonical Toolchain Resolution: Pinned Go `1.27.3`, Flutter `3.47.9` (via FVM), Node.js `26.13.0`, `pnpm 11.x`, Next.js `16.x` (latest CVE patch), PostgreSQL `18.6` + PostGIS `3.6.4`, and Valkey `9.1.3`.
 
 ### Blockers
-- None. Phase 0 documentation, contracts, decisions, specifications, and toolchain configurations are 100% complete and validated.
+- None. Phase 0 documentation, contracts, decisions, specifications, toolchains, FVM, and pnpm configurations are 100% complete and validated.
 
 ---
 
 ## 4. Files Touched in Current Session
 
-- `.tool-versions` (created)
+- `.fvmrc` (created)
+- `.fvm/fvm_config.json` (created)
+- `.tool-versions` (updated with pnpm)
+- `.gitignore` (updated for FVM)
+- `AGENTS.md` (updated for FVM and pnpm)
+- `lefthook.yml` (updated to pnpm dlx)
 - `docs/TECH_STACK.md` (updated SSOT)
-- `docker-compose.yml`
-- `.env.example`
-- `.env.dev`
-- `docs/CODE_STANDARDS.md`
+- `docs/BOOTSTRAP.md`
 - `docs/quality/BOOTSTRAP_CHECKLIST.md`
-- `ARCHITECTURE.md`, `CODE_STYLE.md`, `DATABASE.md`, `ROADMAP.md`, `SECURITY.md`, `TESTING.md`
-- `contracts/README.md`
-- `docs/source/**` (6 canonical specifications)
-- `docs/shared/architecture/**` (15 files)
-- `docs/shared/flows/**` (22 files)
-- `docs/shared/requirements/**` (37 files)
-- `docs/shared/design/**` (3 files)
-- `docs/decisions/**` (ADRs & partition decisions)
-- `docs/mobile/**` (mobile subsystem specifications)
-- `docs/admin/**` (admin console specifications)
+- `docs/quality/QUALITY_GATES.md`
+- `docs/quality/API_CONTRACT_TESTING.md`
+- `docs/quality/DEFINITION_OF_DONE.md`
+- `docs/quality/SECURITY_QA.md`
+- `docs/quality/TEST_REPORT_TEMPLATE.md`
+- `docs/CODE_STANDARDS.md`
+- `docs/AI_TASKS/**`
+- `docs/components/**`
+- `.github/workflows/**`
+- `TESTING.md`
 - `CONTEXT.md`

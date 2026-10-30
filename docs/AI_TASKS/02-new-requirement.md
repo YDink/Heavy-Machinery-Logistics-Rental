@@ -101,7 +101,7 @@ Prior to writing functional specs, update the canonical OpenAPI contract:
    - Annotate mutating actions with the `Idempotency-Key` header parameter.
 2. **Validate Contract Locally:**
    ```bash
-   npx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
+   pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml
    ```
 3. **Register New Domain Errors:**
    - If new error codes are introduced, append them to `ERROR_CATALOG.md` with HTTP status, RFC 9457 type URI, and retryability semantics.

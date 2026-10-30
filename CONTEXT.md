@@ -1,47 +1,54 @@
 # CONTEXT.md — Dink Machinery Active Session State
 
-**Project Phase:** Phase 1 (Subsystem Bootstrap & Wiring)  
-**Active Requirement Partition:** `00-foundations-governance`  
-**Active Branch:** `main`  
-**Current Stop Point:** Gate G0 Signed Off, Gate G1-A (Docker Infrastructure) & Gate G1-B (Migrations & PostGIS) Verified
+**Project Phase:** Phase 1 Complete $\rightarrow$ Transitioning to Phase 2 (Partition Feature Development)  
+**Active Requirement Partition:** `05-01-core-identity-auth`  
+**Active Branch:** `main` (Ready for partition branching: `feature/05-01-core-identity-auth`)  
+**Current Stop Point:** Phase 1 Machine Bootstrap Complete & Certified Across All Three Subsystems
 
 ---
 
 ## 1. Current Progress Snapshot
 
-### Completed (Phase 0 Documentation, Governance & Baseline Infrastructure)
-- **Spectral Contract Linting Verified:** Created root `.spectral.yaml` conforming to RFC 9457 and integer minor-unit money rules; `pnpm dlx @stoplight/spectral-cli lint contracts/openapi.yaml --ruleset .spectral.yaml` passes with 0 errors.
-- **Architectural Decisions Verified:** `validate-decision-template.sh` and `validate-decision-links.sh` pass with 0 errors across 15 L1 ADRs and 80 L2 Partition Decisions.
-- **Local Git Hooks Activated:** `lefthook` configured with commitlint, decision checks, spectral linting, and atomic doc-commit rules; hooks installed in `.git/hooks`.
-- **Docker Compose Infrastructure Operational (Gate G1-A):**
-  - PostgreSQL 18.6 + PostGIS 3.6.4 container (`dink-postgres`) healthy on port 5432.
-  - Valkey 9.1.3 container (`dink-valkey`) healthy on port 6379.
-  - SeaweedFS S3-compatible container (`dink-seaweedfs`) healthy on port 9000.
-  - ClamAV container (`dink-clamav`) healthy on port 3310.
-- **Persistence Baseline Applied (Gate G1-B):**
-  - Migration `000001_init_platform_schema.up.sql` executed cleanly via `golang-migrate`.
-  - Cryptographic extensions (`uuid-ossp`, `pgcrypto`) and `postgis` (3.6.4) active.
-  - `country_configs` table created with updated-at trigger and seeded with Ethiopia (`ET`) and Kenya (`KE`).
-- **Canonical Architecture & Design SSOT:** All specifications, mobile specs (65 files), admin specs (38 files), and modular requirements fully populated.
-- **Canonical Toolchain & Version Standardization:**
-  - Go: `1.27.3` (windows/amd64) configured.
-  - Flutter: `3.47.9` (Dart `3.13.7`) with FVM (`.fvmrc`).
-  - Node.js: `26.13.0` & pnpm `12.16.1`.
-  - Java: OpenJDK 21 LTS configured in Flutter.
-  - `flutter doctor -v`: 100% clean (`• No issues found!`).
+### Completed (Phase 1 Subsystem Bootstrap & Infrastructure)
+- **Gate G0 Contracts & Governance:** OpenAPI 3.1.0 contract validated via Spectral (0 errors), 15 L1 ADRs and 80 L2 Decisions verified, zero empty files.
+- **Gate G1-A Containerized Infrastructure:** PostgreSQL 18.6 + PostGIS 3.6.4, Valkey 9.1.3, SeaweedFS S3-compatible storage, and ClamAV running and healthy via Docker Compose.
+- **Gate G1-B Database Baseline & PostGIS:** Migration `000001_init_platform_schema.up.sql` applied; `uuid-ossp`, `pgcrypto`, and `postgis` active; `country_configs` table created and seeded (`ET`, `KE`).
+- **Gate G1-C Backend Modular Monolith (`backend/`):**
+  - Go `1.27.3` module initialized with Chi v5, pgx v5, zap, and OpenTelemetry.
+  - HTTP transport router bindings generated via `oapi-codegen` (`internal/transport/http/generated/api.gen.go`).
+  - Repository data layer generated via `sqlc` (`internal/platform/database/db/`).
+  - Health endpoint implemented (`GET /healthz`) conforming to platform universal envelope.
+  - `go build` and `go test ./...` compiled and passed cleanly.
+- **Gate G1-D Flutter Mobile Subsystem (`mobile/`):**
+  - Flutter `3.47.9` (Dart `3.13.7`) workspace scaffolded via FVM (`com.dinkmachinery.dink_mobile`).
+  - Architecture dependencies pinned: `flutter_bloc`, `bloc`, `dio`, `isar_community`, `isar_community_generator`, `freezed_annotation`, `flutter_secure_storage`, `geolocator`.
+  - Feature-first Clean Architecture folders established.
+  - `fvm flutter test` and `fvm flutter analyze` passed with 0 issues.
+- **Gate G1-E Next.js Admin Web Console (`admin/`):**
+  - Next.js `16.4.3` App Router scaffolded with TypeScript, Tailwind CSS v4, and ESLint via pnpm.
+  - Administrative UI libraries installed: `@tanstack/react-table`, `@tanstack/react-query`, `react-hook-form`, `zod`, `lucide-react`, `sonner`.
+  - Contract TypeScript types generated from `contracts/openapi.yaml` (`src/types/api.generated.ts`).
+  - Turbopack production build (`pnpm run build`) and ESLint passed cleanly.
+- **Gate G2-A Security & Zero-PII Audit:** Verified zero unmasked PII logging in application code; zero floating-point currency representations.
+- **Gate G2-B Git Governance:** `lefthook` v2.2.2 pre-commit and commit-msg hooks active, intercepting commits, and validating atomic doc updates, decision links, and Conventional Commits.
+- **Lockfile Determinism:** All 3 subsystems committed with reproducible lockfiles (`backend/go.sum`, `mobile/pubspec.lock`, `admin/pnpm-lock.yaml`).
 
 ### In Progress
-- Scaffolding Go modular monolith (`backend/`), Flutter mobile workspace (`mobile/`), and Next.js admin portal (`admin/`).
+- Opening initial Phase 2 partition feature branch: `feature/05-01-core-identity-auth`.
 
 ---
 
 ## 2. Next Immediate Tasks (In Order)
 
-1. Scaffold Go modular monolith (`backend/`): initialize module, run `oapi-codegen` and `sqlc generate`, build Chi `/healthz`.
-2. Scaffold Flutter mobile workspace (`mobile/`): run `fvm flutter create`, pin BLoC, Isar, Dio, generate feature structure.
-3. Scaffold Next.js admin app (`admin/`): run `pnpm create next-app`, install UI dependencies, sync OpenAPI types.
-4. Verify non-decreasing coverage and lockfile generation (`go.sum`, `pubspec.lock`, `pnpm-lock.yaml`).
-5. Open initial Phase 2 partition branch: `feature/05-01-registration-authentication`.
+1. Create feature branch: `feature/05-01-core-identity-auth`.
+2. Load partition requirements (`docs/shared/requirements/05-01-registration-authentication.md`), interaction flow (`docs/shared/flows/02-renter-registration-authentication.md`), and decisions (`docs/decisions/partitions/05-01.md`).
+3. Implement Domain layer: `internal/modules/auth/domain/` (User, VerificationSession, Role, CountryCode).
+4. Implement Application layer: OTP request & verification use cases with time provider injection.
+5. Implement Infrastructure layer: Database repository using `sqlc`, SMS gateway adapter, JWT token generator.
+6. Implement Transport layer: Register generated Chi router handlers connecting to application handlers.
+7. Implement mobile auth presentation BLoC & screens in `mobile/lib/features/auth/`.
+8. Implement admin identity inspection table in `admin/src/app/users/`.
+9. Verify all quality gates (G0–G3) prior to rebase-merge into `main`.
 
 ---
 

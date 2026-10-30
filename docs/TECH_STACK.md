@@ -13,7 +13,7 @@
 |---|---|---|---|---|
 | **Backend Runtime** | Go | `1.27.3` | `.tool-versions`, `go.mod` | High-throughput, low-latency modular monolith backend service. |
 | **Mobile Runtime** | Flutter / Dart (FVM) | `3.47.9` / `3.9.x` | `fvm` (`.fvmrc`), `.tool-versions`, `pubspec.lock` | Cross-platform client for Renters, Asset Owners, and Machine Operators. Pinned via FVM. |
-| **Admin Web Runtime** | Node.js / Next.js / pnpm | `26.13.0` / `16.x` (latest CVE patch) / `11.x` | `.tool-versions`, `pnpm-lock.yaml` | Metadata-driven administrative and operations console using pnpm. Requires latest patch of Next.js 16 to mitigate frequent CVEs. |
+| **Admin Web Runtime** | Node.js / Next.js / pnpm | `26.13.0` / `16.x` (latest CVE patch: `16.4.3`) / `12.16.1` | `.tool-versions`, `pnpm-lock.yaml` | Metadata-driven administrative and operations console using pnpm. Requires latest patch of Next.js 16 to mitigate frequent CVEs. |
 | **Primary Persistence** | PostgreSQL + PostGIS | `18.6` (PostGIS `3.6.4`) | `docker-compose.yml` (`postgis/postgis:18.6-3.6.4-alpine`) | Relational data, spatial radius indexing, immutable financial ledger. |
 | **Cache & Ephemeral** | Valkey | `9.1.3` (`9.1.3-alpine`) | `docker-compose.yml` (`valkey/valkey:9.1.3-alpine`) | Distributed locks, session storage, rate-limiting counters, hot cache. |
 | **Object Storage** | SeaweedFS / MinIO | S3-Compatible API | Container image tag | Contract PDFs, inspection media, dynamic font OTA assets. |

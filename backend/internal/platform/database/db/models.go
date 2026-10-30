@@ -24,3 +24,28 @@ type CountryConfig struct {
 	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
 }
+
+type User struct {
+	ID              pgtype.UUID        `json:"id"`
+	PhoneNumber     string             `json:"phone_number"`
+	CountryCode     string             `json:"country_code"`
+	FullName        string             `json:"full_name"`
+	PrimaryRole     string             `json:"primary_role"`
+	AccountStatus   string             `json:"account_status"`
+	KycStatus       string             `json:"kyc_status"`
+	PasswordHash    *string            `json:"password_hash"`
+	TokenVersion    int32              `json:"token_version"`
+	PhoneVerifiedAt pgtype.Timestamptz `json:"phone_verified_at"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+}
+
+type UserLegalAgreement struct {
+	ID              pgtype.UUID        `json:"id"`
+	UserID          pgtype.UUID        `json:"user_id"`
+	TermsVersion    string             `json:"terms_version"`
+	PrivacyVersion  string             `json:"privacy_version"`
+	AcceptedAt      pgtype.Timestamptz `json:"accepted_at"`
+	ClientIp        string             `json:"client_ip"`
+	ClientUserAgent string             `json:"client_user_agent"`
+}

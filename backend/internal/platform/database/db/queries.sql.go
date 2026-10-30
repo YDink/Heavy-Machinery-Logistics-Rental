@@ -7,13 +7,68 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const createUser = `-- name: CreateUser :one
+INSERT INTO users (
+    phone_number,
+    country_code,
+    full_name,
+    primary_role,
+    account_status,
+    kyc_status,
+    password_hash
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7
+) RETURNING id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at
+`
+
+type CreateUserParams struct {
+	PhoneNumber   string  `json:"phone_number"`
+	CountryCode   string  `json:"country_code"`
+	FullName      string  `json:"full_name"`
+	PrimaryRole   string  `json:"primary_role"`
+	AccountStatus string  `json:"account_status"`
+	KycStatus     string  `json:"kyc_status"`
+	PasswordHash  *string `json:"password_hash"`
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+	row := q.db.QueryRow(ctx, createUser,
+		arg.PhoneNumber,
+		arg.CountryCode,
+		arg.FullName,
+		arg.PrimaryRole,
+		arg.AccountStatus,
+		arg.KycStatus,
+		arg.PasswordHash,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.PhoneNumber,
+		&i.CountryCode,
+		&i.FullName,
+		&i.PrimaryRole,
+		&i.AccountStatus,
+		&i.KycStatus,
+		&i.PasswordHash,
+		&i.TokenVersion,
+		&i.PhoneVerifiedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
 
 const getCountryConfig = `-- name: GetCountryConfig :one
 SELECT country_code, country_name, dialing_prefix, default_currency, currency_minor_unit_exponent, default_timezone, tax_label, standard_tax_rate_bps, withholding_tax_bps, min_age_default, payment_hold_timeout_mins, is_enabled, created_at, updated_at FROM country_configs
 WHERE country_code = $1 AND is_enabled = true
 `
 
+// Country Configurations
 func (q *Queries) GetCountryConfig(ctx context.Context, countryCode string) (CountryConfig, error) {
 	row := q.db.QueryRow(ctx, getCountryConfig, countryCode)
 	var i CountryConfig
@@ -34,6 +89,71 @@ func (q *Queries) GetCountryConfig(ctx context.Context, countryCode string) (Cou
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getUserByID = `-- name: GetUserByID :one
+SELECT id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at FROM users
+WHERE id = $1
+`
+
+// Users & Authentication (REG-01-BE to REG-09-BE, AUT-01-BE to AUT-11-BE)
+func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByID, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.PhoneNumber,
+		&i.CountryCode,
+		&i.FullName,
+		&i.PrimaryRole,
+		&i.AccountStatus,
+		&i.KycStatus,
+		&i.PasswordHash,
+		&i.TokenVersion,
+		&i.PhoneVerifiedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getUserByPhoneNumber = `-- name: GetUserByPhoneNumber :one
+SELECT id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at FROM users
+WHERE phone_number = $1
+`
+
+func (q *Queries) GetUserByPhoneNumber(ctx context.Context, phoneNumber string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByPhoneNumber, phoneNumber)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.PhoneNumber,
+		&i.CountryCode,
+		&i.FullName,
+		&i.PrimaryRole,
+		&i.AccountStatus,
+		&i.KycStatus,
+		&i.PasswordHash,
+		&i.TokenVersion,
+		&i.PhoneVerifiedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const incrementUserTokenVersion = `-- name: IncrementUserTokenVersion :one
+UPDATE users
+SET token_version = token_version + 1
+WHERE id = $1
+RETURNING token_version
+`
+
+func (q *Queries) IncrementUserTokenVersion(ctx context.Context, id pgtype.UUID) (int32, error) {
+	row := q.db.QueryRow(ctx, incrementUserTokenVersion, id)
+	var token_version int32
+	err := row.Scan(&token_version)
+	return token_version, err
 }
 
 const listEnabledCountryConfigs = `-- name: ListEnabledCountryConfigs :many
@@ -75,4 +195,172 @@ func (q *Queries) ListEnabledCountryConfigs(ctx context.Context) ([]CountryConfi
 		return nil, err
 	}
 	return items, nil
+}
+
+const listUserLegalAgreements = `-- name: ListUserLegalAgreements :many
+SELECT id, user_id, terms_version, privacy_version, accepted_at, client_ip, client_user_agent FROM user_legal_agreements
+WHERE user_id = $1
+ORDER BY accepted_at DESC
+`
+
+func (q *Queries) ListUserLegalAgreements(ctx context.Context, userID pgtype.UUID) ([]UserLegalAgreement, error) {
+	rows, err := q.db.Query(ctx, listUserLegalAgreements, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []UserLegalAgreement{}
+	for rows.Next() {
+		var i UserLegalAgreement
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.TermsVersion,
+			&i.PrivacyVersion,
+			&i.AcceptedAt,
+			&i.ClientIp,
+			&i.ClientUserAgent,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const recordUserLegalAgreement = `-- name: RecordUserLegalAgreement :one
+INSERT INTO user_legal_agreements (
+    user_id,
+    terms_version,
+    privacy_version,
+    client_ip,
+    client_user_agent
+) VALUES (
+    $1, $2, $3, $4, $5
+) RETURNING id, user_id, terms_version, privacy_version, accepted_at, client_ip, client_user_agent
+`
+
+type RecordUserLegalAgreementParams struct {
+	UserID          pgtype.UUID `json:"user_id"`
+	TermsVersion    string      `json:"terms_version"`
+	PrivacyVersion  string      `json:"privacy_version"`
+	ClientIp        string      `json:"client_ip"`
+	ClientUserAgent string      `json:"client_user_agent"`
+}
+
+// Legal Agreements
+func (q *Queries) RecordUserLegalAgreement(ctx context.Context, arg RecordUserLegalAgreementParams) (UserLegalAgreement, error) {
+	row := q.db.QueryRow(ctx, recordUserLegalAgreement,
+		arg.UserID,
+		arg.TermsVersion,
+		arg.PrivacyVersion,
+		arg.ClientIp,
+		arg.ClientUserAgent,
+	)
+	var i UserLegalAgreement
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.TermsVersion,
+		&i.PrivacyVersion,
+		&i.AcceptedAt,
+		&i.ClientIp,
+		&i.ClientUserAgent,
+	)
+	return i, err
+}
+
+const updateUserAccountStatus = `-- name: UpdateUserAccountStatus :one
+UPDATE users
+SET account_status = $2
+WHERE id = $1
+RETURNING id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at
+`
+
+type UpdateUserAccountStatusParams struct {
+	ID            pgtype.UUID `json:"id"`
+	AccountStatus string      `json:"account_status"`
+}
+
+func (q *Queries) UpdateUserAccountStatus(ctx context.Context, arg UpdateUserAccountStatusParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserAccountStatus, arg.ID, arg.AccountStatus)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.PhoneNumber,
+		&i.CountryCode,
+		&i.FullName,
+		&i.PrimaryRole,
+		&i.AccountStatus,
+		&i.KycStatus,
+		&i.PasswordHash,
+		&i.TokenVersion,
+		&i.PhoneVerifiedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateUserKYCStatus = `-- name: UpdateUserKYCStatus :one
+UPDATE users
+SET kyc_status = $2
+WHERE id = $1
+RETURNING id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at
+`
+
+type UpdateUserKYCStatusParams struct {
+	ID        pgtype.UUID `json:"id"`
+	KycStatus string      `json:"kyc_status"`
+}
+
+func (q *Queries) UpdateUserKYCStatus(ctx context.Context, arg UpdateUserKYCStatusParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserKYCStatus, arg.ID, arg.KycStatus)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.PhoneNumber,
+		&i.CountryCode,
+		&i.FullName,
+		&i.PrimaryRole,
+		&i.AccountStatus,
+		&i.KycStatus,
+		&i.PasswordHash,
+		&i.TokenVersion,
+		&i.PhoneVerifiedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateUserPhoneVerified = `-- name: UpdateUserPhoneVerified :one
+UPDATE users
+SET account_status = 'ACTIVE',
+    phone_verified_at = NOW()
+WHERE id = $1
+RETURNING id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at
+`
+
+func (q *Queries) UpdateUserPhoneVerified(ctx context.Context, id pgtype.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserPhoneVerified, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.PhoneNumber,
+		&i.CountryCode,
+		&i.FullName,
+		&i.PrimaryRole,
+		&i.AccountStatus,
+		&i.KycStatus,
+		&i.PasswordHash,
+		&i.TokenVersion,
+		&i.PhoneVerifiedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

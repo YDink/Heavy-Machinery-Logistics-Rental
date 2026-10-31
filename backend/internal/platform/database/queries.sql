@@ -71,3 +71,97 @@ INSERT INTO user_legal_agreements (
 SELECT * FROM user_legal_agreements
 WHERE user_id = $1
 ORDER BY accepted_at DESC;
+
+
+-- Dynamic RBAC Queries (ADR-018)
+-- name: GetUserPermissions :many
+SELECT DISTINCT p.code
+FROM permissions p
+JOIN role_permissions rp ON rp.permission_id = p.id
+JOIN user_roles ur ON ur.role_id = rp.role_id
+WHERE ur.user_id = $1
+ORDER BY p.code ASC;
+
+-- name: UserHasPermission :one
+SELECT EXISTS (
+    SELECT 1
+    FROM permissions p
+    JOIN role_permissions rp ON rp.permission_id = p.id
+    JOIN user_roles ur ON ur.role_id = rp.role_id
+    WHERE ur.user_id = $1 AND p.code = $2
+);
+
+-- name: GetUserRoles :many
+SELECT r.*
+FROM roles r
+JOIN user_roles ur ON ur.role_id = r.id
+WHERE ur.user_id = $1
+ORDER BY r.code ASC;
+
+-- name: AssignRoleToUser :exec
+INSERT INTO user_roles (user_id, role_id, assigned_by)
+VALUES ($1, $2, $3)
+ON CONFLICT (user_id, role_id) DO NOTHING;
+
+-- name: AssignRoleByCodeToUser :exec
+INSERT INTO user_roles (user_id, role_id, assigned_by)
+SELECT $1, r.id, $3
+FROM roles r
+WHERE r.code = $2
+ON CONFLICT (user_id, role_id) DO NOTHING;
+
+-- name: RemoveRoleFromUser :exec
+DELETE FROM user_roles
+WHERE user_id = $1 AND role_id = $2;
+
+-- name: ListAllRoles :many
+SELECT * FROM roles
+ORDER BY code ASC;
+
+-- name: ListAllPermissions :many
+SELECT * FROM permissions
+ORDER BY resource ASC, action ASC;
+
+-- Dynamic Localization Queries (ADR-019, SRS §05.16)
+-- name: UpdateUserPreferredLanguage :one
+UPDATE users
+SET preferred_language = $2
+WHERE id = $1
+RETURNING *;
+
+-- name: GetTranslationsByLanguage :many
+SELECT 
+    k.full_key,
+    t.translated_text,
+    t.language_code,
+    n.namespace_key
+FROM localization_translations t
+JOIN localization_keys k ON k.id = t.key_id
+JOIN localization_namespaces n ON n.id = k.namespace_id
+WHERE t.language_code = $1
+ORDER BY k.full_key ASC;
+
+-- name: GetTranslationsBundleByNamespace :many
+SELECT 
+    k.full_key,
+    t.translated_text,
+    t.language_code
+FROM localization_translations t
+JOIN localization_keys k ON k.id = t.key_id
+JOIN localization_namespaces n ON n.id = k.namespace_id
+WHERE n.namespace_key = $1 AND t.language_code = $2
+ORDER BY k.full_key ASC;
+
+-- name: UpsertTranslation :one
+INSERT INTO localization_translations (
+    key_id,
+    language_code,
+    translated_text,
+    is_verified
+) VALUES (
+    $1, $2, $3, $4
+) ON CONFLICT (key_id, language_code) DO UPDATE SET
+    translated_text = EXCLUDED.translated_text,
+    is_verified = EXCLUDED.is_verified,
+    updated_at = NOW()
+RETURNING *;

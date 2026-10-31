@@ -1,0 +1,21 @@
+{
+  "@@locale": "am",
+  "appName": "ድንቅ ማሽነሪ",
+  "phoneInputTitle": "ስልክ ቁጥርዎን ያስገቡ",
+  "phoneInputSubtitle": "ቁጥርዎን ለማረጋገጥ ባለ 6 አሃዝ የማረጋገጫ ኮድ በኤስኤምኤስ (SMS) እንልካለን።",
+  "phoneNumberLabel": "ስልክ ቁጥር",
+  "phoneNumberHint": "91 234 5678",
+  "sendOtpButton": "የማረጋገጫ ኮድ ላክ",
+  "carrierPrefix": "አገልግሎት አቅራቢ",
+  "termsAgreementNotice": "በመቀጠልዎ በአገልግሎት ውል እና የግላዊነት መመሪያችን ተስማምተዋል።",
+  "otpVerifyTitle": "ስልክ ቁጥርዎን ያረጋግጡ",
+  "otpVerifySubtitle": "የተላከውን ባለ 6 አሃዝ የማረጋገጫ ኮድ ያስገቡ ወደ {phone}",
+  "verifyButton": "አረጋግጥና ቀጥል",
+  "resendCodeButton": "ኮዱን እንደገና ላክ",
+  "resendCountdown": "ኮዱን በድጋሚ ለመላክ {seconds} ሰከንድ",
+  "errorInvalidPhone": "እባክዎን ትክክለኛ ስልክ ቁጥር ያስገቡ",
+  "errorRateLimit": "የተፈቀደው የጥያቄ ገደብ አልፏል። እባክዎን ትንሽ ቆይተው እንደገና ይሞክሩ።",
+  "errorGeneric": "ያልተጠበቀ ስህተት አጋጥሟል። እባክዎን እንደገና ይሞክሩ።",
+  "commonRetry": "እንደገና ሞክር",
+  "commonCancel": "ሰርዝ"
+}

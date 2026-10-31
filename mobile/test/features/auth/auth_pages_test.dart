@@ -11,6 +11,7 @@ import 'package:dink_mobile/features/auth/domain/usecases/verify_otp_usecase.dar
 import 'package:dink_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:dink_mobile/features/auth/presentation/pages/phone_input_page.dart';
 import 'package:dink_mobile/features/auth/presentation/pages/otp_verification_page.dart';
+import 'package:dink_mobile/l10n/app_localizations.dart';
 
 class MockAuthRepo implements AuthRepository {
   @override
@@ -86,6 +87,8 @@ void main() {
   testWidgets('PhoneInputPage renders and detects carrier dynamically', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: BlocProvider.value(
           value: authBloc,
           child: const PhoneInputPage(),
@@ -94,7 +97,7 @@ void main() {
     );
 
     expect(find.text('Dink Machinery'), findsOneWidget);
-    expect(find.text('Continue'), findsOneWidget);
+    expect(find.text('Send Verification Code'), findsOneWidget);
 
     // Enter Ethiopian phone number starting with 9
     final phoneField = find.byType(TextField);
@@ -102,17 +105,19 @@ void main() {
     await tester.pump();
 
     // Verify dynamic carrier badge appears (REG-02)
-    expect(find.text('Ethio Telecom'), findsOneWidget);
+    expect(find.text('Carrier: Ethio Telecom'), findsOneWidget);
 
     // Clear and enter Safaricom number starting with 7
     await tester.enterText(phoneField, '711223344');
     await tester.pump();
-    expect(find.text('Safaricom ET'), findsOneWidget);
+    expect(find.text('Carrier: Safaricom ET'), findsOneWidget);
   });
 
   testWidgets('OtpVerificationPage displays 6-digit reticle and countdown', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: BlocProvider.value(
           value: authBloc,
           child: const OtpVerificationPage(phoneNumber: '+251911442910'),
@@ -120,9 +125,9 @@ void main() {
       ),
     );
 
-    expect(find.text('Enter Verification Code'), findsOneWidget);
+    expect(find.text('Verify Phone Number'), findsNWidgets(2));
     expect(find.textContaining('+251911442910'), findsOneWidget);
-    expect(find.text('Verify Code'), findsOneWidget);
+    expect(find.text('Verify & Continue'), findsOneWidget);
     expect(find.textContaining('Resend code in'), findsOneWidget);
   });
 }

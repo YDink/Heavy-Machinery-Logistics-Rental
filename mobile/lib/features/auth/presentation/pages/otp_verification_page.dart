@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dink_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:dink_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:dink_mobile/features/auth/presentation/bloc/auth_state.dart';
+import 'package:dink_mobile/l10n/app_localizations.dart';
 
 class OtpVerificationPage extends StatefulWidget {
   final String phoneNumber;
@@ -78,10 +79,11 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   @override
   Widget build(BuildContext context) {
     const brandGold = Color(0xFFE5A93C);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Verify Phone'),
+        title: Text(l10n.otpVerifyTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -113,25 +115,28 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Enter Verification Code',
-                    style: TextStyle(
-                      fontSize: 22,
+                  const SizedBox(height: 20),
+                  Text(
+                    l10n.otpVerifyTitle,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: -0.5,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'We sent a 6-digit SMS code to ${widget.phoneNumber}',
+                    l10n.otpVerifySubtitle(widget.phoneNumber),
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey.shade600,
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 36),
 
-                  // 6-digit Code Input
+                  // 6-Digit Reticle Pin Input Field
                   TextField(
                     controller: _otpController,
                     enabled: !isLoading,
@@ -139,50 +144,41 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 28,
-                      letterSpacing: 16,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 18.0,
                     ),
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
                       LengthLimitingTextInputFormatter(6),
                     ],
                     decoration: InputDecoration(
-                      hintText: '000000',
-                      hintStyle: TextStyle(
-                        color: Colors.grey.shade300,
-                        letterSpacing: 16,
-                      ),
+                      hintText: '------',
+                      hintStyle: const TextStyle(letterSpacing: 18.0, color: Colors.grey),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     onSubmitted: (_) => _verifyOtp(),
                   ),
                   const SizedBox(height: 24),
 
-                  // Cooldown Timer / Resend Button
+                  // 60-second Resend Cooldown Counter
                   Center(
                     child: _secondsRemaining > 0
-                        ? Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.timer_outlined, size: 16, color: Colors.grey.shade600),
-                              const SizedBox(width: 6),
-                              Text(
-                                'Resend code in ${_secondsRemaining}s',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                            ],
+                        ? Text(
+                            l10n.resendCountdown(_secondsRemaining),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
                           )
                         : TextButton(
                             onPressed: isLoading ? null : _resendOtp,
-                            child: const Text(
-                              'Resend Code via SMS',
-                              style: TextStyle(
+                            child: Text(
+                              l10n.resendCodeButton,
+                              style: const TextStyle(
                                 color: brandGold,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -192,7 +188,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
                   const Spacer(),
 
-                  // Verify Button
+                  // Verify Action Button
                   SizedBox(
                     height: 50,
                     child: ElevatedButton(
@@ -213,9 +209,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text(
-                              'Verify Code',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          : Text(
+                              l10n.verifyButton,
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                     ),
                   ),

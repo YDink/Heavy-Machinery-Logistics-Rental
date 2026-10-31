@@ -1,0 +1,87 @@
+{
+  "@@locale": "en",
+  "appName": "Dink Machinery",
+  "@appName": {
+    "description": "The title of the application"
+  },
+  "phoneInputTitle": "Enter your phone number",
+  "@phoneInputTitle": {
+    "description": "Heading for the phone entry screen"
+  },
+  "phoneInputSubtitle": "We will send an SMS verification code to confirm your number.",
+  "@phoneInputSubtitle": {
+    "description": "Subheading on the phone entry screen"
+  },
+  "phoneNumberLabel": "Phone Number",
+  "@phoneNumberLabel": {
+    "description": "Label for phone number text field"
+  },
+  "phoneNumberHint": "91 234 5678",
+  "@phoneNumberHint": {
+    "description": "Hint text for phone number field"
+  },
+  "sendOtpButton": "Send Verification Code",
+  "@sendOtpButton": {
+    "description": "Action button to submit phone number"
+  },
+  "carrierPrefix": "Carrier",
+  "@carrierPrefix": {
+    "description": "Prefix for mobile network operator badge"
+  },
+  "termsAgreementNotice": "By continuing, you agree to our Terms of Service & Privacy Policy.",
+  "@termsAgreementNotice": {
+    "description": "Notice for legal agreement acceptance"
+  },
+  "otpVerifyTitle": "Verify Phone Number",
+  "@otpVerifyTitle": {
+    "description": "Heading for OTP verification screen"
+  },
+  "otpVerifySubtitle": "Enter the 6-digit verification code sent to {phone}",
+  "@otpVerifySubtitle": {
+    "description": "Instructions for OTP input with phone placeholder",
+    "placeholders": {
+      "phone": {
+        "type": "String",
+        "example": "+251 91 123 4567"
+      }
+    }
+  },
+  "verifyButton": "Verify & Continue",
+  "@verifyButton": {
+    "description": "Button to submit OTP code"
+  },
+  "resendCodeButton": "Resend Code",
+  "@resendCodeButton": {
+    "description": "Button to trigger another OTP code"
+  },
+  "resendCountdown": "Resend code in {seconds}s",
+  "@resendCountdown": {
+    "description": "Countdown timer for resend cooldown",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "59"
+      }
+    }
+  },
+  "errorInvalidPhone": "Please enter a valid phone number",
+  "@errorInvalidPhone": {
+    "description": "Validation message for malformed phone number"
+  },
+  "errorRateLimit": "Too many attempts. Please wait before retrying.",
+  "@errorRateLimit": {
+    "description": "Error when rate limit is exceeded"
+  },
+  "errorGeneric": "An unexpected error occurred. Please try again.",
+  "@errorGeneric": {
+    "description": "Generic error message"
+  },
+  "commonRetry": "Retry",
+  "@commonRetry": {
+    "description": "Generic retry button text"
+  },
+  "commonCancel": "Cancel",
+  "@commonCancel": {
+    "description": "Generic cancel button text"
+  }
+}

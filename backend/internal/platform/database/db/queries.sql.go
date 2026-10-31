@@ -11,6 +11,42 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const assignRoleByCodeToUser = `-- name: AssignRoleByCodeToUser :exec
+INSERT INTO user_roles (user_id, role_id, assigned_by)
+SELECT $1, r.id, $3
+FROM roles r
+WHERE r.code = $2
+ON CONFLICT (user_id, role_id) DO NOTHING
+`
+
+type AssignRoleByCodeToUserParams struct {
+	UserID     pgtype.UUID `json:"user_id"`
+	Code       string      `json:"code"`
+	AssignedBy pgtype.UUID `json:"assigned_by"`
+}
+
+func (q *Queries) AssignRoleByCodeToUser(ctx context.Context, arg AssignRoleByCodeToUserParams) error {
+	_, err := q.db.Exec(ctx, assignRoleByCodeToUser, arg.UserID, arg.Code, arg.AssignedBy)
+	return err
+}
+
+const assignRoleToUser = `-- name: AssignRoleToUser :exec
+INSERT INTO user_roles (user_id, role_id, assigned_by)
+VALUES ($1, $2, $3)
+ON CONFLICT (user_id, role_id) DO NOTHING
+`
+
+type AssignRoleToUserParams struct {
+	UserID     pgtype.UUID `json:"user_id"`
+	RoleID     pgtype.UUID `json:"role_id"`
+	AssignedBy pgtype.UUID `json:"assigned_by"`
+}
+
+func (q *Queries) AssignRoleToUser(ctx context.Context, arg AssignRoleToUserParams) error {
+	_, err := q.db.Exec(ctx, assignRoleToUser, arg.UserID, arg.RoleID, arg.AssignedBy)
+	return err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
     phone_number,
@@ -22,7 +58,7 @@ INSERT INTO users (
     password_hash
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7
-) RETURNING id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at
+) RETURNING id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at, preferred_language
 `
 
 type CreateUserParams struct {
@@ -59,6 +95,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.PhoneVerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PreferredLanguage,
 	)
 	return i, err
 }
@@ -91,8 +128,96 @@ func (q *Queries) GetCountryConfig(ctx context.Context, countryCode string) (Cou
 	return i, err
 }
 
+const getTranslationsBundleByNamespace = `-- name: GetTranslationsBundleByNamespace :many
+SELECT 
+    k.full_key,
+    t.translated_text,
+    t.language_code
+FROM localization_translations t
+JOIN localization_keys k ON k.id = t.key_id
+JOIN localization_namespaces n ON n.id = k.namespace_id
+WHERE n.namespace_key = $1 AND t.language_code = $2
+ORDER BY k.full_key ASC
+`
+
+type GetTranslationsBundleByNamespaceParams struct {
+	NamespaceKey string `json:"namespace_key"`
+	LanguageCode string `json:"language_code"`
+}
+
+type GetTranslationsBundleByNamespaceRow struct {
+	FullKey        string `json:"full_key"`
+	TranslatedText string `json:"translated_text"`
+	LanguageCode   string `json:"language_code"`
+}
+
+func (q *Queries) GetTranslationsBundleByNamespace(ctx context.Context, arg GetTranslationsBundleByNamespaceParams) ([]GetTranslationsBundleByNamespaceRow, error) {
+	rows, err := q.db.Query(ctx, getTranslationsBundleByNamespace, arg.NamespaceKey, arg.LanguageCode)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetTranslationsBundleByNamespaceRow{}
+	for rows.Next() {
+		var i GetTranslationsBundleByNamespaceRow
+		if err := rows.Scan(&i.FullKey, &i.TranslatedText, &i.LanguageCode); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTranslationsByLanguage = `-- name: GetTranslationsByLanguage :many
+SELECT 
+    k.full_key,
+    t.translated_text,
+    t.language_code,
+    n.namespace_key
+FROM localization_translations t
+JOIN localization_keys k ON k.id = t.key_id
+JOIN localization_namespaces n ON n.id = k.namespace_id
+WHERE t.language_code = $1
+ORDER BY k.full_key ASC
+`
+
+type GetTranslationsByLanguageRow struct {
+	FullKey        string `json:"full_key"`
+	TranslatedText string `json:"translated_text"`
+	LanguageCode   string `json:"language_code"`
+	NamespaceKey   string `json:"namespace_key"`
+}
+
+func (q *Queries) GetTranslationsByLanguage(ctx context.Context, languageCode string) ([]GetTranslationsByLanguageRow, error) {
+	rows, err := q.db.Query(ctx, getTranslationsByLanguage, languageCode)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetTranslationsByLanguageRow{}
+	for rows.Next() {
+		var i GetTranslationsByLanguageRow
+		if err := rows.Scan(
+			&i.FullKey,
+			&i.TranslatedText,
+			&i.LanguageCode,
+			&i.NamespaceKey,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at FROM users
+SELECT id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at, preferred_language FROM users
 WHERE id = $1
 `
 
@@ -113,12 +238,13 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 		&i.PhoneVerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PreferredLanguage,
 	)
 	return i, err
 }
 
 const getUserByPhoneNumber = `-- name: GetUserByPhoneNumber :one
-SELECT id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at FROM users
+SELECT id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at, preferred_language FROM users
 WHERE phone_number = $1
 `
 
@@ -138,8 +264,75 @@ func (q *Queries) GetUserByPhoneNumber(ctx context.Context, phoneNumber string) 
 		&i.PhoneVerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PreferredLanguage,
 	)
 	return i, err
+}
+
+const getUserPermissions = `-- name: GetUserPermissions :many
+SELECT DISTINCT p.code
+FROM permissions p
+JOIN role_permissions rp ON rp.permission_id = p.id
+JOIN user_roles ur ON ur.role_id = rp.role_id
+WHERE ur.user_id = $1
+ORDER BY p.code ASC
+`
+
+// Dynamic RBAC Queries (ADR-018)
+func (q *Queries) GetUserPermissions(ctx context.Context, userID pgtype.UUID) ([]string, error) {
+	rows, err := q.db.Query(ctx, getUserPermissions, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var code string
+		if err := rows.Scan(&code); err != nil {
+			return nil, err
+		}
+		items = append(items, code)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserRoles = `-- name: GetUserRoles :many
+SELECT r.id, r.code, r.name, r.description, r.is_system, r.created_at, r.updated_at
+FROM roles r
+JOIN user_roles ur ON ur.role_id = r.id
+WHERE ur.user_id = $1
+ORDER BY r.code ASC
+`
+
+func (q *Queries) GetUserRoles(ctx context.Context, userID pgtype.UUID) ([]Role, error) {
+	rows, err := q.db.Query(ctx, getUserRoles, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Role{}
+	for rows.Next() {
+		var i Role
+		if err := rows.Scan(
+			&i.ID,
+			&i.Code,
+			&i.Name,
+			&i.Description,
+			&i.IsSystem,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const incrementUserTokenVersion = `-- name: IncrementUserTokenVersion :one
@@ -154,6 +347,71 @@ func (q *Queries) IncrementUserTokenVersion(ctx context.Context, id pgtype.UUID)
 	var token_version int32
 	err := row.Scan(&token_version)
 	return token_version, err
+}
+
+const listAllPermissions = `-- name: ListAllPermissions :many
+SELECT id, code, resource, action, description, created_at FROM permissions
+ORDER BY resource ASC, action ASC
+`
+
+func (q *Queries) ListAllPermissions(ctx context.Context) ([]Permission, error) {
+	rows, err := q.db.Query(ctx, listAllPermissions)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Permission{}
+	for rows.Next() {
+		var i Permission
+		if err := rows.Scan(
+			&i.ID,
+			&i.Code,
+			&i.Resource,
+			&i.Action,
+			&i.Description,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAllRoles = `-- name: ListAllRoles :many
+SELECT id, code, name, description, is_system, created_at, updated_at FROM roles
+ORDER BY code ASC
+`
+
+func (q *Queries) ListAllRoles(ctx context.Context) ([]Role, error) {
+	rows, err := q.db.Query(ctx, listAllRoles)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Role{}
+	for rows.Next() {
+		var i Role
+		if err := rows.Scan(
+			&i.ID,
+			&i.Code,
+			&i.Name,
+			&i.Description,
+			&i.IsSystem,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listEnabledCountryConfigs = `-- name: ListEnabledCountryConfigs :many
@@ -273,11 +531,26 @@ func (q *Queries) RecordUserLegalAgreement(ctx context.Context, arg RecordUserLe
 	return i, err
 }
 
+const removeRoleFromUser = `-- name: RemoveRoleFromUser :exec
+DELETE FROM user_roles
+WHERE user_id = $1 AND role_id = $2
+`
+
+type RemoveRoleFromUserParams struct {
+	UserID pgtype.UUID `json:"user_id"`
+	RoleID pgtype.UUID `json:"role_id"`
+}
+
+func (q *Queries) RemoveRoleFromUser(ctx context.Context, arg RemoveRoleFromUserParams) error {
+	_, err := q.db.Exec(ctx, removeRoleFromUser, arg.UserID, arg.RoleID)
+	return err
+}
+
 const updateUserAccountStatus = `-- name: UpdateUserAccountStatus :one
 UPDATE users
 SET account_status = $2
 WHERE id = $1
-RETURNING id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at
+RETURNING id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at, preferred_language
 `
 
 type UpdateUserAccountStatusParams struct {
@@ -301,6 +574,7 @@ func (q *Queries) UpdateUserAccountStatus(ctx context.Context, arg UpdateUserAcc
 		&i.PhoneVerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PreferredLanguage,
 	)
 	return i, err
 }
@@ -309,7 +583,7 @@ const updateUserKYCStatus = `-- name: UpdateUserKYCStatus :one
 UPDATE users
 SET kyc_status = $2
 WHERE id = $1
-RETURNING id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at
+RETURNING id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at, preferred_language
 `
 
 type UpdateUserKYCStatusParams struct {
@@ -333,6 +607,7 @@ func (q *Queries) UpdateUserKYCStatus(ctx context.Context, arg UpdateUserKYCStat
 		&i.PhoneVerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PreferredLanguage,
 	)
 	return i, err
 }
@@ -342,7 +617,7 @@ UPDATE users
 SET account_status = 'ACTIVE',
     phone_verified_at = NOW()
 WHERE id = $1
-RETURNING id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at
+RETURNING id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at, preferred_language
 `
 
 func (q *Queries) UpdateUserPhoneVerified(ctx context.Context, id pgtype.UUID) (User, error) {
@@ -361,6 +636,106 @@ func (q *Queries) UpdateUserPhoneVerified(ctx context.Context, id pgtype.UUID) (
 		&i.PhoneVerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PreferredLanguage,
 	)
 	return i, err
+}
+
+const updateUserPreferredLanguage = `-- name: UpdateUserPreferredLanguage :one
+UPDATE users
+SET preferred_language = $2
+WHERE id = $1
+RETURNING id, phone_number, country_code, full_name, primary_role, account_status, kyc_status, password_hash, token_version, phone_verified_at, created_at, updated_at, preferred_language
+`
+
+type UpdateUserPreferredLanguageParams struct {
+	ID                pgtype.UUID `json:"id"`
+	PreferredLanguage string      `json:"preferred_language"`
+}
+
+// Dynamic Localization Queries (ADR-019, SRS §05.16)
+func (q *Queries) UpdateUserPreferredLanguage(ctx context.Context, arg UpdateUserPreferredLanguageParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserPreferredLanguage, arg.ID, arg.PreferredLanguage)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.PhoneNumber,
+		&i.CountryCode,
+		&i.FullName,
+		&i.PrimaryRole,
+		&i.AccountStatus,
+		&i.KycStatus,
+		&i.PasswordHash,
+		&i.TokenVersion,
+		&i.PhoneVerifiedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.PreferredLanguage,
+	)
+	return i, err
+}
+
+const upsertTranslation = `-- name: UpsertTranslation :one
+INSERT INTO localization_translations (
+    key_id,
+    language_code,
+    translated_text,
+    is_verified
+) VALUES (
+    $1, $2, $3, $4
+) ON CONFLICT (key_id, language_code) DO UPDATE SET
+    translated_text = EXCLUDED.translated_text,
+    is_verified = EXCLUDED.is_verified,
+    updated_at = NOW()
+RETURNING id, key_id, language_code, translated_text, audio_storage_uri, is_verified, created_at, updated_at
+`
+
+type UpsertTranslationParams struct {
+	KeyID          pgtype.UUID `json:"key_id"`
+	LanguageCode   string      `json:"language_code"`
+	TranslatedText string      `json:"translated_text"`
+	IsVerified     bool        `json:"is_verified"`
+}
+
+func (q *Queries) UpsertTranslation(ctx context.Context, arg UpsertTranslationParams) (LocalizationTranslation, error) {
+	row := q.db.QueryRow(ctx, upsertTranslation,
+		arg.KeyID,
+		arg.LanguageCode,
+		arg.TranslatedText,
+		arg.IsVerified,
+	)
+	var i LocalizationTranslation
+	err := row.Scan(
+		&i.ID,
+		&i.KeyID,
+		&i.LanguageCode,
+		&i.TranslatedText,
+		&i.AudioStorageUri,
+		&i.IsVerified,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const userHasPermission = `-- name: UserHasPermission :one
+SELECT EXISTS (
+    SELECT 1
+    FROM permissions p
+    JOIN role_permissions rp ON rp.permission_id = p.id
+    JOIN user_roles ur ON ur.role_id = rp.role_id
+    WHERE ur.user_id = $1 AND p.code = $2
+)
+`
+
+type UserHasPermissionParams struct {
+	UserID pgtype.UUID `json:"user_id"`
+	Code   string      `json:"code"`
+}
+
+func (q *Queries) UserHasPermission(ctx context.Context, arg UserHasPermissionParams) (bool, error) {
+	row := q.db.QueryRow(ctx, userHasPermission, arg.UserID, arg.Code)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/dinkmachinery/dink-core/internal/platform/i18n"
 )
 
 // ResponseMeta holds standard meta envelope fields conforming to AGENTS.md § 2.
@@ -46,10 +47,10 @@ type SuccessEnvelope struct {
 }
 
 type ErrorEnvelope struct {
-	Success bool            `json:"success"`
-	Data    any             `json:"data"`
-	Error   ProblemDetails  `json:"error"`
-	Meta    ResponseMeta    `json:"meta"`
+	Success bool           `json:"success"`
+	Data    any            `json:"data"`
+	Error   ProblemDetails `json:"error"`
+	Meta    ResponseMeta   `json:"meta"`
 }
 
 func getOrGenerateRequestID(r *http.Request) string {
@@ -104,4 +105,17 @@ func Error(w http.ResponseWriter, r *http.Request, statusCode int, problem Probl
 	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(statusCode)
 	_ = json.NewEncoder(w).Encode(envelope)
+}
+
+// LocalizedError renders an RFC 9457 error resolving title and detail via i18n from the request context.
+func LocalizedError(w http.ResponseWriter, r *http.Request, statusCode int, code string, titleKey string, detailKey string, fallbackTitle string, fallbackDetail string) {
+	ctx := r.Context()
+	title := i18n.Translate(ctx, titleKey, fallbackTitle)
+	detail := i18n.Translate(ctx, detailKey, fallbackDetail)
+
+	Error(w, r, statusCode, ProblemDetails{
+		Code:   code,
+		Title:  title,
+		Detail: detail,
+	})
 }

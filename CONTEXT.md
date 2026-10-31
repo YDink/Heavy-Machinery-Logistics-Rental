@@ -1,67 +1,80 @@
 # CONTEXT.md — Dink Machinery Active Session State
 
 **Project Phase:** Phase 2 (Partition Feature Development)  
-**Active Requirement Partition:** `05-01-core-identity-auth` (Registration, Phone Verification & Authentication)  
-**Active Branch:** `feature/05-01-core-identity-auth`  
-**Current Stop Point:** Partition 05-01 Certified; Migrated Local Storage to Actively Maintained `isar_community` (^3.4.1)
+**Active Requirement Partition:** `05-02-fleet-registration-machinery-logistics` (Fleet Registration, Machinery & Logistics Taxonomy Architecture)  
+**Active Branch:** `feature/05-02-fleet-registration-machinery-logistics`  
+**Current Stop Point:** Day-One Full-Stack Localization & Dynamic RBAC Certified Across Go, Flutter, and Next.js
 
 ---
 
 ## 1. Current Progress Snapshot
 
-### Completed (Partition 05-01: Core Identity & Authentication)
-- **Database Layer & Schema Invariants (`migrations/` & `backend/`):**
-  - Created `migrations/000002_create_identity_and_auth_tables.up.sql` and `.down.sql`:
-    - `users` table: E.164 phone uniqueness (`REG-01`), country code foreign key, role constraints, account and KYC status state machines (`REG-03`, `REG-04`).
-    - `user_legal_agreements` table: Non-repudiation ledger for Terms & Privacy Policy acceptance (`REG-08`, `REG-09`).
-  - Generated sqlc persistence models and queries in `backend/internal/platform/database/db/` (`User`, `UserLegalAgreement`).
-- **Backend Domain & Application Core (`backend/internal/modules/auth/`):**
-  - `domain/phone_number.go`: E.164 phone normalizer, country resolver (`ET` / `KE`), carrier detection (`Ethio Telecom`, `Safaricom ET`, `Safaricom KE`, `Airtel KE`), and zero-PII masking.
-  - `application/password.go`: Argon2id key derivation matching SRS §3.2 ($m=64\text{MB}, t=3, p=4$, salt 16 bytes, key 32 bytes) with constant-time verification.
-  - `application/otp_service.go`: 6-digit CSPRNG generation, 300s TTL (`AUT-01`, `AUT-02`), 3-attempt exhaustion invalidation (`AUT-03`), and distributed leaky-bucket rate limiter (`D-05-01-001`).
-  - `application/token_service.go`: Asymmetric ES256 JWT access token minting (15m TTL) and Refresh Token Rotation (30d TTL) with instant token family revocation on replay detection (`D-05-01-002`, `ADR-014`).
-  - `application/auth_service.go`: Use cases coordinating request OTP, verify OTP, session refresh, and profile retrieval.
-  - `infrastructure/`: Thread-safe memory cache and mock SMS gateway for testing; `PostgresUserRepository` for live database access.
-- **Backend HTTP Transport & OpenAPI Binding (`backend/internal/transport/http/`):**
-  - Implemented `generated.ServerInterface` on `transport.Server` handling `/auth/otp/request`, `/auth/otp/verify`, `/auth/session/refresh`, `/auth/users/me`.
-  - Created `internal/platform/response/response.go` formatting universal envelopes and RFC 9457 Problem Details (`AGENTS.md § 2`).
-  - Wired into `cmd/api/main.go` on `/api/v1` base route.
-  - 100% backend unit and integration test pass rate.
-- **Flutter Mobile Auth Subsystem (`mobile/lib/`):**
-  - Clean Architecture scaffolding:
-    - Data: `ApiClient` with Dio interceptor injecting `X-Country-Code` and `Authorization`, `SecureStorageService` wrapping `flutter_secure_storage`, `AuthRemoteDataSource`, `AuthRepositoryImpl`.
-    - Domain: Entities `AuthTokens`, `AuthUser`; use cases `RequestOtpUseCase`, `VerifyOtpUseCase`, `GetCurrentUserUseCase`.
-    - Presentation: `AuthBloc` state machine managing `UnauthenticatedState`, `OtpSentState`, `AuthenticatedState`, `AuthErrorState`.
-  - UI Pages:
-    - `PhoneInputPage`: Country code selector (🇪🇹 `+251` / 🇰🇪 `+254`), E.164 number formatting, dynamic carrier ingress badges (`Ethio Telecom`, `Safaricom ET`, `Safaricom KE`, `Airtel KE` per `REG-02`).
-    - `OtpVerificationPage`: 6-digit reticle (`AUT-01`), animated 60-second cooldown timer (`AUT-02`, `D-05-01-001`), and automatic session transition.
-  - Dependency Injection: `initDependencies()` configured via `get_it` across all flavors (`main_dev`, `main_staging`, `main_prod`).
-  - Local Database Ecosystem Migration:
-    - Replaced abandoned upstream `isar: ^3.1.0+1` with actively maintained `isar_community: ^3.4.1` and `isar_community_flutter_libs: ^3.4.1`.
-    - Synchronized `pubspec.lock` and canonical architectural specifications (`ADR-006`, `TECH_STACK.md`, `12-tech-stack.md`, `SRS v2`, `ADD`).
-  - 100% mobile test pass rate (12 tests across unit, BLoC, and widget suites); zero warnings on `fvm flutter analyze`.
+### Completed (Foundational Dynamic RBAC & Full-Stack Localization)
+- **Architectural Decision Records (`docs/decisions/`):**
+  - Authored and verified `ADR-018: Dynamic Role-Based Access Control (RBAC) and Granular Permission Architecture`.
+  - Authored and verified `ADR-019: Full-Stack Vernacular Localization (i18n/l10n) and Ge'ez Script Architecture`.
+  - Audited with `scripts/validate-decision-template.sh` and `scripts/validate-decision-links.sh` (19 L1 ADRs, 80 L2 Decisions, 0 errors).
+- **Database Schema & Migrations (`migrations/`):**
+  - Created `migrations/000003_create_rbac_and_localization_tables.up.sql` and `.down.sql`:
+    - `users.preferred_language`: Multi-language preference column (`en`, `am`, `om`, `sw`).
+    - Dynamic RBAC: `roles`, `permissions`, `role_permissions`, `user_roles`.
+    - Dynamic Localization: `localization_namespaces`, `localization_keys`, `localization_translations`.
+    - Seeded canonical 11 roles and 20+ permissions from SRS Appendix B.
+    - Seeded baseline English and Amharic dictionaries for auth and errors.
+  - Generated sqlc persistence models and queries in `backend/internal/platform/database/db/`.
+- **Go Backend Subsystems (`backend/`):**
+  - `internal/platform/i18n/`: `LanguageMiddleware` parsing `Accept-Language`, fallback dictionaries for `en` and `am`, context injection.
+  - `internal/platform/auth/rbac/`: `RequirePermission` default-deny HTTP middleware returning localized RFC 9457 `403 Forbidden` (`ERR_FORBIDDEN_INSUFFICIENT_PERMISSIONS`).
+  - `internal/platform/response/`: `LocalizedError` rendering localized Problem Details.
+  - 100% test pass rate across application, domain, rbac, and i18n packages.
+- **Flutter Mobile Client (`mobile/`):**
+  - Integrated `flutter_localizations` in `pubspec.yaml` with `l10n.yaml`.
+  - Created `mobile/lib/l10n/app_en.arb` and `mobile/lib/l10n/app_am.arb`.
+  - Compiled typed `AppLocalizations` (`en`, `am`).
+  - Implemented `LocaleController` for instant `< 16ms` dynamic language switching.
+  - Configured `TypographyConfig` with $1.45\times$ Ge'ez line-height multiplier (`ADR-013`, `SRS §05.16`).
+  - Refactored `PhoneInputPage` and `OtpVerificationPage` with zero hardcoded strings.
+  - 100% mobile test pass rate (15/15 unit and widget tests); 0 warnings on `fvm flutter analyze`.
 - **Next.js Admin Console (`admin/`):**
-  - Turbopack production build verified cleanly in 719ms; ESLint passed with 0 errors.
+  - Created `src/lib/i18n/dictionaries.ts` supporting `en` and `am`.
+  - Created `src/lib/rbac/permission-guard.tsx` (`<PermissionGuard>` component).
+  - ESLint passed with 0 errors; Turbopack production build verified cleanly.
 
 ---
 
-## 2. Next Immediate Tasks Upon Resuming
+## 2. Next Immediate Tasks (Partition 05-02: Fleet Registration & Taxonomy)
 
-1. **Merge Partition 05-01 to `main`:**
-   - Execute rebase-merge of `feature/05-01-core-identity-auth` into `main`.
-2. **Initialize Partition `05-02-fleet-registration-machinery-logistics`:**
-   - Create feature branch `feature/05-02-fleet-registration-machinery-logistics`.
-   - Implement fleet asset schema, SeaweedFS media ingestion, and machinery catalog endpoints.
+1. **Database Schema & Migrations (`migrations/`):**
+   - Create `migrations/000004_create_fleet_and_machinery_tables.up.sql` and `.down.sql`:
+     - `categories`: Two-level taxonomy (`parent_id`, `code`, `name_en`, `name_am`, `icon_url`, `display_order`).
+     - Dynamic EAV: `spec_field_groups`, `spec_field_definitions`, `fleet_spec_values`.
+     - `fleets`: PostGIS geography yard point (`location`), baseline meter reading (`NUMERIC(10, 2)`), pricing tariffs, cancellation penalties, operator & logistics flags.
+     - `fleet_photos`: Mandatory 6-angle walkaround (`FRONT`, `REAR`, `LEFT`, `RIGHT`, `CABIN`, `METER`).
+     - `fleet_spec_indexed`: Logistics-critical denormalized performance table.
+     - `owner_operator_memberships` & `fleet_operator_assignments`.
+   - Update `backend/internal/platform/database/queries.sql` and generate with `sqlc`.
+2. **Backend Domain & Application Core (`backend/internal/modules/machinery/`):**
+   - Domain models, monotonic meter non-regression, 6-photo completeness validator, automated transport inference matrix.
+   - Antivirus media stream scanning service via ClamAV (:3310 `zINSTREAM`) and SeaweedFS S3 storage (`D-05-02-001`).
+   - Use cases for category taxonomy, dynamic spec definition retrieval, and fleet asset creation guarded by RBAC `fleets:create`.
+3. **OpenAPI Contracts & HTTP Transport (`contracts/` & `backend/`):**
+   - Wire `/categories`, `/categories/{id}/spec-definitions`, and `/fleets` into HTTP server.
+4. **Flutter Mobile Dynamic Forms & Media Capture (`mobile/lib/`):**
+   - Implement metadata-driven dynamic EAV form generator and walkaround photo capture reticle.
+   - Wire `FleetBloc` state machine and `isar_community` local draft storage.
+5. **Quality Gates & Certification:**
+   - 100% unit, integration, and widget test pass rate.
 
 ---
 
 ## 3. Active Decisions & Open Blockers
 
 ### Decisions Formulated & Enforced
-- `ADR-001` through `ADR-017` in `docs/decisions/`.
-- `ADR-006`: Flutter 3.47.9 Feature-First Clean Architecture with BLoC and Isar Community Offline Outbox.
-- `D-05-01-001`: Phone OTP Authentication with Leaky Bucket Rate Limiting and Carrier Failover.
-- `D-05-01-002`: Dual-Token ES256 Minting with Valkey Refresh Token Family Rotation.
+- `ADR-001` through `ADR-019` in `docs/decisions/`.
+- `ADR-013`: Server-Driven OTA Translation Bundles & Dynamic Ethiopic Font Delivery Pipeline.
+- `ADR-018`: Dynamic Role-Based Access Control (RBAC) and Granular Permission Architecture.
+- `ADR-019`: Full-Stack Vernacular Localization (i18n/l10n) and Ge'ez Script Architecture.
+- `D-05-01-001`, `D-05-01-002`, `D-05-02-001`, `D-05-02-002`.
 
 ### Blockers
-- None. Partition 05-01 is 100% complete across Backend and Mobile.
+- None. Dynamic RBAC and Full-Stack Localization foundations are active and certified.

@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:dink_mobile/core/localization/locale_controller.dart';
 import 'package:dink_mobile/core/network/api_client.dart';
 import 'package:dink_mobile/core/storage/secure_storage_service.dart';
 import 'package:dink_mobile/features/auth/data/datasources/auth_remote_datasource.dart';
@@ -12,6 +13,11 @@ import 'package:dink_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
+  // Localization & State
+  if (!sl.isRegistered<LocaleController>()) {
+    sl.registerLazySingleton<LocaleController>(() => LocaleController());
+  }
+
   // Core Services
   if (!sl.isRegistered<SecureStorageService>()) {
     sl.registerLazySingleton<SecureStorageService>(() => SecureStorageService());

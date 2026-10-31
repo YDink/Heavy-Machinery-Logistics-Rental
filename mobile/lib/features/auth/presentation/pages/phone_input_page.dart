@@ -5,6 +5,7 @@ import 'package:dink_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:dink_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:dink_mobile/features/auth/presentation/bloc/auth_state.dart';
 import 'package:dink_mobile/features/auth/presentation/pages/otp_verification_page.dart';
+import 'package:dink_mobile/l10n/app_localizations.dart';
 
 class PhoneInputPage extends StatefulWidget {
   const PhoneInputPage({super.key});
@@ -68,18 +69,21 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
   }
 
   void _submit() {
+    final l10n = AppLocalizations.of(context)!;
     final rawNumber = _phoneController.text.trim();
-    if (rawNumber.length < 8) {
+    if (rawNumber.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid phone number')),
+        SnackBar(content: Text(l10n.errorInvalidPhone)),
       );
       return;
     }
 
-    final fullE164 = '$_dialPrefix$rawNumber';
+    // Format full E.164 phone string
+    final fullNumber = '$_dialPrefix$rawNumber';
+
     context.read<AuthBloc>().add(
           RequestOtpEvent(
-            phoneNumber: fullE164,
+            phoneNumber: fullNumber,
             countryCode: _selectedCountryCode,
           ),
         );
@@ -88,10 +92,11 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
   @override
   Widget build(BuildContext context) {
     const brandGold = Color(0xFFE5A93C);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sign In / Register'),
+        title: Text(l10n.appName),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -127,17 +132,16 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 20),
-                  // Branding Icon & Title
                   const Icon(
                     Icons.construction,
                     size: 56,
                     color: brandGold,
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Dink Machinery',
+                  Text(
+                    l10n.phoneInputTitle,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                       letterSpacing: -0.5,
@@ -145,7 +149,7 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Heavy machinery & freight logistics marketplace.\nEnter your phone number to continue.',
+                    l10n.phoneInputSubtitle,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
@@ -195,6 +199,7 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
                             LengthLimitingTextInputFormatter(9),
                           ],
                           decoration: InputDecoration(
+                            labelText: l10n.phoneNumberLabel,
                             hintText: _selectedCountryCode == 'ET' ? '911 223 344' : '712 345 678',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -224,7 +229,7 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
                             Icon(Icons.network_check, size: 14, color: Colors.green.shade700),
                             const SizedBox(width: 6),
                             Text(
-                              _detectedCarrier,
+                              '${l10n.carrierPrefix}: $_detectedCarrier',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -238,6 +243,13 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
                   ],
 
                   const Spacer(),
+
+                  Text(
+                    l10n.termsAgreementNotice,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
+                  const SizedBox(height: 16),
 
                   // Continue Button
                   SizedBox(
@@ -260,9 +272,9 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text(
-                              'Continue',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          : Text(
+                              l10n.sendOtpButton,
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                     ),
                   ),

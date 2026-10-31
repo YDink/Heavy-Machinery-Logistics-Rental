@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dink_mobile/core/config/app_config.dart';
 import 'package:dink_mobile/core/di/injection.dart';
+import 'package:dink_mobile/core/localization/locale_controller.dart';
 import 'package:dink_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:dink_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:dink_mobile/features/auth/presentation/bloc/auth_state.dart';
 import 'package:dink_mobile/features/auth/presentation/pages/phone_input_page.dart';
+import 'package:dink_mobile/l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,21 +37,30 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final config = AppConfig.instance;
+    final localeController = sl<LocaleController>();
 
     return BlocProvider<AuthBloc>(
       create: (_) => sl<AuthBloc>()..add(CheckAuthStatusEvent()),
-      child: MaterialApp(
-        title: config.appName,
-        debugShowCheckedModeBanner: config.isDev,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: config.isProd
-                ? const Color(0xFFE5A93C)
-                : (config.isStaging ? Colors.blue : Colors.orange),
-          ),
-          useMaterial3: true,
-        ),
-        home: MyHomePage(title: config.appName),
+      child: ValueListenableBuilder<Locale>(
+        valueListenable: localeController,
+        builder: (context, currentLocale, _) {
+          return MaterialApp(
+            title: config.appName,
+            locale: currentLocale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            debugShowCheckedModeBanner: config.isDev,
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: config.isProd
+                    ? const Color(0xFFE5A93C)
+                    : (config.isStaging ? Colors.blue : Colors.orange),
+              ),
+              useMaterial3: true,
+            ),
+            home: MyHomePage(title: config.appName),
+          );
+        },
       ),
     );
   }
@@ -76,12 +87,22 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final config = AppConfig.instance;
+    final localeController = sl<LocaleController>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
         actions: [
+          // Dynamic Language Switcher (ADR-013, ADR-019)
+          TextButton(
+            onPressed: () => localeController.toggleLocale(),
+            child: Text(
+              localeController.isAmharic ? '🇬🇧 EN' : '🇪🇹 አማ',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
           BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
               if (state is AuthenticatedState) {
@@ -167,7 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       );
                     },
                     icon: const Icon(Icons.lock_outline),
-                    label: const Text('Sign In / Register'),
+                    label: Text(l10n.sendOtpButton),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE5A93C),
                       foregroundColor: Colors.white,

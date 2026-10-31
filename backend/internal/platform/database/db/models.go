@@ -25,19 +25,72 @@ type CountryConfig struct {
 	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
 }
 
-type User struct {
+type LocalizationKey struct {
+	ID                  pgtype.UUID        `json:"id"`
+	NamespaceID         pgtype.UUID        `json:"namespace_id"`
+	FullKey             string             `json:"full_key"`
+	Description         *string            `json:"description"`
+	ParameterSchemaJson []byte             `json:"parameter_schema_json"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+}
+
+type LocalizationNamespace struct {
+	ID           pgtype.UUID        `json:"id"`
+	NamespaceKey string             `json:"namespace_key"`
+	Description  *string            `json:"description"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
+type LocalizationTranslation struct {
 	ID              pgtype.UUID        `json:"id"`
-	PhoneNumber     string             `json:"phone_number"`
-	CountryCode     string             `json:"country_code"`
-	FullName        string             `json:"full_name"`
-	PrimaryRole     string             `json:"primary_role"`
-	AccountStatus   string             `json:"account_status"`
-	KycStatus       string             `json:"kyc_status"`
-	PasswordHash    *string            `json:"password_hash"`
-	TokenVersion    int32              `json:"token_version"`
-	PhoneVerifiedAt pgtype.Timestamptz `json:"phone_verified_at"`
+	KeyID           pgtype.UUID        `json:"key_id"`
+	LanguageCode    string             `json:"language_code"`
+	TranslatedText  string             `json:"translated_text"`
+	AudioStorageUri *string            `json:"audio_storage_uri"`
+	IsVerified      bool               `json:"is_verified"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+}
+
+type Permission struct {
+	ID          pgtype.UUID        `json:"id"`
+	Code        string             `json:"code"`
+	Resource    string             `json:"resource"`
+	Action      string             `json:"action"`
+	Description *string            `json:"description"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+}
+
+type Role struct {
+	ID          pgtype.UUID        `json:"id"`
+	Code        string             `json:"code"`
+	Name        string             `json:"name"`
+	Description *string            `json:"description"`
+	IsSystem    bool               `json:"is_system"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+type RolePermission struct {
+	RoleID       pgtype.UUID `json:"role_id"`
+	PermissionID pgtype.UUID `json:"permission_id"`
+}
+
+type User struct {
+	ID                pgtype.UUID        `json:"id"`
+	PhoneNumber       string             `json:"phone_number"`
+	CountryCode       string             `json:"country_code"`
+	FullName          string             `json:"full_name"`
+	PrimaryRole       string             `json:"primary_role"`
+	AccountStatus     string             `json:"account_status"`
+	KycStatus         string             `json:"kyc_status"`
+	PasswordHash      *string            `json:"password_hash"`
+	TokenVersion      int32              `json:"token_version"`
+	PhoneVerifiedAt   pgtype.Timestamptz `json:"phone_verified_at"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	PreferredLanguage string             `json:"preferred_language"`
 }
 
 type UserLegalAgreement struct {
@@ -48,4 +101,11 @@ type UserLegalAgreement struct {
 	AcceptedAt      pgtype.Timestamptz `json:"accepted_at"`
 	ClientIp        string             `json:"client_ip"`
 	ClientUserAgent string             `json:"client_user_agent"`
+}
+
+type UserRole struct {
+	UserID     pgtype.UUID        `json:"user_id"`
+	RoleID     pgtype.UUID        `json:"role_id"`
+	AssignedAt pgtype.Timestamptz `json:"assigned_at"`
+	AssignedBy pgtype.UUID        `json:"assigned_by"`
 }

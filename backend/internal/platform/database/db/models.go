@@ -8,6 +8,19 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Category struct {
+	ID           pgtype.UUID        `json:"id"`
+	ParentID     pgtype.UUID        `json:"parent_id"`
+	Code         string             `json:"code"`
+	NameEn       string             `json:"name_en"`
+	NameAm       string             `json:"name_am"`
+	IconUrl      string             `json:"icon_url"`
+	IsActive     bool               `json:"is_active"`
+	DisplayOrder int32              `json:"display_order"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
 type CountryConfig struct {
 	CountryCode               string             `json:"country_code"`
 	CountryName               string             `json:"country_name"`
@@ -23,6 +36,78 @@ type CountryConfig struct {
 	IsEnabled                 bool               `json:"is_enabled"`
 	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+type Fleet struct {
+	ID                  pgtype.UUID        `json:"id"`
+	OwnerID             pgtype.UUID        `json:"owner_id"`
+	SubcategoryID       pgtype.UUID        `json:"subcategory_id"`
+	Make                string             `json:"make"`
+	Model               string             `json:"model"`
+	ManufactureYear     int32              `json:"manufacture_year"`
+	PlateNumber         string             `json:"plate_number"`
+	ChassisVin          string             `json:"chassis_vin"`
+	BaselineMeterHours  pgtype.Numeric     `json:"baseline_meter_hours"`
+	FuelType            string             `json:"fuel_type"`
+	SelfMoveCapable     bool               `json:"self_move_capable"`
+	DailyRateMinor      int64              `json:"daily_rate_minor"`
+	ExcessHourRateMinor int64              `json:"excess_hour_rate_minor"`
+	MinRentalDays       int32              `json:"min_rental_days"`
+	PaymentTimeoutHours int32              `json:"payment_timeout_hours"`
+	OperatorIncluded    bool               `json:"operator_included"`
+	Status              string             `json:"status"`
+	Location            interface{}        `json:"location"`
+	AddressText         string             `json:"address_text"`
+	Version             int32              `json:"version"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+}
+
+type FleetBlackout struct {
+	ID        pgtype.UUID        `json:"id"`
+	FleetID   pgtype.UUID        `json:"fleet_id"`
+	StartDate pgtype.Date        `json:"start_date"`
+	EndDate   pgtype.Date        `json:"end_date"`
+	Reason    string             `json:"reason"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type FleetOperatorAssignment struct {
+	FleetID    pgtype.UUID        `json:"fleet_id"`
+	OperatorID pgtype.UUID        `json:"operator_id"`
+	ShiftType  string             `json:"shift_type"`
+	AssignedAt pgtype.Timestamptz `json:"assigned_at"`
+}
+
+type FleetPhoto struct {
+	ID           pgtype.UUID        `json:"id"`
+	FleetID      pgtype.UUID        `json:"fleet_id"`
+	Angle        string             `json:"angle"`
+	StorageUri   string             `json:"storage_uri"`
+	FileHash     string             `json:"file_hash"`
+	DisplayOrder int32              `json:"display_order"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+}
+
+type FleetSpecIndexed struct {
+	FleetID            pgtype.UUID        `json:"fleet_id"`
+	OperatingWeightKg  pgtype.Numeric     `json:"operating_weight_kg"`
+	TransportLengthMm  pgtype.Numeric     `json:"transport_length_mm"`
+	TransportWidthMm   pgtype.Numeric     `json:"transport_width_mm"`
+	TransportHeightMm  pgtype.Numeric     `json:"transport_height_mm"`
+	PayloadCapacityKg  pgtype.Numeric     `json:"payload_capacity_kg"`
+	GrossEnginePowerHp pgtype.Numeric     `json:"gross_engine_power_hp"`
+	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
+}
+
+type FleetSpecValue struct {
+	ID               pgtype.UUID        `json:"id"`
+	FleetID          pgtype.UUID        `json:"fleet_id"`
+	SpecDefinitionID pgtype.UUID        `json:"spec_definition_id"`
+	ValueString      *string            `json:"value_string"`
+	ValueNumeric     pgtype.Numeric     `json:"value_numeric"`
+	ValueBoolean     *bool              `json:"value_boolean"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 }
 
 type LocalizationKey struct {
@@ -53,6 +138,13 @@ type LocalizationTranslation struct {
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
 }
 
+type OwnerOperatorMembership struct {
+	OwnerID    pgtype.UUID        `json:"owner_id"`
+	OperatorID pgtype.UUID        `json:"operator_id"`
+	Status     string             `json:"status"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+}
+
 type Permission struct {
 	ID          pgtype.UUID        `json:"id"`
 	Code        string             `json:"code"`
@@ -75,6 +167,36 @@ type Role struct {
 type RolePermission struct {
 	RoleID       pgtype.UUID `json:"role_id"`
 	PermissionID pgtype.UUID `json:"permission_id"`
+}
+
+type SpecFieldDefinition struct {
+	ID                  pgtype.UUID        `json:"id"`
+	GroupID             pgtype.UUID        `json:"group_id"`
+	FieldKey            string             `json:"field_key"`
+	LabelEn             string             `json:"label_en"`
+	LabelAm             string             `json:"label_am"`
+	FieldType           string             `json:"field_type"`
+	UnitSymbol          *string            `json:"unit_symbol"`
+	IsRequired          bool               `json:"is_required"`
+	IsLogisticsCritical bool               `json:"is_logistics_critical"`
+	IsComparable        bool               `json:"is_comparable"`
+	IsVisibleToRenter   bool               `json:"is_visible_to_renter"`
+	MinValue            pgtype.Numeric     `json:"min_value"`
+	MaxValue            pgtype.Numeric     `json:"max_value"`
+	EnumValuesJson      []byte             `json:"enum_values_json"`
+	DisplayOrder        int32              `json:"display_order"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+}
+
+type SpecFieldGroup struct {
+	ID            pgtype.UUID        `json:"id"`
+	CategoryID    pgtype.UUID        `json:"category_id"`
+	SectionNameEn string             `json:"section_name_en"`
+	SectionNameAm string             `json:"section_name_am"`
+	DisplayOrder  int32              `json:"display_order"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
 }
 
 type User struct {

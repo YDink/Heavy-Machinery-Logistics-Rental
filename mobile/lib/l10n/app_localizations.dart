@@ -205,6 +205,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get commonCancel;
+
+  /// App bar title for machinery registration
+  ///
+  /// In en, this message translates to:
+  /// **'Register Machinery'**
+  String get fleetRegistrationTitle;
+
+  /// Label for category selector
+  ///
+  /// In en, this message translates to:
+  /// **'Select Category'**
+  String get selectCategory;
+
+  /// Section header for machinery core details
+  ///
+  /// In en, this message translates to:
+  /// **'Machinery Details'**
+  String get machineryDetails;
+
+  /// Label for machine make/brand
+  ///
+  /// In en, this message translates to:
+  /// **'Make'**
+  String get make;
+
+  /// Label for machine model
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get model;
+
+  /// Label for machine year of manufacture
+  ///
+  /// In en, this message translates to:
+  /// **'Manufacturing Year'**
+  String get manufacturingYear;
+
+  /// Label for plate or registration identifier
+  ///
+  /// In en, this message translates to:
+  /// **'Plate / Registration Number'**
+  String get registrationNumber;
+
+  /// Label for chassis or VIN
+  ///
+  /// In en, this message translates to:
+  /// **'Chassis Number / VIN'**
+  String get chassisVin;
+
+  /// Label for baseline mechanical meter reading
+  ///
+  /// In en, this message translates to:
+  /// **'Engine Hour Meter'**
+  String get baselineMeterHours;
+
+  /// Label for fuel type
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel Type'**
+  String get fuelType;
+
+  /// Label for daily rental price in ETB
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Rental Rate (ETB)'**
+  String get dailyRate;
+
+  /// Toggle indicating whether equipment can travel without transporter
+  ///
+  /// In en, this message translates to:
+  /// **'Self-Move Capable'**
+  String get selfMoveCapable;
+
+  /// Toggle indicating whether dedicated certified operator is included
+  ///
+  /// In en, this message translates to:
+  /// **'Operator Included'**
+  String get operatorIncluded;
+
+  /// Section title for mandatory 6-angle walkaround photos
+  ///
+  /// In en, this message translates to:
+  /// **'Walkaround 6-Angle Photos'**
+  String get walkaroundPhotos;
+
+  /// Front angle label
+  ///
+  /// In en, this message translates to:
+  /// **'Front'**
+  String get photoFront;
+
+  /// Rear angle label
+  ///
+  /// In en, this message translates to:
+  /// **'Rear'**
+  String get photoRear;
+
+  /// Left angle label
+  ///
+  /// In en, this message translates to:
+  /// **'Left Side'**
+  String get photoLeft;
+
+  /// Right angle label
+  ///
+  /// In en, this message translates to:
+  /// **'Right Side'**
+  String get photoRight;
+
+  /// Cabin angle label
+  ///
+  /// In en, this message translates to:
+  /// **'Cabin & Controls'**
+  String get photoCabin;
+
+  /// Meter angle label
+  ///
+  /// In en, this message translates to:
+  /// **'Hour Meter Reading'**
+  String get photoMeter;
+
+  /// Section title for dynamic technical specs
+  ///
+  /// In en, this message translates to:
+  /// **'Technical Specifications'**
+  String get technicalSpecifications;
+
+  /// Submit button for machinery registration
+  ///
+  /// In en, this message translates to:
+  /// **'Submit for Verification'**
+  String get submitRegistration;
+
+  /// Save draft button
+  ///
+  /// In en, this message translates to:
+  /// **'Save Offline Draft'**
+  String get saveDraft;
+
+  /// Toast/Snackbar message when draft is saved
+  ///
+  /// In en, this message translates to:
+  /// **'Draft saved locally to your device'**
+  String get draftSavedMessage;
+
+  /// Validation error when some angles are not captured
+  ///
+  /// In en, this message translates to:
+  /// **'All 6 walkaround photos are required before submission'**
+  String get errorIncompletePhotos;
+
+  /// Validation error when required fields are empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please fill in all required fields'**
+  String get errorMissingFields;
+
+  /// Success message after asset creation
+  ///
+  /// In en, this message translates to:
+  /// **'Machinery registered successfully! Under review.'**
+  String get registrationSuccessMessage;
 }
 
 class _AppLocalizationsDelegate

@@ -47,6 +47,180 @@ func (q *Queries) AssignRoleToUser(ctx context.Context, arg AssignRoleToUserPara
 	return err
 }
 
+const createFleet = `-- name: CreateFleet :one
+INSERT INTO fleets (
+    owner_id,
+    subcategory_id,
+    make,
+    model,
+    manufacture_year,
+    plate_number,
+    chassis_vin,
+    baseline_meter_hours,
+    fuel_type,
+    self_move_capable,
+    daily_rate_minor,
+    excess_hour_rate_minor,
+    min_rental_days,
+    payment_timeout_hours,
+    operator_included,
+    status,
+    location,
+    address_text
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
+    ST_SetSRID(ST_MakePoint($17, $18), 4326)::geography, $19
+) RETURNING 
+    id, owner_id, subcategory_id, make, model, manufacture_year, plate_number, 
+    chassis_vin, baseline_meter_hours, fuel_type, self_move_capable, 
+    daily_rate_minor, excess_hour_rate_minor, min_rental_days, payment_timeout_hours, 
+    operator_included, status, address_text, version, created_at, updated_at,
+    ST_Y(location::geometry) AS latitude,
+    ST_X(location::geometry) AS longitude
+`
+
+type CreateFleetParams struct {
+	OwnerID             pgtype.UUID    `json:"owner_id"`
+	SubcategoryID       pgtype.UUID    `json:"subcategory_id"`
+	Make                string         `json:"make"`
+	Model               string         `json:"model"`
+	ManufactureYear     int32          `json:"manufacture_year"`
+	PlateNumber         string         `json:"plate_number"`
+	ChassisVin          string         `json:"chassis_vin"`
+	BaselineMeterHours  pgtype.Numeric `json:"baseline_meter_hours"`
+	FuelType            string         `json:"fuel_type"`
+	SelfMoveCapable     bool           `json:"self_move_capable"`
+	DailyRateMinor      int64          `json:"daily_rate_minor"`
+	ExcessHourRateMinor int64          `json:"excess_hour_rate_minor"`
+	MinRentalDays       int32          `json:"min_rental_days"`
+	PaymentTimeoutHours int32          `json:"payment_timeout_hours"`
+	OperatorIncluded    bool           `json:"operator_included"`
+	Status              string         `json:"status"`
+	StMakepoint         interface{}    `json:"st_makepoint"`
+	StMakepoint_2       interface{}    `json:"st_makepoint_2"`
+	AddressText         string         `json:"address_text"`
+}
+
+type CreateFleetRow struct {
+	ID                  pgtype.UUID        `json:"id"`
+	OwnerID             pgtype.UUID        `json:"owner_id"`
+	SubcategoryID       pgtype.UUID        `json:"subcategory_id"`
+	Make                string             `json:"make"`
+	Model               string             `json:"model"`
+	ManufactureYear     int32              `json:"manufacture_year"`
+	PlateNumber         string             `json:"plate_number"`
+	ChassisVin          string             `json:"chassis_vin"`
+	BaselineMeterHours  pgtype.Numeric     `json:"baseline_meter_hours"`
+	FuelType            string             `json:"fuel_type"`
+	SelfMoveCapable     bool               `json:"self_move_capable"`
+	DailyRateMinor      int64              `json:"daily_rate_minor"`
+	ExcessHourRateMinor int64              `json:"excess_hour_rate_minor"`
+	MinRentalDays       int32              `json:"min_rental_days"`
+	PaymentTimeoutHours int32              `json:"payment_timeout_hours"`
+	OperatorIncluded    bool               `json:"operator_included"`
+	Status              string             `json:"status"`
+	AddressText         string             `json:"address_text"`
+	Version             int32              `json:"version"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+	Latitude            interface{}        `json:"latitude"`
+	Longitude           interface{}        `json:"longitude"`
+}
+
+// Fleet Core CRUD & Management (FL-01 to FL-06, FL-16 to FL-24)
+func (q *Queries) CreateFleet(ctx context.Context, arg CreateFleetParams) (CreateFleetRow, error) {
+	row := q.db.QueryRow(ctx, createFleet,
+		arg.OwnerID,
+		arg.SubcategoryID,
+		arg.Make,
+		arg.Model,
+		arg.ManufactureYear,
+		arg.PlateNumber,
+		arg.ChassisVin,
+		arg.BaselineMeterHours,
+		arg.FuelType,
+		arg.SelfMoveCapable,
+		arg.DailyRateMinor,
+		arg.ExcessHourRateMinor,
+		arg.MinRentalDays,
+		arg.PaymentTimeoutHours,
+		arg.OperatorIncluded,
+		arg.Status,
+		arg.StMakepoint,
+		arg.StMakepoint_2,
+		arg.AddressText,
+	)
+	var i CreateFleetRow
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.SubcategoryID,
+		&i.Make,
+		&i.Model,
+		&i.ManufactureYear,
+		&i.PlateNumber,
+		&i.ChassisVin,
+		&i.BaselineMeterHours,
+		&i.FuelType,
+		&i.SelfMoveCapable,
+		&i.DailyRateMinor,
+		&i.ExcessHourRateMinor,
+		&i.MinRentalDays,
+		&i.PaymentTimeoutHours,
+		&i.OperatorIncluded,
+		&i.Status,
+		&i.AddressText,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Latitude,
+		&i.Longitude,
+	)
+	return i, err
+}
+
+const createFleetPhoto = `-- name: CreateFleetPhoto :one
+INSERT INTO fleet_photos (
+    fleet_id,
+    angle,
+    storage_uri,
+    file_hash,
+    display_order
+) VALUES (
+    $1, $2, $3, $4, $5
+) RETURNING id, fleet_id, angle, storage_uri, file_hash, display_order, created_at
+`
+
+type CreateFleetPhotoParams struct {
+	FleetID      pgtype.UUID `json:"fleet_id"`
+	Angle        string      `json:"angle"`
+	StorageUri   string      `json:"storage_uri"`
+	FileHash     string      `json:"file_hash"`
+	DisplayOrder int32       `json:"display_order"`
+}
+
+// Fleet Photos (SRS §3.3 FL-05)
+func (q *Queries) CreateFleetPhoto(ctx context.Context, arg CreateFleetPhotoParams) (FleetPhoto, error) {
+	row := q.db.QueryRow(ctx, createFleetPhoto,
+		arg.FleetID,
+		arg.Angle,
+		arg.StorageUri,
+		arg.FileHash,
+		arg.DisplayOrder,
+	)
+	var i FleetPhoto
+	err := row.Scan(
+		&i.ID,
+		&i.FleetID,
+		&i.Angle,
+		&i.StorageUri,
+		&i.FileHash,
+		&i.DisplayOrder,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
     phone_number,
@@ -100,6 +274,115 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
+const getCategoryByID = `-- name: GetCategoryByID :one
+SELECT id, parent_id, code, name_en, name_am, icon_url, is_active, display_order, created_at, updated_at FROM categories
+WHERE id = $1
+`
+
+func (q *Queries) GetCategoryByID(ctx context.Context, id pgtype.UUID) (Category, error) {
+	row := q.db.QueryRow(ctx, getCategoryByID, id)
+	var i Category
+	err := row.Scan(
+		&i.ID,
+		&i.ParentID,
+		&i.Code,
+		&i.NameEn,
+		&i.NameAm,
+		&i.IconUrl,
+		&i.IsActive,
+		&i.DisplayOrder,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getCategorySpecDefinitions = `-- name: GetCategorySpecDefinitions :many
+SELECT 
+    g.id AS group_id,
+    g.section_name_en,
+    g.section_name_am,
+    g.display_order AS group_display_order,
+    d.id AS definition_id,
+    d.field_key,
+    d.label_en,
+    d.label_am,
+    d.field_type,
+    d.unit_symbol,
+    d.is_required,
+    d.is_logistics_critical,
+    d.is_comparable,
+    d.is_visible_to_renter,
+    d.min_value,
+    d.max_value,
+    d.enum_values_json,
+    d.display_order AS definition_display_order
+FROM spec_field_groups g
+JOIN spec_field_definitions d ON d.group_id = g.id
+WHERE g.category_id = $1
+ORDER BY g.display_order ASC, d.display_order ASC
+`
+
+type GetCategorySpecDefinitionsRow struct {
+	GroupID                pgtype.UUID    `json:"group_id"`
+	SectionNameEn          string         `json:"section_name_en"`
+	SectionNameAm          string         `json:"section_name_am"`
+	GroupDisplayOrder      int32          `json:"group_display_order"`
+	DefinitionID           pgtype.UUID    `json:"definition_id"`
+	FieldKey               string         `json:"field_key"`
+	LabelEn                string         `json:"label_en"`
+	LabelAm                string         `json:"label_am"`
+	FieldType              string         `json:"field_type"`
+	UnitSymbol             *string        `json:"unit_symbol"`
+	IsRequired             bool           `json:"is_required"`
+	IsLogisticsCritical    bool           `json:"is_logistics_critical"`
+	IsComparable           bool           `json:"is_comparable"`
+	IsVisibleToRenter      bool           `json:"is_visible_to_renter"`
+	MinValue               pgtype.Numeric `json:"min_value"`
+	MaxValue               pgtype.Numeric `json:"max_value"`
+	EnumValuesJson         []byte         `json:"enum_values_json"`
+	DefinitionDisplayOrder int32          `json:"definition_display_order"`
+}
+
+func (q *Queries) GetCategorySpecDefinitions(ctx context.Context, categoryID pgtype.UUID) ([]GetCategorySpecDefinitionsRow, error) {
+	rows, err := q.db.Query(ctx, getCategorySpecDefinitions, categoryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetCategorySpecDefinitionsRow{}
+	for rows.Next() {
+		var i GetCategorySpecDefinitionsRow
+		if err := rows.Scan(
+			&i.GroupID,
+			&i.SectionNameEn,
+			&i.SectionNameAm,
+			&i.GroupDisplayOrder,
+			&i.DefinitionID,
+			&i.FieldKey,
+			&i.LabelEn,
+			&i.LabelAm,
+			&i.FieldType,
+			&i.UnitSymbol,
+			&i.IsRequired,
+			&i.IsLogisticsCritical,
+			&i.IsComparable,
+			&i.IsVisibleToRenter,
+			&i.MinValue,
+			&i.MaxValue,
+			&i.EnumValuesJson,
+			&i.DefinitionDisplayOrder,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCountryConfig = `-- name: GetCountryConfig :one
 SELECT country_code, country_name, dialing_prefix, default_currency, currency_minor_unit_exponent, default_timezone, tax_label, standard_tax_rate_bps, withholding_tax_bps, min_age_default, payment_hold_timeout_mins, is_enabled, created_at, updated_at FROM country_configs
 WHERE country_code = $1 AND is_enabled = true
@@ -123,6 +406,103 @@ func (q *Queries) GetCountryConfig(ctx context.Context, countryCode string) (Cou
 		&i.PaymentHoldTimeoutMins,
 		&i.IsEnabled,
 		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getFleetByID = `-- name: GetFleetByID :one
+SELECT 
+    f.id, f.owner_id, f.subcategory_id, f.make, f.model, f.manufacture_year, f.plate_number, 
+    f.chassis_vin, f.baseline_meter_hours, f.fuel_type, f.self_move_capable, 
+    f.daily_rate_minor, f.excess_hour_rate_minor, f.min_rental_days, f.payment_timeout_hours, 
+    f.operator_included, f.status, f.address_text, f.version, f.created_at, f.updated_at,
+    ST_Y(f.location::geometry) AS latitude,
+    ST_X(f.location::geometry) AS longitude,
+    c.name_en AS subcategory_name_en,
+    c.name_am AS subcategory_name_am
+FROM fleets f
+JOIN categories c ON c.id = f.subcategory_id
+WHERE f.id = $1
+`
+
+type GetFleetByIDRow struct {
+	ID                  pgtype.UUID        `json:"id"`
+	OwnerID             pgtype.UUID        `json:"owner_id"`
+	SubcategoryID       pgtype.UUID        `json:"subcategory_id"`
+	Make                string             `json:"make"`
+	Model               string             `json:"model"`
+	ManufactureYear     int32              `json:"manufacture_year"`
+	PlateNumber         string             `json:"plate_number"`
+	ChassisVin          string             `json:"chassis_vin"`
+	BaselineMeterHours  pgtype.Numeric     `json:"baseline_meter_hours"`
+	FuelType            string             `json:"fuel_type"`
+	SelfMoveCapable     bool               `json:"self_move_capable"`
+	DailyRateMinor      int64              `json:"daily_rate_minor"`
+	ExcessHourRateMinor int64              `json:"excess_hour_rate_minor"`
+	MinRentalDays       int32              `json:"min_rental_days"`
+	PaymentTimeoutHours int32              `json:"payment_timeout_hours"`
+	OperatorIncluded    bool               `json:"operator_included"`
+	Status              string             `json:"status"`
+	AddressText         string             `json:"address_text"`
+	Version             int32              `json:"version"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+	Latitude            interface{}        `json:"latitude"`
+	Longitude           interface{}        `json:"longitude"`
+	SubcategoryNameEn   string             `json:"subcategory_name_en"`
+	SubcategoryNameAm   string             `json:"subcategory_name_am"`
+}
+
+func (q *Queries) GetFleetByID(ctx context.Context, id pgtype.UUID) (GetFleetByIDRow, error) {
+	row := q.db.QueryRow(ctx, getFleetByID, id)
+	var i GetFleetByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.SubcategoryID,
+		&i.Make,
+		&i.Model,
+		&i.ManufactureYear,
+		&i.PlateNumber,
+		&i.ChassisVin,
+		&i.BaselineMeterHours,
+		&i.FuelType,
+		&i.SelfMoveCapable,
+		&i.DailyRateMinor,
+		&i.ExcessHourRateMinor,
+		&i.MinRentalDays,
+		&i.PaymentTimeoutHours,
+		&i.OperatorIncluded,
+		&i.Status,
+		&i.AddressText,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Latitude,
+		&i.Longitude,
+		&i.SubcategoryNameEn,
+		&i.SubcategoryNameAm,
+	)
+	return i, err
+}
+
+const getFleetSpecIndexed = `-- name: GetFleetSpecIndexed :one
+SELECT fleet_id, operating_weight_kg, transport_length_mm, transport_width_mm, transport_height_mm, payload_capacity_kg, gross_engine_power_hp, updated_at FROM fleet_spec_indexed
+WHERE fleet_id = $1
+`
+
+func (q *Queries) GetFleetSpecIndexed(ctx context.Context, fleetID pgtype.UUID) (FleetSpecIndexed, error) {
+	row := q.db.QueryRow(ctx, getFleetSpecIndexed, fleetID)
+	var i FleetSpecIndexed
+	err := row.Scan(
+		&i.FleetID,
+		&i.OperatingWeightKg,
+		&i.TransportLengthMm,
+		&i.TransportWidthMm,
+		&i.TransportHeightMm,
+		&i.PayloadCapacityKg,
+		&i.GrossEnginePowerHp,
 		&i.UpdatedAt,
 	)
 	return i, err
@@ -349,6 +729,44 @@ func (q *Queries) IncrementUserTokenVersion(ctx context.Context, id pgtype.UUID)
 	return token_version, err
 }
 
+const listAllCategories = `-- name: ListAllCategories :many
+SELECT id, parent_id, code, name_en, name_am, icon_url, is_active, display_order, created_at, updated_at FROM categories
+WHERE is_active = true
+ORDER BY display_order ASC, name_en ASC
+`
+
+// Category Taxonomy Queries (Partition 05-02, FL-01)
+func (q *Queries) ListAllCategories(ctx context.Context) ([]Category, error) {
+	rows, err := q.db.Query(ctx, listAllCategories)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Category{}
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(
+			&i.ID,
+			&i.ParentID,
+			&i.Code,
+			&i.NameEn,
+			&i.NameAm,
+			&i.IconUrl,
+			&i.IsActive,
+			&i.DisplayOrder,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAllPermissions = `-- name: ListAllPermissions :many
 SELECT id, code, resource, action, description, created_at FROM permissions
 ORDER BY resource ASC, action ASC
@@ -455,6 +873,332 @@ func (q *Queries) ListEnabledCountryConfigs(ctx context.Context) ([]CountryConfi
 	return items, nil
 }
 
+const listFleetPhotos = `-- name: ListFleetPhotos :many
+SELECT id, fleet_id, angle, storage_uri, file_hash, display_order, created_at FROM fleet_photos
+WHERE fleet_id = $1
+ORDER BY display_order ASC
+`
+
+func (q *Queries) ListFleetPhotos(ctx context.Context, fleetID pgtype.UUID) ([]FleetPhoto, error) {
+	rows, err := q.db.Query(ctx, listFleetPhotos, fleetID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []FleetPhoto{}
+	for rows.Next() {
+		var i FleetPhoto
+		if err := rows.Scan(
+			&i.ID,
+			&i.FleetID,
+			&i.Angle,
+			&i.StorageUri,
+			&i.FileHash,
+			&i.DisplayOrder,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listFleetSpecValues = `-- name: ListFleetSpecValues :many
+SELECT 
+    v.id, v.fleet_id, v.spec_definition_id, v.value_string, v.value_numeric, v.value_boolean,
+    d.field_key, d.label_en, d.label_am, d.unit_symbol, d.field_type
+FROM fleet_spec_values v
+JOIN spec_field_definitions d ON d.id = v.spec_definition_id
+WHERE v.fleet_id = $1
+ORDER BY d.display_order ASC
+`
+
+type ListFleetSpecValuesRow struct {
+	ID               pgtype.UUID    `json:"id"`
+	FleetID          pgtype.UUID    `json:"fleet_id"`
+	SpecDefinitionID pgtype.UUID    `json:"spec_definition_id"`
+	ValueString      *string        `json:"value_string"`
+	ValueNumeric     pgtype.Numeric `json:"value_numeric"`
+	ValueBoolean     *bool          `json:"value_boolean"`
+	FieldKey         string         `json:"field_key"`
+	LabelEn          string         `json:"label_en"`
+	LabelAm          string         `json:"label_am"`
+	UnitSymbol       *string        `json:"unit_symbol"`
+	FieldType        string         `json:"field_type"`
+}
+
+func (q *Queries) ListFleetSpecValues(ctx context.Context, fleetID pgtype.UUID) ([]ListFleetSpecValuesRow, error) {
+	rows, err := q.db.Query(ctx, listFleetSpecValues, fleetID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListFleetSpecValuesRow{}
+	for rows.Next() {
+		var i ListFleetSpecValuesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FleetID,
+			&i.SpecDefinitionID,
+			&i.ValueString,
+			&i.ValueNumeric,
+			&i.ValueBoolean,
+			&i.FieldKey,
+			&i.LabelEn,
+			&i.LabelAm,
+			&i.UnitSymbol,
+			&i.FieldType,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listFleetsByOwner = `-- name: ListFleetsByOwner :many
+SELECT 
+    f.id, f.owner_id, f.subcategory_id, f.make, f.model, f.manufacture_year, f.plate_number, 
+    f.chassis_vin, f.baseline_meter_hours, f.fuel_type, f.self_move_capable, 
+    f.daily_rate_minor, f.excess_hour_rate_minor, f.min_rental_days, f.payment_timeout_hours, 
+    f.operator_included, f.status, f.address_text, f.version, f.created_at, f.updated_at,
+    ST_Y(f.location::geometry) AS latitude,
+    ST_X(f.location::geometry) AS longitude
+FROM fleets f
+WHERE f.owner_id = $1
+ORDER BY f.created_at DESC
+`
+
+type ListFleetsByOwnerRow struct {
+	ID                  pgtype.UUID        `json:"id"`
+	OwnerID             pgtype.UUID        `json:"owner_id"`
+	SubcategoryID       pgtype.UUID        `json:"subcategory_id"`
+	Make                string             `json:"make"`
+	Model               string             `json:"model"`
+	ManufactureYear     int32              `json:"manufacture_year"`
+	PlateNumber         string             `json:"plate_number"`
+	ChassisVin          string             `json:"chassis_vin"`
+	BaselineMeterHours  pgtype.Numeric     `json:"baseline_meter_hours"`
+	FuelType            string             `json:"fuel_type"`
+	SelfMoveCapable     bool               `json:"self_move_capable"`
+	DailyRateMinor      int64              `json:"daily_rate_minor"`
+	ExcessHourRateMinor int64              `json:"excess_hour_rate_minor"`
+	MinRentalDays       int32              `json:"min_rental_days"`
+	PaymentTimeoutHours int32              `json:"payment_timeout_hours"`
+	OperatorIncluded    bool               `json:"operator_included"`
+	Status              string             `json:"status"`
+	AddressText         string             `json:"address_text"`
+	Version             int32              `json:"version"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+	Latitude            interface{}        `json:"latitude"`
+	Longitude           interface{}        `json:"longitude"`
+}
+
+func (q *Queries) ListFleetsByOwner(ctx context.Context, ownerID pgtype.UUID) ([]ListFleetsByOwnerRow, error) {
+	rows, err := q.db.Query(ctx, listFleetsByOwner, ownerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListFleetsByOwnerRow{}
+	for rows.Next() {
+		var i ListFleetsByOwnerRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.OwnerID,
+			&i.SubcategoryID,
+			&i.Make,
+			&i.Model,
+			&i.ManufactureYear,
+			&i.PlateNumber,
+			&i.ChassisVin,
+			&i.BaselineMeterHours,
+			&i.FuelType,
+			&i.SelfMoveCapable,
+			&i.DailyRateMinor,
+			&i.ExcessHourRateMinor,
+			&i.MinRentalDays,
+			&i.PaymentTimeoutHours,
+			&i.OperatorIncluded,
+			&i.Status,
+			&i.AddressText,
+			&i.Version,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Latitude,
+			&i.Longitude,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listRootCategories = `-- name: ListRootCategories :many
+SELECT id, parent_id, code, name_en, name_am, icon_url, is_active, display_order, created_at, updated_at FROM categories
+WHERE parent_id IS NULL AND is_active = true
+ORDER BY display_order ASC, name_en ASC
+`
+
+func (q *Queries) ListRootCategories(ctx context.Context) ([]Category, error) {
+	rows, err := q.db.Query(ctx, listRootCategories)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Category{}
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(
+			&i.ID,
+			&i.ParentID,
+			&i.Code,
+			&i.NameEn,
+			&i.NameAm,
+			&i.IconUrl,
+			&i.IsActive,
+			&i.DisplayOrder,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listSpecDefinitionsByGroup = `-- name: ListSpecDefinitionsByGroup :many
+SELECT id, group_id, field_key, label_en, label_am, field_type, unit_symbol, is_required, is_logistics_critical, is_comparable, is_visible_to_renter, min_value, max_value, enum_values_json, display_order, created_at, updated_at FROM spec_field_definitions
+WHERE group_id = $1
+ORDER BY display_order ASC
+`
+
+func (q *Queries) ListSpecDefinitionsByGroup(ctx context.Context, groupID pgtype.UUID) ([]SpecFieldDefinition, error) {
+	rows, err := q.db.Query(ctx, listSpecDefinitionsByGroup, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []SpecFieldDefinition{}
+	for rows.Next() {
+		var i SpecFieldDefinition
+		if err := rows.Scan(
+			&i.ID,
+			&i.GroupID,
+			&i.FieldKey,
+			&i.LabelEn,
+			&i.LabelAm,
+			&i.FieldType,
+			&i.UnitSymbol,
+			&i.IsRequired,
+			&i.IsLogisticsCritical,
+			&i.IsComparable,
+			&i.IsVisibleToRenter,
+			&i.MinValue,
+			&i.MaxValue,
+			&i.EnumValuesJson,
+			&i.DisplayOrder,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listSpecGroupsByCategory = `-- name: ListSpecGroupsByCategory :many
+SELECT id, category_id, section_name_en, section_name_am, display_order, created_at, updated_at FROM spec_field_groups
+WHERE category_id = $1
+ORDER BY display_order ASC
+`
+
+// Spec Field Groups & Definitions (FL-07 to FL-15)
+func (q *Queries) ListSpecGroupsByCategory(ctx context.Context, categoryID pgtype.UUID) ([]SpecFieldGroup, error) {
+	rows, err := q.db.Query(ctx, listSpecGroupsByCategory, categoryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []SpecFieldGroup{}
+	for rows.Next() {
+		var i SpecFieldGroup
+		if err := rows.Scan(
+			&i.ID,
+			&i.CategoryID,
+			&i.SectionNameEn,
+			&i.SectionNameAm,
+			&i.DisplayOrder,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listSubcategories = `-- name: ListSubcategories :many
+SELECT id, parent_id, code, name_en, name_am, icon_url, is_active, display_order, created_at, updated_at FROM categories
+WHERE parent_id = $1 AND is_active = true
+ORDER BY display_order ASC, name_en ASC
+`
+
+func (q *Queries) ListSubcategories(ctx context.Context, parentID pgtype.UUID) ([]Category, error) {
+	rows, err := q.db.Query(ctx, listSubcategories, parentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Category{}
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(
+			&i.ID,
+			&i.ParentID,
+			&i.Code,
+			&i.NameEn,
+			&i.NameAm,
+			&i.IconUrl,
+			&i.IsActive,
+			&i.DisplayOrder,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUserLegalAgreements = `-- name: ListUserLegalAgreements :many
 SELECT id, user_id, terms_version, privacy_version, accepted_at, client_ip, client_user_agent FROM user_legal_agreements
 WHERE user_id = $1
@@ -544,6 +1288,49 @@ type RemoveRoleFromUserParams struct {
 func (q *Queries) RemoveRoleFromUser(ctx context.Context, arg RemoveRoleFromUserParams) error {
 	_, err := q.db.Exec(ctx, removeRoleFromUser, arg.UserID, arg.RoleID)
 	return err
+}
+
+const updateFleetStatus = `-- name: UpdateFleetStatus :one
+UPDATE fleets
+SET status = $2,
+    version = version + 1
+WHERE id = $1
+RETURNING id, owner_id, subcategory_id, make, model, manufacture_year, plate_number, chassis_vin, baseline_meter_hours, fuel_type, self_move_capable, daily_rate_minor, excess_hour_rate_minor, min_rental_days, payment_timeout_hours, operator_included, status, location, address_text, version, created_at, updated_at
+`
+
+type UpdateFleetStatusParams struct {
+	ID     pgtype.UUID `json:"id"`
+	Status string      `json:"status"`
+}
+
+func (q *Queries) UpdateFleetStatus(ctx context.Context, arg UpdateFleetStatusParams) (Fleet, error) {
+	row := q.db.QueryRow(ctx, updateFleetStatus, arg.ID, arg.Status)
+	var i Fleet
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.SubcategoryID,
+		&i.Make,
+		&i.Model,
+		&i.ManufactureYear,
+		&i.PlateNumber,
+		&i.ChassisVin,
+		&i.BaselineMeterHours,
+		&i.FuelType,
+		&i.SelfMoveCapable,
+		&i.DailyRateMinor,
+		&i.ExcessHourRateMinor,
+		&i.MinRentalDays,
+		&i.PaymentTimeoutHours,
+		&i.OperatorIncluded,
+		&i.Status,
+		&i.Location,
+		&i.AddressText,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const updateUserAccountStatus = `-- name: UpdateUserAccountStatus :one
@@ -671,6 +1458,109 @@ func (q *Queries) UpdateUserPreferredLanguage(ctx context.Context, arg UpdateUse
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.PreferredLanguage,
+	)
+	return i, err
+}
+
+const upsertFleetSpecIndexed = `-- name: UpsertFleetSpecIndexed :one
+INSERT INTO fleet_spec_indexed (
+    fleet_id,
+    operating_weight_kg,
+    transport_length_mm,
+    transport_width_mm,
+    transport_height_mm,
+    payload_capacity_kg,
+    gross_engine_power_hp,
+    updated_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, NOW()
+) ON CONFLICT (fleet_id) DO UPDATE SET
+    operating_weight_kg = EXCLUDED.operating_weight_kg,
+    transport_length_mm = EXCLUDED.transport_length_mm,
+    transport_width_mm = EXCLUDED.transport_width_mm,
+    transport_height_mm = EXCLUDED.transport_height_mm,
+    payload_capacity_kg = EXCLUDED.payload_capacity_kg,
+    gross_engine_power_hp = EXCLUDED.gross_engine_power_hp,
+    updated_at = NOW()
+RETURNING fleet_id, operating_weight_kg, transport_length_mm, transport_width_mm, transport_height_mm, payload_capacity_kg, gross_engine_power_hp, updated_at
+`
+
+type UpsertFleetSpecIndexedParams struct {
+	FleetID            pgtype.UUID    `json:"fleet_id"`
+	OperatingWeightKg  pgtype.Numeric `json:"operating_weight_kg"`
+	TransportLengthMm  pgtype.Numeric `json:"transport_length_mm"`
+	TransportWidthMm   pgtype.Numeric `json:"transport_width_mm"`
+	TransportHeightMm  pgtype.Numeric `json:"transport_height_mm"`
+	PayloadCapacityKg  pgtype.Numeric `json:"payload_capacity_kg"`
+	GrossEnginePowerHp pgtype.Numeric `json:"gross_engine_power_hp"`
+}
+
+func (q *Queries) UpsertFleetSpecIndexed(ctx context.Context, arg UpsertFleetSpecIndexedParams) (FleetSpecIndexed, error) {
+	row := q.db.QueryRow(ctx, upsertFleetSpecIndexed,
+		arg.FleetID,
+		arg.OperatingWeightKg,
+		arg.TransportLengthMm,
+		arg.TransportWidthMm,
+		arg.TransportHeightMm,
+		arg.PayloadCapacityKg,
+		arg.GrossEnginePowerHp,
+	)
+	var i FleetSpecIndexed
+	err := row.Scan(
+		&i.FleetID,
+		&i.OperatingWeightKg,
+		&i.TransportLengthMm,
+		&i.TransportWidthMm,
+		&i.TransportHeightMm,
+		&i.PayloadCapacityKg,
+		&i.GrossEnginePowerHp,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const upsertFleetSpecValue = `-- name: UpsertFleetSpecValue :one
+INSERT INTO fleet_spec_values (
+    fleet_id,
+    spec_definition_id,
+    value_string,
+    value_numeric,
+    value_boolean
+) VALUES (
+    $1, $2, $3, $4, $5
+) ON CONFLICT (fleet_id, spec_definition_id) DO UPDATE SET
+    value_string = EXCLUDED.value_string,
+    value_numeric = EXCLUDED.value_numeric,
+    value_boolean = EXCLUDED.value_boolean
+RETURNING id, fleet_id, spec_definition_id, value_string, value_numeric, value_boolean, created_at
+`
+
+type UpsertFleetSpecValueParams struct {
+	FleetID          pgtype.UUID    `json:"fleet_id"`
+	SpecDefinitionID pgtype.UUID    `json:"spec_definition_id"`
+	ValueString      *string        `json:"value_string"`
+	ValueNumeric     pgtype.Numeric `json:"value_numeric"`
+	ValueBoolean     *bool          `json:"value_boolean"`
+}
+
+// Fleet Spec Values & Indexing (SRS §4.3 FL-14)
+func (q *Queries) UpsertFleetSpecValue(ctx context.Context, arg UpsertFleetSpecValueParams) (FleetSpecValue, error) {
+	row := q.db.QueryRow(ctx, upsertFleetSpecValue,
+		arg.FleetID,
+		arg.SpecDefinitionID,
+		arg.ValueString,
+		arg.ValueNumeric,
+		arg.ValueBoolean,
+	)
+	var i FleetSpecValue
+	err := row.Scan(
+		&i.ID,
+		&i.FleetID,
+		&i.SpecDefinitionID,
+		&i.ValueString,
+		&i.ValueNumeric,
+		&i.ValueBoolean,
+		&i.CreatedAt,
 	)
 	return i, err
 }

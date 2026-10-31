@@ -14,6 +14,9 @@ import (
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/application"
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/domain"
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/infrastructure"
+	machineryApp "github.com/dinkmachinery/dink-core/internal/modules/machinery/application"
+	machineryDomain "github.com/dinkmachinery/dink-core/internal/modules/machinery/domain"
+	machineryInfra "github.com/dinkmachinery/dink-core/internal/modules/machinery/infrastructure"
 	"github.com/dinkmachinery/dink-core/internal/platform/config"
 	"github.com/dinkmachinery/dink-core/internal/platform/database/db"
 	transport "github.com/dinkmachinery/dink-core/internal/transport/http"
@@ -57,18 +60,43 @@ func main() {
 	}
 
 	var userRepo domain.UserRepository
+	var categoryRepo machineryDomain.CategoryRepository
+	var specDefRepo machineryDomain.SpecDefinitionRepository
+	var fleetRepo machineryDomain.FleetRepository
+	var mediaRepo machineryDomain.FleetMediaRepository
+	var specRepo machineryDomain.FleetSpecRepository
+
 	dbPool, err := pgxpool.New(ctx, cfg.DatabaseURL)
 	if err == nil && dbPool.Ping(ctx) == nil {
 		queries := db.New(dbPool)
 		userRepo = infrastructure.NewPostgresUserRepository(queries)
-		logger.Info("Connected to PostgreSQL database for identity repository")
+		pgMachineryRepo := machineryInfra.NewPostgresMachineryRepository(queries)
+		categoryRepo = pgMachineryRepo
+		specDefRepo = pgMachineryRepo
+		fleetRepo = pgMachineryRepo
+		mediaRepo = pgMachineryRepo
+		specRepo = pgMachineryRepo
+		logger.Info("Connected to PostgreSQL database for repositories")
 	} else {
-		logger.Warn("PostgreSQL connection unavailable; using in-memory identity cache for bootstrapping")
+		logger.Warn("PostgreSQL connection unavailable; using in-memory caches for bootstrapping")
 		userRepo = infrastructure.NewMemoryUserRepository()
+		memMachineryRepo := machineryInfra.NewMemoryMachineryRepository()
+		categoryRepo = memMachineryRepo
+		specDefRepo = memMachineryRepo
+		fleetRepo = memMachineryRepo
+		mediaRepo = memMachineryRepo
+		specRepo = memMachineryRepo
 	}
 
 	authService := application.NewAuthService(userRepo, otpService, tokenService)
-	server := transport.NewServer(authService, tokenService)
+	machineryService := machineryApp.NewMachineryService(
+		categoryRepo,
+		specDefRepo,
+		fleetRepo,
+		mediaRepo,
+		specRepo,
+	)
+	server := transport.NewServer(authService, tokenService, machineryService)
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
@@ -100,7 +128,7 @@ func main() {
 		BaseRouter: r,
 	})
 
-	logger.Info("Backend modular monolith initialized with Auth partition",
+	logger.Info("Backend modular monolith initialized with Auth and Machinery partitions",
 		zap.String("environment", string(cfg.Env)),
 		zap.String("port", cfg.Port),
 		zap.Bool("mockOTP", cfg.MockOTP),

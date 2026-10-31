@@ -69,4 +69,87 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonCancel => 'Cancel';
+
+  @override
+  String get fleetRegistrationTitle => 'Register Machinery';
+
+  @override
+  String get selectCategory => 'Select Category';
+
+  @override
+  String get machineryDetails => 'Machinery Details';
+
+  @override
+  String get make => 'Make';
+
+  @override
+  String get model => 'Model';
+
+  @override
+  String get manufacturingYear => 'Manufacturing Year';
+
+  @override
+  String get registrationNumber => 'Plate / Registration Number';
+
+  @override
+  String get chassisVin => 'Chassis Number / VIN';
+
+  @override
+  String get baselineMeterHours => 'Engine Hour Meter';
+
+  @override
+  String get fuelType => 'Fuel Type';
+
+  @override
+  String get dailyRate => 'Daily Rental Rate (ETB)';
+
+  @override
+  String get selfMoveCapable => 'Self-Move Capable';
+
+  @override
+  String get operatorIncluded => 'Operator Included';
+
+  @override
+  String get walkaroundPhotos => 'Walkaround 6-Angle Photos';
+
+  @override
+  String get photoFront => 'Front';
+
+  @override
+  String get photoRear => 'Rear';
+
+  @override
+  String get photoLeft => 'Left Side';
+
+  @override
+  String get photoRight => 'Right Side';
+
+  @override
+  String get photoCabin => 'Cabin & Controls';
+
+  @override
+  String get photoMeter => 'Hour Meter Reading';
+
+  @override
+  String get technicalSpecifications => 'Technical Specifications';
+
+  @override
+  String get submitRegistration => 'Submit for Verification';
+
+  @override
+  String get saveDraft => 'Save Offline Draft';
+
+  @override
+  String get draftSavedMessage => 'Draft saved locally to your device';
+
+  @override
+  String get errorIncompletePhotos =>
+      'All 6 walkaround photos are required before submission';
+
+  @override
+  String get errorMissingFields => 'Please fill in all required fields';
+
+  @override
+  String get registrationSuccessMessage =>
+      'Machinery registered successfully! Under review.';
 }

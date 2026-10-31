@@ -69,4 +69,86 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get commonCancel => 'ሰርዝ';
+
+  @override
+  String get fleetRegistrationTitle => 'ማሽነሪ መመዝገቢያ';
+
+  @override
+  String get selectCategory => 'የማሽነሪ ምድብ ይምረጡ';
+
+  @override
+  String get machineryDetails => 'የማሽነሪው ዝርዝር መረጃ';
+
+  @override
+  String get make => 'አምራች ድርጅት';
+
+  @override
+  String get model => 'ሞዴል';
+
+  @override
+  String get manufacturingYear => 'የተመረተበት ዓመት';
+
+  @override
+  String get registrationNumber => 'የሰሌዳ / የታርጋ ቁጥር';
+
+  @override
+  String get chassisVin => 'የሻሲ ቁጥር (VIN)';
+
+  @override
+  String get baselineMeterHours => 'የሞተር ሰዓት ቆጣሪ';
+
+  @override
+  String get fuelType => 'የነዳጅ ዓይነት';
+
+  @override
+  String get dailyRate => 'የቀን ኪራይ ዋጋ (ብር)';
+
+  @override
+  String get selfMoveCapable => 'ራሱን ችሎ መጓዝ የሚችል';
+
+  @override
+  String get operatorIncluded => 'ከኦፕሬተር ጋር የቀረበ';
+
+  @override
+  String get walkaroundPhotos => 'የማሽነሪው 6 አቅጣጫ ፎቶዎች';
+
+  @override
+  String get photoFront => 'የፊት ገጽታ';
+
+  @override
+  String get photoRear => 'የኋላ ገጽታ';
+
+  @override
+  String get photoLeft => 'የግራ ገጽታ';
+
+  @override
+  String get photoRight => 'የቀኝ ገጽታ';
+
+  @override
+  String get photoCabin => 'ካቢን እና መቆጣጠሪያ';
+
+  @override
+  String get photoMeter => 'የሰዓት ቆጣሪ ገጽታ';
+
+  @override
+  String get technicalSpecifications => 'ቴክኒካዊ መረጃዎች';
+
+  @override
+  String get submitRegistration => 'ማሽነሪውን ለምርመራ አስገባ';
+
+  @override
+  String get saveDraft => 'ረቂቁን በስልኩ አስቀምጥ';
+
+  @override
+  String get draftSavedMessage => 'ረቂቁ በስልክዎ ላይ ተቀምጧል';
+
+  @override
+  String get errorIncompletePhotos => 'ሁሉንም 6 ፎቶዎች ማንሳት ግዴታ ነው';
+
+  @override
+  String get errorMissingFields => 'እባክዎ የተጠየቁትን መረጃዎች በሙሉ ይሙሉ';
+
+  @override
+  String get registrationSuccessMessage =>
+      'ማሽነሪው በተሳካ ሁኔታ ተመዝግቧል! በግምገማ ላይ ነው።';
 }

@@ -83,5 +83,113 @@
   "commonCancel": "Cancel",
   "@commonCancel": {
     "description": "Generic cancel button text"
+  },
+  "fleetRegistrationTitle": "Register Machinery",
+  "@fleetRegistrationTitle": {
+    "description": "App bar title for machinery registration"
+  },
+  "selectCategory": "Select Category",
+  "@selectCategory": {
+    "description": "Label for category selector"
+  },
+  "machineryDetails": "Machinery Details",
+  "@machineryDetails": {
+    "description": "Section header for machinery core details"
+  },
+  "make": "Make",
+  "@make": {
+    "description": "Label for machine make/brand"
+  },
+  "model": "Model",
+  "@model": {
+    "description": "Label for machine model"
+  },
+  "manufacturingYear": "Manufacturing Year",
+  "@manufacturingYear": {
+    "description": "Label for machine year of manufacture"
+  },
+  "registrationNumber": "Plate / Registration Number",
+  "@registrationNumber": {
+    "description": "Label for plate or registration identifier"
+  },
+  "chassisVin": "Chassis Number / VIN",
+  "@chassisVin": {
+    "description": "Label for chassis or VIN"
+  },
+  "baselineMeterHours": "Engine Hour Meter",
+  "@baselineMeterHours": {
+    "description": "Label for baseline mechanical meter reading"
+  },
+  "fuelType": "Fuel Type",
+  "@fuelType": {
+    "description": "Label for fuel type"
+  },
+  "dailyRate": "Daily Rental Rate (ETB)",
+  "@dailyRate": {
+    "description": "Label for daily rental price in ETB"
+  },
+  "selfMoveCapable": "Self-Move Capable",
+  "@selfMoveCapable": {
+    "description": "Toggle indicating whether equipment can travel without transporter"
+  },
+  "operatorIncluded": "Operator Included",
+  "@operatorIncluded": {
+    "description": "Toggle indicating whether dedicated certified operator is included"
+  },
+  "walkaroundPhotos": "Walkaround 6-Angle Photos",
+  "@walkaroundPhotos": {
+    "description": "Section title for mandatory 6-angle walkaround photos"
+  },
+  "photoFront": "Front",
+  "@photoFront": {
+    "description": "Front angle label"
+  },
+  "photoRear": "Rear",
+  "@photoRear": {
+    "description": "Rear angle label"
+  },
+  "photoLeft": "Left Side",
+  "@photoLeft": {
+    "description": "Left angle label"
+  },
+  "photoRight": "Right Side",
+  "@photoRight": {
+    "description": "Right angle label"
+  },
+  "photoCabin": "Cabin & Controls",
+  "@photoCabin": {
+    "description": "Cabin angle label"
+  },
+  "photoMeter": "Hour Meter Reading",
+  "@photoMeter": {
+    "description": "Meter angle label"
+  },
+  "technicalSpecifications": "Technical Specifications",
+  "@technicalSpecifications": {
+    "description": "Section title for dynamic technical specs"
+  },
+  "submitRegistration": "Submit for Verification",
+  "@submitRegistration": {
+    "description": "Submit button for machinery registration"
+  },
+  "saveDraft": "Save Offline Draft",
+  "@saveDraft": {
+    "description": "Save draft button"
+  },
+  "draftSavedMessage": "Draft saved locally to your device",
+  "@draftSavedMessage": {
+    "description": "Toast/Snackbar message when draft is saved"
+  },
+  "errorIncompletePhotos": "All 6 walkaround photos are required before submission",
+  "@errorIncompletePhotos": {
+    "description": "Validation error when some angles are not captured"
+  },
+  "errorMissingFields": "Please fill in all required fields",
+  "@errorMissingFields": {
+    "description": "Validation error when required fields are empty"
+  },
+  "registrationSuccessMessage": "Machinery registered successfully! Under review.",
+  "@registrationSuccessMessage": {
+    "description": "Success message after asset creation"
   }
 }

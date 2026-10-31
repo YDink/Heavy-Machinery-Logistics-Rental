@@ -268,6 +268,120 @@ paths:
           $ref: '#/components/responses/not-found'
         '500':
           $ref: '#/components/responses/internal-server-error'
+  /fleets/{id}/attachments/link:
+    post:
+      tags:
+        - machinery
+        - attachments
+      summary: Link attachment to fleet asset
+      description: Links an attachment from owner inventory to a fleet asset with a discounted bundled rate.
+      operationId: linkFleetAttachment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Target fleet asset UUID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkFleetAttachmentRequest'
+      responses:
+        '200':
+          description: Attachment linked successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkFleetAttachmentSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '422':
+          $ref: '#/components/responses/bad-request'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /attachments:
+    post:
+      tags:
+        - machinery
+        - attachments
+      summary: Register a new standalone attachment
+      description: Adds a new equipment attachment under the authenticated owner inventory.
+      operationId: createAttachment
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/idempotency-key-header'
+        - $ref: '#/components/parameters/country-code-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAttachmentRequest'
+      responses:
+        '201':
+          description: Attachment successfully registered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '422':
+          $ref: '#/components/responses/bad-request'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /attachments/inventory:
+    get:
+      tags:
+        - machinery
+        - attachments
+      summary: List attachment inventory
+      description: Returns inventory of attachments owned by the authenticated owner.
+      operationId: listAttachmentInventory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - DRAFT
+              - ACTIVE
+              - RENTED
+              - MAINTENANCE_HOLD
+              - INACTIVE
+              - DISPUTED_DAMAGE
+              - DECOMMISSIONED
+        - $ref: '#/components/parameters/cursor-query-param'
+        - $ref: '#/components/parameters/limit-query-param'
+      responses:
+        '200':
+          description: Owner attachment inventory list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentInventorySuccessResponse'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
   /geo/fleets/radius-search:
     get:
       tags:
@@ -372,6 +486,31 @@ paths:
           $ref: '#/components/responses/unauthorized'
         '409':
           $ref: '#/components/responses/conflict'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/check-bundled-availability:
+    post:
+      tags:
+        - bookings
+        - attachments
+      summary: Check bundled availability
+      description: Validates multi-entity temporal availability for a fleet asset and bundled attachments.
+      operationId: checkBundledAvailability
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckBundledAvailabilityRequest'
+      responses:
+        '200':
+          description: Availability verification result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckBundledAvailabilitySuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
         '500':
           $ref: '#/components/responses/internal-server-error'
   /bookings/{id}:
@@ -1798,6 +1937,347 @@ components:
             - true
         data:
           $ref: '#/components/schemas/AdminUiConfig'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    LinkFleetAttachmentRequest:
+      type: object
+      required:
+        - attachmentId
+        - bundledDailyRateMinor
+      properties:
+        attachmentId:
+          type: string
+          format: uuid
+        bundledDailyRateMinor:
+          type: integer
+          format: int64
+    LinkFleetAttachmentResponseData:
+      type: object
+      required:
+        - fleetId
+        - attachmentId
+        - bundledDailyRateMinor
+        - discountPercentage
+        - status
+      properties:
+        fleetId:
+          type: string
+          format: uuid
+        attachmentId:
+          type: string
+          format: uuid
+        bundledDailyRateMinor:
+          type: integer
+          format: int64
+        discountPercentage:
+          type: number
+        status:
+          type: string
+    LinkFleetAttachmentSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/LinkFleetAttachmentResponseData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    AttachmentPhotoInput:
+      type: object
+      required:
+        - angle
+        - storageUri
+      properties:
+        angle:
+          type: string
+          enum:
+            - OVERALL
+            - BRACKET
+            - PINS
+            - TOOL_TIP
+        storageUri:
+          type: string
+    CreateAttachmentRequest:
+      type: object
+      required:
+        - attachmentType
+        - make
+        - model
+        - subTypeSize
+        - serialNumber
+        - operatingWeightKg
+        - minCarrierWeightTonnes
+        - maxCarrierWeightTonnes
+        - requiredFlowMinLmin
+        - requiredFlowMaxLmin
+        - requiredPressureBar
+        - pinDiameterMm
+        - pinSpreadMm
+        - compatibleSubcategories
+        - standaloneDailyRateMinor
+      properties:
+        attachmentType:
+          type: string
+          enum:
+            - HYDRAULIC_BREAKER
+            - STANDARD_BUCKET
+            - TRENCHING_BUCKET
+            - AUGER
+            - RIPPER_TOOTH
+            - SORTING_GRAPPLE
+            - CRUSHER
+        make:
+          type: string
+        model:
+          type: string
+        subTypeSize:
+          type: string
+        serialNumber:
+          type: string
+        operatingWeightKg:
+          type: number
+        minCarrierWeightTonnes:
+          type: number
+        maxCarrierWeightTonnes:
+          type: number
+        requiredFlowMinLmin:
+          type: number
+        requiredFlowMaxLmin:
+          type: number
+        requiredPressureBar:
+          type: number
+        pinDiameterMm:
+          type: number
+        pinSpreadMm:
+          type: number
+        compatibleSubcategories:
+          type: array
+          items:
+            type: string
+        standaloneDailyRateMinor:
+          type: integer
+          format: int64
+        securityDepositMinor:
+          type: integer
+          format: int64
+          default: 0
+        minRentalDays:
+          type: integer
+          default: 1
+        photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttachmentPhotoInput'
+    AttachmentResponseData:
+      type: object
+      required:
+        - attachmentId
+        - status
+        - attachmentType
+        - make
+        - model
+        - standaloneDailyRateMinor
+        - createdAt
+      properties:
+        attachmentId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - ACTIVE
+            - RENTED
+            - MAINTENANCE_HOLD
+            - INACTIVE
+            - DISPUTED_DAMAGE
+            - DECOMMISSIONED
+        attachmentType:
+          type: string
+        make:
+          type: string
+        model:
+          type: string
+        standaloneDailyRateMinor:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+    AttachmentSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/AttachmentResponseData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    AttachmentInventoryItem:
+      type: object
+      required:
+        - attachmentId
+        - attachmentType
+        - make
+        - model
+        - subTypeSize
+        - status
+        - standaloneDailyRateMinor
+        - isLinkedToFleet
+      properties:
+        attachmentId:
+          type: string
+          format: uuid
+        attachmentType:
+          type: string
+        make:
+          type: string
+        model:
+          type: string
+        subTypeSize:
+          type: string
+        status:
+          type: string
+        standaloneDailyRateMinor:
+          type: integer
+          format: int64
+        isLinkedToFleet:
+          type: boolean
+        linkedFleetId:
+          type: string
+          format: uuid
+          nullable: true
+        primaryPhotoUri:
+          type: string
+          nullable: true
+    AttachmentInventoryListResponseData:
+      type: object
+      required:
+        - totalCount
+        - attachments
+      properties:
+        totalCount:
+          type: integer
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttachmentInventoryItem'
+    AttachmentInventorySuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/AttachmentInventoryListResponseData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    CheckBundledAvailabilityRequest:
+      type: object
+      required:
+        - fleetId
+        - attachmentIds
+        - startDate
+        - endDate
+      properties:
+        fleetId:
+          type: string
+          format: uuid
+        attachmentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+    AttachmentAvailabilityStatus:
+      type: object
+      required:
+        - attachmentId
+        - isAvailable
+        - dailyRateAppliedMinor
+      properties:
+        attachmentId:
+          type: string
+          format: uuid
+        isAvailable:
+          type: boolean
+        dailyRateAppliedMinor:
+          type: integer
+          format: int64
+    CheckBundledAvailabilityResponseData:
+      type: object
+      required:
+        - fleetAvailable
+        - allAttachmentsAvailable
+        - attachmentStatuses
+        - totalCombinedDailyRateMinor
+      properties:
+        fleetAvailable:
+          type: boolean
+        allAttachmentsAvailable:
+          type: boolean
+        attachmentStatuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttachmentAvailabilityStatus'
+        totalCombinedDailyRateMinor:
+          type: integer
+          format: int64
+    CheckBundledAvailabilitySuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/CheckBundledAvailabilityResponseData'
         error:
           type: object
           nullable: true

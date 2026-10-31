@@ -18,6 +18,14 @@ import 'package:dink_mobile/features/fleet_catalog/domain/usecases/get_categorie
 import 'package:dink_mobile/features/fleet_catalog/domain/usecases/get_spec_definitions_usecase.dart';
 import 'package:dink_mobile/features/fleet_catalog/domain/usecases/register_fleet_usecase.dart';
 import 'package:dink_mobile/features/fleet_catalog/presentation/bloc/fleet_registration_bloc.dart';
+import 'package:dink_mobile/features/attachment/data/datasources/attachment_local_data_source.dart';
+import 'package:dink_mobile/features/attachment/data/datasources/attachment_remote_data_source.dart';
+import 'package:dink_mobile/features/attachment/data/repositories/attachment_repository_impl.dart';
+import 'package:dink_mobile/features/attachment/domain/repositories/attachment_repository.dart';
+import 'package:dink_mobile/features/attachment/domain/usecases/get_attachment_inventory_usecase.dart';
+import 'package:dink_mobile/features/attachment/domain/usecases/link_attachment_usecase.dart';
+import 'package:dink_mobile/features/attachment/domain/usecases/register_attachment_usecase.dart';
+import 'package:dink_mobile/features/attachment/presentation/bloc/attachment_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -136,6 +144,57 @@ Future<void> initDependencies() async {
         getSpecDefinitionsUseCase: sl<GetSpecDefinitionsUseCase>(),
         registerFleetUseCase: sl<RegisterFleetUseCase>(),
         fleetRepository: sl<FleetRepository>(),
+      ),
+    );
+  }
+
+  // Attachment Subsystem (Partition 05-03)
+  if (!sl.isRegistered<AttachmentRemoteDataSource>()) {
+    sl.registerLazySingleton<AttachmentRemoteDataSource>(
+      () => AttachmentRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
+    );
+  }
+
+  if (!sl.isRegistered<AttachmentLocalDataSource>()) {
+    sl.registerLazySingleton<AttachmentLocalDataSource>(
+      () => AttachmentLocalDataSourceImpl(storage: sl<FlutterSecureStorage>()),
+    );
+  }
+
+  if (!sl.isRegistered<AttachmentRepository>()) {
+    sl.registerLazySingleton<AttachmentRepository>(
+      () => AttachmentRepositoryImpl(
+        remoteDataSource: sl<AttachmentRemoteDataSource>(),
+        localDataSource: sl<AttachmentLocalDataSource>(),
+      ),
+    );
+  }
+
+  if (!sl.isRegistered<RegisterAttachmentUseCase>()) {
+    sl.registerLazySingleton<RegisterAttachmentUseCase>(
+      () => RegisterAttachmentUseCase(sl<AttachmentRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<GetAttachmentInventoryUseCase>()) {
+    sl.registerLazySingleton<GetAttachmentInventoryUseCase>(
+      () => GetAttachmentInventoryUseCase(sl<AttachmentRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<LinkAttachmentUseCase>()) {
+    sl.registerLazySingleton<LinkAttachmentUseCase>(
+      () => LinkAttachmentUseCase(sl<AttachmentRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<AttachmentBloc>()) {
+    sl.registerFactory<AttachmentBloc>(
+      () => AttachmentBloc(
+        registerAttachmentUseCase: sl<RegisterAttachmentUseCase>(),
+        getInventoryUseCase: sl<GetAttachmentInventoryUseCase>(),
+        linkAttachmentUseCase: sl<LinkAttachmentUseCase>(),
+        attachmentRepository: sl<AttachmentRepository>(),
       ),
     );
   }

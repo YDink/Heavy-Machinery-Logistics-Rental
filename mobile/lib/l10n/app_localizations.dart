@@ -367,6 +367,228 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Machinery registered successfully! Under review.'**
   String get registrationSuccessMessage;
+
+  /// Screen title for registering a standalone equipment attachment
+  ///
+  /// In en, this message translates to:
+  /// **'Register Attachment'**
+  String get registerAttachmentTitle;
+
+  /// Category dropdown label for attachment type
+  ///
+  /// In en, this message translates to:
+  /// **'Attachment Type'**
+  String get attachmentTypeLabel;
+
+  /// Brand/make of the attachment
+  ///
+  /// In en, this message translates to:
+  /// **'Make / Manufacturer'**
+  String get attachmentMakeLabel;
+
+  /// Model descriptor of the attachment
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get attachmentModelLabel;
+
+  /// Chisel diameter or bucket size
+  ///
+  /// In en, this message translates to:
+  /// **'Tool Sizing Specification'**
+  String get attachmentSubTypeLabel;
+
+  /// Stamped manufacturer serial PIN number
+  ///
+  /// In en, this message translates to:
+  /// **'Serial PIN Number'**
+  String get attachmentSerialLabel;
+
+  /// Weight of implement in kilograms
+  ///
+  /// In en, this message translates to:
+  /// **'Operating Tool Weight (kg)'**
+  String get operatingWeightKgLabel;
+
+  /// Minimum carrier class in metric tons
+  ///
+  /// In en, this message translates to:
+  /// **'Min Host Carrier Weight (tons)'**
+  String get minCarrierWeightLabel;
+
+  /// Maximum carrier class in metric tons
+  ///
+  /// In en, this message translates to:
+  /// **'Max Host Carrier Weight (tons)'**
+  String get maxCarrierWeightLabel;
+
+  /// Required hydraulic relief pressure
+  ///
+  /// In en, this message translates to:
+  /// **'Operating Pressure (bar)'**
+  String get requiredPressureLabel;
+
+  /// Minimum required auxiliary oil flow
+  ///
+  /// In en, this message translates to:
+  /// **'Min Hydraulic Flow (L/min)'**
+  String get requiredFlowMinLabel;
+
+  /// Maximum required auxiliary oil flow
+  ///
+  /// In en, this message translates to:
+  /// **'Max Hydraulic Flow (L/min)'**
+  String get requiredFlowMaxLabel;
+
+  /// Coupler pin diameter in millimeters
+  ///
+  /// In en, this message translates to:
+  /// **'Mounting Pin Diameter (mm)'**
+  String get pinDiameterLabel;
+
+  /// Coupler center-to-center or ear spread in millimeters
+  ///
+  /// In en, this message translates to:
+  /// **'Pin Spread / Ear Width (mm)'**
+  String get pinSpreadLabel;
+
+  /// Daily rental tariff when hired independently
+  ///
+  /// In en, this message translates to:
+  /// **'Standalone Daily Rate (ETB)'**
+  String get standaloneDailyRateLabel;
+
+  /// Discounted tariff when hired with host fleet
+  ///
+  /// In en, this message translates to:
+  /// **'Bundled Daily Rate (ETB)'**
+  String get bundledDailyRateLabel;
+
+  /// Documentary deposit amount
+  ///
+  /// In en, this message translates to:
+  /// **'Security Deposit (ETB)'**
+  String get securityDepositLabel;
+
+  /// Section header for 4 mandatory attachment photos
+  ///
+  /// In en, this message translates to:
+  /// **'Attachment Conditioning Photos'**
+  String get attachmentPhotosSection;
+
+  /// Full profile photo of attachment
+  ///
+  /// In en, this message translates to:
+  /// **'Overall Tool Profile'**
+  String get photoAngleOverall;
+
+  /// Coupler bracket photo
+  ///
+  /// In en, this message translates to:
+  /// **'Mounting Bracket & Hitch'**
+  String get photoAngleBracket;
+
+  /// Close-up photo of pin and bushing play
+  ///
+  /// In en, this message translates to:
+  /// **'Pins & Bushings Wear'**
+  String get photoAnglePins;
+
+  /// Tool tip or tooth cutting edge photo
+  ///
+  /// In en, this message translates to:
+  /// **'Working Tip / Chisel Point'**
+  String get photoAngleToolTip;
+
+  /// Action to bundle attachment with a machinery asset
+  ///
+  /// In en, this message translates to:
+  /// **'Link to Host Fleet'**
+  String get linkAttachmentToFleet;
+
+  /// Title of owner attachment inventory
+  ///
+  /// In en, this message translates to:
+  /// **'My Attachments'**
+  String get attachmentInventoryTitle;
+
+  /// Active attachment status tag
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get attachmentStatusActive;
+
+  /// Rented attachment status tag
+  ///
+  /// In en, this message translates to:
+  /// **'Rented'**
+  String get attachmentStatusRented;
+
+  /// Validation error for attachment photos
+  ///
+  /// In en, this message translates to:
+  /// **'All 4 attachment conditioning photos are mandatory'**
+  String get errorIncompleteAttachmentPhotos;
+
+  /// Validation error when bundled rate is too high
+  ///
+  /// In en, this message translates to:
+  /// **'Bundled rate cannot exceed standalone rate'**
+  String get errorBundledRateExceedsStandalone;
+
+  /// Success message after attachment registration
+  ///
+  /// In en, this message translates to:
+  /// **'Attachment registered successfully!'**
+  String get attachmentRegisteredSuccess;
+
+  /// Section header for daily rate and deposits
+  ///
+  /// In en, this message translates to:
+  /// **'Tariff & Security Deposits'**
+  String get tariffAndDepositsSection;
+
+  /// Success message when an attachment is linked to a host fleet
+  ///
+  /// In en, this message translates to:
+  /// **'Attachment linked to fleet asset successfully!'**
+  String get attachmentLinkedSuccess;
+
+  /// Placeholder when user has no registered attachments
+  ///
+  /// In en, this message translates to:
+  /// **'No attachments registered yet'**
+  String get emptyAttachmentInventory;
+
+  /// Badge indicating attachment is bundled with a host machine
+  ///
+  /// In en, this message translates to:
+  /// **'Bundled with Host'**
+  String get bundledWithHost;
+
+  /// Photo status label when captured and validated
+  ///
+  /// In en, this message translates to:
+  /// **'Verified Clean'**
+  String get verifiedClean;
+
+  /// Prompt on empty photo reticle tile
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to Capture'**
+  String get tapToCapture;
+
+  /// Count of captured conditioning photos
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of {total} Captured'**
+  String photosCapturedCount(int count, int total);
+
+  /// Daily rental time unit
+  ///
+  /// In en, this message translates to:
+  /// **'day'**
+  String get perDay;
 }
 
 class _AppLocalizationsDelegate

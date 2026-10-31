@@ -18,20 +18,23 @@ import (
 )
 
 type Server struct {
-	authService      *application.AuthService
-	tokenService     *application.TokenService
-	machineryService *machineryApp.MachineryService
+	authService       *application.AuthService
+	tokenService      *application.TokenService
+	machineryService  *machineryApp.MachineryService
+	attachmentService *machineryApp.AttachmentService
 }
 
 func NewServer(
 	authService *application.AuthService,
 	tokenService *application.TokenService,
 	machineryService *machineryApp.MachineryService,
+	attachmentService *machineryApp.AttachmentService,
 ) *Server {
 	return &Server{
-		authService:      authService,
-		tokenService:     tokenService,
-		machineryService: machineryService,
+		authService:       authService,
+		tokenService:      tokenService,
+		machineryService:  machineryService,
+		attachmentService: attachmentService,
 	}
 }
 
@@ -553,6 +556,346 @@ func (s *Server) ListFleets(w http.ResponseWriter, r *http.Request, params gener
 		return
 	}
 	response.JSON(w, r, http.StatusOK, []generated.FleetAsset{})
+}
+
+// ==================== Attachments Handlers (Partition 05-03) ====================
+
+// CreateAttachment handles POST /attachments (ATT-01 to ATT-14)
+func (s *Server) CreateAttachment(w http.ResponseWriter, r *http.Request, params generated.CreateAttachmentParams) {
+	authHeader := r.Header.Get("Authorization")
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Missing or invalid Bearer authorization token.",
+		})
+		return
+	}
+	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+	claims, err := s.tokenService.VerifyAccessToken(r.Context(), tokenStr)
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Access token is expired or signature is invalid.",
+		})
+		return
+	}
+	userUUID, err := uuid.Parse(claims.Subject)
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Invalid token subject claim.",
+		})
+		return
+	}
+
+	var body generated.CreateAttachmentJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Bad Request",
+			Code:   "ERR_MALFORMED_JSON",
+			Detail: "Request body could not be parsed as valid JSON.",
+		})
+		return
+	}
+
+	photos := make([]machineryDomain.AttachmentPhoto, 0)
+	if body.Photos != nil {
+		for _, p := range *body.Photos {
+			photos = append(photos, machineryDomain.AttachmentPhoto{
+				Angle:      machineryDomain.AttachmentPhotoAngle(p.Angle),
+				StorageURI: p.StorageUri,
+			})
+		}
+	}
+
+	secDeposit := int64(0)
+	if body.SecurityDepositMinor != nil {
+		secDeposit = *body.SecurityDepositMinor
+	}
+	minDays := 1
+	if body.MinRentalDays != nil {
+		minDays = *body.MinRentalDays
+	}
+
+	att, err := s.attachmentService.RegisterAttachment(r.Context(), machineryApp.RegisterAttachmentInput{
+		OwnerID:                    userUUID,
+		AttachmentType:             machineryDomain.AttachmentType(body.AttachmentType),
+		Make:                       body.Make,
+		Model:                      body.Model,
+		SubTypeSize:                body.SubTypeSize,
+		SerialNumber:               body.SerialNumber,
+		OperatingWeightKg:          float64(body.OperatingWeightKg),
+		MinCarrierWeightTonnes:     float64(body.MinCarrierWeightTonnes),
+		MaxCarrierWeightTonnes:     float64(body.MaxCarrierWeightTonnes),
+		RequiredFlowMinLmin:        float64(body.RequiredFlowMinLmin),
+		RequiredFlowMaxLmin:        float64(body.RequiredFlowMaxLmin),
+		RequiredPressureBar:        float64(body.RequiredPressureBar),
+		PinDiameterMm:              float64(body.PinDiameterMm),
+		PinSpreadMm:                float64(body.PinSpreadMm),
+		CompatibleSubcategories:    body.CompatibleSubcategories,
+		StandaloneDailyRateMinor:   body.StandaloneDailyRateMinor,
+		SecurityDepositMinor:       secDeposit,
+		MinRentalDays:              minDays,
+		PaymentEvidenceWindowHours: 24,
+		Photos:                     photos,
+	})
+	if err != nil {
+		if errors.Is(err, machineryDomain.ErrIncompleteAttachmentPhotos) {
+			response.Error(w, r, http.StatusUnprocessableEntity, response.ProblemDetails{
+				Title:  "Incomplete Attachment Photos",
+				Code:   "ERR_INCOMPLETE_PHOTOS",
+				Detail: err.Error(),
+			})
+			return
+		}
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Invalid Attachment Registration",
+			Code:   "ERR_INVALID_ATTACHMENT",
+			Detail: err.Error(),
+		})
+		return
+	}
+
+	data := generated.AttachmentResponseData{
+		AttachmentId:             openapi_types.UUID(att.ID),
+		Status:                   generated.AttachmentResponseDataStatus(att.Status),
+		AttachmentType:           string(att.AttachmentType),
+		Make:                     att.Make,
+		Model:                    att.Model,
+		StandaloneDailyRateMinor: att.StandaloneDailyRateMinor,
+		CreatedAt:                att.CreatedAt,
+	}
+
+	response.JSON(w, r, http.StatusCreated, data)
+}
+
+// ListAttachmentInventory handles GET /attachments/inventory
+func (s *Server) ListAttachmentInventory(w http.ResponseWriter, r *http.Request, params generated.ListAttachmentInventoryParams) {
+	authHeader := r.Header.Get("Authorization")
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Missing or invalid Bearer authorization token.",
+		})
+		return
+	}
+	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+	claims, err := s.tokenService.VerifyAccessToken(r.Context(), tokenStr)
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Access token is expired or signature is invalid.",
+		})
+		return
+	}
+	userUUID, err := uuid.Parse(claims.Subject)
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Invalid token subject claim.",
+		})
+		return
+	}
+
+	statusFilter := ""
+	if params.Status != nil {
+		statusFilter = string(*params.Status)
+	}
+
+	items, err := s.attachmentService.ListOwnerInventory(r.Context(), userUUID, statusFilter)
+	if err != nil {
+		response.Error(w, r, http.StatusInternalServerError, response.ProblemDetails{
+			Title:  "Internal Server Error",
+			Code:   "ERR_INTERNAL",
+			Detail: "Failed to list attachment inventory.",
+		})
+		return
+	}
+
+	inventory := make([]generated.AttachmentInventoryItem, 0, len(items))
+	for _, it := range items {
+		var primaryPhoto *string
+		if len(it.Photos) > 0 {
+			primaryPhoto = &it.Photos[0].StorageURI
+		}
+		inventory = append(inventory, generated.AttachmentInventoryItem{
+			AttachmentId:             openapi_types.UUID(it.ID),
+			AttachmentType:           string(it.AttachmentType),
+			Make:                     it.Make,
+			Model:                    it.Model,
+			SubTypeSize:              it.SubTypeSize,
+			Status:                   string(it.Status),
+			StandaloneDailyRateMinor: it.StandaloneDailyRateMinor,
+			IsLinkedToFleet:          false,
+			PrimaryPhotoUri:          primaryPhoto,
+		})
+	}
+
+	resp := generated.AttachmentInventoryListResponseData{
+		TotalCount:  len(inventory),
+		Attachments: inventory,
+	}
+
+	response.JSON(w, r, http.StatusOK, resp)
+}
+
+// LinkFleetAttachment handles POST /fleets/{id}/attachments/link (FL-32, FL-33)
+func (s *Server) LinkFleetAttachment(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	authHeader := r.Header.Get("Authorization")
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Missing or invalid Bearer authorization token.",
+		})
+		return
+	}
+	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+	claims, err := s.tokenService.VerifyAccessToken(r.Context(), tokenStr)
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Access token is expired or signature is invalid.",
+		})
+		return
+	}
+	userUUID, err := uuid.Parse(claims.Subject)
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Invalid token subject claim.",
+		})
+		return
+	}
+
+	var body generated.LinkFleetAttachmentJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Bad Request",
+			Code:   "ERR_MALFORMED_JSON",
+			Detail: "Request body could not be parsed as valid JSON.",
+		})
+		return
+	}
+
+	fleetUUID := uuid.UUID(id)
+	attUUID := uuid.UUID(body.AttachmentId)
+
+	link, err := s.attachmentService.LinkAttachmentToFleet(r.Context(), userUUID, machineryApp.LinkAttachmentInput{
+		FleetID:               fleetUUID,
+		AttachmentID:          attUUID,
+		BundledDailyRateMinor: body.BundledDailyRateMinor,
+	})
+	if err != nil {
+		if errors.Is(err, machineryDomain.ErrBundledRateExceedsStandalone) {
+			response.Error(w, r, http.StatusUnprocessableEntity, response.ProblemDetails{
+				Title:  "Invalid Bundled Attachment Rate",
+				Code:   "ERR_BUNDLED_RATE_EXCEEDS_STANDALONE",
+				Detail: "The configured bundled daily rate cannot exceed the standalone inventory daily rate.",
+			})
+			return
+		}
+		if errors.Is(err, machineryDomain.ErrFleetNotFound) || errors.Is(err, machineryDomain.ErrAttachmentNotFound) {
+			response.Error(w, r, http.StatusNotFound, response.ProblemDetails{
+				Title:  "Not Found",
+				Code:   "ERR_NOT_FOUND",
+				Detail: err.Error(),
+			})
+			return
+		}
+		if errors.Is(err, machineryDomain.ErrUnauthorizedFleetOwner) || errors.Is(err, machineryDomain.ErrUnauthorizedAttachmentOwner) {
+			response.Error(w, r, http.StatusForbidden, response.ProblemDetails{
+				Title:  "Forbidden",
+				Code:   "ERR_FORBIDDEN",
+				Detail: "You do not have permission to link this equipment.",
+			})
+			return
+		}
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Invalid Link Request",
+			Code:   "ERR_INVALID_LINK",
+			Detail: err.Error(),
+		})
+		return
+	}
+
+	discountPct := float32(0)
+	if link.StandaloneDailyRate > 0 {
+		discountPct = float32(float64(link.StandaloneDailyRate-link.BundledDailyRateMinor) / float64(link.StandaloneDailyRate) * 100.0)
+	}
+
+	data := generated.LinkFleetAttachmentResponseData{
+		FleetId:               openapi_types.UUID(link.FleetID),
+		AttachmentId:          openapi_types.UUID(link.AttachmentID),
+		BundledDailyRateMinor: link.BundledDailyRateMinor,
+		DiscountPercentage:    discountPct,
+		Status:                "LINKED",
+	}
+
+	response.JSON(w, r, http.StatusOK, data)
+}
+
+// CheckBundledAvailability handles POST /bookings/check-bundled-availability (FL-34)
+func (s *Server) CheckBundledAvailability(w http.ResponseWriter, r *http.Request) {
+	var body generated.CheckBundledAvailabilityJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Bad Request",
+			Code:   "ERR_MALFORMED_JSON",
+			Detail: "Request body could not be parsed as valid JSON.",
+		})
+		return
+	}
+
+	fleetUUID := uuid.UUID(body.FleetId)
+	var attUUIDs []uuid.UUID
+	for _, a := range body.AttachmentIds {
+		attUUIDs = append(attUUIDs, uuid.UUID(a))
+	}
+
+	startDate := body.StartDate.Time
+	endDate := body.EndDate.Time
+
+	out, err := s.attachmentService.CheckBundledAvailability(r.Context(), machineryApp.CheckBundledAvailabilityInput{
+		FleetID:       fleetUUID,
+		AttachmentIDs: attUUIDs,
+		StartDate:     startDate,
+		EndDate:       endDate,
+	})
+	if err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Availability Check Failed",
+			Code:   "ERR_AVAILABILITY_CHECK",
+			Detail: err.Error(),
+		})
+		return
+	}
+
+	statuses := make([]generated.AttachmentAvailabilityStatus, len(out.AttachmentStatuses))
+	for i, st := range out.AttachmentStatuses {
+		statuses[i] = generated.AttachmentAvailabilityStatus{
+			AttachmentId:          openapi_types.UUID(st.AttachmentID),
+			IsAvailable:           st.IsAvailable,
+			DailyRateAppliedMinor: st.DailyRateAppliedMinor,
+		}
+	}
+
+	data := generated.CheckBundledAvailabilityResponseData{
+		FleetAvailable:              out.FleetAvailable,
+		AllAttachmentsAvailable:     out.AllAttachmentsAvailable,
+		AttachmentStatuses:          statuses,
+		TotalCombinedDailyRateMinor: out.TotalCombinedDailyRateMinor,
+	}
+
+	response.JSON(w, r, http.StatusOK, data)
 }
 
 // ==================== Unimplemented Stubs for Future Partitions ====================

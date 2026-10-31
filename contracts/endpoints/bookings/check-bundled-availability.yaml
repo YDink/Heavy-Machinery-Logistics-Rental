@@ -1,0 +1,22 @@
+post:
+  tags: [bookings, attachments]
+  summary: Check bundled availability
+  description: Validates multi-entity temporal availability for a fleet asset and bundled attachments.
+  operationId: checkBundledAvailability
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/attachment.yaml#/CheckBundledAvailabilityRequest'
+  responses:
+    '200':
+      description: Availability verification result.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/attachment.yaml#/CheckBundledAvailabilitySuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

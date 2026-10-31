@@ -148,6 +148,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/fleets/{id}/attachments/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Link attachment to fleet asset
+         * @description Links an attachment from owner inventory to a fleet asset with a discounted bundled rate.
+         */
+        post: operations["linkFleetAttachment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attachments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register a new standalone attachment
+         * @description Adds a new equipment attachment under the authenticated owner inventory.
+         */
+        post: operations["createAttachment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attachments/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List attachment inventory
+         * @description Returns inventory of attachments owned by the authenticated owner.
+         */
+        get: operations["listAttachmentInventory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/geo/fleets/radius-search": {
         parameters: {
             query?: never;
@@ -186,6 +246,26 @@ export interface paths {
          * @description Places a temporal Valkey lock and creates an initial booking in PENDING_HOLD state.
          */
         post: operations["createBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/check-bundled-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check bundled availability
+         * @description Validates multi-entity temporal availability for a fleet asset and bundled attachments.
+         */
+        post: operations["checkBundledAvailability"];
         delete?: never;
         options?: never;
         head?: never;
@@ -847,6 +927,141 @@ export interface components {
             error: Record<string, never> | null;
             meta: components["schemas"]["ResponseMeta"];
         };
+        LinkFleetAttachmentRequest: {
+            /** Format: uuid */
+            attachmentId: string;
+            /** Format: int64 */
+            bundledDailyRateMinor: number;
+        };
+        LinkFleetAttachmentResponseData: {
+            /** Format: uuid */
+            fleetId: string;
+            /** Format: uuid */
+            attachmentId: string;
+            /** Format: int64 */
+            bundledDailyRateMinor: number;
+            discountPercentage: number;
+            status: string;
+        };
+        LinkFleetAttachmentSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["LinkFleetAttachmentResponseData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        AttachmentPhotoInput: {
+            /** @enum {string} */
+            angle: "OVERALL" | "BRACKET" | "PINS" | "TOOL_TIP";
+            storageUri: string;
+        };
+        CreateAttachmentRequest: {
+            /** @enum {string} */
+            attachmentType: "HYDRAULIC_BREAKER" | "STANDARD_BUCKET" | "TRENCHING_BUCKET" | "AUGER" | "RIPPER_TOOTH" | "SORTING_GRAPPLE" | "CRUSHER";
+            make: string;
+            model: string;
+            subTypeSize: string;
+            serialNumber: string;
+            operatingWeightKg: number;
+            minCarrierWeightTonnes: number;
+            maxCarrierWeightTonnes: number;
+            requiredFlowMinLmin: number;
+            requiredFlowMaxLmin: number;
+            requiredPressureBar: number;
+            pinDiameterMm: number;
+            pinSpreadMm: number;
+            compatibleSubcategories: string[];
+            /** Format: int64 */
+            standaloneDailyRateMinor: number;
+            /**
+             * Format: int64
+             * @default 0
+             */
+            securityDepositMinor: number;
+            /** @default 1 */
+            minRentalDays: number;
+            photos?: components["schemas"]["AttachmentPhotoInput"][];
+        };
+        AttachmentResponseData: {
+            /** Format: uuid */
+            attachmentId: string;
+            /** @enum {string} */
+            status: "DRAFT" | "ACTIVE" | "RENTED" | "MAINTENANCE_HOLD" | "INACTIVE" | "DISPUTED_DAMAGE" | "DECOMMISSIONED";
+            attachmentType: string;
+            make: string;
+            model: string;
+            /** Format: int64 */
+            standaloneDailyRateMinor: number;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AttachmentSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["AttachmentResponseData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        AttachmentInventoryItem: {
+            /** Format: uuid */
+            attachmentId: string;
+            attachmentType: string;
+            make: string;
+            model: string;
+            subTypeSize: string;
+            status: string;
+            /** Format: int64 */
+            standaloneDailyRateMinor: number;
+            isLinkedToFleet: boolean;
+            /** Format: uuid */
+            linkedFleetId?: string | null;
+            primaryPhotoUri?: string | null;
+        };
+        AttachmentInventoryListResponseData: {
+            totalCount: number;
+            attachments: components["schemas"]["AttachmentInventoryItem"][];
+        };
+        AttachmentInventorySuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["AttachmentInventoryListResponseData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        CheckBundledAvailabilityRequest: {
+            /** Format: uuid */
+            fleetId: string;
+            attachmentIds: string[];
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate: string;
+        };
+        AttachmentAvailabilityStatus: {
+            /** Format: uuid */
+            attachmentId: string;
+            isAvailable: boolean;
+            /** Format: int64 */
+            dailyRateAppliedMinor: number;
+        };
+        CheckBundledAvailabilityResponseData: {
+            fleetAvailable: boolean;
+            allAttachmentsAvailable: boolean;
+            attachmentStatuses: components["schemas"]["AttachmentAvailabilityStatus"][];
+            /** Format: int64 */
+            totalCombinedDailyRateMinor: number;
+        };
+        CheckBundledAvailabilitySuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["CheckBundledAvailabilityResponseData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
     };
     responses: {
         BadRequestError: {
@@ -1202,6 +1417,100 @@ export interface operations {
             500: components["responses"]["internal-server-error"];
         };
     };
+    linkFleetAttachment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Target fleet asset UUID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkFleetAttachmentRequest"];
+            };
+        };
+        responses: {
+            /** @description Attachment linked successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkFleetAttachmentSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            422: components["responses"]["bad-request"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    createAttachment: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+                /** @description ISO 3166-1 alpha-2 operational country code driving multi-country logic. */
+                "X-Country-Code"?: components["parameters"]["country-code-header"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAttachmentRequest"];
+            };
+        };
+        responses: {
+            /** @description Attachment successfully registered. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttachmentSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            403: components["responses"]["forbidden"];
+            422: components["responses"]["bad-request"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    listAttachmentInventory: {
+        parameters: {
+            query?: {
+                status?: "DRAFT" | "ACTIVE" | "RENTED" | "MAINTENANCE_HOLD" | "INACTIVE" | "DISPUTED_DAMAGE" | "DECOMMISSIONED";
+                /** @description Opaque cursor identifier for deterministic keyset pagination. */
+                cursor?: components["parameters"]["cursor-query-param"];
+                /** @description Maximum number of records to return per page. */
+                limit?: components["parameters"]["limit-query-param"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner attachment inventory list. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttachmentInventorySuccessResponse"];
+                };
+            };
+            401: components["responses"]["unauthorized"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
     searchFleetsByRadius: {
         parameters: {
             query: {
@@ -1288,6 +1597,32 @@ export interface operations {
             400: components["responses"]["bad-request"];
             401: components["responses"]["unauthorized"];
             409: components["responses"]["conflict"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    checkBundledAvailability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckBundledAvailabilityRequest"];
+            };
+        };
+        responses: {
+            /** @description Availability verification result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckBundledAvailabilitySuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
             500: components["responses"]["internal-server-error"];
         };
     };

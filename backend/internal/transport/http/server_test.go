@@ -104,7 +104,7 @@ func setupTestRouter(t *testing.T) (http.Handler, *application.TokenService) {
 	}
 
 	authService := application.NewAuthService(userRepo, otpService, tokenService)
-	server := transport.NewServer(authService, tokenService, nil)
+	server := transport.NewServer(authService, tokenService, nil, nil)
 
 	r := chi.NewRouter()
 	generated.HandlerWithOptions(server, generated.ChiServerOptions{

@@ -8,6 +8,56 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Attachment struct {
+	ID                         pgtype.UUID        `json:"id"`
+	OwnerID                    pgtype.UUID        `json:"owner_id"`
+	AttachmentType             string             `json:"attachment_type"`
+	Make                       string             `json:"make"`
+	Model                      string             `json:"model"`
+	SubTypeSize                string             `json:"sub_type_size"`
+	SerialNumber               string             `json:"serial_number"`
+	OperatingWeightKg          pgtype.Numeric     `json:"operating_weight_kg"`
+	MinCarrierWeightTonnes     pgtype.Numeric     `json:"min_carrier_weight_tonnes"`
+	MaxCarrierWeightTonnes     pgtype.Numeric     `json:"max_carrier_weight_tonnes"`
+	RequiredFlowMinLmin        pgtype.Numeric     `json:"required_flow_min_lmin"`
+	RequiredFlowMaxLmin        pgtype.Numeric     `json:"required_flow_max_lmin"`
+	RequiredPressureBar        pgtype.Numeric     `json:"required_pressure_bar"`
+	PinDiameterMm              pgtype.Numeric     `json:"pin_diameter_mm"`
+	PinSpreadMm                pgtype.Numeric     `json:"pin_spread_mm"`
+	StandaloneDailyRateMinor   int64              `json:"standalone_daily_rate_minor"`
+	SecurityDepositMinor       int64              `json:"security_deposit_minor"`
+	MinRentalDays              int32              `json:"min_rental_days"`
+	PaymentEvidenceWindowHours int32              `json:"payment_evidence_window_hours"`
+	Status                     string             `json:"status"`
+	CreatedAt                  pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                  pgtype.Timestamptz `json:"updated_at"`
+}
+
+type AttachmentCompatibleCategory struct {
+	ID           pgtype.UUID        `json:"id"`
+	AttachmentID pgtype.UUID        `json:"attachment_id"`
+	CategoryCode string             `json:"category_code"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+}
+
+type AttachmentPhoto struct {
+	ID           pgtype.UUID        `json:"id"`
+	AttachmentID pgtype.UUID        `json:"attachment_id"`
+	Angle        string             `json:"angle"`
+	StorageUri   string             `json:"storage_uri"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+}
+
+type AttachmentReservation struct {
+	ID                    pgtype.UUID               `json:"id"`
+	AttachmentID          pgtype.UUID               `json:"attachment_id"`
+	ReferenceID           pgtype.UUID               `json:"reference_id"`
+	HirePeriod            pgtype.Range[pgtype.Date] `json:"hire_period"`
+	DailyRateAppliedMinor int64                     `json:"daily_rate_applied_minor"`
+	Status                string                    `json:"status"`
+	CreatedAt             pgtype.Timestamptz        `json:"created_at"`
+}
+
 type Category struct {
 	ID           pgtype.UUID        `json:"id"`
 	ParentID     pgtype.UUID        `json:"parent_id"`
@@ -70,6 +120,16 @@ type FleetBlackout struct {
 	EndDate   pgtype.Date        `json:"end_date"`
 	Reason    string             `json:"reason"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type FleetBundledAttachment struct {
+	ID                    pgtype.UUID        `json:"id"`
+	FleetID               pgtype.UUID        `json:"fleet_id"`
+	AttachmentID          pgtype.UUID        `json:"attachment_id"`
+	BundledDailyRateMinor int64              `json:"bundled_daily_rate_minor"`
+	IsActive              bool               `json:"is_active"`
+	CreatedAt             pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt             pgtype.Timestamptz `json:"updated_at"`
 }
 
 type FleetOperatorAssignment struct {

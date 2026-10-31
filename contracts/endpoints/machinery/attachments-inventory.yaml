@@ -1,0 +1,27 @@
+get:
+  tags: [machinery, attachments]
+  summary: List attachment inventory
+  description: Returns inventory of attachments owned by the authenticated owner.
+  operationId: listAttachmentInventory
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: status
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [DRAFT, ACTIVE, RENTED, MAINTENANCE_HOLD, INACTIVE, DISPUTED_DAMAGE, DECOMMISSIONED]
+    - $ref: '../../components/parameters/cursor-query-param.yaml'
+    - $ref: '../../components/parameters/limit-query-param.yaml'
+  responses:
+    '200':
+      description: Owner attachment inventory list.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/attachment.yaml#/AttachmentInventorySuccessResponse'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

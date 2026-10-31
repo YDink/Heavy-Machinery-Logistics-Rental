@@ -151,4 +151,119 @@ class AppLocalizationsAm extends AppLocalizations {
   @override
   String get registrationSuccessMessage =>
       'ማሽነሪው በተሳካ ሁኔታ ተመዝግቧል! በግምገማ ላይ ነው።';
+
+  @override
+  String get registerAttachmentTitle => 'አክሰሰሪ/አታችመንት መዝግብ';
+
+  @override
+  String get attachmentTypeLabel => 'የአታችመንት ዓይነት';
+
+  @override
+  String get attachmentMakeLabel => 'አምራች / ሜክ';
+
+  @override
+  String get attachmentModelLabel => 'ሞዴል';
+
+  @override
+  String get attachmentSubTypeLabel => 'መጠን / የዕቃው ዝርዝር';
+
+  @override
+  String get attachmentSerialLabel => 'የሴሪያል ቁጥር';
+
+  @override
+  String get operatingWeightKgLabel => 'የሥራ ክብደት (ኪ.ግ)';
+
+  @override
+  String get minCarrierWeightLabel => 'አነስተኛ የተሸካሚ ክብደት (ቶን)';
+
+  @override
+  String get maxCarrierWeightLabel => 'ከፍተኛ የተሸካሚ ክብደት (ቶን)';
+
+  @override
+  String get requiredPressureLabel => 'የሚያስፈልግ ግፊት (ባር)';
+
+  @override
+  String get requiredFlowMinLabel => 'አነስተኛ ዘይት ፍሰት (ሊ/ደቂቃ)';
+
+  @override
+  String get requiredFlowMaxLabel => 'ከፍተኛ ዘይት ፍሰት (ሊ/ደቂቃ)';
+
+  @override
+  String get pinDiameterLabel => 'የፒን ዲያሜትር (ሚ.ሜ)';
+
+  @override
+  String get pinSpreadLabel => 'የፒን ርቀት / ስፋት (ሚ.ሜ)';
+
+  @override
+  String get standaloneDailyRateLabel => 'የብቻ ዕለታዊ ኪራይ (ብር)';
+
+  @override
+  String get bundledDailyRateLabel => 'ከማሽነሪ ጋር ጥምር ዕለታዊ ኪራይ (ብር)';
+
+  @override
+  String get securityDepositLabel => 'የዋስትና ገንዘብ (ብር)';
+
+  @override
+  String get attachmentPhotosSection => 'የአታችመንት 4 አቅጣጫ ፎቶዎች';
+
+  @override
+  String get photoAngleOverall => 'አጠቃላይ የአታችመንት ገጽታ';
+
+  @override
+  String get photoAngleBracket => 'የመገጠሚያ ብሬኬት';
+
+  @override
+  String get photoAnglePins => 'የፒኖች እና ቡሺንጎች ሁኔታ';
+
+  @override
+  String get photoAngleToolTip => 'የመሥሪያው ጫፍ / ጥርስ';
+
+  @override
+  String get linkAttachmentToFleet => 'ከዋና ማሽነሪ ጋር አጣምር';
+
+  @override
+  String get attachmentInventoryTitle => 'የእኔ አታችመንቶች';
+
+  @override
+  String get attachmentStatusActive => 'ክፍት';
+
+  @override
+  String get attachmentStatusRented => 'የተከራየ';
+
+  @override
+  String get errorIncompleteAttachmentPhotos =>
+      'ሁለቱም 4ቱ የአታችመንት ፎቶዎች የግድ ያስፈልጋሉ';
+
+  @override
+  String get errorBundledRateExceedsStandalone =>
+      'የጥምር ኪራይ ዋጋ ከብቻ ዋጋው ሊበልጥ አይችልም';
+
+  @override
+  String get attachmentRegisteredSuccess => 'አታችመንት በተሳካ ሁኔታ ተመዝግቧል!';
+
+  @override
+  String get tariffAndDepositsSection => 'የኪራይ ተመን እና የዋስትና ተቀማጭ';
+
+  @override
+  String get attachmentLinkedSuccess => 'አባሪ መሳሪያው ከዋናው ማሽን ጋር በተሳካ ሁኔታ ተያይዟል!';
+
+  @override
+  String get emptyAttachmentInventory => 'እስካሁን የተመዘገበ አባሪ መሳሪያ የለም';
+
+  @override
+  String get bundledWithHost => 'ከዋናው ማሽን ጋር የተጣመረ';
+
+  @override
+  String get verifiedClean => 'የተረጋገጠ';
+
+  @override
+  String get tapToCapture => 'ፎቶ ለማንሳት ይንኩ';
+
+  @override
+  String photosCapturedCount(int count, int total) {
+    return '$count ከ $total ተነስተዋል';
+  }
+
+  @override
+  String get perDay => 'ቀን';
 }

@@ -152,4 +152,121 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get registrationSuccessMessage =>
       'Machinery registered successfully! Under review.';
+
+  @override
+  String get registerAttachmentTitle => 'Register Attachment';
+
+  @override
+  String get attachmentTypeLabel => 'Attachment Type';
+
+  @override
+  String get attachmentMakeLabel => 'Make / Manufacturer';
+
+  @override
+  String get attachmentModelLabel => 'Model';
+
+  @override
+  String get attachmentSubTypeLabel => 'Tool Sizing Specification';
+
+  @override
+  String get attachmentSerialLabel => 'Serial PIN Number';
+
+  @override
+  String get operatingWeightKgLabel => 'Operating Tool Weight (kg)';
+
+  @override
+  String get minCarrierWeightLabel => 'Min Host Carrier Weight (tons)';
+
+  @override
+  String get maxCarrierWeightLabel => 'Max Host Carrier Weight (tons)';
+
+  @override
+  String get requiredPressureLabel => 'Operating Pressure (bar)';
+
+  @override
+  String get requiredFlowMinLabel => 'Min Hydraulic Flow (L/min)';
+
+  @override
+  String get requiredFlowMaxLabel => 'Max Hydraulic Flow (L/min)';
+
+  @override
+  String get pinDiameterLabel => 'Mounting Pin Diameter (mm)';
+
+  @override
+  String get pinSpreadLabel => 'Pin Spread / Ear Width (mm)';
+
+  @override
+  String get standaloneDailyRateLabel => 'Standalone Daily Rate (ETB)';
+
+  @override
+  String get bundledDailyRateLabel => 'Bundled Daily Rate (ETB)';
+
+  @override
+  String get securityDepositLabel => 'Security Deposit (ETB)';
+
+  @override
+  String get attachmentPhotosSection => 'Attachment Conditioning Photos';
+
+  @override
+  String get photoAngleOverall => 'Overall Tool Profile';
+
+  @override
+  String get photoAngleBracket => 'Mounting Bracket & Hitch';
+
+  @override
+  String get photoAnglePins => 'Pins & Bushings Wear';
+
+  @override
+  String get photoAngleToolTip => 'Working Tip / Chisel Point';
+
+  @override
+  String get linkAttachmentToFleet => 'Link to Host Fleet';
+
+  @override
+  String get attachmentInventoryTitle => 'My Attachments';
+
+  @override
+  String get attachmentStatusActive => 'Available';
+
+  @override
+  String get attachmentStatusRented => 'Rented';
+
+  @override
+  String get errorIncompleteAttachmentPhotos =>
+      'All 4 attachment conditioning photos are mandatory';
+
+  @override
+  String get errorBundledRateExceedsStandalone =>
+      'Bundled rate cannot exceed standalone rate';
+
+  @override
+  String get attachmentRegisteredSuccess =>
+      'Attachment registered successfully!';
+
+  @override
+  String get tariffAndDepositsSection => 'Tariff & Security Deposits';
+
+  @override
+  String get attachmentLinkedSuccess =>
+      'Attachment linked to fleet asset successfully!';
+
+  @override
+  String get emptyAttachmentInventory => 'No attachments registered yet';
+
+  @override
+  String get bundledWithHost => 'Bundled with Host';
+
+  @override
+  String get verifiedClean => 'Verified Clean';
+
+  @override
+  String get tapToCapture => 'Tap to Capture';
+
+  @override
+  String photosCapturedCount(int count, int total) {
+    return '$count of $total Captured';
+  }
+
+  @override
+  String get perDay => 'day';
 }

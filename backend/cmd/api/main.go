@@ -65,6 +65,7 @@ func main() {
 	var fleetRepo machineryDomain.FleetRepository
 	var mediaRepo machineryDomain.FleetMediaRepository
 	var specRepo machineryDomain.FleetSpecRepository
+	var attachmentRepo machineryDomain.AttachmentRepository
 
 	dbPool, err := pgxpool.New(ctx, cfg.DatabaseURL)
 	if err == nil && dbPool.Ping(ctx) == nil {
@@ -76,6 +77,7 @@ func main() {
 		fleetRepo = pgMachineryRepo
 		mediaRepo = pgMachineryRepo
 		specRepo = pgMachineryRepo
+		attachmentRepo = pgMachineryRepo
 		logger.Info("Connected to PostgreSQL database for repositories")
 	} else {
 		logger.Warn("PostgreSQL connection unavailable; using in-memory caches for bootstrapping")
@@ -86,6 +88,7 @@ func main() {
 		fleetRepo = memMachineryRepo
 		mediaRepo = memMachineryRepo
 		specRepo = memMachineryRepo
+		attachmentRepo = memMachineryRepo
 	}
 
 	authService := application.NewAuthService(userRepo, otpService, tokenService)
@@ -96,7 +99,8 @@ func main() {
 		mediaRepo,
 		specRepo,
 	)
-	server := transport.NewServer(authService, tokenService, machineryService)
+	attachmentService := machineryApp.NewAttachmentService(attachmentRepo, fleetRepo)
+	server := transport.NewServer(authService, tokenService, machineryService, attachmentService)
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)

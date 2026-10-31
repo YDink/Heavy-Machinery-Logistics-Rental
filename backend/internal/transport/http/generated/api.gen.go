@@ -29,6 +29,93 @@ func (e AdminUiConfigSuccessResponseSuccess) Valid() bool {
 	}
 }
 
+// Defines values for AttachmentInventorySuccessResponseSuccess.
+const (
+	AttachmentInventorySuccessResponseSuccessTrue AttachmentInventorySuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the AttachmentInventorySuccessResponseSuccess enum.
+func (e AttachmentInventorySuccessResponseSuccess) Valid() bool {
+	switch e {
+	case AttachmentInventorySuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AttachmentPhotoInputAngle.
+const (
+	BRACKET AttachmentPhotoInputAngle = "BRACKET"
+	OVERALL AttachmentPhotoInputAngle = "OVERALL"
+	PINS    AttachmentPhotoInputAngle = "PINS"
+	TOOLTIP AttachmentPhotoInputAngle = "TOOL_TIP"
+)
+
+// Valid indicates whether the value is a known member of the AttachmentPhotoInputAngle enum.
+func (e AttachmentPhotoInputAngle) Valid() bool {
+	switch e {
+	case BRACKET:
+		return true
+	case OVERALL:
+		return true
+	case PINS:
+		return true
+	case TOOLTIP:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AttachmentResponseDataStatus.
+const (
+	AttachmentResponseDataStatusACTIVE          AttachmentResponseDataStatus = "ACTIVE"
+	AttachmentResponseDataStatusDECOMMISSIONED  AttachmentResponseDataStatus = "DECOMMISSIONED"
+	AttachmentResponseDataStatusDISPUTEDDAMAGE  AttachmentResponseDataStatus = "DISPUTED_DAMAGE"
+	AttachmentResponseDataStatusDRAFT           AttachmentResponseDataStatus = "DRAFT"
+	AttachmentResponseDataStatusINACTIVE        AttachmentResponseDataStatus = "INACTIVE"
+	AttachmentResponseDataStatusMAINTENANCEHOLD AttachmentResponseDataStatus = "MAINTENANCE_HOLD"
+	AttachmentResponseDataStatusRENTED          AttachmentResponseDataStatus = "RENTED"
+)
+
+// Valid indicates whether the value is a known member of the AttachmentResponseDataStatus enum.
+func (e AttachmentResponseDataStatus) Valid() bool {
+	switch e {
+	case AttachmentResponseDataStatusACTIVE:
+		return true
+	case AttachmentResponseDataStatusDECOMMISSIONED:
+		return true
+	case AttachmentResponseDataStatusDISPUTEDDAMAGE:
+		return true
+	case AttachmentResponseDataStatusDRAFT:
+		return true
+	case AttachmentResponseDataStatusINACTIVE:
+		return true
+	case AttachmentResponseDataStatusMAINTENANCEHOLD:
+		return true
+	case AttachmentResponseDataStatusRENTED:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AttachmentSuccessResponseSuccess.
+const (
+	AttachmentSuccessResponseSuccessTrue AttachmentSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the AttachmentSuccessResponseSuccess enum.
+func (e AttachmentSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case AttachmentSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AuthTokenSuccessResponseSuccess.
 const (
 	AuthTokenSuccessResponseSuccessTrue AuthTokenSuccessResponseSuccess = true
@@ -76,52 +163,52 @@ func (e BookingListSuccessResponseSuccess) Valid() bool {
 
 // Defines values for BookingStatus.
 const (
-	ACTIVEOPERATION    BookingStatus = "ACTIVE_OPERATION"
-	CANCELLED          BookingStatus = "CANCELLED"
-	CHECKEDIN          BookingStatus = "CHECKED_IN"
-	COMPLETED          BookingStatus = "COMPLETED"
-	CONFIRMED          BookingStatus = "CONFIRMED"
-	DISPUTED           BookingStatus = "DISPUTED"
-	DRAFT              BookingStatus = "DRAFT"
-	EXPIRED            BookingStatus = "EXPIRED"
-	EXTENSIONREQUESTED BookingStatus = "EXTENSION_REQUESTED"
-	INSPECTIONPENDING  BookingStatus = "INSPECTION_PENDING"
-	PAYMENTPROCESSING  BookingStatus = "PAYMENT_PROCESSING"
-	PENDINGHOLD        BookingStatus = "PENDING_HOLD"
-	PENDINGPAYMENT     BookingStatus = "PENDING_PAYMENT"
-	SITEDISPATCHED     BookingStatus = "SITE_DISPATCHED"
+	BookingStatusACTIVEOPERATION    BookingStatus = "ACTIVE_OPERATION"
+	BookingStatusCANCELLED          BookingStatus = "CANCELLED"
+	BookingStatusCHECKEDIN          BookingStatus = "CHECKED_IN"
+	BookingStatusCOMPLETED          BookingStatus = "COMPLETED"
+	BookingStatusCONFIRMED          BookingStatus = "CONFIRMED"
+	BookingStatusDISPUTED           BookingStatus = "DISPUTED"
+	BookingStatusDRAFT              BookingStatus = "DRAFT"
+	BookingStatusEXPIRED            BookingStatus = "EXPIRED"
+	BookingStatusEXTENSIONREQUESTED BookingStatus = "EXTENSION_REQUESTED"
+	BookingStatusINSPECTIONPENDING  BookingStatus = "INSPECTION_PENDING"
+	BookingStatusPAYMENTPROCESSING  BookingStatus = "PAYMENT_PROCESSING"
+	BookingStatusPENDINGHOLD        BookingStatus = "PENDING_HOLD"
+	BookingStatusPENDINGPAYMENT     BookingStatus = "PENDING_PAYMENT"
+	BookingStatusSITEDISPATCHED     BookingStatus = "SITE_DISPATCHED"
 )
 
 // Valid indicates whether the value is a known member of the BookingStatus enum.
 func (e BookingStatus) Valid() bool {
 	switch e {
-	case ACTIVEOPERATION:
+	case BookingStatusACTIVEOPERATION:
 		return true
-	case CANCELLED:
+	case BookingStatusCANCELLED:
 		return true
-	case CHECKEDIN:
+	case BookingStatusCHECKEDIN:
 		return true
-	case COMPLETED:
+	case BookingStatusCOMPLETED:
 		return true
-	case CONFIRMED:
+	case BookingStatusCONFIRMED:
 		return true
-	case DISPUTED:
+	case BookingStatusDISPUTED:
 		return true
-	case DRAFT:
+	case BookingStatusDRAFT:
 		return true
-	case EXPIRED:
+	case BookingStatusEXPIRED:
 		return true
-	case EXTENSIONREQUESTED:
+	case BookingStatusEXTENSIONREQUESTED:
 		return true
-	case INSPECTIONPENDING:
+	case BookingStatusINSPECTIONPENDING:
 		return true
-	case PAYMENTPROCESSING:
+	case BookingStatusPAYMENTPROCESSING:
 		return true
-	case PENDINGHOLD:
+	case BookingStatusPENDINGHOLD:
 		return true
-	case PENDINGPAYMENT:
+	case BookingStatusPENDINGPAYMENT:
 		return true
-	case SITEDISPATCHED:
+	case BookingStatusSITEDISPATCHED:
 		return true
 	default:
 		return false
@@ -137,6 +224,21 @@ const (
 func (e CategoryListSuccessResponseSuccess) Valid() bool {
 	switch e {
 	case CategoryListSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CheckBundledAvailabilitySuccessResponseSuccess.
+const (
+	CheckBundledAvailabilitySuccessResponseSuccessTrue CheckBundledAvailabilitySuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the CheckBundledAvailabilitySuccessResponseSuccess enum.
+func (e CheckBundledAvailabilitySuccessResponseSuccess) Valid() bool {
+	switch e {
+	case CheckBundledAvailabilitySuccessResponseSuccessTrue:
 		return true
 	default:
 		return false
@@ -167,6 +269,39 @@ const (
 func (e CountryConfigListSuccessResponseSuccess) Valid() bool {
 	switch e {
 	case CountryConfigListSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateAttachmentRequestAttachmentType.
+const (
+	AUGER            CreateAttachmentRequestAttachmentType = "AUGER"
+	CRUSHER          CreateAttachmentRequestAttachmentType = "CRUSHER"
+	HYDRAULICBREAKER CreateAttachmentRequestAttachmentType = "HYDRAULIC_BREAKER"
+	RIPPERTOOTH      CreateAttachmentRequestAttachmentType = "RIPPER_TOOTH"
+	SORTINGGRAPPLE   CreateAttachmentRequestAttachmentType = "SORTING_GRAPPLE"
+	STANDARDBUCKET   CreateAttachmentRequestAttachmentType = "STANDARD_BUCKET"
+	TRENCHINGBUCKET  CreateAttachmentRequestAttachmentType = "TRENCHING_BUCKET"
+)
+
+// Valid indicates whether the value is a known member of the CreateAttachmentRequestAttachmentType enum.
+func (e CreateAttachmentRequestAttachmentType) Valid() bool {
+	switch e {
+	case AUGER:
+		return true
+	case CRUSHER:
+		return true
+	case HYDRAULICBREAKER:
+		return true
+	case RIPPERTOOTH:
+		return true
+	case SORTINGGRAPPLE:
+		return true
+	case STANDARDBUCKET:
+		return true
+	case TRENCHINGBUCKET:
 		return true
 	default:
 		return false
@@ -275,6 +410,21 @@ func (e InspectionRecordStage) Valid() bool {
 	}
 }
 
+// Defines values for LinkFleetAttachmentSuccessResponseSuccess.
+const (
+	LinkFleetAttachmentSuccessResponseSuccessTrue LinkFleetAttachmentSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the LinkFleetAttachmentSuccessResponseSuccess enum.
+func (e LinkFleetAttachmentSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case LinkFleetAttachmentSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for OtpRequestSuccessResponseSuccess.
 const (
 	OtpRequestSuccessResponseSuccessTrue OtpRequestSuccessResponseSuccess = true
@@ -349,19 +499,19 @@ func (e UserProfileRole) Valid() bool {
 
 // Defines values for UserProfileStatus.
 const (
-	ACTIVE              UserProfileStatus = "ACTIVE"
-	PENDINGVERIFICATION UserProfileStatus = "PENDING_VERIFICATION"
-	SUSPENDED           UserProfileStatus = "SUSPENDED"
+	UserProfileStatusACTIVE              UserProfileStatus = "ACTIVE"
+	UserProfileStatusPENDINGVERIFICATION UserProfileStatus = "PENDING_VERIFICATION"
+	UserProfileStatusSUSPENDED           UserProfileStatus = "SUSPENDED"
 )
 
 // Valid indicates whether the value is a known member of the UserProfileStatus enum.
 func (e UserProfileStatus) Valid() bool {
 	switch e {
-	case ACTIVE:
+	case UserProfileStatusACTIVE:
 		return true
-	case PENDINGVERIFICATION:
+	case UserProfileStatusPENDINGVERIFICATION:
 		return true
-	case SUSPENDED:
+	case UserProfileStatusSUSPENDED:
 		return true
 	default:
 		return false
@@ -431,6 +581,39 @@ const (
 func (e WalletTransactionListSuccessResponseSuccess) Valid() bool {
 	switch e {
 	case WalletTransactionListSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListAttachmentInventoryParamsStatus.
+const (
+	ListAttachmentInventoryParamsStatusACTIVE          ListAttachmentInventoryParamsStatus = "ACTIVE"
+	ListAttachmentInventoryParamsStatusDECOMMISSIONED  ListAttachmentInventoryParamsStatus = "DECOMMISSIONED"
+	ListAttachmentInventoryParamsStatusDISPUTEDDAMAGE  ListAttachmentInventoryParamsStatus = "DISPUTED_DAMAGE"
+	ListAttachmentInventoryParamsStatusDRAFT           ListAttachmentInventoryParamsStatus = "DRAFT"
+	ListAttachmentInventoryParamsStatusINACTIVE        ListAttachmentInventoryParamsStatus = "INACTIVE"
+	ListAttachmentInventoryParamsStatusMAINTENANCEHOLD ListAttachmentInventoryParamsStatus = "MAINTENANCE_HOLD"
+	ListAttachmentInventoryParamsStatusRENTED          ListAttachmentInventoryParamsStatus = "RENTED"
+)
+
+// Valid indicates whether the value is a known member of the ListAttachmentInventoryParamsStatus enum.
+func (e ListAttachmentInventoryParamsStatus) Valid() bool {
+	switch e {
+	case ListAttachmentInventoryParamsStatusACTIVE:
+		return true
+	case ListAttachmentInventoryParamsStatusDECOMMISSIONED:
+		return true
+	case ListAttachmentInventoryParamsStatusDISPUTEDDAMAGE:
+		return true
+	case ListAttachmentInventoryParamsStatusDRAFT:
+		return true
+	case ListAttachmentInventoryParamsStatusINACTIVE:
+		return true
+	case ListAttachmentInventoryParamsStatusMAINTENANCEHOLD:
+		return true
+	case ListAttachmentInventoryParamsStatusRENTED:
 		return true
 	default:
 		return false
@@ -534,6 +717,78 @@ type AdminUiConfigSuccessResponse struct {
 // AdminUiConfigSuccessResponseSuccess defines model for AdminUiConfigSuccessResponse.Success.
 type AdminUiConfigSuccessResponseSuccess bool
 
+// AttachmentAvailabilityStatus defines model for AttachmentAvailabilityStatus.
+type AttachmentAvailabilityStatus struct {
+	AttachmentId          openapi_types.UUID `json:"attachmentId"`
+	DailyRateAppliedMinor int64              `json:"dailyRateAppliedMinor"`
+	IsAvailable           bool               `json:"isAvailable"`
+}
+
+// AttachmentInventoryItem defines model for AttachmentInventoryItem.
+type AttachmentInventoryItem struct {
+	AttachmentId             openapi_types.UUID  `json:"attachmentId"`
+	AttachmentType           string              `json:"attachmentType"`
+	IsLinkedToFleet          bool                `json:"isLinkedToFleet"`
+	LinkedFleetId            *openapi_types.UUID `json:"linkedFleetId,omitempty"`
+	Make                     string              `json:"make"`
+	Model                    string              `json:"model"`
+	PrimaryPhotoUri          *string             `json:"primaryPhotoUri,omitempty"`
+	StandaloneDailyRateMinor int64               `json:"standaloneDailyRateMinor"`
+	Status                   string              `json:"status"`
+	SubTypeSize              string              `json:"subTypeSize"`
+}
+
+// AttachmentInventoryListResponseData defines model for AttachmentInventoryListResponseData.
+type AttachmentInventoryListResponseData struct {
+	Attachments []AttachmentInventoryItem `json:"attachments"`
+	TotalCount  int                       `json:"totalCount"`
+}
+
+// AttachmentInventorySuccessResponse defines model for AttachmentInventorySuccessResponse.
+type AttachmentInventorySuccessResponse struct {
+	Data    AttachmentInventoryListResponseData       `json:"data"`
+	Error   map[string]interface{}                    `json:"error"`
+	Meta    ResponseMeta                              `json:"meta"`
+	Success AttachmentInventorySuccessResponseSuccess `json:"success"`
+}
+
+// AttachmentInventorySuccessResponseSuccess defines model for AttachmentInventorySuccessResponse.Success.
+type AttachmentInventorySuccessResponseSuccess bool
+
+// AttachmentPhotoInput defines model for AttachmentPhotoInput.
+type AttachmentPhotoInput struct {
+	Angle      AttachmentPhotoInputAngle `json:"angle"`
+	StorageUri string                    `json:"storageUri"`
+}
+
+// AttachmentPhotoInputAngle defines model for AttachmentPhotoInput.Angle.
+type AttachmentPhotoInputAngle string
+
+// AttachmentResponseData defines model for AttachmentResponseData.
+type AttachmentResponseData struct {
+	AttachmentId             openapi_types.UUID           `json:"attachmentId"`
+	AttachmentType           string                       `json:"attachmentType"`
+	CreatedAt                time.Time                    `json:"createdAt"`
+	Make                     string                       `json:"make"`
+	Model                    string                       `json:"model"`
+	StandaloneDailyRateMinor int64                        `json:"standaloneDailyRateMinor"`
+	Status                   AttachmentResponseDataStatus `json:"status"`
+}
+
+// AttachmentResponseDataStatus defines model for AttachmentResponseData.Status.
+type AttachmentResponseDataStatus string
+
+// AttachmentSuccessResponse defines model for AttachmentSuccessResponse.
+type AttachmentSuccessResponse struct {
+	Data    AttachmentResponseData           `json:"data"`
+	Error   map[string]interface{}           `json:"error"`
+	Meta    ResponseMeta                     `json:"meta"`
+	Success AttachmentSuccessResponseSuccess `json:"success"`
+}
+
+// AttachmentSuccessResponseSuccess defines model for AttachmentSuccessResponse.Success.
+type AttachmentSuccessResponseSuccess bool
+
 // AuthTokenPair defines model for AuthTokenPair.
 type AuthTokenPair struct {
 	AccessToken      string `json:"accessToken"`
@@ -617,6 +872,33 @@ type CategoryListSuccessResponse struct {
 // CategoryListSuccessResponseSuccess defines model for CategoryListSuccessResponse.Success.
 type CategoryListSuccessResponseSuccess bool
 
+// CheckBundledAvailabilityRequest defines model for CheckBundledAvailabilityRequest.
+type CheckBundledAvailabilityRequest struct {
+	AttachmentIds []openapi_types.UUID `json:"attachmentIds"`
+	EndDate       openapi_types.Date   `json:"endDate"`
+	FleetId       openapi_types.UUID   `json:"fleetId"`
+	StartDate     openapi_types.Date   `json:"startDate"`
+}
+
+// CheckBundledAvailabilityResponseData defines model for CheckBundledAvailabilityResponseData.
+type CheckBundledAvailabilityResponseData struct {
+	AllAttachmentsAvailable     bool                           `json:"allAttachmentsAvailable"`
+	AttachmentStatuses          []AttachmentAvailabilityStatus `json:"attachmentStatuses"`
+	FleetAvailable              bool                           `json:"fleetAvailable"`
+	TotalCombinedDailyRateMinor int64                          `json:"totalCombinedDailyRateMinor"`
+}
+
+// CheckBundledAvailabilitySuccessResponse defines model for CheckBundledAvailabilitySuccessResponse.
+type CheckBundledAvailabilitySuccessResponse struct {
+	Data    CheckBundledAvailabilityResponseData           `json:"data"`
+	Error   map[string]interface{}                         `json:"error"`
+	Meta    ResponseMeta                                   `json:"meta"`
+	Success CheckBundledAvailabilitySuccessResponseSuccess `json:"success"`
+}
+
+// CheckBundledAvailabilitySuccessResponseSuccess defines model for CheckBundledAvailabilitySuccessResponse.Success.
+type CheckBundledAvailabilitySuccessResponseSuccess bool
+
 // CountryConfig defines model for CountryConfig.
 type CountryConfig struct {
 	CountryCode               string  `json:"countryCode"`
@@ -655,6 +937,31 @@ type CountryConfigListSuccessResponse struct {
 
 // CountryConfigListSuccessResponseSuccess defines model for CountryConfigListSuccessResponse.Success.
 type CountryConfigListSuccessResponseSuccess bool
+
+// CreateAttachmentRequest defines model for CreateAttachmentRequest.
+type CreateAttachmentRequest struct {
+	AttachmentType           CreateAttachmentRequestAttachmentType `json:"attachmentType"`
+	CompatibleSubcategories  []string                              `json:"compatibleSubcategories"`
+	Make                     string                                `json:"make"`
+	MaxCarrierWeightTonnes   float32                               `json:"maxCarrierWeightTonnes"`
+	MinCarrierWeightTonnes   float32                               `json:"minCarrierWeightTonnes"`
+	MinRentalDays            *int                                  `json:"minRentalDays,omitempty"`
+	Model                    string                                `json:"model"`
+	OperatingWeightKg        float32                               `json:"operatingWeightKg"`
+	Photos                   *[]AttachmentPhotoInput               `json:"photos,omitempty"`
+	PinDiameterMm            float32                               `json:"pinDiameterMm"`
+	PinSpreadMm              float32                               `json:"pinSpreadMm"`
+	RequiredFlowMaxLmin      float32                               `json:"requiredFlowMaxLmin"`
+	RequiredFlowMinLmin      float32                               `json:"requiredFlowMinLmin"`
+	RequiredPressureBar      float32                               `json:"requiredPressureBar"`
+	SecurityDepositMinor     *int64                                `json:"securityDepositMinor,omitempty"`
+	SerialNumber             string                                `json:"serialNumber"`
+	StandaloneDailyRateMinor int64                                 `json:"standaloneDailyRateMinor"`
+	SubTypeSize              string                                `json:"subTypeSize"`
+}
+
+// CreateAttachmentRequestAttachmentType defines model for CreateAttachmentRequest.AttachmentType.
+type CreateAttachmentRequestAttachmentType string
 
 // CreateBookingRequest defines model for CreateBookingRequest.
 type CreateBookingRequest struct {
@@ -769,6 +1076,32 @@ type InvalidParam struct {
 	Name   string `json:"name"`
 	Reason string `json:"reason"`
 }
+
+// LinkFleetAttachmentRequest defines model for LinkFleetAttachmentRequest.
+type LinkFleetAttachmentRequest struct {
+	AttachmentId          openapi_types.UUID `json:"attachmentId"`
+	BundledDailyRateMinor int64              `json:"bundledDailyRateMinor"`
+}
+
+// LinkFleetAttachmentResponseData defines model for LinkFleetAttachmentResponseData.
+type LinkFleetAttachmentResponseData struct {
+	AttachmentId          openapi_types.UUID `json:"attachmentId"`
+	BundledDailyRateMinor int64              `json:"bundledDailyRateMinor"`
+	DiscountPercentage    float32            `json:"discountPercentage"`
+	FleetId               openapi_types.UUID `json:"fleetId"`
+	Status                string             `json:"status"`
+}
+
+// LinkFleetAttachmentSuccessResponse defines model for LinkFleetAttachmentSuccessResponse.
+type LinkFleetAttachmentSuccessResponse struct {
+	Data    LinkFleetAttachmentResponseData           `json:"data"`
+	Error   map[string]interface{}                    `json:"error"`
+	Meta    ResponseMeta                              `json:"meta"`
+	Success LinkFleetAttachmentSuccessResponseSuccess `json:"success"`
+}
+
+// LinkFleetAttachmentSuccessResponseSuccess defines model for LinkFleetAttachmentSuccessResponse.Success.
+type LinkFleetAttachmentSuccessResponseSuccess bool
 
 // MoneyAmount Integer minor currency units preventing precision truncation.
 type MoneyAmount struct {
@@ -975,6 +1308,29 @@ type UpdateCountryConfigParams struct {
 	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
 }
 
+// CreateAttachmentParams defines parameters for CreateAttachment.
+type CreateAttachmentParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+
+	// XCountryCode ISO 3166-1 alpha-2 operational country code driving multi-country logic.
+	XCountryCode *CountryCodeHeader `json:"X-Country-Code,omitempty"`
+}
+
+// ListAttachmentInventoryParams defines parameters for ListAttachmentInventory.
+type ListAttachmentInventoryParams struct {
+	Status *ListAttachmentInventoryParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Cursor Opaque cursor identifier for deterministic keyset pagination.
+	Cursor *CursorQueryParam `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Maximum number of records to return per page.
+	Limit *LimitQueryParam `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// ListAttachmentInventoryParamsStatus defines parameters for ListAttachmentInventory.
+type ListAttachmentInventoryParamsStatus string
+
 // RequestOtpJSONBody defines parameters for RequestOtp.
 type RequestOtpJSONBody struct {
 	PhoneNumber string                    `json:"phoneNumber"`
@@ -1114,6 +1470,9 @@ type ListWalletTransactionsParams struct {
 // UpdateCountryConfigJSONRequestBody defines body for UpdateCountryConfig for application/json ContentType.
 type UpdateCountryConfigJSONRequestBody = UpdateCountryConfigRequest
 
+// CreateAttachmentJSONRequestBody defines body for CreateAttachment for application/json ContentType.
+type CreateAttachmentJSONRequestBody = CreateAttachmentRequest
+
 // RequestOtpJSONRequestBody defines body for RequestOtp for application/json ContentType.
 type RequestOtpJSONRequestBody RequestOtpJSONBody
 
@@ -1126,6 +1485,9 @@ type RefreshSessionJSONRequestBody RefreshSessionJSONBody
 // CreateBookingJSONRequestBody defines body for CreateBooking for application/json ContentType.
 type CreateBookingJSONRequestBody = CreateBookingRequest
 
+// CheckBundledAvailabilityJSONRequestBody defines body for CheckBundledAvailability for application/json ContentType.
+type CheckBundledAvailabilityJSONRequestBody = CheckBundledAvailabilityRequest
+
 // SubmitBookingInspectionJSONRequestBody defines body for SubmitBookingInspection for application/json ContentType.
 type SubmitBookingInspectionJSONRequestBody = SubmitInspectionRequest
 
@@ -1137,6 +1499,9 @@ type ConfirmBookingPaymentJSONRequestBody ConfirmBookingPaymentJSONBody
 
 // CreateFleetAssetJSONRequestBody defines body for CreateFleetAsset for application/json ContentType.
 type CreateFleetAssetJSONRequestBody = CreateFleetRequest
+
+// LinkFleetAttachmentJSONRequestBody defines body for LinkFleetAttachment for application/json ContentType.
+type LinkFleetAttachmentJSONRequestBody = LinkFleetAttachmentRequest
 
 // InitiatePaymentJSONRequestBody defines body for InitiatePayment for application/json ContentType.
 type InitiatePaymentJSONRequestBody InitiatePaymentJSONBody
@@ -1155,6 +1520,12 @@ type ServerInterface interface {
 	// GetAdminUiConfig Retrieve dynamic metadata-driven UI configuration
 	// (GET /admin/ui-config)
 	GetAdminUiConfig(w http.ResponseWriter, r *http.Request)
+	// CreateAttachment Register a new standalone attachment
+	// (POST /attachments)
+	CreateAttachment(w http.ResponseWriter, r *http.Request, params CreateAttachmentParams)
+	// ListAttachmentInventory List attachment inventory
+	// (GET /attachments/inventory)
+	ListAttachmentInventory(w http.ResponseWriter, r *http.Request, params ListAttachmentInventoryParams)
 	// RequestOtp Request an OTP verification code
 	// (POST /auth/otp/request)
 	RequestOtp(w http.ResponseWriter, r *http.Request, params RequestOtpParams)
@@ -1173,6 +1544,9 @@ type ServerInterface interface {
 	// CreateBooking Create a booking reservation hold
 	// (POST /bookings)
 	CreateBooking(w http.ResponseWriter, r *http.Request, params CreateBookingParams)
+	// CheckBundledAvailability Check bundled availability
+	// (POST /bookings/check-bundled-availability)
+	CheckBundledAvailability(w http.ResponseWriter, r *http.Request)
 	// GetBookingById Retrieve detailed booking state by ID
 	// (GET /bookings/{id})
 	GetBookingById(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
@@ -1197,6 +1571,9 @@ type ServerInterface interface {
 	// GetFleetById Retrieve detailed fleet asset by ID
 	// (GET /fleets/{id})
 	GetFleetById(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// LinkFleetAttachment Link attachment to fleet asset
+	// (POST /fleets/{id}/attachments/link)
+	LinkFleetAttachment(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
 	// SearchFleetsByRadius Spatial radius search for machinery
 	// (GET /geo/fleets/radius-search)
 	SearchFleetsByRadius(w http.ResponseWriter, r *http.Request, params SearchFleetsByRadiusParams)
@@ -1239,6 +1616,18 @@ func (_ Unimplemented) GetAdminUiConfig(w http.ResponseWriter, r *http.Request) 
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// CreateAttachment Register a new standalone attachment
+// (POST /attachments)
+func (_ Unimplemented) CreateAttachment(w http.ResponseWriter, r *http.Request, params CreateAttachmentParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListAttachmentInventory List attachment inventory
+// (GET /attachments/inventory)
+func (_ Unimplemented) ListAttachmentInventory(w http.ResponseWriter, r *http.Request, params ListAttachmentInventoryParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // RequestOtp Request an OTP verification code
 // (POST /auth/otp/request)
 func (_ Unimplemented) RequestOtp(w http.ResponseWriter, r *http.Request, params RequestOtpParams) {
@@ -1272,6 +1661,12 @@ func (_ Unimplemented) ListBookings(w http.ResponseWriter, r *http.Request, para
 // CreateBooking Create a booking reservation hold
 // (POST /bookings)
 func (_ Unimplemented) CreateBooking(w http.ResponseWriter, r *http.Request, params CreateBookingParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CheckBundledAvailability Check bundled availability
+// (POST /bookings/check-bundled-availability)
+func (_ Unimplemented) CheckBundledAvailability(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -1320,6 +1715,12 @@ func (_ Unimplemented) CreateFleetAsset(w http.ResponseWriter, r *http.Request, 
 // GetFleetById Retrieve detailed fleet asset by ID
 // (GET /fleets/{id})
 func (_ Unimplemented) GetFleetById(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// LinkFleetAttachment Link attachment to fleet asset
+// (POST /fleets/{id}/attachments/link)
+func (_ Unimplemented) LinkFleetAttachment(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -1455,6 +1856,129 @@ func (siw *ServerInterfaceWrapper) GetAdminUiConfig(w http.ResponseWriter, r *ht
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetAdminUiConfig(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateAttachment operation middleware
+func (siw *ServerInterfaceWrapper) CreateAttachment(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateAttachmentParams
+
+	headers := r.Header
+
+	// ------------- Required header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKeyHeader
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: "uuid"})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = IdempotencyKey
+
+	} else {
+		err := fmt.Errorf("Header parameter Idempotency-Key is required, but not found")
+		siw.ErrorHandlerFunc(w, r, &RequiredHeaderError{ParamName: "Idempotency-Key", Err: err})
+		return
+	}
+
+	// ------------- Optional header parameter "X-Country-Code" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Country-Code")]; found {
+		var XCountryCode CountryCodeHeader
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-Country-Code", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Country-Code", valueList[0], &XCountryCode, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-Country-Code", Err: err})
+			return
+		}
+
+		params.XCountryCode = &XCountryCode
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateAttachment(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListAttachmentInventory operation middleware
+func (siw *ServerInterfaceWrapper) ListAttachmentInventory(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListAttachmentInventoryParams
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "status", r.URL.Query(), &params.Status, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "status"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListAttachmentInventory(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1669,6 +2193,20 @@ func (siw *ServerInterfaceWrapper) CreateBooking(w http.ResponseWriter, r *http.
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.CreateBooking(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CheckBundledAvailability operation middleware
+func (siw *ServerInterfaceWrapper) CheckBundledAvailability(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CheckBundledAvailability(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2023,6 +2561,32 @@ func (siw *ServerInterfaceWrapper) GetFleetById(w http.ResponseWriter, r *http.R
 	handler.ServeHTTP(w, r)
 }
 
+// LinkFleetAttachment operation middleware
+func (siw *ServerInterfaceWrapper) LinkFleetAttachment(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.LinkFleetAttachment(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // SearchFleetsByRadius operation middleware
 func (siw *ServerInterfaceWrapper) SearchFleetsByRadius(w http.ResponseWriter, r *http.Request) {
 
@@ -2351,6 +2915,15 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/fleets/{id}", wrapper.GetFleetById)
 	})
 	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/fleets/{id}/attachments/link", wrapper.LinkFleetAttachment)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/attachments", wrapper.CreateAttachment)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/attachments/inventory", wrapper.ListAttachmentInventory)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/geo/fleets/radius-search", wrapper.SearchFleetsByRadius)
 	})
 	r.Group(func(r chi.Router) {
@@ -2358,6 +2931,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/bookings", wrapper.CreateBooking)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/bookings/check-bundled-availability", wrapper.CheckBundledAvailability)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/bookings/{id}", wrapper.GetBookingById)

@@ -72,7 +72,7 @@ func setupTestMachineryRouter(t *testing.T) (http.Handler, *application.TokenSer
 		machineryRepo,
 	)
 
-	server := transport.NewServer(authService, tokenService, machineryService)
+	server := transport.NewServer(authService, tokenService, machineryService, nil)
 
 	r := chi.NewRouter()
 	r.Use(i18n.LanguageMiddleware)

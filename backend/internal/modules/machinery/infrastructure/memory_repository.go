@@ -10,23 +10,33 @@ import (
 )
 
 type MemoryMachineryRepository struct {
-	mu            sync.RWMutex
-	categories    map[uuid.UUID]domain.Category
-	specGroups    map[uuid.UUID][]domain.SpecFieldGroup
-	fleets        map[uuid.UUID]domain.FleetAsset
-	photos        map[uuid.UUID][]domain.FleetPhoto
-	specValues    map[uuid.UUID][]domain.FleetSpecValue
-	specIndexed   map[uuid.UUID]domain.FleetSpecIndexed
+	mu                     sync.RWMutex
+	categories             map[uuid.UUID]domain.Category
+	specGroups             map[uuid.UUID][]domain.SpecFieldGroup
+	fleets                 map[uuid.UUID]domain.FleetAsset
+	photos                 map[uuid.UUID][]domain.FleetPhoto
+	specValues             map[uuid.UUID][]domain.FleetSpecValue
+	specIndexed            map[uuid.UUID]domain.FleetSpecIndexed
+	attachments            map[uuid.UUID]*domain.Attachment
+	attachmentPhotos       map[uuid.UUID][]domain.AttachmentPhoto
+	attachmentCategories   map[uuid.UUID][]string
+	fleetBundled           map[uuid.UUID]map[uuid.UUID]*domain.FleetBundledAttachment
+	attachmentReservations map[uuid.UUID][]*domain.AttachmentReservation
 }
 
 func NewMemoryMachineryRepository() *MemoryMachineryRepository {
 	repo := &MemoryMachineryRepository{
-		categories:  make(map[uuid.UUID]domain.Category),
-		specGroups:  make(map[uuid.UUID][]domain.SpecFieldGroup),
-		fleets:      make(map[uuid.UUID]domain.FleetAsset),
-		photos:      make(map[uuid.UUID][]domain.FleetPhoto),
-		specValues:  make(map[uuid.UUID][]domain.FleetSpecValue),
-		specIndexed: make(map[uuid.UUID]domain.FleetSpecIndexed),
+		categories:             make(map[uuid.UUID]domain.Category),
+		specGroups:             make(map[uuid.UUID][]domain.SpecFieldGroup),
+		fleets:                 make(map[uuid.UUID]domain.FleetAsset),
+		photos:                 make(map[uuid.UUID][]domain.FleetPhoto),
+		specValues:             make(map[uuid.UUID][]domain.FleetSpecValue),
+		specIndexed:            make(map[uuid.UUID]domain.FleetSpecIndexed),
+		attachments:            make(map[uuid.UUID]*domain.Attachment),
+		attachmentPhotos:       make(map[uuid.UUID][]domain.AttachmentPhoto),
+		attachmentCategories:   make(map[uuid.UUID][]string),
+		fleetBundled:           make(map[uuid.UUID]map[uuid.UUID]*domain.FleetBundledAttachment),
+		attachmentReservations: make(map[uuid.UUID][]*domain.AttachmentReservation),
 	}
 	repo.seedDefaults()
 	return repo
@@ -232,6 +242,164 @@ func (m *MemoryMachineryRepository) GetSpecIndexed(ctx context.Context, fleetID 
 		return &sp, nil
 	}
 	return nil, nil
+}
+
+// AttachmentRepository implementation
+func (m *MemoryMachineryRepository) CreateAttachment(ctx context.Context, attachment *domain.Attachment, compatibleCategories []string, photos []domain.AttachmentPhoto) (*domain.Attachment, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	cp := *attachment
+	cp.CompatibleCategories = compatibleCategories
+	cp.Photos = photos
+	m.attachments[cp.ID] = &cp
+	m.attachmentPhotos[cp.ID] = photos
+	m.attachmentCategories[cp.ID] = compatibleCategories
+	return &cp, nil
+}
+
+func (m *MemoryMachineryRepository) GetAttachmentByID(ctx context.Context, id uuid.UUID) (*domain.Attachment, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	att, exists := m.attachments[id]
+	if !exists {
+		return nil, domain.ErrAttachmentNotFound
+	}
+	cp := *att
+	cp.Photos = m.attachmentPhotos[id]
+	cp.CompatibleCategories = m.attachmentCategories[id]
+	return &cp, nil
+}
+
+func (m *MemoryMachineryRepository) ListAttachmentsByOwner(ctx context.Context, ownerID uuid.UUID, status string) ([]*domain.Attachment, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	var result []*domain.Attachment
+	for _, att := range m.attachments {
+		if att.OwnerID == ownerID {
+			if status == "" || string(att.Status) == status {
+				cp := *att
+				cp.Photos = m.attachmentPhotos[att.ID]
+				cp.CompatibleCategories = m.attachmentCategories[att.ID]
+				result = append(result, &cp)
+			}
+		}
+	}
+	return result, nil
+}
+
+func (m *MemoryMachineryRepository) UpdateAttachmentStatus(ctx context.Context, id uuid.UUID, status domain.AttachmentStatus) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	att, exists := m.attachments[id]
+	if !exists {
+		return domain.ErrAttachmentNotFound
+	}
+	att.Status = status
+	att.UpdatedAt = time.Now()
+	return nil
+}
+
+func (m *MemoryMachineryRepository) LinkAttachmentToFleet(ctx context.Context, fleetID uuid.UUID, attachmentID uuid.UUID, bundledDailyRateMinor int64) (*domain.FleetBundledAttachment, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	att, exists := m.attachments[attachmentID]
+	if !exists {
+		return nil, domain.ErrAttachmentNotFound
+	}
+
+	if _, exists := m.fleetBundled[fleetID]; !exists {
+		m.fleetBundled[fleetID] = make(map[uuid.UUID]*domain.FleetBundledAttachment)
+	}
+
+	link := &domain.FleetBundledAttachment{
+		ID:                    uuid.New(),
+		FleetID:               fleetID,
+		AttachmentID:          attachmentID,
+		BundledDailyRateMinor: bundledDailyRateMinor,
+		IsActive:              true,
+		AttachmentType:        att.AttachmentType,
+		Make:                  att.Make,
+		Model:                 att.Model,
+		SubTypeSize:           att.SubTypeSize,
+		SerialNumber:          att.SerialNumber,
+		StandaloneDailyRate:   att.StandaloneDailyRateMinor,
+		Status:                att.Status,
+		CreatedAt:             time.Now(),
+		UpdatedAt:             time.Now(),
+	}
+
+	m.fleetBundled[fleetID][attachmentID] = link
+	return link, nil
+}
+
+func (m *MemoryMachineryRepository) ListBundledAttachmentsByFleet(ctx context.Context, fleetID uuid.UUID) ([]*domain.FleetBundledAttachment, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	var result []*domain.FleetBundledAttachment
+	if links, exists := m.fleetBundled[fleetID]; exists {
+		for _, l := range links {
+			if l.IsActive {
+				cp := *l
+				result = append(result, &cp)
+			}
+		}
+	}
+	return result, nil
+}
+
+func (m *MemoryMachineryRepository) CheckAttachmentAvailability(ctx context.Context, attachmentID uuid.UUID, startDate, endDate time.Time) (bool, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	att, exists := m.attachments[attachmentID]
+	if !exists {
+		return false, domain.ErrAttachmentNotFound
+	}
+
+	if att.Status != domain.AttachmentStatusActive && att.Status != domain.AttachmentStatusRented {
+		return false, nil
+	}
+
+	// Check reservations overlap: start < res.End && res.Start < end
+	if reservations, ok := m.attachmentReservations[attachmentID]; ok {
+		for _, r := range reservations {
+			if r.Status == "CANCELLED" || r.Status == "COMPLETED" {
+				continue
+			}
+			if startDate.Before(r.EndDate) && r.StartDate.Before(endDate) {
+				return false, nil
+			}
+		}
+	}
+
+	return true, nil
+}
+
+func (m *MemoryMachineryRepository) CreateReservation(ctx context.Context, res *domain.AttachmentReservation) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	// Concurrency safety check: check overlap
+	if reservations, ok := m.attachmentReservations[res.AttachmentID]; ok {
+		for _, r := range reservations {
+			if r.Status == "CANCELLED" || r.Status == "COMPLETED" {
+				continue
+			}
+			if res.StartDate.Before(r.EndDate) && r.StartDate.Before(res.EndDate) {
+				return domain.ErrAttachmentScheduleConflict
+			}
+		}
+	}
+
+	cp := *res
+	m.attachmentReservations[res.AttachmentID] = append(m.attachmentReservations[res.AttachmentID], &cp)
+	return nil
 }
 
 // SeedCategory inserts or updates a category for testing or bootstrap.

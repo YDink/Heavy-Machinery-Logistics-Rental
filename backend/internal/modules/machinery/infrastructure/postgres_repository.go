@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -495,4 +496,283 @@ func (r *PostgresMachineryRepository) GetSpecIndexed(ctx context.Context, fleetI
 		GrossEnginePowerHp: fromNumeric(row.GrossEnginePowerHp),
 		UpdatedAt:          row.UpdatedAt.Time,
 	}, nil
+}
+
+// ==================== Attachment Repository ====================
+
+func fromNumericVal(n pgtype.Numeric) float64 {
+	p := fromNumeric(n)
+	if p == nil {
+		return 0.0
+	}
+	return *p
+}
+
+func toDomainAttachment(a db.Attachment, categories []string, photos []domain.AttachmentPhoto) *domain.Attachment {
+	return &domain.Attachment{
+		ID:                         uuid.UUID(a.ID.Bytes),
+		OwnerID:                    uuid.UUID(a.OwnerID.Bytes),
+		AttachmentType:             domain.AttachmentType(a.AttachmentType),
+		Make:                       a.Make,
+		Model:                      a.Model,
+		SubTypeSize:                a.SubTypeSize,
+		SerialNumber:               a.SerialNumber,
+		OperatingWeightKg:          fromNumericVal(a.OperatingWeightKg),
+		MinCarrierWeightTonnes:     fromNumericVal(a.MinCarrierWeightTonnes),
+		MaxCarrierWeightTonnes:     fromNumericVal(a.MaxCarrierWeightTonnes),
+		RequiredFlowMinLmin:        fromNumericVal(a.RequiredFlowMinLmin),
+		RequiredFlowMaxLmin:        fromNumericVal(a.RequiredFlowMaxLmin),
+		RequiredPressureBar:        fromNumericVal(a.RequiredPressureBar),
+		PinDiameterMm:              fromNumericVal(a.PinDiameterMm),
+		PinSpreadMm:                fromNumericVal(a.PinSpreadMm),
+		StandaloneDailyRateMinor:   a.StandaloneDailyRateMinor,
+		SecurityDepositMinor:       a.SecurityDepositMinor,
+		MinRentalDays:              int(a.MinRentalDays),
+		PaymentEvidenceWindowHours: int(a.PaymentEvidenceWindowHours),
+		Status:                     domain.AttachmentStatus(a.Status),
+		CompatibleCategories:       categories,
+		Photos:                     photos,
+		CreatedAt:                  a.CreatedAt.Time,
+		UpdatedAt:                  a.UpdatedAt.Time,
+	}
+}
+
+func (r *PostgresMachineryRepository) CreateAttachment(
+	ctx context.Context,
+	attachment *domain.Attachment,
+	compatibleCategories []string,
+	photos []domain.AttachmentPhoto,
+) (*domain.Attachment, error) {
+	pgOwnerID := pgtype.UUID{Bytes: attachment.OwnerID, Valid: true}
+	created, err := r.queries.CreateAttachment(ctx, db.CreateAttachmentParams{
+		OwnerID:                    pgOwnerID,
+		AttachmentType:             string(attachment.AttachmentType),
+		Make:                       attachment.Make,
+		Model:                      attachment.Model,
+		SubTypeSize:                attachment.SubTypeSize,
+		SerialNumber:               attachment.SerialNumber,
+		OperatingWeightKg:          toNumeric(attachment.OperatingWeightKg),
+		MinCarrierWeightTonnes:     toNumeric(attachment.MinCarrierWeightTonnes),
+		MaxCarrierWeightTonnes:     toNumeric(attachment.MaxCarrierWeightTonnes),
+		RequiredFlowMinLmin:        toNumeric(attachment.RequiredFlowMinLmin),
+		RequiredFlowMaxLmin:        toNumeric(attachment.RequiredFlowMaxLmin),
+		RequiredPressureBar:        toNumeric(attachment.RequiredPressureBar),
+		PinDiameterMm:              toNumeric(attachment.PinDiameterMm),
+		PinSpreadMm:                toNumeric(attachment.PinSpreadMm),
+		StandaloneDailyRateMinor:   attachment.StandaloneDailyRateMinor,
+		SecurityDepositMinor:       attachment.SecurityDepositMinor,
+		MinRentalDays:              int32(attachment.MinRentalDays),
+		PaymentEvidenceWindowHours: int32(attachment.PaymentEvidenceWindowHours),
+		Status:                     string(attachment.Status),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create attachment: %w", err)
+	}
+
+	attID := created.ID
+	for _, cat := range compatibleCategories {
+		_, _ = r.queries.CreateAttachmentCompatibleCategory(ctx, db.CreateAttachmentCompatibleCategoryParams{
+			AttachmentID: attID,
+			CategoryCode: cat,
+		})
+	}
+
+	persistedPhotos := make([]domain.AttachmentPhoto, 0, len(photos))
+	for _, p := range photos {
+		ph, err := r.queries.CreateAttachmentPhoto(ctx, db.CreateAttachmentPhotoParams{
+			AttachmentID: attID,
+			Angle:        string(p.Angle),
+			StorageUri:   p.StorageURI,
+		})
+		if err == nil {
+			persistedPhotos = append(persistedPhotos, domain.AttachmentPhoto{
+				ID:           uuid.UUID(ph.ID.Bytes),
+				AttachmentID: uuid.UUID(attID.Bytes),
+				Angle:        p.Angle,
+				StorageURI:   ph.StorageUri,
+				CreatedAt:    ph.CreatedAt.Time,
+			})
+		}
+	}
+
+	return toDomainAttachment(created, compatibleCategories, persistedPhotos), nil
+}
+
+func (r *PostgresMachineryRepository) GetAttachmentByID(ctx context.Context, id uuid.UUID) (*domain.Attachment, error) {
+	pgID := pgtype.UUID{Bytes: id, Valid: true}
+	a, err := r.queries.GetAttachmentByID(ctx, pgID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrAttachmentNotFound
+		}
+		return nil, fmt.Errorf("failed to get attachment: %w", err)
+	}
+
+	cats, _ := r.queries.ListAttachmentCompatibleCategories(ctx, pgID)
+	photoRows, _ := r.queries.ListAttachmentPhotos(ctx, pgID)
+	photos := make([]domain.AttachmentPhoto, len(photoRows))
+	for i, ph := range photoRows {
+		photos[i] = domain.AttachmentPhoto{
+			ID:           uuid.UUID(ph.ID.Bytes),
+			AttachmentID: id,
+			Angle:        domain.AttachmentPhotoAngle(ph.Angle),
+			StorageURI:   ph.StorageUri,
+			CreatedAt:    ph.CreatedAt.Time,
+		}
+	}
+
+	return toDomainAttachment(a, cats, photos), nil
+}
+
+func (r *PostgresMachineryRepository) ListAttachmentsByOwner(ctx context.Context, ownerID uuid.UUID, status string) ([]*domain.Attachment, error) {
+	pgOwnerID := pgtype.UUID{Bytes: ownerID, Valid: true}
+	rows, err := r.queries.ListAttachmentsByOwner(ctx, db.ListAttachmentsByOwnerParams{
+		OwnerID: pgOwnerID,
+		Status:  status,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list attachments by owner: %w", err)
+	}
+
+	result := make([]*domain.Attachment, len(rows))
+	for i, row := range rows {
+		cats, _ := r.queries.ListAttachmentCompatibleCategories(ctx, row.ID)
+		photoRows, _ := r.queries.ListAttachmentPhotos(ctx, row.ID)
+		photos := make([]domain.AttachmentPhoto, len(photoRows))
+		for j, ph := range photoRows {
+			photos[j] = domain.AttachmentPhoto{
+				ID:           uuid.UUID(ph.ID.Bytes),
+				AttachmentID: uuid.UUID(row.ID.Bytes),
+				Angle:        domain.AttachmentPhotoAngle(ph.Angle),
+				StorageURI:   ph.StorageUri,
+				CreatedAt:    ph.CreatedAt.Time,
+			}
+		}
+		result[i] = toDomainAttachment(row, cats, photos)
+	}
+	return result, nil
+}
+
+func (r *PostgresMachineryRepository) UpdateAttachmentStatus(ctx context.Context, id uuid.UUID, status domain.AttachmentStatus) error {
+	pgID := pgtype.UUID{Bytes: id, Valid: true}
+	_, err := r.queries.UpdateAttachmentStatus(ctx, db.UpdateAttachmentStatusParams{
+		ID:     pgID,
+		Status: string(status),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to update attachment status: %w", err)
+	}
+	return nil
+}
+
+func (r *PostgresMachineryRepository) LinkAttachmentToFleet(ctx context.Context, fleetID uuid.UUID, attachmentID uuid.UUID, bundledDailyRateMinor int64) (*domain.FleetBundledAttachment, error) {
+	pgFleetID := pgtype.UUID{Bytes: fleetID, Valid: true}
+	pgAttID := pgtype.UUID{Bytes: attachmentID, Valid: true}
+
+	att, err := r.GetAttachmentByID(ctx, attachmentID)
+	if err != nil {
+		return nil, err
+	}
+
+	link, err := r.queries.UpsertFleetBundledAttachment(ctx, db.UpsertFleetBundledAttachmentParams{
+		FleetID:               pgFleetID,
+		AttachmentID:          pgAttID,
+		BundledDailyRateMinor: bundledDailyRateMinor,
+		IsActive:              true,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to link fleet attachment: %w", err)
+	}
+
+	return &domain.FleetBundledAttachment{
+		ID:                    uuid.UUID(link.ID.Bytes),
+		FleetID:               fleetID,
+		AttachmentID:          attachmentID,
+		BundledDailyRateMinor: link.BundledDailyRateMinor,
+		IsActive:              link.IsActive,
+		AttachmentType:        att.AttachmentType,
+		Make:                  att.Make,
+		Model:                 att.Model,
+		SubTypeSize:           att.SubTypeSize,
+		SerialNumber:          att.SerialNumber,
+		StandaloneDailyRate:   att.StandaloneDailyRateMinor,
+		Status:                att.Status,
+		CreatedAt:             link.CreatedAt.Time,
+		UpdatedAt:             link.UpdatedAt.Time,
+	}, nil
+}
+
+func (r *PostgresMachineryRepository) ListBundledAttachmentsByFleet(ctx context.Context, fleetID uuid.UUID) ([]*domain.FleetBundledAttachment, error) {
+	pgFleetID := pgtype.UUID{Bytes: fleetID, Valid: true}
+	rows, err := r.queries.ListBundledAttachmentsByFleet(ctx, pgFleetID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list bundled attachments: %w", err)
+	}
+
+	result := make([]*domain.FleetBundledAttachment, len(rows))
+	for i, row := range rows {
+		result[i] = &domain.FleetBundledAttachment{
+			ID:                    uuid.UUID(row.LinkID.Bytes),
+			FleetID:               fleetID,
+			AttachmentID:          uuid.UUID(row.AttachmentID.Bytes),
+			BundledDailyRateMinor: row.BundledDailyRateMinor,
+			IsActive:              row.IsActive,
+			AttachmentType:        domain.AttachmentType(row.AttachmentType),
+			Make:                  row.Make,
+			Model:                 row.Model,
+			SubTypeSize:           row.SubTypeSize,
+			SerialNumber:          row.SerialNumber,
+			StandaloneDailyRate:   row.StandaloneDailyRateMinor,
+			Status:                domain.AttachmentStatus(row.Status),
+		}
+	}
+	return result, nil
+}
+
+func (r *PostgresMachineryRepository) CheckAttachmentAvailability(ctx context.Context, attachmentID uuid.UUID, startDate, endDate time.Time) (bool, error) {
+	pgAttID := pgtype.UUID{Bytes: attachmentID, Valid: true}
+	hireRange := pgtype.Range[pgtype.Date]{
+		Lower:     pgtype.Date{Time: startDate, Valid: true},
+		Upper:     pgtype.Date{Time: endDate, Valid: true},
+		LowerType: pgtype.Inclusive,
+		UpperType: pgtype.Exclusive,
+		Valid:     true,
+	}
+
+	hasOverlap, err := r.queries.CheckAttachmentOverlap(ctx, db.CheckAttachmentOverlapParams{
+		AttachmentID: pgAttID,
+		Column2:      hireRange,
+	})
+	if err != nil {
+		return false, fmt.Errorf("failed to check overlap: %w", err)
+	}
+
+	return !hasOverlap, nil
+}
+
+func (r *PostgresMachineryRepository) CreateReservation(ctx context.Context, res *domain.AttachmentReservation) error {
+	pgAttID := pgtype.UUID{Bytes: res.AttachmentID, Valid: true}
+	var pgRefID pgtype.UUID
+	if res.ReferenceID != nil {
+		pgRefID = pgtype.UUID{Bytes: *res.ReferenceID, Valid: true}
+	}
+	hireRange := pgtype.Range[pgtype.Date]{
+		Lower:     pgtype.Date{Time: res.StartDate, Valid: true},
+		Upper:     pgtype.Date{Time: res.EndDate, Valid: true},
+		LowerType: pgtype.Inclusive,
+		UpperType: pgtype.Exclusive,
+		Valid:     true,
+	}
+
+	_, err := r.queries.CreateAttachmentReservation(ctx, db.CreateAttachmentReservationParams{
+		AttachmentID:          pgAttID,
+		ReferenceID:           pgRefID,
+		HirePeriod:            hireRange,
+		DailyRateAppliedMinor: res.DailyRateAppliedMinor,
+		Status:                res.Status,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create attachment reservation: %w", err)
+	}
+	return nil
 }

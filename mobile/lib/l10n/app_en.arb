@@ -191,5 +191,157 @@
   "registrationSuccessMessage": "Machinery registered successfully! Under review.",
   "@registrationSuccessMessage": {
     "description": "Success message after asset creation"
+  },
+  "registerAttachmentTitle": "Register Attachment",
+  "@registerAttachmentTitle": {
+    "description": "Screen title for registering a standalone equipment attachment"
+  },
+  "attachmentTypeLabel": "Attachment Type",
+  "@attachmentTypeLabel": {
+    "description": "Category dropdown label for attachment type"
+  },
+  "attachmentMakeLabel": "Make / Manufacturer",
+  "@attachmentMakeLabel": {
+    "description": "Brand/make of the attachment"
+  },
+  "attachmentModelLabel": "Model",
+  "@attachmentModelLabel": {
+    "description": "Model descriptor of the attachment"
+  },
+  "attachmentSubTypeLabel": "Tool Sizing Specification",
+  "@attachmentSubTypeLabel": {
+    "description": "Chisel diameter or bucket size"
+  },
+  "attachmentSerialLabel": "Serial PIN Number",
+  "@attachmentSerialLabel": {
+    "description": "Stamped manufacturer serial PIN number"
+  },
+  "operatingWeightKgLabel": "Operating Tool Weight (kg)",
+  "@operatingWeightKgLabel": {
+    "description": "Weight of implement in kilograms"
+  },
+  "minCarrierWeightLabel": "Min Host Carrier Weight (tons)",
+  "@minCarrierWeightLabel": {
+    "description": "Minimum carrier class in metric tons"
+  },
+  "maxCarrierWeightLabel": "Max Host Carrier Weight (tons)",
+  "@maxCarrierWeightLabel": {
+    "description": "Maximum carrier class in metric tons"
+  },
+  "requiredPressureLabel": "Operating Pressure (bar)",
+  "@requiredPressureLabel": {
+    "description": "Required hydraulic relief pressure"
+  },
+  "requiredFlowMinLabel": "Min Hydraulic Flow (L/min)",
+  "@requiredFlowMinLabel": {
+    "description": "Minimum required auxiliary oil flow"
+  },
+  "requiredFlowMaxLabel": "Max Hydraulic Flow (L/min)",
+  "@requiredFlowMaxLabel": {
+    "description": "Maximum required auxiliary oil flow"
+  },
+  "pinDiameterLabel": "Mounting Pin Diameter (mm)",
+  "@pinDiameterLabel": {
+    "description": "Coupler pin diameter in millimeters"
+  },
+  "pinSpreadLabel": "Pin Spread / Ear Width (mm)",
+  "@pinSpreadLabel": {
+    "description": "Coupler center-to-center or ear spread in millimeters"
+  },
+  "standaloneDailyRateLabel": "Standalone Daily Rate (ETB)",
+  "@standaloneDailyRateLabel": {
+    "description": "Daily rental tariff when hired independently"
+  },
+  "bundledDailyRateLabel": "Bundled Daily Rate (ETB)",
+  "@bundledDailyRateLabel": {
+    "description": "Discounted tariff when hired with host fleet"
+  },
+  "securityDepositLabel": "Security Deposit (ETB)",
+  "@securityDepositLabel": {
+    "description": "Documentary deposit amount"
+  },
+  "attachmentPhotosSection": "Attachment Conditioning Photos",
+  "@attachmentPhotosSection": {
+    "description": "Section header for 4 mandatory attachment photos"
+  },
+  "photoAngleOverall": "Overall Tool Profile",
+  "@photoAngleOverall": {
+    "description": "Full profile photo of attachment"
+  },
+  "photoAngleBracket": "Mounting Bracket & Hitch",
+  "@photoAngleBracket": {
+    "description": "Coupler bracket photo"
+  },
+  "photoAnglePins": "Pins & Bushings Wear",
+  "@photoAnglePins": {
+    "description": "Close-up photo of pin and bushing play"
+  },
+  "photoAngleToolTip": "Working Tip / Chisel Point",
+  "@photoAngleToolTip": {
+    "description": "Tool tip or tooth cutting edge photo"
+  },
+  "linkAttachmentToFleet": "Link to Host Fleet",
+  "@linkAttachmentToFleet": {
+    "description": "Action to bundle attachment with a machinery asset"
+  },
+  "attachmentInventoryTitle": "My Attachments",
+  "@attachmentInventoryTitle": {
+    "description": "Title of owner attachment inventory"
+  },
+  "attachmentStatusActive": "Available",
+  "@attachmentStatusActive": {
+    "description": "Active attachment status tag"
+  },
+  "attachmentStatusRented": "Rented",
+  "@attachmentStatusRented": {
+    "description": "Rented attachment status tag"
+  },
+  "errorIncompleteAttachmentPhotos": "All 4 attachment conditioning photos are mandatory",
+  "@errorIncompleteAttachmentPhotos": {
+    "description": "Validation error for attachment photos"
+  },
+  "errorBundledRateExceedsStandalone": "Bundled rate cannot exceed standalone rate",
+  "@errorBundledRateExceedsStandalone": {
+    "description": "Validation error when bundled rate is too high"
+  },
+  "attachmentRegisteredSuccess": "Attachment registered successfully!",
+  "@attachmentRegisteredSuccess": {
+    "description": "Success message after attachment registration"
+  },
+  "tariffAndDepositsSection": "Tariff & Security Deposits",
+  "@tariffAndDepositsSection": {
+    "description": "Section header for daily rate and deposits"
+  },
+  "attachmentLinkedSuccess": "Attachment linked to fleet asset successfully!",
+  "@attachmentLinkedSuccess": {
+    "description": "Success message when an attachment is linked to a host fleet"
+  },
+  "emptyAttachmentInventory": "No attachments registered yet",
+  "@emptyAttachmentInventory": {
+    "description": "Placeholder when user has no registered attachments"
+  },
+  "bundledWithHost": "Bundled with Host",
+  "@bundledWithHost": {
+    "description": "Badge indicating attachment is bundled with a host machine"
+  },
+  "verifiedClean": "Verified Clean",
+  "@verifiedClean": {
+    "description": "Photo status label when captured and validated"
+  },
+  "tapToCapture": "Tap to Capture",
+  "@tapToCapture": {
+    "description": "Prompt on empty photo reticle tile"
+  },
+  "photosCapturedCount": "{count} of {total} Captured",
+  "@photosCapturedCount": {
+    "description": "Count of captured conditioning photos",
+    "placeholders": {
+      "count": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "perDay": "day",
+  "@perDay": {
+    "description": "Daily rental time unit"
   }
 }

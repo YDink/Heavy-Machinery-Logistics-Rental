@@ -47,6 +47,225 @@ func (q *Queries) AssignRoleToUser(ctx context.Context, arg AssignRoleToUserPara
 	return err
 }
 
+const checkAttachmentOverlap = `-- name: CheckAttachmentOverlap :one
+SELECT EXISTS (
+    SELECT 1 FROM attachment_reservations
+    WHERE attachment_id = $1
+      AND hire_period && $2::daterange
+      AND status IN ('HOLD_PENDING', 'PAYMENT_EVIDENCE_UPLOADED', 'CONFIRMED', 'ACTIVE', 'RETURN_INITIATED')
+)
+`
+
+type CheckAttachmentOverlapParams struct {
+	AttachmentID pgtype.UUID               `json:"attachment_id"`
+	Column2      pgtype.Range[pgtype.Date] `json:"column_2"`
+}
+
+func (q *Queries) CheckAttachmentOverlap(ctx context.Context, arg CheckAttachmentOverlapParams) (bool, error) {
+	row := q.db.QueryRow(ctx, checkAttachmentOverlap, arg.AttachmentID, arg.Column2)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const createAttachment = `-- name: CreateAttachment :one
+INSERT INTO attachments (
+    owner_id,
+    attachment_type,
+    make,
+    model,
+    sub_type_size,
+    serial_number,
+    operating_weight_kg,
+    min_carrier_weight_tonnes,
+    max_carrier_weight_tonnes,
+    required_flow_min_lmin,
+    required_flow_max_lmin,
+    required_pressure_bar,
+    pin_diameter_mm,
+    pin_spread_mm,
+    standalone_daily_rate_minor,
+    security_deposit_minor,
+    min_rental_days,
+    payment_evidence_window_hours,
+    status
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+) RETURNING id, owner_id, attachment_type, make, model, sub_type_size, serial_number, operating_weight_kg, min_carrier_weight_tonnes, max_carrier_weight_tonnes, required_flow_min_lmin, required_flow_max_lmin, required_pressure_bar, pin_diameter_mm, pin_spread_mm, standalone_daily_rate_minor, security_deposit_minor, min_rental_days, payment_evidence_window_hours, status, created_at, updated_at
+`
+
+type CreateAttachmentParams struct {
+	OwnerID                    pgtype.UUID    `json:"owner_id"`
+	AttachmentType             string         `json:"attachment_type"`
+	Make                       string         `json:"make"`
+	Model                      string         `json:"model"`
+	SubTypeSize                string         `json:"sub_type_size"`
+	SerialNumber               string         `json:"serial_number"`
+	OperatingWeightKg          pgtype.Numeric `json:"operating_weight_kg"`
+	MinCarrierWeightTonnes     pgtype.Numeric `json:"min_carrier_weight_tonnes"`
+	MaxCarrierWeightTonnes     pgtype.Numeric `json:"max_carrier_weight_tonnes"`
+	RequiredFlowMinLmin        pgtype.Numeric `json:"required_flow_min_lmin"`
+	RequiredFlowMaxLmin        pgtype.Numeric `json:"required_flow_max_lmin"`
+	RequiredPressureBar        pgtype.Numeric `json:"required_pressure_bar"`
+	PinDiameterMm              pgtype.Numeric `json:"pin_diameter_mm"`
+	PinSpreadMm                pgtype.Numeric `json:"pin_spread_mm"`
+	StandaloneDailyRateMinor   int64          `json:"standalone_daily_rate_minor"`
+	SecurityDepositMinor       int64          `json:"security_deposit_minor"`
+	MinRentalDays              int32          `json:"min_rental_days"`
+	PaymentEvidenceWindowHours int32          `json:"payment_evidence_window_hours"`
+	Status                     string         `json:"status"`
+}
+
+// Attachments Inventory & Lifecycle (Partition 05-03, SRS §05.03, ATT-01 to ATT-14)
+func (q *Queries) CreateAttachment(ctx context.Context, arg CreateAttachmentParams) (Attachment, error) {
+	row := q.db.QueryRow(ctx, createAttachment,
+		arg.OwnerID,
+		arg.AttachmentType,
+		arg.Make,
+		arg.Model,
+		arg.SubTypeSize,
+		arg.SerialNumber,
+		arg.OperatingWeightKg,
+		arg.MinCarrierWeightTonnes,
+		arg.MaxCarrierWeightTonnes,
+		arg.RequiredFlowMinLmin,
+		arg.RequiredFlowMaxLmin,
+		arg.RequiredPressureBar,
+		arg.PinDiameterMm,
+		arg.PinSpreadMm,
+		arg.StandaloneDailyRateMinor,
+		arg.SecurityDepositMinor,
+		arg.MinRentalDays,
+		arg.PaymentEvidenceWindowHours,
+		arg.Status,
+	)
+	var i Attachment
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.AttachmentType,
+		&i.Make,
+		&i.Model,
+		&i.SubTypeSize,
+		&i.SerialNumber,
+		&i.OperatingWeightKg,
+		&i.MinCarrierWeightTonnes,
+		&i.MaxCarrierWeightTonnes,
+		&i.RequiredFlowMinLmin,
+		&i.RequiredFlowMaxLmin,
+		&i.RequiredPressureBar,
+		&i.PinDiameterMm,
+		&i.PinSpreadMm,
+		&i.StandaloneDailyRateMinor,
+		&i.SecurityDepositMinor,
+		&i.MinRentalDays,
+		&i.PaymentEvidenceWindowHours,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createAttachmentCompatibleCategory = `-- name: CreateAttachmentCompatibleCategory :one
+INSERT INTO attachment_compatible_categories (
+    attachment_id,
+    category_code
+) VALUES (
+    $1, $2
+) ON CONFLICT (attachment_id, category_code) DO NOTHING
+RETURNING id, attachment_id, category_code, created_at
+`
+
+type CreateAttachmentCompatibleCategoryParams struct {
+	AttachmentID pgtype.UUID `json:"attachment_id"`
+	CategoryCode string      `json:"category_code"`
+}
+
+func (q *Queries) CreateAttachmentCompatibleCategory(ctx context.Context, arg CreateAttachmentCompatibleCategoryParams) (AttachmentCompatibleCategory, error) {
+	row := q.db.QueryRow(ctx, createAttachmentCompatibleCategory, arg.AttachmentID, arg.CategoryCode)
+	var i AttachmentCompatibleCategory
+	err := row.Scan(
+		&i.ID,
+		&i.AttachmentID,
+		&i.CategoryCode,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const createAttachmentPhoto = `-- name: CreateAttachmentPhoto :one
+INSERT INTO attachment_photos (
+    attachment_id,
+    angle,
+    storage_uri
+) VALUES (
+    $1, $2, $3
+) ON CONFLICT (attachment_id, angle) DO UPDATE SET
+    storage_uri = EXCLUDED.storage_uri
+RETURNING id, attachment_id, angle, storage_uri, created_at
+`
+
+type CreateAttachmentPhotoParams struct {
+	AttachmentID pgtype.UUID `json:"attachment_id"`
+	Angle        string      `json:"angle"`
+	StorageUri   string      `json:"storage_uri"`
+}
+
+func (q *Queries) CreateAttachmentPhoto(ctx context.Context, arg CreateAttachmentPhotoParams) (AttachmentPhoto, error) {
+	row := q.db.QueryRow(ctx, createAttachmentPhoto, arg.AttachmentID, arg.Angle, arg.StorageUri)
+	var i AttachmentPhoto
+	err := row.Scan(
+		&i.ID,
+		&i.AttachmentID,
+		&i.Angle,
+		&i.StorageUri,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const createAttachmentReservation = `-- name: CreateAttachmentReservation :one
+INSERT INTO attachment_reservations (
+    attachment_id,
+    reference_id,
+    hire_period,
+    daily_rate_applied_minor,
+    status
+) VALUES (
+    $1, $2, $3, $4, $5
+) RETURNING id, attachment_id, reference_id, hire_period, daily_rate_applied_minor, status, created_at
+`
+
+type CreateAttachmentReservationParams struct {
+	AttachmentID          pgtype.UUID               `json:"attachment_id"`
+	ReferenceID           pgtype.UUID               `json:"reference_id"`
+	HirePeriod            pgtype.Range[pgtype.Date] `json:"hire_period"`
+	DailyRateAppliedMinor int64                     `json:"daily_rate_applied_minor"`
+	Status                string                    `json:"status"`
+}
+
+func (q *Queries) CreateAttachmentReservation(ctx context.Context, arg CreateAttachmentReservationParams) (AttachmentReservation, error) {
+	row := q.db.QueryRow(ctx, createAttachmentReservation,
+		arg.AttachmentID,
+		arg.ReferenceID,
+		arg.HirePeriod,
+		arg.DailyRateAppliedMinor,
+		arg.Status,
+	)
+	var i AttachmentReservation
+	err := row.Scan(
+		&i.ID,
+		&i.AttachmentID,
+		&i.ReferenceID,
+		&i.HirePeriod,
+		&i.DailyRateAppliedMinor,
+		&i.Status,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const createFleet = `-- name: CreateFleet :one
 INSERT INTO fleets (
     owner_id,
@@ -270,6 +489,41 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.PreferredLanguage,
+	)
+	return i, err
+}
+
+const getAttachmentByID = `-- name: GetAttachmentByID :one
+SELECT id, owner_id, attachment_type, make, model, sub_type_size, serial_number, operating_weight_kg, min_carrier_weight_tonnes, max_carrier_weight_tonnes, required_flow_min_lmin, required_flow_max_lmin, required_pressure_bar, pin_diameter_mm, pin_spread_mm, standalone_daily_rate_minor, security_deposit_minor, min_rental_days, payment_evidence_window_hours, status, created_at, updated_at FROM attachments
+WHERE id = $1
+`
+
+func (q *Queries) GetAttachmentByID(ctx context.Context, id pgtype.UUID) (Attachment, error) {
+	row := q.db.QueryRow(ctx, getAttachmentByID, id)
+	var i Attachment
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.AttachmentType,
+		&i.Make,
+		&i.Model,
+		&i.SubTypeSize,
+		&i.SerialNumber,
+		&i.OperatingWeightKg,
+		&i.MinCarrierWeightTonnes,
+		&i.MaxCarrierWeightTonnes,
+		&i.RequiredFlowMinLmin,
+		&i.RequiredFlowMaxLmin,
+		&i.RequiredPressureBar,
+		&i.PinDiameterMm,
+		&i.PinSpreadMm,
+		&i.StandaloneDailyRateMinor,
+		&i.SecurityDepositMinor,
+		&i.MinRentalDays,
+		&i.PaymentEvidenceWindowHours,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -832,6 +1086,183 @@ func (q *Queries) ListAllRoles(ctx context.Context) ([]Role, error) {
 	return items, nil
 }
 
+const listAttachmentCompatibleCategories = `-- name: ListAttachmentCompatibleCategories :many
+SELECT category_code FROM attachment_compatible_categories
+WHERE attachment_id = $1
+`
+
+func (q *Queries) ListAttachmentCompatibleCategories(ctx context.Context, attachmentID pgtype.UUID) ([]string, error) {
+	rows, err := q.db.Query(ctx, listAttachmentCompatibleCategories, attachmentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var category_code string
+		if err := rows.Scan(&category_code); err != nil {
+			return nil, err
+		}
+		items = append(items, category_code)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAttachmentPhotos = `-- name: ListAttachmentPhotos :many
+SELECT id, attachment_id, angle, storage_uri, created_at FROM attachment_photos
+WHERE attachment_id = $1
+`
+
+func (q *Queries) ListAttachmentPhotos(ctx context.Context, attachmentID pgtype.UUID) ([]AttachmentPhoto, error) {
+	rows, err := q.db.Query(ctx, listAttachmentPhotos, attachmentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []AttachmentPhoto{}
+	for rows.Next() {
+		var i AttachmentPhoto
+		if err := rows.Scan(
+			&i.ID,
+			&i.AttachmentID,
+			&i.Angle,
+			&i.StorageUri,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAttachmentsByOwner = `-- name: ListAttachmentsByOwner :many
+SELECT id, owner_id, attachment_type, make, model, sub_type_size, serial_number, operating_weight_kg, min_carrier_weight_tonnes, max_carrier_weight_tonnes, required_flow_min_lmin, required_flow_max_lmin, required_pressure_bar, pin_diameter_mm, pin_spread_mm, standalone_daily_rate_minor, security_deposit_minor, min_rental_days, payment_evidence_window_hours, status, created_at, updated_at FROM attachments
+WHERE owner_id = $1 AND (status = $2 OR $2 = '')
+ORDER BY created_at DESC
+`
+
+type ListAttachmentsByOwnerParams struct {
+	OwnerID pgtype.UUID `json:"owner_id"`
+	Status  string      `json:"status"`
+}
+
+func (q *Queries) ListAttachmentsByOwner(ctx context.Context, arg ListAttachmentsByOwnerParams) ([]Attachment, error) {
+	rows, err := q.db.Query(ctx, listAttachmentsByOwner, arg.OwnerID, arg.Status)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Attachment{}
+	for rows.Next() {
+		var i Attachment
+		if err := rows.Scan(
+			&i.ID,
+			&i.OwnerID,
+			&i.AttachmentType,
+			&i.Make,
+			&i.Model,
+			&i.SubTypeSize,
+			&i.SerialNumber,
+			&i.OperatingWeightKg,
+			&i.MinCarrierWeightTonnes,
+			&i.MaxCarrierWeightTonnes,
+			&i.RequiredFlowMinLmin,
+			&i.RequiredFlowMaxLmin,
+			&i.RequiredPressureBar,
+			&i.PinDiameterMm,
+			&i.PinSpreadMm,
+			&i.StandaloneDailyRateMinor,
+			&i.SecurityDepositMinor,
+			&i.MinRentalDays,
+			&i.PaymentEvidenceWindowHours,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listBundledAttachmentsByFleet = `-- name: ListBundledAttachmentsByFleet :many
+SELECT 
+    fba.id AS link_id,
+    fba.fleet_id,
+    fba.attachment_id,
+    fba.bundled_daily_rate_minor,
+    fba.is_active,
+    a.attachment_type,
+    a.make,
+    a.model,
+    a.sub_type_size,
+    a.serial_number,
+    a.standalone_daily_rate_minor,
+    a.status
+FROM fleet_bundled_attachments fba
+JOIN attachments a ON a.id = fba.attachment_id
+WHERE fba.fleet_id = $1 AND fba.is_active = true
+`
+
+type ListBundledAttachmentsByFleetRow struct {
+	LinkID                   pgtype.UUID `json:"link_id"`
+	FleetID                  pgtype.UUID `json:"fleet_id"`
+	AttachmentID             pgtype.UUID `json:"attachment_id"`
+	BundledDailyRateMinor    int64       `json:"bundled_daily_rate_minor"`
+	IsActive                 bool        `json:"is_active"`
+	AttachmentType           string      `json:"attachment_type"`
+	Make                     string      `json:"make"`
+	Model                    string      `json:"model"`
+	SubTypeSize              string      `json:"sub_type_size"`
+	SerialNumber             string      `json:"serial_number"`
+	StandaloneDailyRateMinor int64       `json:"standalone_daily_rate_minor"`
+	Status                   string      `json:"status"`
+}
+
+func (q *Queries) ListBundledAttachmentsByFleet(ctx context.Context, fleetID pgtype.UUID) ([]ListBundledAttachmentsByFleetRow, error) {
+	rows, err := q.db.Query(ctx, listBundledAttachmentsByFleet, fleetID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListBundledAttachmentsByFleetRow{}
+	for rows.Next() {
+		var i ListBundledAttachmentsByFleetRow
+		if err := rows.Scan(
+			&i.LinkID,
+			&i.FleetID,
+			&i.AttachmentID,
+			&i.BundledDailyRateMinor,
+			&i.IsActive,
+			&i.AttachmentType,
+			&i.Make,
+			&i.Model,
+			&i.SubTypeSize,
+			&i.SerialNumber,
+			&i.StandaloneDailyRateMinor,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listEnabledCountryConfigs = `-- name: ListEnabledCountryConfigs :many
 SELECT country_code, country_name, dialing_prefix, default_currency, currency_minor_unit_exponent, default_timezone, tax_label, standard_tax_rate_bps, withholding_tax_bps, min_age_default, payment_hold_timeout_mins, is_enabled, created_at, updated_at FROM country_configs
 WHERE is_enabled = true
@@ -1290,6 +1721,49 @@ func (q *Queries) RemoveRoleFromUser(ctx context.Context, arg RemoveRoleFromUser
 	return err
 }
 
+const updateAttachmentStatus = `-- name: UpdateAttachmentStatus :one
+UPDATE attachments
+SET status = $2,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING id, owner_id, attachment_type, make, model, sub_type_size, serial_number, operating_weight_kg, min_carrier_weight_tonnes, max_carrier_weight_tonnes, required_flow_min_lmin, required_flow_max_lmin, required_pressure_bar, pin_diameter_mm, pin_spread_mm, standalone_daily_rate_minor, security_deposit_minor, min_rental_days, payment_evidence_window_hours, status, created_at, updated_at
+`
+
+type UpdateAttachmentStatusParams struct {
+	ID     pgtype.UUID `json:"id"`
+	Status string      `json:"status"`
+}
+
+func (q *Queries) UpdateAttachmentStatus(ctx context.Context, arg UpdateAttachmentStatusParams) (Attachment, error) {
+	row := q.db.QueryRow(ctx, updateAttachmentStatus, arg.ID, arg.Status)
+	var i Attachment
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.AttachmentType,
+		&i.Make,
+		&i.Model,
+		&i.SubTypeSize,
+		&i.SerialNumber,
+		&i.OperatingWeightKg,
+		&i.MinCarrierWeightTonnes,
+		&i.MaxCarrierWeightTonnes,
+		&i.RequiredFlowMinLmin,
+		&i.RequiredFlowMaxLmin,
+		&i.RequiredPressureBar,
+		&i.PinDiameterMm,
+		&i.PinSpreadMm,
+		&i.StandaloneDailyRateMinor,
+		&i.SecurityDepositMinor,
+		&i.MinRentalDays,
+		&i.PaymentEvidenceWindowHours,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const updateFleetStatus = `-- name: UpdateFleetStatus :one
 UPDATE fleets
 SET status = $2,
@@ -1458,6 +1932,48 @@ func (q *Queries) UpdateUserPreferredLanguage(ctx context.Context, arg UpdateUse
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.PreferredLanguage,
+	)
+	return i, err
+}
+
+const upsertFleetBundledAttachment = `-- name: UpsertFleetBundledAttachment :one
+INSERT INTO fleet_bundled_attachments (
+    fleet_id,
+    attachment_id,
+    bundled_daily_rate_minor,
+    is_active
+) VALUES (
+    $1, $2, $3, $4
+) ON CONFLICT (fleet_id, attachment_id) DO UPDATE SET
+    bundled_daily_rate_minor = EXCLUDED.bundled_daily_rate_minor,
+    is_active = EXCLUDED.is_active,
+    updated_at = NOW()
+RETURNING id, fleet_id, attachment_id, bundled_daily_rate_minor, is_active, created_at, updated_at
+`
+
+type UpsertFleetBundledAttachmentParams struct {
+	FleetID               pgtype.UUID `json:"fleet_id"`
+	AttachmentID          pgtype.UUID `json:"attachment_id"`
+	BundledDailyRateMinor int64       `json:"bundled_daily_rate_minor"`
+	IsActive              bool        `json:"is_active"`
+}
+
+func (q *Queries) UpsertFleetBundledAttachment(ctx context.Context, arg UpsertFleetBundledAttachmentParams) (FleetBundledAttachment, error) {
+	row := q.db.QueryRow(ctx, upsertFleetBundledAttachment,
+		arg.FleetID,
+		arg.AttachmentID,
+		arg.BundledDailyRateMinor,
+		arg.IsActive,
+	)
+	var i FleetBundledAttachment
+	err := row.Scan(
+		&i.ID,
+		&i.FleetID,
+		&i.AttachmentID,
+		&i.BundledDailyRateMinor,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

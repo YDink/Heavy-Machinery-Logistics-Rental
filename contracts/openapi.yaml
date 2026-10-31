@@ -47,10 +47,18 @@ paths:
     $ref: './endpoints/machinery/fleets.yaml'
   /fleets/{id}:
     $ref: './endpoints/machinery/fleet-by-id.yaml'
+  /fleets/{id}/attachments/link:
+    $ref: './endpoints/machinery/fleet-attachments-link.yaml'
+  /attachments:
+    $ref: './endpoints/machinery/attachments.yaml'
+  /attachments/inventory:
+    $ref: './endpoints/machinery/attachments-inventory.yaml'
   /geo/fleets/radius-search:
     $ref: './endpoints/geo/radius-search.yaml'
   /bookings:
     $ref: './endpoints/bookings/bookings.yaml'
+  /bookings/check-bundled-availability:
+    $ref: './endpoints/bookings/check-bundled-availability.yaml'
   /bookings/{id}:
     $ref: './endpoints/bookings/booking-by-id.yaml'
   /bookings/{id}:confirm-payment:

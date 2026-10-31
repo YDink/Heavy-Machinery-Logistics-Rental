@@ -355,3 +355,125 @@ RETURNING *;
 -- name: GetFleetSpecIndexed :one
 SELECT * FROM fleet_spec_indexed
 WHERE fleet_id = $1;
+
+
+-- Attachments Inventory & Lifecycle (Partition 05-03, SRS §05.03, ATT-01 to ATT-14)
+-- name: CreateAttachment :one
+INSERT INTO attachments (
+    owner_id,
+    attachment_type,
+    make,
+    model,
+    sub_type_size,
+    serial_number,
+    operating_weight_kg,
+    min_carrier_weight_tonnes,
+    max_carrier_weight_tonnes,
+    required_flow_min_lmin,
+    required_flow_max_lmin,
+    required_pressure_bar,
+    pin_diameter_mm,
+    pin_spread_mm,
+    standalone_daily_rate_minor,
+    security_deposit_minor,
+    min_rental_days,
+    payment_evidence_window_hours,
+    status
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+) RETURNING *;
+
+-- name: GetAttachmentByID :one
+SELECT * FROM attachments
+WHERE id = $1;
+
+-- name: ListAttachmentsByOwner :many
+SELECT * FROM attachments
+WHERE owner_id = $1 AND (status = $2 OR $2 = '')
+ORDER BY created_at DESC;
+
+-- name: UpdateAttachmentStatus :one
+UPDATE attachments
+SET status = $2,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: CreateAttachmentCompatibleCategory :one
+INSERT INTO attachment_compatible_categories (
+    attachment_id,
+    category_code
+) VALUES (
+    $1, $2
+) ON CONFLICT (attachment_id, category_code) DO NOTHING
+RETURNING *;
+
+-- name: ListAttachmentCompatibleCategories :many
+SELECT category_code FROM attachment_compatible_categories
+WHERE attachment_id = $1;
+
+-- name: CreateAttachmentPhoto :one
+INSERT INTO attachment_photos (
+    attachment_id,
+    angle,
+    storage_uri
+) VALUES (
+    $1, $2, $3
+) ON CONFLICT (attachment_id, angle) DO UPDATE SET
+    storage_uri = EXCLUDED.storage_uri
+RETURNING *;
+
+-- name: ListAttachmentPhotos :many
+SELECT * FROM attachment_photos
+WHERE attachment_id = $1;
+
+-- name: UpsertFleetBundledAttachment :one
+INSERT INTO fleet_bundled_attachments (
+    fleet_id,
+    attachment_id,
+    bundled_daily_rate_minor,
+    is_active
+) VALUES (
+    $1, $2, $3, $4
+) ON CONFLICT (fleet_id, attachment_id) DO UPDATE SET
+    bundled_daily_rate_minor = EXCLUDED.bundled_daily_rate_minor,
+    is_active = EXCLUDED.is_active,
+    updated_at = NOW()
+RETURNING *;
+
+-- name: ListBundledAttachmentsByFleet :many
+SELECT 
+    fba.id AS link_id,
+    fba.fleet_id,
+    fba.attachment_id,
+    fba.bundled_daily_rate_minor,
+    fba.is_active,
+    a.attachment_type,
+    a.make,
+    a.model,
+    a.sub_type_size,
+    a.serial_number,
+    a.standalone_daily_rate_minor,
+    a.status
+FROM fleet_bundled_attachments fba
+JOIN attachments a ON a.id = fba.attachment_id
+WHERE fba.fleet_id = $1 AND fba.is_active = true;
+
+-- name: CheckAttachmentOverlap :one
+SELECT EXISTS (
+    SELECT 1 FROM attachment_reservations
+    WHERE attachment_id = $1
+      AND hire_period && $2::daterange
+      AND status IN ('HOLD_PENDING', 'PAYMENT_EVIDENCE_UPLOADED', 'CONFIRMED', 'ACTIVE', 'RETURN_INITIATED')
+);
+
+-- name: CreateAttachmentReservation :one
+INSERT INTO attachment_reservations (
+    attachment_id,
+    reference_id,
+    hire_period,
+    daily_rate_applied_minor,
+    status
+) VALUES (
+    $1, $2, $3, $4, $5
+) RETURNING *;

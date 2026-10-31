@@ -1,0 +1,38 @@
+post:
+  tags: [machinery, attachments]
+  summary: Link attachment to fleet asset
+  description: Links an attachment from owner inventory to a fleet asset with a discounted bundled rate.
+  operationId: linkFleetAttachment
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Target fleet asset UUID
+      schema:
+        type: string
+        format: uuid
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/attachment.yaml#/LinkFleetAttachmentRequest'
+  responses:
+    '200':
+      description: Attachment linked successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/attachment.yaml#/LinkFleetAttachmentSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '422':
+      $ref: '../../components/responses/bad-request.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

@@ -1,0 +1,33 @@
+post:
+  tags: [machinery, attachments]
+  summary: Register a new standalone attachment
+  description: Adds a new equipment attachment under the authenticated owner inventory.
+  operationId: createAttachment
+  security:
+    - BearerAuth: []
+  parameters:
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+    - $ref: '../../components/parameters/country-code-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/attachment.yaml#/CreateAttachmentRequest'
+  responses:
+    '201':
+      description: Attachment successfully registered.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/attachment.yaml#/AttachmentSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/forbidden.yaml'
+    '422':
+      $ref: '../../components/responses/bad-request.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

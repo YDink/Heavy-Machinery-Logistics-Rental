@@ -3,7 +3,7 @@
 **Project Phase:** Phase 2 (Partition Feature Development)  
 **Active Requirement Partition:** `05-01-core-identity-auth` (Registration, Phone Verification & Authentication)  
 **Active Branch:** `feature/05-01-core-identity-auth`  
-**Current Stop Point:** Partition 05-01 Core Identity & Authentication Implementation Complete & Certified
+**Current Stop Point:** Partition 05-01 Full-Stack Implementation Complete & Certified (Backend + Mobile UI)
 
 ---
 
@@ -32,7 +32,11 @@
     - Data: `ApiClient` with Dio interceptor injecting `X-Country-Code` and `Authorization`, `SecureStorageService` wrapping `flutter_secure_storage`, `AuthRemoteDataSource`, `AuthRepositoryImpl`.
     - Domain: Entities `AuthTokens`, `AuthUser`; use cases `RequestOtpUseCase`, `VerifyOtpUseCase`, `GetCurrentUserUseCase`.
     - Presentation: `AuthBloc` state machine managing `UnauthenticatedState`, `OtpSentState`, `AuthenticatedState`, `AuthErrorState`.
-  - 100% mobile test pass rate (10 tests: `app_config_test.dart`, `auth_bloc_test.dart`, `widget_test.dart`); zero warnings on `fvm flutter analyze`.
+  - UI Pages:
+    - `PhoneInputPage`: Country code selector (🇪🇹 `+251` / 🇰🇪 `+254`), E.164 number formatting, dynamic carrier ingress badges (`Ethio Telecom`, `Safaricom ET`, `Safaricom KE`, `Airtel KE` per `REG-02`).
+    - `OtpVerificationPage`: 6-digit reticle (`AUT-01`), animated 60-second cooldown timer (`AUT-02`, `D-05-01-001`), and automatic session transition.
+  - Dependency Injection: `initDependencies()` configured via `get_it` across all flavors (`main_dev`, `main_staging`, `main_prod`).
+  - 100% mobile test pass rate (12 tests across unit, BLoC, and widget suites); zero warnings on `fvm flutter analyze`.
 - **Next.js Admin Console (`admin/`):**
   - Turbopack production build verified cleanly in 719ms; ESLint passed with 0 errors.
 
@@ -40,10 +44,9 @@
 
 ## 2. Next Immediate Tasks Upon Resuming
 
-1. **Partition 05-01 Mobile UI Pages:**
-   - Implement `PhoneInputPage` with dynamic country code selection (+251 / +254) and telco badges.
-   - Implement `OtpVerificationPage` with 6-digit reticle and 60-second animated cooldown timer.
-2. **Next Partition: `05-02-fleet-registration-machinery-logistics`:**
+1. **Merge Partition 05-01 to `main`:**
+   - Execute rebase-merge of `feature/05-01-core-identity-auth` into `main`.
+2. **Initialize Partition `05-02-fleet-registration-machinery-logistics`:**
    - Create feature branch `feature/05-02-fleet-registration-machinery-logistics`.
    - Implement fleet asset schema, SeaweedFS media ingestion, and machinery catalog endpoints.
 
@@ -57,4 +60,4 @@
 - `D-05-01-002`: Dual-Token ES256 Minting with Valkey Refresh Token Family Rotation.
 
 ### Blockers
-- None. Partition 05-01 core identity & auth pipeline is fully tested and certified.
+- None. Partition 05-01 is 100% complete across Backend and Mobile.

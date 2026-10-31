@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dink_mobile/core/config/app_config.dart';
+import 'package:dink_mobile/core/di/injection.dart';
 import 'package:dink_mobile/main.dart';
 
 void main() {
-  setUp(() {
+  setUp(() async {
     AppConfig.initialize(
       const AppConfig(
         environment: Environment.dev,
@@ -15,11 +16,13 @@ void main() {
         isarDbName: 'isar_dev',
       ),
     );
+    await initDependencies();
   });
 
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

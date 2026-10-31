@@ -712,7 +712,7 @@ To eliminate Git merge collisions and support concurrent partition development, 
 
 ### ADR-007: Mobile Architecture — Flutter Feature-First Clean Architecture
 * **Context:** The mobile app must serve three user roles, maintain offline reliability, and execute complex state machines.
-* **Decision:** Implement Flutter 3.47.9 with Feature-First packaging, BLoC state management, and an Isar local database.
+* **Decision:** Implement Flutter 3.47.9 with Feature-First packaging, BLoC state management, and an Isar Community (`isar_community`) local database.
 * **Consequences:** Clean separation of concerns, isolated testing, and robust offline field inspection support.
 
 ### ADR-008: Admin Console — Server-Driven Metadata Architecture (`/admin/ui-config`)

@@ -1,4 +1,4 @@
-# ADR-006: Flutter 3.47.9 Feature-First Clean Architecture with BLoC and Isar 3.1 Offline Outbox
+# ADR-006: Flutter 3.47.9 Feature-First Clean Architecture with BLoC and Isar Community Offline Outbox
 
 - **Status:** Accepted
 - **Date:** 2026-10-26
@@ -59,7 +59,7 @@ We adopt **Option 1: Flutter 3.47.9 + BLoC + Isar 3.1 NoSQL Offline Outbox**.
 
 1. **Feature-First Architecture:** Each feature folder (`features/{auth, booking, inspection, fleet}`) encapsulates its own `presentation` (Widgets, BLoCs), `domain` (UseCases, Entities), and `data` (DataSources, Repositories).
 2. **BLoC Determinism:** UI emits events (`ConfirmHandoverInspectionPressed`), BLoC executes use case, and UI renders immutable state (`InspectionState.uploading`, `InspectionState.success`). Concurrency transformers (`droppable()` for form submissions, `restartable()` for search debounce) eliminate race conditions.
-3. **Isar Offline Outbox:** Inspection checklists, photos (local URI + hash), and hour meter readings are saved immediately to local Isar collections with client UUIDv4 idempotency keys. A background connectivity listener flushes pending outbox mutations when cellular signal returns.
+3. **Isar Community Offline Outbox:** Inspection checklists, photos (local URI + hash), and hour meter readings are saved immediately to local Isar collections with client UUIDv4 idempotency keys. Driven by actively maintained `isar_community` (v3.4.1+) and `isar_community_flutter_libs` rather than abandoned upstream v3.1, providing seamless compatibility with Flutter 3.20+ / Dart 3.4+ and modern Android 14/15 / iOS 18 toolchains. A background connectivity listener flushes pending outbox mutations when cellular signal returns.
 4. **Isolate Worker Image Pipeline:** Image compression (WebP, $1600\text{ px}$ max dimension, $82\%$ quality) executes in a separate Dart isolate, maintaining 60fps UI animations.
 
 ---

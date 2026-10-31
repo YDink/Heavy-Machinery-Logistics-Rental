@@ -3,7 +3,7 @@
 **Project Phase:** Phase 2 (Partition Feature Development)  
 **Active Requirement Partition:** `05-01-core-identity-auth` (Registration, Phone Verification & Authentication)  
 **Active Branch:** `feature/05-01-core-identity-auth`  
-**Current Stop Point:** Partition 05-01 Full-Stack Implementation Complete & Certified (Backend + Mobile UI)
+**Current Stop Point:** Partition 05-01 Certified; Migrated Local Storage to Actively Maintained `isar_community` (^3.4.1)
 
 ---
 
@@ -36,6 +36,9 @@
     - `PhoneInputPage`: Country code selector (🇪🇹 `+251` / 🇰🇪 `+254`), E.164 number formatting, dynamic carrier ingress badges (`Ethio Telecom`, `Safaricom ET`, `Safaricom KE`, `Airtel KE` per `REG-02`).
     - `OtpVerificationPage`: 6-digit reticle (`AUT-01`), animated 60-second cooldown timer (`AUT-02`, `D-05-01-001`), and automatic session transition.
   - Dependency Injection: `initDependencies()` configured via `get_it` across all flavors (`main_dev`, `main_staging`, `main_prod`).
+  - Local Database Ecosystem Migration:
+    - Replaced abandoned upstream `isar: ^3.1.0+1` with actively maintained `isar_community: ^3.4.1` and `isar_community_flutter_libs: ^3.4.1`.
+    - Synchronized `pubspec.lock` and canonical architectural specifications (`ADR-006`, `TECH_STACK.md`, `12-tech-stack.md`, `SRS v2`, `ADD`).
   - 100% mobile test pass rate (12 tests across unit, BLoC, and widget suites); zero warnings on `fvm flutter analyze`.
 - **Next.js Admin Console (`admin/`):**
   - Turbopack production build verified cleanly in 719ms; ESLint passed with 0 errors.
@@ -56,6 +59,7 @@
 
 ### Decisions Formulated & Enforced
 - `ADR-001` through `ADR-017` in `docs/decisions/`.
+- `ADR-006`: Flutter 3.47.9 Feature-First Clean Architecture with BLoC and Isar Community Offline Outbox.
 - `D-05-01-001`: Phone OTP Authentication with Leaky Bucket Rate Limiting and Carrier Failover.
 - `D-05-01-002`: Dual-Token ES256 Minting with Valkey Refresh Token Family Rotation.
 

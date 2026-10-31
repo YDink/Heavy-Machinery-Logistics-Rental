@@ -59,7 +59,7 @@ The mobile client delivers a unified experience across Renter, Owner, and Operat
 - **Runtime & Version Management:** Flutter `3.47.9` (Dart `3.9.x`) pinned via FVM (`.fvmrc`, `fvm use 3.47.9`). All development, analysis, test, and build commands execute strictly through `fvm flutter ...`.
 - **State Management:** `flutter_bloc` (`v9.x`) — Predictable, unidirectional data flow separating presentation components from business logic via discrete Events and States.
 - **Networking & API Client:** `dio` (`v5.x`) — HTTP client configured with custom interceptors for Bearer token refresh, `Idempotency-Key` generation, `X-Country-Code` injection, and RFC 9457 problem detail parsing.
-- **Offline Storage & Keyset Caching:** `isar` (`v4.x`) — High-performance, embedded NoSQL database for cached fleet listings, inspection drafts, and localized dictionary records.
+- **Offline Storage & Keyset Caching:** `isar_community` (`^3.4.1`) & `isar_community_flutter_libs` — High-performance, actively maintained community fork of Isar embedded NoSQL database for cached fleet listings, inspection drafts, and localized dictionary records.
 - **Secure Token Storage:** `flutter_secure_storage` — Encrypted storage backed by iOS Keychain and Android KeyStore for refresh tokens and biometrics flags.
 - **Immutable Models:** `freezed` + `json_serializable` — Type-safe, compile-time code generation for union states, copy mutations, and JSON mapping.
 - **Location & Geofencing:** `geolocator` — Accurate device location acquisition for machine discovery and check-in radius verification.

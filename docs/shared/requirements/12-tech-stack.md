@@ -48,7 +48,7 @@
 |---|---|---|---|
 | **Backend Core** | Go (`net/http`, `go-chi/v5`) | `1.27.3` | Modular monolith with Clean Architecture. High concurrency, low memory footprint ($\le 256\text{MB}$ RSS baseline). Zero runtime reflection overhead. |
 | **API Gateway** | Traefik / Envoy | `3.x` | Lightweight edge routing, TLS 1.3 termination, rate-limiting, and Gzip/Brotli compression. |
-| **Mobile Client** | Flutter (Dart) | `3.47.9` (Dart `3.9.x`) | Feature-First Clean Architecture, BLoC state management (`flutter_bloc`), Isar 3.1 NoSQL offline transactional store. Managed via FVM. |
+| **Mobile Client** | Flutter (Dart) | `3.47.9` (Dart `3.9.x`) | Feature-First Clean Architecture, BLoC state management (`flutter_bloc`), Isar Community (`isar_community ^3.4.1`) NoSQL offline transactional store. Managed via FVM. |
 | **Admin Web Console** | Next.js (React 19 App Router) | `16.x` (latest CVE patch) | React Server Components by default, Tailwind CSS v4, dynamic data grids via `@tanstack/react-table`, dynamic UI schema engine. |
 | **Relational Database** | PostgreSQL + PostGIS | `18.6` + PostGIS `3.6.4` | Spatial WGS 84 (`SRID 4326`) distance queries via GiST indexing, `TIMESTAMPTZ` UTC storage, double-entry ledgers. |
 | **Database Driver** | `jackc/pgx/v5` | `v5.7.1` | Native binary protocol encoding with connection pooling (`pgxpool`). Heavy ORMs strictly prohibited. |

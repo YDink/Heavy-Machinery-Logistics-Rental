@@ -1500,7 +1500,7 @@ The platform enforces a strict automated quality assurance pipeline in the CI/CD
 |---|---|---|
 | **Backend Core** | Go `1.27.3` (`net/http`, `go-chi/v5`) | Modular monolith with Clean Architecture. High concurrency, memory efficiency ($\le 256\text{MB}$ RSS). |
 | **API Gateway** | Traefik `3.x` / Envoy Gateway | Lightweight edge routing, TLS 1.3 termination, rate-limiting, and Gzip/Brotli compression. |
-| **Mobile Client** | Flutter `3.47.9` (Dart `3.9.x`) | Feature-First Clean Architecture, BLoC state management, Isar NoSQL offline store. |
+| **Mobile Client** | Flutter `3.47.9` (Dart `3.9.x`) | Feature-First Clean Architecture, BLoC state management, Isar Community (`isar_community`) NoSQL offline store. |
 | **Admin Web Console** | Next.js `16.x` (React 19 App Router) | React Server Components by default, Tailwind CSS v4, dynamic grids via `@tanstack/react-table`. |
 | **Relational Database** | PostgreSQL `18.6` + PostGIS `3.6.4` | Spatial WGS 84 (`SRID 4326`) distance queries via GiST indexing, `TIMESTAMPTZ` UTC storage. |
 | **Database Driver** | `jackc/pgx/v5` (`v5.7.1`) | Native binary protocol encoding with connection pooling (`pgxpool`). Heavy ORMs prohibited. |

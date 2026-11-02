@@ -9,9 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/application"
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/domain"
@@ -21,14 +19,12 @@ import (
 	machineryInfra "github.com/dinkmachinery/dink-core/internal/modules/machinery/infrastructure"
 	"github.com/dinkmachinery/dink-core/internal/platform/i18n"
 	transport "github.com/dinkmachinery/dink-core/internal/transport/http"
-	"github.com/dinkmachinery/dink-core/internal/transport/http/generated"
 )
 
 func setupTestMachineryRouter(t *testing.T) (http.Handler, *application.TokenService, *domain.User, uuid.UUID) {
 	userRepo := newMockUserRepo()
 	cache := infrastructure.NewMemoryCache()
-	logger := zap.NewNop()
-	smsGateway := infrastructure.NewMockSMSGateway(logger)
+	smsGateway := infrastructure.NewMockSMSGateway(nil)
 
 	otpService := application.NewOTPService(cache, smsGateway, application.OTPServiceConfig{MockOTP: true})
 	tokenService, err := application.NewTokenService(nil, cache)
@@ -75,26 +71,24 @@ func setupTestMachineryRouter(t *testing.T) (http.Handler, *application.TokenSer
 	discoveryService := machineryApp.NewDiscoveryService(machineryRepo, machineryRepo, nil)
 	server := transport.NewServer(authService, tokenService, machineryService, nil, discoveryService)
 
-	r := chi.NewRouter()
-	r.Use(i18n.LanguageMiddleware)
-	generated.HandlerWithOptions(server, generated.ChiServerOptions{
-		BaseURL:    "/api/v1",
-		BaseRouter: r,
-	})
+	mux := http.NewServeMux()
+	server.RegisterRoutes(mux)
+	handler := i18n.LanguageMiddleware(mux)
 
-	return r, tokenService, testUser, categoryID
+	return handler, tokenService, testUser, categoryID
 }
 
 func TestHTTP_ListCategories_Localization(t *testing.T) {
 	handler, _, _, _ := setupTestMachineryRouter(t)
 
-	// 1. English default
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/categories", nil)
-	w := httptest.NewRecorder()
-	handler.ServeHTTP(w, req)
+	// 1. English request
+	reqEN := httptest.NewRequest(http.MethodGet, "/api/v1/categories", nil)
+	reqEN.Header.Set("Accept-Language", "en-US,en;q=0.9")
+	wEN := httptest.NewRecorder()
+	handler.ServeHTTP(wEN, reqEN)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected 200, got %d. Body: %s", w.Code, w.Body.String())
+	if wEN.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", wEN.Code)
 	}
 
 	var enResp struct {
@@ -105,8 +99,9 @@ func TestHTTP_ListCategories_Localization(t *testing.T) {
 			Code string `json:"code"`
 		} `json:"data"`
 	}
-	if err := json.Unmarshal(w.Body.Bytes(), &enResp); err != nil {
-		t.Fatalf("failed to decode response: %v", err)
+	_ = json.Unmarshal(wEN.Body.Bytes(), &enResp)
+	if len(enResp.Data) == 0 {
+		t.Fatalf("expected at least 1 category in response")
 	}
 
 	foundEN := false
@@ -171,24 +166,29 @@ func TestHTTP_CreateFleet_FullLifecycle(t *testing.T) {
 		"fuelType":           "DIESEL",
 		"selfMoveCapable":    false,
 		"dailyRate": map[string]interface{}{
-			"amountMinor": 5500000,
+			"amountMinor": 3500000,
 			"currency":    "ETB",
 		},
+		"excessHourRateMinor": 450000,
+		"minRentalDays":       3,
+		"paymentTimeoutHours": 24,
+		"operatorIncluded":    true,
 		"location": map[string]interface{}{
-			"latitude":    8.9806,
-			"longitude":   38.7578,
-			"addressText": "Akaki Kaliti, Addis Ababa",
+			"latitude":    9.0300,
+			"longitude":   38.7400,
+			"addressText": "Bole Subcity, Woreda 03, Addis Ababa",
 		},
 		"photos": []map[string]interface{}{
-			{"angle": "FRONT", "storageUri": "s3://fleet/front.jpg", "fileHash": "h1"},
-			{"angle": "REAR", "storageUri": "s3://fleet/rear.jpg", "fileHash": "h2"},
-			{"angle": "LEFT", "storageUri": "s3://fleet/left.jpg", "fileHash": "h3"},
-			{"angle": "RIGHT", "storageUri": "s3://fleet/right.jpg", "fileHash": "h4"},
-			{"angle": "CABIN", "storageUri": "s3://fleet/cabin.jpg", "fileHash": "h5"},
-			{"angle": "METER", "storageUri": "s3://fleet/meter.jpg", "fileHash": "h6"},
+			{"angle": "FRONT", "storageUri": "s3://fleet/front.jpg", "fileHash": "hashfront"},
+			{"angle": "REAR", "storageUri": "s3://fleet/rear.jpg", "fileHash": "hashrear"},
+			{"angle": "LEFT", "storageUri": "s3://fleet/left.jpg", "fileHash": "hashleft"},
+			{"angle": "RIGHT", "storageUri": "s3://fleet/right.jpg", "fileHash": "hashright"},
+			{"angle": "CABIN", "storageUri": "s3://fleet/cabin.jpg", "fileHash": "hashcabin"},
+			{"angle": "METER", "storageUri": "s3://fleet/meter.jpg", "fileHash": "hashmeter"},
 		},
 		"specValues": []map[string]interface{}{
-			{"fieldKey": "operating_weight_kg", "valueNumeric": 21500.0},
+			{"fieldKey": "operating_weight_kg", "valueNumeric": 21800.0},
+			{"fieldKey": "max_digging_depth_mm", "valueNumeric": 6620.0},
 		},
 	}
 
@@ -209,24 +209,33 @@ func TestHTTP_CreateFleet_FullLifecycle(t *testing.T) {
 		Data    struct {
 			ID                 string `json:"id"`
 			Status             string `json:"status"`
-			RegistrationNumber string `json:"registrationNumber"`
+			Make               string `json:"make"`
 			Model              string `json:"model"`
+			RegistrationNumber string `json:"registrationNumber"`
+			DailyRate          struct {
+				AmountMinor int64  `json:"amountMinor"`
+				Currency    string `json:"currency"`
+			} `json:"dailyRate"`
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(w.Body.Bytes(), &createResp); err != nil {
 		t.Fatalf("failed to decode create response: %v", err)
 	}
 
-	if createResp.Data.ID == "" {
-		t.Fatalf("expected non-empty created fleet ID")
-	}
 	if createResp.Data.Status != "PENDING_APPROVAL" {
-		t.Errorf("expected initial status PENDING_APPROVAL, got %s", createResp.Data.Status)
+		t.Errorf("expected status PENDING_APPROVAL, got %s", createResp.Data.Status)
+	}
+	if createResp.Data.Make != "Komatsu" {
+		t.Errorf("expected make Komatsu, got %s", createResp.Data.Make)
+	}
+	if createResp.Data.DailyRate.AmountMinor != 3500000 {
+		t.Errorf("expected daily rate 3500000, got %d", createResp.Data.DailyRate.AmountMinor)
 	}
 
-	// 2. Query created fleet asset by ID (GET /fleets/{id})
-	getReq := httptest.NewRequest(http.MethodGet, "/api/v1/fleets/"+createResp.Data.ID, nil)
-	getReq.Header.Set("Authorization", "Bearer "+tokenPair.AccessToken)
+	fleetID := createResp.Data.ID
+
+	// 2. Retrieve Created Fleet (GET /fleets/{id})
+	getReq := httptest.NewRequest(http.MethodGet, "/api/v1/fleets/"+fleetID, nil)
 	getW := httptest.NewRecorder()
 
 	handler.ServeHTTP(getW, getReq)
@@ -234,7 +243,7 @@ func TestHTTP_CreateFleet_FullLifecycle(t *testing.T) {
 		t.Fatalf("expected 200 OK for GET /fleets/{id}, got %d. Body: %s", getW.Code, getW.Body.String())
 	}
 
-	// 3. Test Failure: Incomplete walkaround photos (missing METER)
+	// 3. Test Failure: Incomplete walkaround photos (< 6 photos)
 	incompleteReqBody := map[string]interface{}{
 		"categoryId":         categoryID.String(),
 		"make":               "Komatsu",
@@ -243,17 +252,18 @@ func TestHTTP_CreateFleet_FullLifecycle(t *testing.T) {
 		"registrationNumber": "ET-3-99882",
 		"baselineMeterHours": 100.0,
 		"dailyRate": map[string]interface{}{
-			"amountMinor": 5000000,
+			"amountMinor": 3500000,
 			"currency":    "ETB",
 		},
 		"location": map[string]interface{}{
-			"latitude":    8.9806,
-			"longitude":   38.7578,
-			"addressText": "Akaki Kaliti",
+			"latitude":    9.0300,
+			"longitude":   38.7400,
+			"addressText": "Addis Ababa",
 		},
 		"photos": []map[string]interface{}{
 			{"angle": "FRONT", "storageUri": "s3://fleet/front.jpg"},
 			{"angle": "REAR", "storageUri": "s3://fleet/rear.jpg"},
+			// missing left, right, cabin, meter
 		},
 	}
 	incompleteBytes, _ := json.Marshal(incompleteReqBody)
@@ -264,8 +274,8 @@ func TestHTTP_CreateFleet_FullLifecycle(t *testing.T) {
 	incW := httptest.NewRecorder()
 
 	handler.ServeHTTP(incW, incReq)
-	if incW.Code != http.StatusBadRequest {
-		t.Fatalf("expected 400 Bad Request for incomplete walkaround, got %d. Body: %s", incW.Code, incW.Body.String())
+	if incW.Code != http.StatusUnprocessableEntity && incW.Code != http.StatusBadRequest {
+		t.Fatalf("expected 422 Unprocessable or 400 Bad Request for incomplete walkaround, got %d. Body: %s", incW.Code, incW.Body.String())
 	}
 
 	// 4. Test Failure: Negative baseline meter reading

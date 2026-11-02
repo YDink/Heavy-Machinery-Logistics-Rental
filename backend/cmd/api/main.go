@@ -3,13 +3,12 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"go.uber.org/zap"
 
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/application"
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/domain"
@@ -20,7 +19,6 @@ import (
 	"github.com/dinkmachinery/dink-core/internal/platform/config"
 	"github.com/dinkmachinery/dink-core/internal/platform/database/db"
 	transport "github.com/dinkmachinery/dink-core/internal/transport/http"
-	"github.com/dinkmachinery/dink-core/internal/transport/http/generated"
 )
 
 type HealthResponse struct {
@@ -36,13 +34,14 @@ func main() {
 		panic("failed to load runtime configuration: " + err.Error())
 	}
 
-	var logger *zap.Logger
+	var logHandler slog.Handler
 	if cfg.IsDevelopment() {
-		logger, _ = zap.NewDevelopment()
+		logHandler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug})
 	} else {
-		logger, _ = zap.NewProduction()
+		logHandler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo})
 	}
-	defer logger.Sync()
+	logger := slog.New(logHandler)
+	slog.SetDefault(logger)
 
 	ctx := context.Background()
 
@@ -106,12 +105,10 @@ func main() {
 	discoveryService := machineryApp.NewDiscoveryService(discoveryRepo, categoryRepo, nil)
 	server := transport.NewServer(authService, tokenService, machineryService, attachmentService, discoveryService)
 
-	r := chi.NewRouter()
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Recoverer)
+	// Standard Library net/http.ServeMux Router
+	mux := http.NewServeMux()
 
-	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		resp := HealthResponse{
 			Success: true,
 			Data: map[string]interface{}{
@@ -130,18 +127,21 @@ func main() {
 		_ = json.NewEncoder(w).Encode(resp)
 	})
 
-	// Mount OpenAPI routes onto /api/v1
-	generated.HandlerWithOptions(server, generated.ChiServerOptions{
-		BaseURL:    "/api/v1",
-		BaseRouter: r,
-	})
+	// Mount all standard library API routes
+	server.RegisterRoutes(mux)
+
+	// Standard library middleware chain
+	var handler http.Handler = mux
+	handler = transport.Recoverer(logger)(handler)
+	handler = transport.RequestLogger(logger)(handler)
+	handler = transport.RequestID(handler)
 
 	logger.Info("Backend modular monolith initialized with Auth and Machinery partitions",
-		zap.String("environment", string(cfg.Env)),
-		zap.String("port", cfg.Port),
-		zap.Bool("mockOTP", cfg.MockOTP),
+		slog.String("environment", string(cfg.Env)),
+		slog.String("port", cfg.Port),
+		slog.Bool("mockOTP", cfg.MockOTP),
 	)
 
 	serverAddr := ":" + cfg.Port
-	_ = http.ListenAndServe(serverAddr, r)
+	_ = http.ListenAndServe(serverAddr, handler)
 }

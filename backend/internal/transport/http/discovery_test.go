@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/stretchr/testify/assert"
@@ -22,20 +21,17 @@ import (
 	"github.com/dinkmachinery/dink-core/internal/transport/http/generated"
 )
 
-func setupDiscoveryTestServer(t *testing.T) (*chi.Mux, *machineryInfra.MemoryMachineryRepository, *machineryApp.MemoryHoldLeaseChecker) {
+func setupDiscoveryTestServer(t *testing.T) (http.Handler, *machineryInfra.MemoryMachineryRepository, *machineryApp.MemoryHoldLeaseChecker) {
 	memRepo := machineryInfra.NewMemoryMachineryRepository()
 	leaseChecker := machineryApp.NewMemoryHoldLeaseChecker()
 
 	discoveryService := machineryApp.NewDiscoveryService(memRepo, memRepo, leaseChecker)
 	server := transport.NewServer(nil, nil, nil, nil, discoveryService)
 
-	r := chi.NewRouter()
-	generated.HandlerWithOptions(server, generated.ChiServerOptions{
-		BaseURL:    "/api/v1",
-		BaseRouter: r,
-	})
+	mux := http.NewServeMux()
+	server.RegisterRoutes(mux)
 
-	return r, memRepo, leaseChecker
+	return mux, memRepo, leaseChecker
 }
 
 func TestSearchFleetsEndpoint(t *testing.T) {

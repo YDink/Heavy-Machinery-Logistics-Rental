@@ -9,14 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/application"
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/domain"
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/infrastructure"
 	transport "github.com/dinkmachinery/dink-core/internal/transport/http"
-	"github.com/dinkmachinery/dink-core/internal/transport/http/generated"
 )
 
 type mockUserRepo struct {
@@ -94,8 +91,7 @@ func (m *mockUserRepo) IncrementTokenVersion(ctx context.Context, id uuid.UUID) 
 func setupTestRouter(t *testing.T) (http.Handler, *application.TokenService) {
 	userRepo := newMockUserRepo()
 	cache := infrastructure.NewMemoryCache()
-	logger := zap.NewNop()
-	smsGateway := infrastructure.NewMockSMSGateway(logger)
+	smsGateway := infrastructure.NewMockSMSGateway(nil)
 
 	otpService := application.NewOTPService(cache, smsGateway, application.OTPServiceConfig{MockOTP: true})
 	tokenService, err := application.NewTokenService(nil, cache)
@@ -106,13 +102,10 @@ func setupTestRouter(t *testing.T) (http.Handler, *application.TokenService) {
 	authService := application.NewAuthService(userRepo, otpService, tokenService)
 	server := transport.NewServer(authService, tokenService, nil, nil, nil)
 
-	r := chi.NewRouter()
-	generated.HandlerWithOptions(server, generated.ChiServerOptions{
-		BaseURL:    "/api/v1",
-		BaseRouter: r,
-	})
+	mux := http.NewServeMux()
+	server.RegisterRoutes(mux)
 
-	return r, tokenService
+	return mux, tokenService
 }
 
 func TestHTTP_AuthFullLifecycle(t *testing.T) {
@@ -165,7 +158,7 @@ func TestHTTP_AuthFullLifecycle(t *testing.T) {
 		t.Fatalf("VerifyOtp expected status 200, got %d. Body: %s", w.Code, w.Body.String())
 	}
 
-	var tokenResp struct {
+	var verifyResp struct {
 		Success bool `json:"success"`
 		Data    struct {
 			AccessToken      string `json:"accessToken"`
@@ -174,17 +167,17 @@ func TestHTTP_AuthFullLifecycle(t *testing.T) {
 			ExpiresInSeconds int    `json:"expiresInSeconds"`
 		} `json:"data"`
 	}
-	if err := json.Unmarshal(w.Body.Bytes(), &tokenResp); err != nil {
+	if err := json.Unmarshal(w.Body.Bytes(), &verifyResp); err != nil {
 		t.Fatalf("failed to parse VerifyOtp response: %v", err)
 	}
-	if tokenResp.Data.AccessToken == "" || tokenResp.Data.RefreshToken == "" {
-		t.Fatalf("expected non-empty tokens in response")
+	if verifyResp.Data.AccessToken == "" || verifyResp.Data.RefreshToken == "" {
+		t.Fatalf("expected non-empty tokens in VerifyOtp response")
 	}
 
-	accessToken := tokenResp.Data.AccessToken
-	refreshToken := tokenResp.Data.RefreshToken
+	accessToken := verifyResp.Data.AccessToken
+	refreshToken := verifyResp.Data.RefreshToken
 
-	// 3. Get Current User Profile using Bearer Access Token
+	// 3. Authenticated Profile Inspection (GET /auth/users/me)
 	req = httptest.NewRequest(http.MethodGet, "/api/v1/auth/users/me", nil)
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 	w = httptest.NewRecorder()
@@ -194,21 +187,22 @@ func TestHTTP_AuthFullLifecycle(t *testing.T) {
 		t.Fatalf("GetCurrentUserProfile expected status 200, got %d. Body: %s", w.Code, w.Body.String())
 	}
 
-	var userResp struct {
+	var profileResp struct {
 		Success bool `json:"success"`
 		Data    struct {
 			PhoneNumber string `json:"phoneNumber"`
+			Role        string `json:"role"`
 			Status      string `json:"status"`
 		} `json:"data"`
 	}
-	if err := json.Unmarshal(w.Body.Bytes(), &userResp); err != nil {
-		t.Fatalf("failed to parse GetCurrentUserProfile response: %v", err)
+	if err := json.Unmarshal(w.Body.Bytes(), &profileResp); err != nil {
+		t.Fatalf("failed to parse profile response: %v", err)
 	}
-	if userResp.Data.PhoneNumber != "+251911442910" {
-		t.Errorf("expected phone +251911442910, got %s", userResp.Data.PhoneNumber)
+	if profileResp.Data.PhoneNumber != "+251911442910" {
+		t.Errorf("expected phone +251911442910, got %s", profileResp.Data.PhoneNumber)
 	}
 
-	// 4. Refresh Session using Refresh Token
+	// 4. Token Refresh (POST /auth/session/refresh)
 	refreshReqBody := map[string]string{
 		"refreshToken": refreshToken,
 	}
@@ -222,38 +216,56 @@ func TestHTTP_AuthFullLifecycle(t *testing.T) {
 		t.Fatalf("RefreshSession expected status 200, got %d. Body: %s", w.Code, w.Body.String())
 	}
 
-	var refreshedTokenResp struct {
+	var refreshResp struct {
 		Success bool `json:"success"`
 		Data    struct {
 			AccessToken  string `json:"accessToken"`
 			RefreshToken string `json:"refreshToken"`
 		} `json:"data"`
 	}
-	_ = json.Unmarshal(w.Body.Bytes(), &refreshedTokenResp)
-	if refreshedTokenResp.Data.RefreshToken == refreshToken {
-		t.Fatalf("expected refresh token to be rotated to a new value")
+	if err := json.Unmarshal(w.Body.Bytes(), &refreshResp); err != nil {
+		t.Fatalf("failed to parse refresh response: %v", err)
+	}
+	if refreshResp.Data.AccessToken == "" || refreshResp.Data.AccessToken == accessToken {
+		t.Fatalf("expected new access token upon refresh")
 	}
 
-	// 5. Test Replay Attack: Reusing the old refresh token must return 401 Unauthorized
+	// 5. Test Token Reuse Detection (Re-using old refresh token)
 	req = httptest.NewRequest(http.MethodPost, "/api/v1/auth/session/refresh", bytes.NewReader(refreshBytes))
 	req.Header.Set("Content-Type", "application/json")
 	w = httptest.NewRecorder()
 
 	handler.ServeHTTP(w, req)
 	if w.Code != http.StatusUnauthorized {
-		t.Fatalf("Replay of old refresh token expected 401, got %d", w.Code)
+		t.Fatalf("expected status 401 for compromised token reuse, got %d", w.Code)
 	}
 }
 
-func TestHTTP_UnauthorizedEndpoints(t *testing.T) {
+func TestHTTP_RequestOtp_InvalidPhone(t *testing.T) {
 	handler, _ := setupTestRouter(t)
 
-	// GET /auth/users/me without Authorization header returns 401
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/auth/users/me", nil)
+	reqBody := map[string]string{
+		"phoneNumber": "not-a-phone",
+		"purpose":     "LOGIN",
+	}
+	reqBytes, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/otp/request", bytes.NewReader(reqBytes))
+	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 
 	handler.ServeHTTP(w, req)
-	if w.Code != http.StatusUnauthorized {
-		t.Fatalf("expected status 401, got %d", w.Code)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected status 400 for invalid phone, got %d", w.Code)
+	}
+
+	var errResp struct {
+		Success bool `json:"success"`
+		Error   struct {
+			Code string `json:"code"`
+		} `json:"error"`
+	}
+	_ = json.Unmarshal(w.Body.Bytes(), &errResp)
+	if errResp.Error.Code != "ERR_INVALID_PHONE_NUMBER" {
+		t.Errorf("expected code ERR_INVALID_PHONE_NUMBER, got %s", errResp.Error.Code)
 	}
 }

@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -41,11 +43,50 @@ func NewServer(
 	}
 }
 
-// Ensure Server implements generated.ServerInterface
-var _ generated.ServerInterface = (*Server)(nil)
+// RegisterRoutes registers all API endpoints directly onto the Go standard library http.ServeMux.
+func (s *Server) RegisterRoutes(mux *http.ServeMux) {
+	// Authentication (Partition 05-01)
+	mux.HandleFunc("POST /api/v1/auth/otp/request", s.RequestOtp)
+	mux.HandleFunc("POST /api/v1/auth/otp/verify", s.VerifyOtp)
+	mux.HandleFunc("POST /api/v1/auth/session/refresh", s.RefreshSession)
+	mux.HandleFunc("GET /api/v1/auth/users/me", s.GetCurrentUserProfile)
+
+	// Machinery Categories & Dynamic Specs (Partition 05-02)
+	mux.HandleFunc("GET /api/v1/categories", s.ListCategories)
+	mux.HandleFunc("POST /api/v1/fleets", s.CreateFleetAsset)
+	mux.HandleFunc("GET /api/v1/fleets", s.ListFleets)
+	mux.HandleFunc("GET /api/v1/fleets/{id}", s.GetFleetById)
+
+	// Attachments & Bundling (Partition 05-03)
+	mux.HandleFunc("POST /api/v1/attachments", s.CreateAttachment)
+	mux.HandleFunc("GET /api/v1/attachments/inventory", s.ListAttachmentInventory)
+	mux.HandleFunc("POST /api/v1/fleets/{id}/attachments/link", s.LinkFleetAttachment)
+	mux.HandleFunc("POST /api/v1/bookings/check-bundled-availability", s.CheckBundledAvailability)
+
+	// Spatial Discovery & Dynamic Comparison (Partition 05-04)
+	mux.HandleFunc("GET /api/v1/fleets/search", s.SearchFleets)
+	mux.HandleFunc("POST /api/v1/fleets/compare", s.CompareFleets)
+	mux.HandleFunc("GET /api/v1/fleets/{id}/availability", s.GetFleetAvailability)
+	mux.HandleFunc("GET /api/v1/geo/fleets/radius-search", s.SearchFleetsByRadius)
+
+	// Stubs for Upcoming Partitions
+	mux.HandleFunc("GET /api/v1/country-configs", s.ListCountryConfigs)
+	mux.HandleFunc("GET /api/v1/country-configs/{code}", s.GetCountryConfigByCode)
+	mux.HandleFunc("PUT /api/v1/country-configs/{code}", s.UpdateCountryConfig)
+	mux.HandleFunc("GET /api/v1/admin/ui-config", s.GetAdminUiConfig)
+	mux.HandleFunc("GET /api/v1/bookings", s.ListBookings)
+	mux.HandleFunc("POST /api/v1/bookings", s.CreateBooking)
+	mux.HandleFunc("GET /api/v1/bookings/{id}", s.GetBookingById)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/inspections", s.SubmitBookingInspection)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/cancel", s.CancelBooking)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/confirm-payment", s.ConfirmBookingPayment)
+	mux.HandleFunc("POST /api/v1/payments", s.InitiatePayment)
+	mux.HandleFunc("GET /api/v1/wallets/me", s.GetMyWallet)
+	mux.HandleFunc("GET /api/v1/wallets/me/transactions", s.ListWalletTransactions)
+}
 
 // RequestOtp handles POST /auth/otp/request
-func (s *Server) RequestOtp(w http.ResponseWriter, r *http.Request, params generated.RequestOtpParams) {
+func (s *Server) RequestOtp(w http.ResponseWriter, r *http.Request) {
 	var body generated.RequestOtpJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
@@ -56,9 +97,9 @@ func (s *Server) RequestOtp(w http.ResponseWriter, r *http.Request, params gener
 		return
 	}
 
-	countryCode := "ET"
-	if params.XCountryCode != nil && *params.XCountryCode != "" {
-		countryCode = string(*params.XCountryCode)
+	countryCode := r.Header.Get("X-Country-Code")
+	if countryCode == "" {
+		countryCode = "ET"
 	}
 
 	input := application.RequestOTPInput{
@@ -104,7 +145,7 @@ func (s *Server) RequestOtp(w http.ResponseWriter, r *http.Request, params gener
 }
 
 // VerifyOtp handles POST /auth/otp/verify
-func (s *Server) VerifyOtp(w http.ResponseWriter, r *http.Request, params generated.VerifyOtpParams) {
+func (s *Server) VerifyOtp(w http.ResponseWriter, r *http.Request) {
 	var body generated.VerifyOtpJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
@@ -150,7 +191,7 @@ func (s *Server) VerifyOtp(w http.ResponseWriter, r *http.Request, params genera
 			response.Error(w, r, http.StatusForbidden, response.ProblemDetails{
 				Title:  "Account Suspended",
 				Code:   "ERR_ACCOUNT_SUSPENDED",
-				Detail: "Account is suspended or locked. Please contact compliance support.",
+				Detail: "Your account is temporarily suspended. Please contact support.",
 			})
 			return
 		}
@@ -234,13 +275,13 @@ func (s *Server) GetCurrentUserProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-	claims, err := s.tokenService.VerifyAccessToken(r.Context(), tokenString)
+	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+	claims, err := s.tokenService.VerifyAccessToken(r.Context(), tokenStr)
 	if err != nil {
 		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
 			Title:  "Unauthorized",
-			Code:   "ERR_INVALID_ACCESS_TOKEN",
-			Detail: "Access token is invalid, expired, or revoked.",
+			Code:   "ERR_INVALID_TOKEN",
+			Detail: "Access token is invalid or expired.",
 		})
 		return
 	}
@@ -277,7 +318,7 @@ func (s *Server) GetCurrentUserProfile(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, r, http.StatusOK, userProfile)
 }
 
-// ==================== Partition 05-02 & 05-04 Fleet & Categories ====================
+// ==================== Partition 05-02 Machinery & Categories ====================
 
 // ListCategories handles GET /categories
 func (s *Server) ListCategories(w http.ResponseWriter, r *http.Request) {
@@ -321,13 +362,24 @@ func (s *Server) ListCategories(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetFleetById handles GET /fleets/{id}
-func (s *Server) GetFleetById(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+func (s *Server) GetFleetById(w http.ResponseWriter, r *http.Request) {
 	if s.machineryService == nil {
 		s.notImplemented(w, r, "05-02")
 		return
 	}
 
-	asset, err := s.machineryService.GetFleetAsset(r.Context(), uuid.UUID(id))
+	idStr := r.PathValue("id")
+	fleetID, err := uuid.Parse(idStr)
+	if err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Invalid Fleet ID",
+			Code:   "ERR_INVALID_UUID",
+			Detail: "The provided fleet ID is not a valid UUID.",
+		})
+		return
+	}
+
+	asset, err := s.machineryService.GetFleetAsset(r.Context(), fleetID)
 	if err != nil {
 		if errors.Is(err, machineryDomain.ErrFleetNotFound) {
 			response.Error(w, r, http.StatusNotFound, response.ProblemDetails{
@@ -368,13 +420,12 @@ func (s *Server) GetFleetById(w http.ResponseWriter, r *http.Request, id openapi
 }
 
 // CreateFleetAsset handles POST /fleets
-func (s *Server) CreateFleetAsset(w http.ResponseWriter, r *http.Request, params generated.CreateFleetAssetParams) {
+func (s *Server) CreateFleetAsset(w http.ResponseWriter, r *http.Request) {
 	if s.machineryService == nil {
 		s.notImplemented(w, r, "05-02")
 		return
 	}
 
-	// 1. Authenticate user from Bearer Token
 	authHeader := r.Header.Get("Authorization")
 	if !strings.HasPrefix(authHeader, "Bearer ") {
 		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
@@ -385,13 +436,13 @@ func (s *Server) CreateFleetAsset(w http.ResponseWriter, r *http.Request, params
 		return
 	}
 
-	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-	claims, err := s.tokenService.VerifyAccessToken(r.Context(), tokenString)
+	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+	claims, err := s.tokenService.VerifyAccessToken(r.Context(), tokenStr)
 	if err != nil {
 		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
 			Title:  "Unauthorized",
-			Code:   "ERR_INVALID_ACCESS_TOKEN",
-			Detail: "Access token is invalid, expired, or revoked.",
+			Code:   "ERR_INVALID_TOKEN",
+			Detail: "Access token is invalid or expired.",
 		})
 		return
 	}
@@ -406,7 +457,6 @@ func (s *Server) CreateFleetAsset(w http.ResponseWriter, r *http.Request, params
 		return
 	}
 
-	// 2. Decode JSON body with extended fleet properties
 	var body struct {
 		generated.CreateFleetRequest
 		ChassisVin          string  `json:"chassisVin"`
@@ -464,25 +514,25 @@ func (s *Server) CreateFleetAsset(w http.ResponseWriter, r *http.Request, params
 	}
 
 	input := machineryApp.CreateFleetInput{
-		OwnerID:             userUUID,
-		SubcategoryID:       uuid.UUID(body.CategoryId),
-		Make:                body.Make,
-		Model:               body.Model,
-		ManufactureYear:     body.ManufacturingYear,
-		PlateNumber:         body.RegistrationNumber,
-		ChassisVIN:          body.ChassisVin,
-		BaselineMeterHours:  body.BaselineMeterHours,
-		FuelType:            fuel,
-		SelfMoveCapable:     body.SelfMoveCapable,
-		DailyRateMinor:      body.DailyRate.AmountMinor,
-		ExcessHourRateMinor: body.ExcessHourRateMinor,
-		MinRentalDays:       body.MinRentalDays,
-		PaymentTimeoutHours: body.PaymentTimeoutHours,
-		OperatorIncluded:    body.OperatorIncluded,
-		Latitude:            body.Location.Latitude,
-		Longitude:           body.Location.Longitude,
-		AddressText:         body.Location.AddressText,
-		Photos:              photos,
+		OwnerID:              userUUID,
+		SubcategoryID:        uuid.UUID(body.CategoryId),
+		Make:                 body.Make,
+		Model:                body.Model,
+		ManufactureYear:      body.ManufacturingYear,
+		PlateNumber:          body.RegistrationNumber,
+		ChassisVIN:           body.ChassisVin,
+		BaselineMeterHours:   body.BaselineMeterHours,
+		DailyRateMinor:       body.DailyRate.AmountMinor,
+		FuelType:             fuel,
+		SelfMoveCapable:      body.SelfMoveCapable,
+		ExcessHourRateMinor:  body.ExcessHourRateMinor,
+		MinRentalDays:        body.MinRentalDays,
+		PaymentTimeoutHours:  body.PaymentTimeoutHours,
+		OperatorIncluded:     body.OperatorIncluded,
+		Latitude:             body.Location.Latitude,
+		Longitude:            body.Location.Longitude,
+		AddressText:          body.Location.AddressText,
+		Photos:               photos,
 		SpecValues:          specValues,
 	}
 
@@ -543,7 +593,7 @@ func (s *Server) CreateFleetAsset(w http.ResponseWriter, r *http.Request, params
 			Currency:    "ETB",
 		},
 		Status:  generated.FleetAssetStatus(createdAsset.Status),
-		Version:            createdAsset.Version,
+		Version: createdAsset.Version,
 	}
 	dto.Location.Latitude = createdAsset.Latitude
 	dto.Location.Longitude = createdAsset.Longitude
@@ -553,7 +603,7 @@ func (s *Server) CreateFleetAsset(w http.ResponseWriter, r *http.Request, params
 }
 
 // ListFleets handles GET /fleets
-func (s *Server) ListFleets(w http.ResponseWriter, r *http.Request, params generated.ListFleetsParams) {
+func (s *Server) ListFleets(w http.ResponseWriter, r *http.Request) {
 	if s.machineryService == nil {
 		s.notImplemented(w, r, "05-04")
 		return
@@ -564,7 +614,7 @@ func (s *Server) ListFleets(w http.ResponseWriter, r *http.Request, params gener
 // ==================== Attachments Handlers (Partition 05-03) ====================
 
 // CreateAttachment handles POST /attachments (ATT-01 to ATT-14)
-func (s *Server) CreateAttachment(w http.ResponseWriter, r *http.Request, params generated.CreateAttachmentParams) {
+func (s *Server) CreateAttachment(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("Authorization")
 	if !strings.HasPrefix(authHeader, "Bearer ") {
 		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
@@ -676,7 +726,7 @@ func (s *Server) CreateAttachment(w http.ResponseWriter, r *http.Request, params
 }
 
 // ListAttachmentInventory handles GET /attachments/inventory
-func (s *Server) ListAttachmentInventory(w http.ResponseWriter, r *http.Request, params generated.ListAttachmentInventoryParams) {
+func (s *Server) ListAttachmentInventory(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("Authorization")
 	if !strings.HasPrefix(authHeader, "Bearer ") {
 		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
@@ -706,10 +756,7 @@ func (s *Server) ListAttachmentInventory(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	statusFilter := ""
-	if params.Status != nil {
-		statusFilter = string(*params.Status)
-	}
+	statusFilter := r.URL.Query().Get("status")
 
 	items, err := s.attachmentService.ListOwnerInventory(r.Context(), userUUID, statusFilter)
 	if err != nil {
@@ -740,16 +787,22 @@ func (s *Server) ListAttachmentInventory(w http.ResponseWriter, r *http.Request,
 		})
 	}
 
-	resp := generated.AttachmentInventoryListResponseData{
-		TotalCount:  len(inventory),
-		Attachments: inventory,
-	}
-
-	response.JSON(w, r, http.StatusOK, resp)
+	response.JSON(w, r, http.StatusOK, inventory)
 }
 
 // LinkFleetAttachment handles POST /fleets/{id}/attachments/link (FL-32, FL-33)
-func (s *Server) LinkFleetAttachment(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+func (s *Server) LinkFleetAttachment(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	fleetUUID, err := uuid.Parse(idStr)
+	if err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Invalid Fleet ID",
+			Code:   "ERR_INVALID_UUID",
+			Detail: "The provided fleet ID is not a valid UUID.",
+		})
+		return
+	}
+
 	authHeader := r.Header.Get("Authorization")
 	if !strings.HasPrefix(authHeader, "Bearer ") {
 		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
@@ -789,7 +842,6 @@ func (s *Server) LinkFleetAttachment(w http.ResponseWriter, r *http.Request, id 
 		return
 	}
 
-	fleetUUID := uuid.UUID(id)
 	attUUID := uuid.UUID(body.AttachmentId)
 
 	link, err := s.attachmentService.LinkAttachmentToFleet(r.Context(), userUUID, machineryApp.LinkAttachmentInput{
@@ -901,84 +953,85 @@ func (s *Server) CheckBundledAvailability(w http.ResponseWriter, r *http.Request
 	response.JSON(w, r, http.StatusOK, data)
 }
 
-// ==================== Unimplemented Stubs for Future Partitions ====================
+// ==================== Partition 05-04 Spatial Discovery & Comparison ====================
 
-func (s *Server) notImplemented(w http.ResponseWriter, r *http.Request, partition string) {
-	response.Error(w, r, http.StatusNotImplemented, response.ProblemDetails{
-		Title:  "Not Implemented",
-		Code:   "ERR_PARTITION_PENDING",
-		Detail: "This endpoint will be activated during partition " + partition + ".",
-	})
-}
-
-func (s *Server) ListCountryConfigs(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-11") }
-func (s *Server) GetCountryConfigByCode(w http.ResponseWriter, r *http.Request, countryCode string) { s.notImplemented(w, r, "05-11") }
-func (s *Server) UpdateCountryConfig(w http.ResponseWriter, r *http.Request, countryCode string, params generated.UpdateCountryConfigParams) { s.notImplemented(w, r, "05-11") }
-func (s *Server) GetAdminUiConfig(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-11") }
-func (s *Server) ListBookings(w http.ResponseWriter, r *http.Request, params generated.ListBookingsParams) { s.notImplemented(w, r, "05-05") }
-func (s *Server) CreateBooking(w http.ResponseWriter, r *http.Request, params generated.CreateBookingParams) { s.notImplemented(w, r, "05-05") }
-func (s *Server) GetBookingById(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) { s.notImplemented(w, r, "05-05") }
-func (s *Server) SubmitBookingInspection(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params generated.SubmitBookingInspectionParams) { s.notImplemented(w, r, "05-07") }
-func (s *Server) CancelBooking(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params generated.CancelBookingParams) { s.notImplemented(w, r, "05-05") }
-func (s *Server) ConfirmBookingPayment(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params generated.ConfirmBookingPaymentParams) { s.notImplemented(w, r, "05-05") }
 // SearchFleets handles GET /fleets/search (SRS §05.04, SR-01 to SR-05, SR-07)
-func (s *Server) SearchFleets(w http.ResponseWriter, r *http.Request, params generated.SearchFleetsParams) {
+func (s *Server) SearchFleets(w http.ResponseWriter, r *http.Request) {
 	if s.discoveryService == nil {
 		s.notImplemented(w, r, "05-04")
 		return
 	}
 
+	q := r.URL.Query()
+	lat, _ := strconv.ParseFloat(q.Get("latitude"), 64)
+	lng, _ := strconv.ParseFloat(q.Get("longitude"), 64)
+
 	filter := machineryDomain.FleetSearchFilter{
-		Latitude:  params.Latitude,
-		Longitude: params.Longitude,
+		Latitude:  lat,
+		Longitude: lng,
 	}
 
-	if params.RadiusKm != nil {
-		filter.RadiusKm = float64(*params.RadiusKm)
+	if radStr := q.Get("radiusKm"); radStr != "" {
+		if rad, err := strconv.ParseFloat(radStr, 64); err == nil {
+			filter.RadiusKm = rad
+		}
 	}
-	if params.CategoryId != nil {
-		id := uuid.UUID(*params.CategoryId)
-		filter.CategoryID = &id
+	if catStr := q.Get("categoryId"); catStr != "" {
+		if id, err := uuid.Parse(catStr); err == nil {
+			filter.CategoryID = &id
+		}
 	}
-	if params.SubcategoryId != nil {
-		id := uuid.UUID(*params.SubcategoryId)
-		filter.SubcategoryID = &id
+	if subStr := q.Get("subcategoryId"); subStr != "" {
+		if id, err := uuid.Parse(subStr); err == nil {
+			filter.SubcategoryID = &id
+		}
 	}
-	if params.StartDate != nil {
-		t := params.StartDate.Time
-		filter.StartDate = &t
+	if startStr := q.Get("startDate"); startStr != "" {
+		if t, err := time.Parse("2006-01-02", startStr); err == nil {
+			filter.StartDate = &t
+		}
 	}
-	if params.EndDate != nil {
-		t := params.EndDate.Time
-		filter.EndDate = &t
+	if endStr := q.Get("endDate"); endStr != "" {
+		if t, err := time.Parse("2006-01-02", endStr); err == nil {
+			filter.EndDate = &t
+		}
 	}
-	if params.MinRateMinor != nil {
-		filter.MinRateMinor = params.MinRateMinor
+	if minStr := q.Get("minRateMinor"); minStr != "" {
+		if m, err := strconv.ParseInt(minStr, 10, 64); err == nil {
+			filter.MinRateMinor = &m
+		}
 	}
-	if params.MaxRateMinor != nil {
-		filter.MaxRateMinor = params.MaxRateMinor
+	if maxStr := q.Get("maxRateMinor"); maxStr != "" {
+		if m, err := strconv.ParseInt(maxStr, 10, 64); err == nil {
+			filter.MaxRateMinor = &m
+		}
 	}
-	if params.OperatorIncluded != nil {
-		filter.OperatorIncluded = params.OperatorIncluded
+	if opStr := q.Get("operatorIncluded"); opStr != "" {
+		if b, err := strconv.ParseBool(opStr); err == nil {
+			filter.OperatorIncluded = &b
+		}
 	}
-	if params.FuelType != nil {
-		ft := string(*params.FuelType)
-		filter.FuelType = &ft
+	if fuelStr := q.Get("fuelType"); fuelStr != "" {
+		filter.FuelType = &fuelStr
 	}
-	if params.SelfMoveCapable != nil {
-		filter.SelfMoveCapable = params.SelfMoveCapable
+	if smStr := q.Get("selfMoveCapable"); smStr != "" {
+		if b, err := strconv.ParseBool(smStr); err == nil {
+			filter.SelfMoveCapable = &b
+		}
 	}
-	if params.Query != nil {
-		filter.Query = params.Query
+	if queryStr := q.Get("query"); queryStr != "" {
+		filter.Query = &queryStr
 	}
-	if params.SortBy != nil {
-		filter.SortBy = machineryDomain.SortBy(*params.SortBy)
+	if sortStr := q.Get("sortBy"); sortStr != "" {
+		filter.SortBy = machineryDomain.SortBy(sortStr)
 	}
-	if params.XCountryCode != nil {
-		filter.CountryCode = string(*params.XCountryCode)
+	if cc := r.Header.Get("X-Country-Code"); cc != "" {
+		filter.CountryCode = cc
 	}
-	if params.Limit != nil {
-		filter.Limit = *params.Limit
+	if limStr := q.Get("limit"); limStr != "" {
+		if l, err := strconv.Atoi(limStr); err == nil {
+			filter.Limit = l
+		}
 	}
 
 	out, err := s.discoveryService.SearchFleets(r.Context(), filter)
@@ -1176,15 +1229,42 @@ func (s *Server) CompareFleets(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetFleetAvailability handles GET /fleets/{id}/availability (SRS §05.04, SR-07)
-func (s *Server) GetFleetAvailability(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params generated.GetFleetAvailabilityParams) {
+func (s *Server) GetFleetAvailability(w http.ResponseWriter, r *http.Request) {
 	if s.discoveryService == nil {
 		s.notImplemented(w, r, "05-04")
 		return
 	}
 
-	fleetID := uuid.UUID(id)
-	start := params.StartDate.Time
-	end := params.EndDate.Time
+	idStr := r.PathValue("id")
+	fleetID, err := uuid.Parse(idStr)
+	if err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Invalid Fleet ID",
+			Code:   "ERR_INVALID_UUID",
+			Detail: "The provided fleet ID is not a valid UUID.",
+		})
+		return
+	}
+
+	q := r.URL.Query()
+	start, err := time.Parse("2006-01-02", q.Get("startDate"))
+	if err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Invalid Start Date",
+			Code:   "ERR_INVALID_DATE_FORMAT",
+			Detail: "Query parameter 'startDate' must be in YYYY-MM-DD format.",
+		})
+		return
+	}
+	end, err := time.Parse("2006-01-02", q.Get("endDate"))
+	if err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Invalid End Date",
+			Code:   "ERR_INVALID_DATE_FORMAT",
+			Detail: "Query parameter 'endDate' must be in YYYY-MM-DD format.",
+		})
+		return
+	}
 
 	info, err := s.discoveryService.GetFleetAvailability(r.Context(), fleetID, start, end)
 	if err != nil {
@@ -1252,17 +1332,30 @@ func (s *Server) GetFleetAvailability(w http.ResponseWriter, r *http.Request, id
 }
 
 // SearchFleetsByRadius handles legacy GET /geo/fleets/radius-search
-func (s *Server) SearchFleetsByRadius(w http.ResponseWriter, r *http.Request, params generated.SearchFleetsByRadiusParams) {
-	radius := params.RadiusKm
-	searchParams := generated.SearchFleetsParams{
-		Latitude:  params.Latitude,
-		Longitude: params.Longitude,
-		RadiusKm:  &radius,
-		Limit:     params.Limit,
-		Cursor:    params.Cursor,
-	}
-	s.SearchFleets(w, r, searchParams)
+func (s *Server) SearchFleetsByRadius(w http.ResponseWriter, r *http.Request) {
+	s.SearchFleets(w, r)
 }
-func (s *Server) InitiatePayment(w http.ResponseWriter, r *http.Request, params generated.InitiatePaymentParams) { s.notImplemented(w, r, "05-06") }
+
+// ==================== Unimplemented Stubs for Future Partitions ====================
+
+func (s *Server) notImplemented(w http.ResponseWriter, r *http.Request, partition string) {
+	response.Error(w, r, http.StatusNotImplemented, response.ProblemDetails{
+		Title:  "Not Implemented",
+		Code:   "ERR_PARTITION_PENDING",
+		Detail: "This endpoint will be activated during partition " + partition + ".",
+	})
+}
+
+func (s *Server) ListCountryConfigs(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-11") }
+func (s *Server) GetCountryConfigByCode(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-11") }
+func (s *Server) UpdateCountryConfig(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-11") }
+func (s *Server) GetAdminUiConfig(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-11") }
+func (s *Server) ListBookings(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-05") }
+func (s *Server) CreateBooking(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-05") }
+func (s *Server) GetBookingById(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-05") }
+func (s *Server) SubmitBookingInspection(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-07") }
+func (s *Server) CancelBooking(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-05") }
+func (s *Server) ConfirmBookingPayment(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-05") }
+func (s *Server) InitiatePayment(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-06") }
 func (s *Server) GetMyWallet(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-09") }
-func (s *Server) ListWalletTransactions(w http.ResponseWriter, r *http.Request, params generated.ListWalletTransactionsParams) { s.notImplemented(w, r, "05-09") }
+func (s *Server) ListWalletTransactions(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-09") }

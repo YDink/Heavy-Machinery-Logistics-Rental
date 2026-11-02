@@ -31,7 +31,7 @@ backend/
 ├── cmd/api/                  # Application entry points and dependency wiring
 ├── internal/
 │   ├── platform/             # Cross-cutting concerns (DB, telemetry, crypto, country)
-│   ├── transport/http/       # HTTP handlers, Chi router, RFC 9457 middleware
+│   ├── transport/http/       # HTTP handlers, net/http.ServeMux, RFC 9457 middleware
 │   └── modules/              # Bounded context modules (auth, machinery, booking, payment, admin, geo)
 │       └── <module>/
 │           ├── domain/       # Pure domain entities, invariants, value objects (no external imports)
@@ -40,7 +40,8 @@ backend/
 ```
 
 ### Core Libraries & Tooling
-- **HTTP Routing & Ingress:** `go-chi/chi/v5` — Lightweight, composable HTTP router adhering strictly to standard `net/http` primitives.
+- **HTTP Routing & Ingress:** Go Standard Library `net/http.ServeMux` — Zero external web framework architecture using Go 1.22+ native method-and-path pattern routing (`r.PathValue()`).
+- **Structured Logging:** Go Standard Library `log/slog` — Native high-performance structured text and JSON logging with zero external dependencies.
 - **Database Driver & Connection Pool:** `jackc/pgx/v5` — Native PostgreSQL wire protocol implementation with connection pooling, structured logging, and binary parameter binding.
 - **Query Generation & Type Safety:** `sqlc` (`v1.27+`) — Compiles validated SQL queries into type-safe, idiomatic Go structs. Raw runtime SQL strings and traditional ORMs (e.g., GORM, Ent) are prohibited.
 - **Migrations:** `golang-migrate/migrate/v4` — Sequential, directional (`up`/`down`) SQL migration runner integrated into local bootstrapping and CI release pipelines.

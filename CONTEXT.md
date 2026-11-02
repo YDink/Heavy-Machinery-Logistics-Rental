@@ -85,6 +85,19 @@
   - `scripts/validate-decision-template.sh`: Verified all decisions conform strictly to governance specifications.
   - `scripts/validate-decision-links.sh`: Verified all 19 ADRs and 80 L2 partition decisions have valid bidirectional links.
 
+### Completed (Zero Web Framework Migration — Pure Go Standard Library Architecture)
+- **Elimination of Web Frameworks & Third-Party Logging:**
+  - Removed `github.com/go-chi/chi/v5` and `go.uber.org/zap` completely from `backend/go.mod` and all backend packages.
+  - Migrated HTTP routing to native Go standard library `net/http.ServeMux` with Go 1.22+ method-and-path pattern matching (`mux.HandleFunc("POST /api/v1/auth/otp/request", ...)`).
+  - Path parameters extracted strictly using native `r.PathValue()`.
+  - Migrated structured application logging to Go standard library `log/slog` with contextual handlers (`slog.NewTextHandler` for Dev, `slog.NewJSONHandler` for Prod) and zero-PII masking.
+  - Re-configured `oapi-codegen` to generate pure type DTOs (`-generate types`) without framework-coupled server scaffolding.
+  - Auth, Machinery, Attachment, and Discovery transport handlers refactored to standard `func (s *Server) Handler(w http.ResponseWriter, r *http.Request)`.
+  - Created standard library HTTP middlewares in `backend/internal/transport/http/middleware.go` (`RequestID`, `Recoverer`, `RequestLogger`).
+  - 100% backend test pass rate across all packages (`go test ./...` and `go test -count=1 ./...`).
+  - 100% mobile test pass rate (40/40 tests passing; `fvm flutter test`).
+  - Updated `docs/TECH_STACK.md` and `docs/components/backend/AGENTS.md`.
+
 ---
 
 ## 2. Next Immediate Tasks (Partition 05-05: Booking, Reservation & Lifecycle State Machine Architecture)
@@ -105,7 +118,7 @@
      - `POST /bookings/{id}:confirm-payment` (`contracts/endpoints/bookings/confirm-payment.yaml`): Owner receipt verification.
      - `POST /bookings/{id}:cancel` (`contracts/endpoints/bookings/cancel-booking.yaml`): Bilateral cancellation with penalty calculation.
      - `GET /bookings/{id}` & `GET /bookings`: Single booking inspector and keyset paginated history.
-   - Bundle OpenAPI specs and generate TypeScript DTOs & Go chi server code.
+   - Bundle OpenAPI specs and generate TypeScript DTOs & Go types.
 3. **Backend Domain & Application Core (`backend/internal/modules/booking/`):**
    - Implement finite state machine (FSM) with strict transition matrix validation (`ValidateTransition`).
    - Implement deterministic cost quoting & tariff breakdown (`BK-04`).

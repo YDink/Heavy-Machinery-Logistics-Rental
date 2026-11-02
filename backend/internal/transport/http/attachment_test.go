@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,10 +20,9 @@ import (
 	machineryDomain "github.com/dinkmachinery/dink-core/internal/modules/machinery/domain"
 	machineryInfra "github.com/dinkmachinery/dink-core/internal/modules/machinery/infrastructure"
 	transport "github.com/dinkmachinery/dink-core/internal/transport/http"
-	"github.com/dinkmachinery/dink-core/internal/transport/http/generated"
 )
 
-func setupAttachmentTestRouter(t *testing.T) (*chi.Mux, *application.TokenService, *machineryInfra.MemoryMachineryRepository, uuid.UUID, string) {
+func setupAttachmentTestRouter(t *testing.T) (http.Handler, *application.TokenService, *machineryInfra.MemoryMachineryRepository, uuid.UUID, string) {
 	memRepo := machineryInfra.NewMemoryMachineryRepository()
 	cache := authInfra.NewMemoryCache()
 	tokenService, err := application.NewTokenService(nil, cache)
@@ -42,11 +40,8 @@ func setupAttachmentTestRouter(t *testing.T) (*chi.Mux, *application.TokenServic
 	discoveryService := machineryApp.NewDiscoveryService(memRepo, memRepo, nil)
 	server := transport.NewServer(nil, tokenService, machineryService, attachmentService, discoveryService)
 
-	r := chi.NewRouter()
-	generated.HandlerWithOptions(server, generated.ChiServerOptions{
-		BaseURL:    "/api/v1",
-		BaseRouter: r,
-	})
+	mux := http.NewServeMux()
+	server.RegisterRoutes(mux)
 
 	ownerID := uuid.New()
 	phone, _ := authDomain.ParsePhoneNumber("+251911223344", "ET")
@@ -66,7 +61,7 @@ func setupAttachmentTestRouter(t *testing.T) (*chi.Mux, *application.TokenServic
 	tokenPair, err := tokenService.MintTokenPair(context.Background(), testUser, "")
 	require.NoError(t, err)
 
-	return r, tokenService, memRepo, ownerID, tokenPair.AccessToken
+	return mux, tokenService, memRepo, ownerID, tokenPair.AccessToken
 }
 
 func TestHTTP_CreateAttachment_Unauthenticated(t *testing.T) {

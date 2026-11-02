@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"go.uber.org/zap"
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/application"
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/domain"
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/infrastructure"
@@ -13,8 +12,7 @@ import (
 func TestOTPService_SuccessFlow(t *testing.T) {
 	ctx := context.Background()
 	cache := infrastructure.NewMemoryCache()
-	logger := zap.NewNop()
-	smsGateway := infrastructure.NewMockSMSGateway(logger)
+	smsGateway := infrastructure.NewMockSMSGateway(nil)
 
 	otpService := application.NewOTPService(cache, smsGateway, application.OTPServiceConfig{MockOTP: true})
 
@@ -51,8 +49,7 @@ func TestOTPService_SuccessFlow(t *testing.T) {
 func TestOTPService_MaxAttemptsLockout(t *testing.T) {
 	ctx := context.Background()
 	cache := infrastructure.NewMemoryCache()
-	logger := zap.NewNop()
-	smsGateway := infrastructure.NewMockSMSGateway(logger)
+	smsGateway := infrastructure.NewMockSMSGateway(nil)
 
 	otpService := application.NewOTPService(cache, smsGateway, application.OTPServiceConfig{MockOTP: true})
 
@@ -92,8 +89,7 @@ func TestOTPService_MaxAttemptsLockout(t *testing.T) {
 func TestOTPService_RateLimiting(t *testing.T) {
 	ctx := context.Background()
 	cache := infrastructure.NewMemoryCache()
-	logger := zap.NewNop()
-	smsGateway := infrastructure.NewMockSMSGateway(logger)
+	smsGateway := infrastructure.NewMockSMSGateway(nil)
 
 	otpService := application.NewOTPService(cache, smsGateway, application.OTPServiceConfig{MockOTP: true})
 	phone, _ := domain.ParsePhoneNumber("+251911442910", "ET")

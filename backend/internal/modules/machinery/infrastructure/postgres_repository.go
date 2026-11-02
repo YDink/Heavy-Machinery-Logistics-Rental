@@ -776,3 +776,426 @@ func (r *PostgresMachineryRepository) CreateReservation(ctx context.Context, res
 	}
 	return nil
 }
+
+
+// ==================== Discovery Repository ====================
+
+var _ domain.DiscoveryRepository = (*PostgresMachineryRepository)(nil)
+
+func (r *PostgresMachineryRepository) SearchFleetsSpatial(ctx context.Context, filter domain.FleetSearchFilter) ([]domain.FleetSearchResult, int, error) {
+	radiusMeters := filter.RadiusKm * 1000.0
+	countryCode := filter.CountryCode
+	if countryCode == "" {
+		countryCode = "ET"
+	}
+
+	var subcatUUID pgtype.UUID
+	if filter.SubcategoryID != nil {
+		subcatUUID = pgtype.UUID{Bytes: *filter.SubcategoryID, Valid: true}
+	}
+
+	var startDate pgtype.Date
+	if filter.StartDate != nil {
+		startDate = pgtype.Date{Time: *filter.StartDate, Valid: true}
+	}
+
+	var endDate pgtype.Date
+	if filter.EndDate != nil {
+		endDate = pgtype.Date{Time: *filter.EndDate, Valid: true}
+	}
+
+	params := db.SearchFleetsSpatialParams{
+		Longitude:        filter.Longitude,
+		Latitude:         filter.Latitude,
+		CountryCode:      countryCode,
+		RadiusMeters:     radiusMeters,
+		SubcategoryID:    subcatUUID,
+		MinRateMinor:     filter.MinRateMinor,
+		MaxRateMinor:     filter.MaxRateMinor,
+		FuelType:         filter.FuelType,
+		OperatorIncluded: filter.OperatorIncluded,
+		SelfMoveCapable:  filter.SelfMoveCapable,
+		QueryText:        filter.Query,
+		StartDate:        startDate,
+		EndDate:          endDate,
+		QueryOffset:      int32(filter.Offset),
+		QueryLimit:       int32(filter.Limit),
+	}
+
+	rows, err := r.queries.SearchFleetsSpatial(ctx, params)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to execute spatial fleet search: %w", err)
+	}
+
+	results := make([]domain.FleetSearchResult, len(rows))
+	for i, row := range rows {
+		fID := uuid.UUID(row.ID.Bytes)
+		subID := uuid.UUID(row.SubcategoryID.Bytes)
+		ownID := uuid.UUID(row.OwnerID.Bytes)
+
+		var photoURI *string
+		if row.PrimaryPhotoUri != "" {
+			uri := row.PrimaryPhotoUri
+			photoURI = &uri
+		}
+
+		var weight *float64
+		if row.OperatingWeightKg.Valid {
+			v, _ := row.OperatingWeightKg.Float64Value()
+			if v.Valid {
+				weight = &v.Float64
+			}
+		}
+
+		var payload *float64
+		if row.PayloadCapacityKg.Valid {
+			v, _ := row.PayloadCapacityKg.Float64Value()
+			if v.Valid {
+				payload = &v.Float64
+			}
+		}
+
+		var power *float64
+		if row.GrossEnginePowerHp.Valid {
+			v, _ := row.GrossEnginePowerHp.Float64Value()
+			if v.Valid {
+				power = &v.Float64
+			}
+		}
+
+		rating := 5.0
+		if row.OwnerRating.Valid {
+			v, _ := row.OwnerRating.Float64Value()
+			if v.Valid {
+				rating = v.Float64
+			}
+		}
+
+		dist := 0.0
+		if d, ok := row.DistanceMeters.(float64); ok {
+			dist = d
+		}
+
+		score := domain.CalculateRecommendationScore(rating, dist, radiusMeters, int(row.ManufactureYear), 1.0)
+
+		results[i] = domain.FleetSearchResult{
+			FleetID:             fID,
+			SubcategoryID:       subID,
+			SubcategoryNameEN:   row.SubcategoryNameEn,
+			SubcategoryNameAM:   row.SubcategoryNameAm,
+			Make:                row.Make,
+			Model:               row.Model,
+			ManufactureYear:     int(row.ManufactureYear),
+			DailyRateMinor:      row.DailyRateMinor,
+			ExcessHourRateMinor: row.ExcessHourRateMinor,
+			DistanceMeters:      dist,
+			AvailabilityStatus:  domain.AvailabilityStatusAvailableNow,
+			SelfMoveCapable:     row.SelfMoveCapable,
+			OperatorIncluded:    row.OperatorIncluded,
+			FuelType:            row.FuelType,
+			PrimaryPhotoURI:     photoURI,
+			Owner: domain.FleetSearchOwner{
+				OwnerID:               ownID,
+				TradingName:           "Authorized Fleet Partner",
+				AverageRating:         rating,
+				TotalCompletedRentals: int(row.OwnerCompletedRentals),
+				IsVerified:            row.OwnerVerified,
+			},
+			KeySpecs: domain.FleetSearchKeySpecs{
+				OperatingWeightKg: weight,
+				PayloadCapacityKg: payload,
+				GrossPowerHp:      power,
+			},
+			RecommendationScore: score,
+		}
+	}
+
+	domain.SortSearchResults(results, filter.SortBy)
+	return results, len(results), nil
+}
+
+func (r *PostgresMachineryRepository) GetFleetsForComparison(ctx context.Context, fleetIDs []uuid.UUID) ([]domain.FleetAsset, error) {
+	pgUUIDs := make([]pgtype.UUID, len(fleetIDs))
+	for i, id := range fleetIDs {
+		pgUUIDs[i] = pgtype.UUID{Bytes: id, Valid: true}
+	}
+
+	rows, err := r.queries.GetFleetsForComparison(ctx, pgUUIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get fleets for comparison: %w", err)
+	}
+
+	fleets := make([]domain.FleetAsset, len(rows))
+	for i, row := range rows {
+		fID := uuid.UUID(row.ID.Bytes)
+		subID := uuid.UUID(row.SubcategoryID.Bytes)
+
+		var photos []domain.FleetPhoto
+		if row.PrimaryPhotoUri != "" {
+			photos = append(photos, domain.FleetPhoto{
+				FleetID:    fID,
+				StorageURI: row.PrimaryPhotoUri,
+			})
+		}
+
+		fleets[i] = domain.FleetAsset{
+			ID:                  fID,
+			SubcategoryID:       subID,
+			Make:                row.Make,
+			Model:               row.Model,
+			ManufactureYear:     int(row.ManufactureYear),
+			DailyRateMinor:      row.DailyRateMinor,
+			ExcessHourRateMinor: row.ExcessHourRateMinor,
+			SelfMoveCapable:     row.SelfMoveCapable,
+			OperatorIncluded:    row.OperatorIncluded,
+			FuelType:            domain.FuelType(row.FuelType),
+			Photos:              photos,
+		}
+	}
+	return fleets, nil
+}
+
+func (r *PostgresMachineryRepository) GetComparableSpecsForFleets(ctx context.Context, fleetIDs []uuid.UUID) ([]domain.SpecFieldDefinition, []domain.FleetSpecValue, error) {
+	pgUUIDs := make([]pgtype.UUID, len(fleetIDs))
+	for i, id := range fleetIDs {
+		pgUUIDs[i] = pgtype.UUID{Bytes: id, Valid: true}
+	}
+
+	rows, err := r.queries.GetComparableSpecsForFleets(ctx, pgUUIDs)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to get comparable specs: %w", err)
+	}
+
+	defsMap := make(map[string]domain.SpecFieldDefinition)
+	var defsOrder []string
+	var values []domain.FleetSpecValue
+
+	for _, row := range rows {
+		if _, ok := defsMap[row.FieldKey]; !ok {
+			specID := uuid.New()
+			def := domain.SpecFieldDefinition{
+				ID:           specID,
+				FieldKey:     row.FieldKey,
+				LabelEN:      row.LabelEn,
+				LabelAM:      row.LabelAm,
+				UnitSymbol:   row.UnitSymbol,
+				FieldType:    row.FieldType,
+				IsComparable: true,
+				DisplayOrder: int(row.DisplayOrder),
+			}
+			defsMap[row.FieldKey] = def
+			defsOrder = append(defsOrder, row.FieldKey)
+		}
+
+		def := defsMap[row.FieldKey]
+		fID := uuid.UUID(row.FleetID.Bytes)
+
+		var numVal *float64
+		if row.ValueNumeric.Valid {
+			v, _ := row.ValueNumeric.Float64Value()
+			if v.Valid {
+				numVal = &v.Float64
+			}
+		}
+
+		values = append(values, domain.FleetSpecValue{
+			FleetID:      fID,
+			SpecID:       def.ID,
+			FieldKey:     def.FieldKey,
+			ValueString:  row.ValueString,
+			ValueNumeric: numVal,
+			ValueBoolean: row.ValueBoolean,
+		})
+	}
+
+	var orderedDefs []domain.SpecFieldDefinition
+	for _, key := range defsOrder {
+		orderedDefs = append(orderedDefs, defsMap[key])
+	}
+
+	return orderedDefs, values, nil
+}
+
+func (r *PostgresMachineryRepository) GetFleetAvailability(ctx context.Context, fleetID uuid.UUID, start, end time.Time) (*domain.FleetAvailabilityInfo, error) {
+	pgID := pgtype.UUID{Bytes: fleetID, Valid: true}
+
+	blackoutRows, err := r.queries.ListFleetBlackoutsInRange(ctx, db.ListFleetBlackoutsInRangeParams{
+		FleetID: pgID,
+		Column2: pgtype.Date{Time: start, Valid: true},
+		Column3: pgtype.Date{Time: end, Valid: true},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list blackout ranges: %w", err)
+	}
+
+	availRows, err := r.queries.ListFleetAvailabilityRanges(ctx, db.ListFleetAvailabilityRangesParams{
+		FleetID: pgID,
+		Column2: pgtype.Date{Time: start, Valid: true},
+		Column3: pgtype.Date{Time: end, Valid: true},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list availability ranges: %w", err)
+	}
+
+	blackouts := make([]domain.DateRangeReason, len(blackoutRows))
+	for i, b := range blackoutRows {
+		blackouts[i] = domain.DateRangeReason{
+			StartDate: b.StartDate.Time,
+			EndDate:   b.EndDate.Time,
+			Reason:    b.Reason,
+		}
+	}
+
+	reserved := make([]domain.DateRangeState, len(availRows))
+	for i, a := range availRows {
+		reserved[i] = domain.DateRangeState{
+			StartDate: a.HirePeriod.Lower.Time,
+			EndDate:   a.HirePeriod.Upper.Time,
+			State:     a.State,
+		}
+	}
+
+	isAvailable := len(blackouts) == 0 && len(reserved) == 0
+	var reason *string
+	if !isAvailable {
+		r := "RESERVED"
+		if len(blackouts) > 0 {
+			r = "MAINTENANCE_BLACKOUT"
+		}
+		reason = &r
+	}
+
+	return &domain.FleetAvailabilityInfo{
+		FleetID:           fleetID,
+		IsAvailable:       isAvailable,
+		UnavailableReason: reason,
+		BlackoutRanges:    blackouts,
+		ReservedRanges:    reserved,
+	}, nil
+}
+
+func (r *PostgresMachineryRepository) CreateFleetAvailability(ctx context.Context, fleetID uuid.UUID, start, end time.Time, state string, refID *uuid.UUID) error {
+	pgID := pgtype.UUID{Bytes: fleetID, Valid: true}
+	var pgRef pgtype.UUID
+	if refID != nil {
+		pgRef = pgtype.UUID{Bytes: *refID, Valid: true}
+	}
+
+	hireRange := pgtype.Range[pgtype.Date]{
+		Lower:     pgtype.Date{Time: start, Valid: true},
+		Upper:     pgtype.Date{Time: end, Valid: true},
+		LowerType: pgtype.Inclusive,
+		UpperType: pgtype.Exclusive,
+		Valid:     true,
+	}
+
+	_, err := r.queries.CreateFleetAvailability(ctx, db.CreateFleetAvailabilityParams{
+		FleetID:     pgID,
+		HirePeriod:  hireRange,
+		State:       state,
+		ReferenceID: pgRef,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create fleet availability: %w", err)
+	}
+	return nil
+}
+
+func (r *PostgresMachineryRepository) UpsertOwnerAggregate(ctx context.Context, agg *domain.OwnerAggregate) error {
+	pgID := pgtype.UUID{Bytes: agg.OwnerID, Valid: true}
+	var rating pgtype.Numeric
+	rating.Scan(fmt.Sprintf("%.2f", agg.AverageRating))
+
+	var compRate pgtype.Numeric
+	compRate.Scan(fmt.Sprintf("%.4f", agg.CompletionRate))
+
+	_, err := r.queries.UpsertOwnerAggregate(ctx, db.UpsertOwnerAggregateParams{
+		OwnerID:               pgID,
+		AverageRating:         rating,
+		TotalRentalsCount:     int32(agg.TotalRentalsCount),
+		TotalCompletedRentals: int32(agg.TotalCompletedRentals),
+		CompletionRate:        compRate,
+		IsVerified:            agg.IsVerified,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to upsert owner aggregate: %w", err)
+	}
+	return nil
+}
+
+func (r *PostgresMachineryRepository) GetOwnerAggregate(ctx context.Context, ownerID uuid.UUID) (*domain.OwnerAggregate, error) {
+	pgID := pgtype.UUID{Bytes: ownerID, Valid: true}
+	row, err := r.queries.GetOwnerAggregate(ctx, pgID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get owner aggregate: %w", err)
+	}
+
+	rating := 5.0
+	if row.AverageRating.Valid {
+		v, _ := row.AverageRating.Float64Value()
+		if v.Valid {
+			rating = v.Float64
+		}
+	}
+
+	compRate := 1.0
+	if row.CompletionRate.Valid {
+		v, _ := row.CompletionRate.Float64Value()
+		if v.Valid {
+			compRate = v.Float64
+		}
+	}
+
+	return &domain.OwnerAggregate{
+		OwnerID:               uuid.UUID(row.OwnerID.Bytes),
+		AverageRating:         rating,
+		TotalRentalsCount:     int(row.TotalRentalsCount),
+		TotalCompletedRentals: int(row.TotalCompletedRentals),
+		CompletionRate:        compRate,
+		IsVerified:            row.IsVerified,
+		UpdatedAt:             row.UpdatedAt.Time,
+	}, nil
+}
+
+func (r *PostgresMachineryRepository) UpsertFleetInsurance(ctx context.Context, ins *domain.FleetInsurance) error {
+	pgID := pgtype.UUID{Bytes: ins.FleetID, Valid: true}
+	_, err := r.queries.UpsertFleetInsurance(ctx, db.UpsertFleetInsuranceParams{
+		FleetID:        pgID,
+		PolicyNumber:   ins.PolicyNumber,
+		ProviderName:   ins.ProviderName,
+		CoverageType:   ins.CoverageType,
+		Status:         ins.Status,
+		ExpiresAt:      pgtype.Date{Time: ins.ExpiresAt, Valid: true},
+		CertificateUri: ins.CertificateURI,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to upsert fleet insurance: %w", err)
+	}
+	return nil
+}
+
+func (r *PostgresMachineryRepository) GetFleetInsurance(ctx context.Context, fleetID uuid.UUID) (*domain.FleetInsurance, error) {
+	pgID := pgtype.UUID{Bytes: fleetID, Valid: true}
+	row, err := r.queries.GetFleetInsuranceByFleetID(ctx, pgID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get fleet insurance: %w", err)
+	}
+
+	return &domain.FleetInsurance{
+		ID:             uuid.UUID(row.ID.Bytes),
+		FleetID:        uuid.UUID(row.FleetID.Bytes),
+		PolicyNumber:   row.PolicyNumber,
+		ProviderName:   row.ProviderName,
+		CoverageType:   row.CoverageType,
+		Status:         row.Status,
+		ExpiresAt:      row.ExpiresAt.Time,
+		CertificateURI: row.CertificateUri,
+		UpdatedAt:      row.UpdatedAt.Time,
+	}, nil
+}

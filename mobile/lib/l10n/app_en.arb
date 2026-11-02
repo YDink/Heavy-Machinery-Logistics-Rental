@@ -343,5 +343,71 @@
   "perDay": "day",
   "@perDay": {
     "description": "Daily rental time unit"
+  },
+  "discoverySearchHint": "Search by make, model, or city...",
+  "@discoverySearchHint": {
+    "description": "Placeholder for discovery search input"
+  },
+  "filterTitle": "Filter Machinery",
+  "@filterTitle": {
+    "description": "Title for multi-facet filter sheet"
+  },
+  "dailyRate": "Daily Rate",
+  "@dailyRate": {
+    "description": "Label for daily rate"
+  },
+  "distanceAway": "{km} km away",
+  "@distanceAway": {
+    "description": "Distance indicator for fleet card",
+    "placeholders": {
+      "km": { "type": "String" }
+    }
+  },
+  "availableNow": "Available Now",
+  "@availableNow": {
+    "description": "Badge for immediate availability"
+  },
+  "heldPendingWire": "Held (In Checkout)",
+  "@heldPendingWire": {
+    "description": "Badge for fleet asset with active checkout hold"
+  },
+  "compareSelected": "Compare Selected ({count})",
+  "@compareSelected": {
+    "description": "Button to open comparison matrix",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "comparisonMatrixTitle": "Machinery Comparison",
+  "@comparisonMatrixTitle": {
+    "description": "Title for side-by-side comparison page"
+  },
+  "differencesOnly": "Differences Only",
+  "@differencesOnly": {
+    "description": "Toggle to filter identical spec rows in comparison"
+  },
+  "crewIncluded": "Crew Included",
+  "@crewIncluded": {
+    "description": "Badge for machine rental including operator"
+  },
+  "lowboyRequired": "Lowboy Required",
+  "@lowboyRequired": {
+    "description": "Badge for machine requiring transport trailer"
+  },
+  "applyFilters": "Apply Filters",
+  "@applyFilters": {
+    "description": "Button to apply selected filters"
+  },
+  "resetFilters": "Reset",
+  "@resetFilters": {
+    "description": "Button to reset filters"
+  },
+  "noFleetsFound": "No machinery found matching your search criteria.",
+  "@noFleetsFound": {
+    "description": "Empty state message when no fleets match"
+  },
+  "clearCompare": "Clear",
+  "@clearCompare": {
+    "description": "Button to clear comparison selection"
   }
 }

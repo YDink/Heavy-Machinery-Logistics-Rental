@@ -1,0 +1,24 @@
+post:
+  tags: [machinery]
+  summary: Side-by-side dynamic EAV spec comparison
+  description: Executes dynamic relational spec transposition for 2 to 3 machines belonging to the identical subcategory.
+  operationId: compareFleets
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/discovery.yaml#/FleetCompareRequest'
+  responses:
+    '200':
+      description: Spec comparison matrix returned.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/discovery.yaml#/FleetCompareSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '422':
+      $ref: '../../components/responses/unprocessable-entity.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

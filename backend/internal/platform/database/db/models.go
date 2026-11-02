@@ -111,6 +111,17 @@ type Fleet struct {
 	Version             int32              `json:"version"`
 	CreatedAt           pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+	CountryCode         string             `json:"country_code"`
+	SearchVector        *string            `json:"search_vector"`
+}
+
+type FleetAvailability struct {
+	ID          pgtype.UUID               `json:"id"`
+	FleetID     pgtype.UUID               `json:"fleet_id"`
+	HirePeriod  pgtype.Range[pgtype.Date] `json:"hire_period"`
+	State       string                    `json:"state"`
+	ReferenceID pgtype.UUID               `json:"reference_id"`
+	CreatedAt   pgtype.Timestamptz        `json:"created_at"`
 }
 
 type FleetBlackout struct {
@@ -130,6 +141,19 @@ type FleetBundledAttachment struct {
 	IsActive              bool               `json:"is_active"`
 	CreatedAt             pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt             pgtype.Timestamptz `json:"updated_at"`
+}
+
+type FleetInsurance struct {
+	ID             pgtype.UUID        `json:"id"`
+	FleetID        pgtype.UUID        `json:"fleet_id"`
+	PolicyNumber   string             `json:"policy_number"`
+	ProviderName   string             `json:"provider_name"`
+	CoverageType   string             `json:"coverage_type"`
+	Status         string             `json:"status"`
+	ExpiresAt      pgtype.Date        `json:"expires_at"`
+	CertificateUri string             `json:"certificate_uri"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
 }
 
 type FleetOperatorAssignment struct {
@@ -158,6 +182,7 @@ type FleetSpecIndexed struct {
 	PayloadCapacityKg  pgtype.Numeric     `json:"payload_capacity_kg"`
 	GrossEnginePowerHp pgtype.Numeric     `json:"gross_engine_power_hp"`
 	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
+	SpecsJson          []byte             `json:"specs_json"`
 }
 
 type FleetSpecValue struct {
@@ -196,6 +221,16 @@ type LocalizationTranslation struct {
 	IsVerified      bool               `json:"is_verified"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+}
+
+type OwnerAggregate struct {
+	OwnerID               pgtype.UUID        `json:"owner_id"`
+	AverageRating         pgtype.Numeric     `json:"average_rating"`
+	TotalRentalsCount     int32              `json:"total_rentals_count"`
+	TotalCompletedRentals int32              `json:"total_completed_rentals"`
+	CompletionRate        pgtype.Numeric     `json:"completion_rate"`
+	IsVerified            bool               `json:"is_verified"`
+	UpdatedAt             pgtype.Timestamptz `json:"updated_at"`
 }
 
 type OwnerOperatorMembership struct {

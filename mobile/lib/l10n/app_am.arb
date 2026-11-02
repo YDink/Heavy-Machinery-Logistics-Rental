@@ -81,5 +81,20 @@
   "verifiedClean": "የተረጋገጠ",
   "tapToCapture": "ፎቶ ለማንሳት ይንኩ",
   "photosCapturedCount": "{count} ከ {total} ተነስተዋል",
-  "perDay": "ቀን"
+  "perDay": "ቀን",
+  "discoverySearchHint": "በሞዴል ወይም በከተማ ይፈልጉ...",
+  "filterTitle": "የማሽን ማጣሪያ",
+  "dailyRate": "የቀን ኪራይ",
+  "distanceAway": "{km} ኪ.ሜ ርቀት",
+  "availableNow": "አሁን ክፍት ነው",
+  "heldPendingWire": "በይዞታ ላይ",
+  "compareSelected": "የተመረጡትን አወዳድር ({count})",
+  "comparisonMatrixTitle": "የማሽነሪ ማነፃፀሪያ",
+  "differencesOnly": "ልዩነቶችን ብቻ አሳይ",
+  "crewIncluded": "ኦፕሬተር ያለው",
+  "lowboyRequired": "ሎውቦይ የሚያስፈልገው",
+  "applyFilters": "አጣራ",
+  "resetFilters": "ዳግም አስጀምር",
+  "noFleetsFound": "በመረጡት መስፈርት የተገኘ ማሽን የለም",
+  "clearCompare": "አጽዳ"
 }

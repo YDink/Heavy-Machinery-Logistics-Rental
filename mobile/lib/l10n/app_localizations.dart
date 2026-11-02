@@ -266,10 +266,10 @@ abstract class AppLocalizations {
   /// **'Fuel Type'**
   String get fuelType;
 
-  /// Label for daily rental price in ETB
+  /// Label for daily rate
   ///
   /// In en, this message translates to:
-  /// **'Daily Rental Rate (ETB)'**
+  /// **'Daily Rate'**
   String get dailyRate;
 
   /// Toggle indicating whether equipment can travel without transporter
@@ -589,6 +589,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'day'**
   String get perDay;
+
+  /// Placeholder for discovery search input
+  ///
+  /// In en, this message translates to:
+  /// **'Search by make, model, or city...'**
+  String get discoverySearchHint;
+
+  /// Title for multi-facet filter sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Filter Machinery'**
+  String get filterTitle;
+
+  /// Distance indicator for fleet card
+  ///
+  /// In en, this message translates to:
+  /// **'{km} km away'**
+  String distanceAway(String km);
+
+  /// Badge for immediate availability
+  ///
+  /// In en, this message translates to:
+  /// **'Available Now'**
+  String get availableNow;
+
+  /// Badge for fleet asset with active checkout hold
+  ///
+  /// In en, this message translates to:
+  /// **'Held (In Checkout)'**
+  String get heldPendingWire;
+
+  /// Button to open comparison matrix
+  ///
+  /// In en, this message translates to:
+  /// **'Compare Selected ({count})'**
+  String compareSelected(int count);
+
+  /// Title for side-by-side comparison page
+  ///
+  /// In en, this message translates to:
+  /// **'Machinery Comparison'**
+  String get comparisonMatrixTitle;
+
+  /// Toggle to filter identical spec rows in comparison
+  ///
+  /// In en, this message translates to:
+  /// **'Differences Only'**
+  String get differencesOnly;
+
+  /// Badge for machine rental including operator
+  ///
+  /// In en, this message translates to:
+  /// **'Crew Included'**
+  String get crewIncluded;
+
+  /// Badge for machine requiring transport trailer
+  ///
+  /// In en, this message translates to:
+  /// **'Lowboy Required'**
+  String get lowboyRequired;
+
+  /// Button to apply selected filters
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Filters'**
+  String get applyFilters;
+
+  /// Button to reset filters
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get resetFilters;
+
+  /// Empty state message when no fleets match
+  ///
+  /// In en, this message translates to:
+  /// **'No machinery found matching your search criteria.'**
+  String get noFleetsFound;
+
+  /// Button to clear comparison selection
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clearCompare;
 }
 
 class _AppLocalizationsDelegate

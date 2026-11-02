@@ -1,0 +1,116 @@
+get:
+  tags: [machinery]
+  summary: Spatial radius and multi-variable fleet discovery
+  description: Executes PostGIS spatial radius queries, trigram keyword search, temporal availability exclusion, and multi-variable spec filtering.
+  operationId: searchFleets
+  parameters:
+    - name: latitude
+      in: query
+      required: true
+      schema:
+        type: number
+        format: double
+        minimum: -90.0
+        maximum: 90.0
+        example: 9.0300
+    - name: longitude
+      in: query
+      required: true
+      schema:
+        type: number
+        format: double
+        minimum: -180.0
+        maximum: 180.0
+        example: 38.7400
+    - name: radiusKm
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 500
+        default: 50
+        example: 50
+    - name: categoryId
+      in: query
+      required: false
+      schema:
+        type: string
+        format: uuid
+    - name: subcategoryId
+      in: query
+      required: false
+      schema:
+        type: string
+        format: uuid
+    - name: startDate
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+        example: "2026-11-05"
+    - name: endDate
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+        example: "2026-11-12"
+    - name: minRateMinor
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 0
+    - name: maxRateMinor
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 0
+    - name: operatorIncluded
+      in: query
+      required: false
+      schema:
+        type: boolean
+    - name: fuelType
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [DIESEL, ELECTRIC, PETROL, HYBRID]
+    - name: selfMoveCapable
+      in: query
+      required: false
+      schema:
+        type: boolean
+    - name: query
+      in: query
+      required: false
+      schema:
+        type: string
+        example: "CAT 320"
+    - name: sortBy
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [RECOMMENDED, PRICE_ASC, PRICE_DESC, DISTANCE_ASC, RATING_DESC]
+        default: RECOMMENDED
+    - $ref: '../../components/parameters/limit-query-param.yaml'
+    - $ref: '../../components/parameters/cursor-query-param.yaml'
+    - $ref: '../../components/parameters/country-code-header.yaml'
+  responses:
+    '200':
+      description: Discovery search results returned.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/discovery.yaml#/FleetSearchSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

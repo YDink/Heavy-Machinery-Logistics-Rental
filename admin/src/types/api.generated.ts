@@ -128,6 +128,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/fleets/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Spatial radius and multi-variable fleet discovery
+         * @description Executes PostGIS spatial radius queries, trigram keyword search, temporal availability exclusion, and multi-variable spec filtering.
+         */
+        get: operations["searchFleets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/fleets/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Side-by-side dynamic EAV spec comparison
+         * @description Executes dynamic relational spec transposition for 2 to 3 machines belonging to the identical subcategory.
+         */
+        post: operations["compareFleets"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/fleets/{id}": {
         parameters: {
             query?: never;
@@ -140,6 +180,26 @@ export interface paths {
          * @description Fetches full specification, current operational status, and pricing rules for an equipment item.
          */
         get: operations["getFleetById"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/fleets/{id}/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Fleet asset calendar availability and pre-flight diagnostics
+         * @description Returns booked ranges, maintenance blackouts, and real-time hold lease diagnostics for an asset over a target timeframe.
+         */
+        get: operations["getFleetAvailability"];
         put?: never;
         post?: never;
         delete?: never;
@@ -927,6 +987,229 @@ export interface components {
             error: Record<string, never> | null;
             meta: components["schemas"]["ResponseMeta"];
         };
+        FleetSearchCenter: {
+            /**
+             * Format: double
+             * @example 9.03
+             */
+            latitude: number;
+            /**
+             * Format: double
+             * @example 38.74
+             */
+            longitude: number;
+            /**
+             * Format: double
+             * @example 50
+             */
+            radiusKm: number;
+        };
+        FleetSearchOwnerSummary: {
+            /** Format: uuid */
+            ownerId: string;
+            /** @example Tesfaye Heavy Transport PLC */
+            tradingName: string;
+            /**
+             * Format: double
+             * @example 4.92
+             */
+            averageRating: number;
+            /** @example 38 */
+            totalCompletedRentals: number;
+            /** @example true */
+            isVerified: boolean;
+        };
+        FleetSearchKeySpecs: {
+            /**
+             * Format: double
+             * @example 21800
+             */
+            operatingWeightKg?: number | null;
+            /**
+             * Format: double
+             * @example 15000
+             */
+            payloadCapacityKg?: number | null;
+            /**
+             * Format: double
+             * @example 148
+             */
+            grossPowerHp?: number | null;
+        };
+        FleetSearchResultItem: {
+            /** Format: uuid */
+            fleetId: string;
+            /** Format: uuid */
+            subcategoryId?: string;
+            /** @example Large Crawler Excavator (10-50 tons) */
+            subcategoryNameEn?: string;
+            /** @example ትልቅ ክራውለር ኤክስካቫተር (10-50 ቶን) */
+            subcategoryNameAm?: string;
+            /** @example Caterpillar */
+            make: string;
+            /** @example 320D */
+            model: string;
+            /** @example 2024 */
+            manufactureYear: number;
+            /**
+             * Format: int64
+             * @example 2250000
+             */
+            dailyRateMinor: number;
+            /**
+             * Format: int64
+             * @example 280000
+             */
+            excessHourRateMinor?: number;
+            /**
+             * Format: double
+             * @example 11240.5
+             */
+            distanceMeters: number;
+            /**
+             * @example AVAILABLE_NOW
+             * @enum {string}
+             */
+            availabilityStatus: "AVAILABLE_NOW" | "HELD_PENDING_WIRE" | "UNAVAILABLE";
+            /** @example false */
+            selfMoveCapable: boolean;
+            /** @example true */
+            operatorIncluded: boolean;
+            /** @example DIESEL */
+            fuelType: string;
+            /** @example https://cdn.dinkmachinery.com/fleet/front.webp */
+            primaryPhotoUri?: string | null;
+            owner: components["schemas"]["FleetSearchOwnerSummary"];
+            keySpecs?: components["schemas"]["FleetSearchKeySpecs"];
+        };
+        FleetSearchData: {
+            /** @example 1 */
+            totalMatches: number;
+            searchCenter: components["schemas"]["FleetSearchCenter"];
+            results: components["schemas"]["FleetSearchResultItem"][];
+        };
+        FleetSearchSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["FleetSearchData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        FleetCompareRequest: {
+            /**
+             * @example [
+             *       "019a8f2c-8812-7b9a-b812-000000000001",
+             *       "019a8f2c-9914-4c12-b812-000000000002"
+             *     ]
+             */
+            fleetIds: string[];
+        };
+        FleetCompareItemHeader: {
+            /** Format: uuid */
+            id: string;
+            /** @example Caterpillar 320D */
+            title: string;
+            /**
+             * Format: int64
+             * @example 2250000
+             */
+            dailyRateMinor: number;
+            /**
+             * Format: int64
+             * @example 280000
+             */
+            excessHourRateMinor?: number;
+            primaryPhotoUri?: string | null;
+            /** @example false */
+            selfMoveCapable: boolean;
+            /** @example true */
+            operatorIncluded: boolean;
+            /** @example DIESEL */
+            fuelType?: string;
+        };
+        FleetCompareSpecRow: {
+            /** @example operating_weight_kg */
+            fieldKey: string;
+            /** @example Operating Weight */
+            labelEn: string;
+            /** @example የስራ ክብደት */
+            labelAm: string;
+            /** @example kg */
+            unitSymbol?: string | null;
+            /** @example DECIMAL */
+            fieldType?: string;
+            /**
+             * @example {
+             *       "019a8f2c-8812-7b9a-b812-000000000001": "21800",
+             *       "019a8f2c-9914-4c12-b812-000000000002": "20010"
+             *     }
+             */
+            values: {
+                [key: string]: string;
+            };
+            /** @example true */
+            isDifferent: boolean;
+        };
+        FleetCompareData: {
+            /** Format: uuid */
+            subcategoryId: string;
+            /** @example Large Crawler Excavator (10-50 tons) */
+            subcategoryNameEn: string;
+            /** @example ትልቅ ክራውለር ኤክስካቫተር (10-50 ቶን) */
+            subcategoryNameAm: string;
+            fleets: components["schemas"]["FleetCompareItemHeader"][];
+            comparisonMatrix: components["schemas"]["FleetCompareSpecRow"][];
+        };
+        FleetCompareSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["FleetCompareData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        FleetAvailabilityDateRange: {
+            /**
+             * Format: date
+             * @example 2026-11-05
+             */
+            startDate: string;
+            /**
+             * Format: date
+             * @example 2026-11-12
+             */
+            endDate: string;
+            /** @example Scheduled Maintenance */
+            reason?: string | null;
+            /** @example RESERVED */
+            state?: string | null;
+        };
+        FleetAvailabilityData: {
+            /** Format: uuid */
+            fleetId: string;
+            /** @example true */
+            isAvailable: boolean;
+            /** @example HELD_BY_ANOTHER_RENTER */
+            unavailableReason?: string | null;
+            /** @example 1842 */
+            holdExpiresInSeconds?: number | null;
+            /**
+             * Format: date
+             * @example 2026-11-15
+             */
+            nextAvailableDate?: string | null;
+            blackoutRanges?: components["schemas"]["FleetAvailabilityDateRange"][];
+            reservedRanges?: components["schemas"]["FleetAvailabilityDateRange"][];
+        };
+        FleetAvailabilitySuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["FleetAvailabilityData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
         LinkFleetAttachmentRequest: {
             /** Format: uuid */
             attachmentId: string;
@@ -1144,6 +1427,15 @@ export interface components {
         };
         /** @description Conflict — Invariant violation, state machine failure, or optimistic concurrency conflict. */
         conflict: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorEnvelope"];
+            };
+        };
+        /** @description Unprocessable Entity — Request failed semantic or business rule validation. */
+        "unprocessable-entity": {
             headers: {
                 [name: string]: unknown;
             };
@@ -1393,6 +1685,77 @@ export interface operations {
             500: components["responses"]["internal-server-error"];
         };
     };
+    searchFleets: {
+        parameters: {
+            query: {
+                latitude: number;
+                longitude: number;
+                radiusKm?: number;
+                categoryId?: string;
+                subcategoryId?: string;
+                startDate?: string;
+                endDate?: string;
+                minRateMinor?: number;
+                maxRateMinor?: number;
+                operatorIncluded?: boolean;
+                fuelType?: "DIESEL" | "ELECTRIC" | "PETROL" | "HYBRID";
+                selfMoveCapable?: boolean;
+                query?: string;
+                sortBy?: "RECOMMENDED" | "PRICE_ASC" | "PRICE_DESC" | "DISTANCE_ASC" | "RATING_DESC";
+                /** @description Maximum number of records to return per page. */
+                limit?: components["parameters"]["limit-query-param"];
+                /** @description Opaque cursor identifier for deterministic keyset pagination. */
+                cursor?: components["parameters"]["cursor-query-param"];
+            };
+            header?: {
+                /** @description ISO 3166-1 alpha-2 operational country code driving multi-country logic. */
+                "X-Country-Code"?: components["parameters"]["country-code-header"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Discovery search results returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FleetSearchSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    compareFleets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FleetCompareRequest"];
+            };
+        };
+        responses: {
+            /** @description Spec comparison matrix returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FleetCompareSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            422: components["responses"]["unprocessable-entity"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
     getFleetById: {
         parameters: {
             query?: never;
@@ -1413,6 +1776,34 @@ export interface operations {
                     "application/json": components["schemas"]["FleetDetailSuccessResponse"];
                 };
             };
+            404: components["responses"]["not-found"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    getFleetAvailability: {
+        parameters: {
+            query: {
+                startDate: string;
+                endDate: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Fleet availability and blackout ranges returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FleetAvailabilitySuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
             404: components["responses"]["not-found"];
             500: components["responses"]["internal-server-error"];
         };

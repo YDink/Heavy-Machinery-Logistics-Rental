@@ -243,6 +243,159 @@ paths:
           $ref: '#/components/responses/conflict'
         '500':
           $ref: '#/components/responses/internal-server-error'
+  /fleets/search:
+    get:
+      tags:
+        - machinery
+      summary: Spatial radius and multi-variable fleet discovery
+      description: Executes PostGIS spatial radius queries, trigram keyword search, temporal availability exclusion, and multi-variable spec filtering.
+      operationId: searchFleets
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+            minimum: -90
+            maximum: 90
+            example: 9.03
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+            minimum: -180
+            maximum: 180
+            example: 38.74
+        - name: radiusKm
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 50
+            example: 50
+        - name: categoryId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: subcategoryId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2026-11-05'
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2026-11-12'
+        - name: minRateMinor
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: maxRateMinor
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: operatorIncluded
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: fuelType
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - DIESEL
+              - ELECTRIC
+              - PETROL
+              - HYBRID
+        - name: selfMoveCapable
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+            example: CAT 320
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - RECOMMENDED
+              - PRICE_ASC
+              - PRICE_DESC
+              - DISTANCE_ASC
+              - RATING_DESC
+            default: RECOMMENDED
+        - $ref: '#/components/parameters/limit-query-param'
+        - $ref: '#/components/parameters/cursor-query-param'
+        - $ref: '#/components/parameters/country-code-header'
+      responses:
+        '200':
+          description: Discovery search results returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FleetSearchSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /fleets/compare:
+    post:
+      tags:
+        - machinery
+      summary: Side-by-side dynamic EAV spec comparison
+      description: Executes dynamic relational spec transposition for 2 to 3 machines belonging to the identical subcategory.
+      operationId: compareFleets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FleetCompareRequest'
+      responses:
+        '200':
+          description: Spec comparison matrix returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FleetCompareSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '422':
+          $ref: '#/components/responses/unprocessable-entity'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
   /fleets/{id}:
     get:
       tags:
@@ -264,6 +417,47 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FleetDetailSuccessResponse'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /fleets/{id}/availability:
+    get:
+      tags:
+        - machinery
+      summary: Fleet asset calendar availability and pre-flight diagnostics
+      description: Returns booked ranges, maintenance blackouts, and real-time hold lease diagnostics for an asset over a target timeframe.
+      operationId: getFleetAvailability
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            example: '2026-11-01'
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            example: '2026-11-30'
+      responses:
+        '200':
+          description: Fleet availability and blackout ranges returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FleetAvailabilitySuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
         '404':
           $ref: '#/components/responses/not-found'
         '500':
@@ -965,6 +1159,12 @@ components:
             $ref: '#/components/schemas/ErrorEnvelope'
     conflict:
       description: Conflict — Invariant violation, state machine failure, or optimistic concurrency conflict.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    unprocessable-entity:
+      description: Unprocessable Entity — Request failed semantic or business rule validation.
       content:
         application/json:
           schema:
@@ -1937,6 +2137,382 @@ components:
             - true
         data:
           $ref: '#/components/schemas/AdminUiConfig'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    FleetSearchCenter:
+      type: object
+      required:
+        - latitude
+        - longitude
+        - radiusKm
+      properties:
+        latitude:
+          type: number
+          format: double
+          example: 9.03
+        longitude:
+          type: number
+          format: double
+          example: 38.74
+        radiusKm:
+          type: number
+          format: double
+          example: 50
+    FleetSearchOwnerSummary:
+      type: object
+      required:
+        - ownerId
+        - tradingName
+        - averageRating
+        - totalCompletedRentals
+        - isVerified
+      properties:
+        ownerId:
+          type: string
+          format: uuid
+        tradingName:
+          type: string
+          example: Tesfaye Heavy Transport PLC
+        averageRating:
+          type: number
+          format: double
+          example: 4.92
+        totalCompletedRentals:
+          type: integer
+          example: 38
+        isVerified:
+          type: boolean
+          example: true
+    FleetSearchKeySpecs:
+      type: object
+      properties:
+        operatingWeightKg:
+          type: number
+          format: double
+          nullable: true
+          example: 21800
+        payloadCapacityKg:
+          type: number
+          format: double
+          nullable: true
+          example: 15000
+        grossPowerHp:
+          type: number
+          format: double
+          nullable: true
+          example: 148
+    FleetSearchResultItem:
+      type: object
+      required:
+        - fleetId
+        - make
+        - model
+        - manufactureYear
+        - dailyRateMinor
+        - distanceMeters
+        - availabilityStatus
+        - selfMoveCapable
+        - operatorIncluded
+        - fuelType
+        - owner
+      properties:
+        fleetId:
+          type: string
+          format: uuid
+        subcategoryId:
+          type: string
+          format: uuid
+        subcategoryNameEn:
+          type: string
+          example: Large Crawler Excavator (10-50 tons)
+        subcategoryNameAm:
+          type: string
+          example: ትልቅ ክራውለር ኤክስካቫተር (10-50 ቶን)
+        make:
+          type: string
+          example: Caterpillar
+        model:
+          type: string
+          example: 320D
+        manufactureYear:
+          type: integer
+          example: 2024
+        dailyRateMinor:
+          type: integer
+          format: int64
+          example: 2250000
+        excessHourRateMinor:
+          type: integer
+          format: int64
+          example: 280000
+        distanceMeters:
+          type: number
+          format: double
+          example: 11240.5
+        availabilityStatus:
+          type: string
+          enum:
+            - AVAILABLE_NOW
+            - HELD_PENDING_WIRE
+            - UNAVAILABLE
+          example: AVAILABLE_NOW
+        selfMoveCapable:
+          type: boolean
+          example: false
+        operatorIncluded:
+          type: boolean
+          example: true
+        fuelType:
+          type: string
+          example: DIESEL
+        primaryPhotoUri:
+          type: string
+          nullable: true
+          example: https://cdn.dinkmachinery.com/fleet/front.webp
+        owner:
+          $ref: '#/components/schemas/FleetSearchOwnerSummary'
+        keySpecs:
+          $ref: '#/components/schemas/FleetSearchKeySpecs'
+    FleetSearchData:
+      type: object
+      required:
+        - totalMatches
+        - searchCenter
+        - results
+      properties:
+        totalMatches:
+          type: integer
+          example: 1
+        searchCenter:
+          $ref: '#/components/schemas/FleetSearchCenter'
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FleetSearchResultItem'
+    FleetSearchSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/FleetSearchData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    FleetCompareRequest:
+      type: object
+      required:
+        - fleetIds
+      properties:
+        fleetIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          minItems: 2
+          maxItems: 3
+          example:
+            - 019a8f2c-8812-7b9a-b812-000000000001
+            - 019a8f2c-9914-4c12-b812-000000000002
+    FleetCompareItemHeader:
+      type: object
+      required:
+        - id
+        - title
+        - dailyRateMinor
+        - selfMoveCapable
+        - operatorIncluded
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: Caterpillar 320D
+        dailyRateMinor:
+          type: integer
+          format: int64
+          example: 2250000
+        excessHourRateMinor:
+          type: integer
+          format: int64
+          example: 280000
+        primaryPhotoUri:
+          type: string
+          nullable: true
+        selfMoveCapable:
+          type: boolean
+          example: false
+        operatorIncluded:
+          type: boolean
+          example: true
+        fuelType:
+          type: string
+          example: DIESEL
+    FleetCompareSpecRow:
+      type: object
+      required:
+        - fieldKey
+        - labelEn
+        - labelAm
+        - values
+        - isDifferent
+      properties:
+        fieldKey:
+          type: string
+          example: operating_weight_kg
+        labelEn:
+          type: string
+          example: Operating Weight
+        labelAm:
+          type: string
+          example: የስራ ክብደት
+        unitSymbol:
+          type: string
+          nullable: true
+          example: kg
+        fieldType:
+          type: string
+          example: DECIMAL
+        values:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            019a8f2c-8812-7b9a-b812-000000000001: '21800'
+            019a8f2c-9914-4c12-b812-000000000002: '20010'
+        isDifferent:
+          type: boolean
+          example: true
+    FleetCompareData:
+      type: object
+      required:
+        - subcategoryId
+        - subcategoryNameEn
+        - subcategoryNameAm
+        - fleets
+        - comparisonMatrix
+      properties:
+        subcategoryId:
+          type: string
+          format: uuid
+        subcategoryNameEn:
+          type: string
+          example: Large Crawler Excavator (10-50 tons)
+        subcategoryNameAm:
+          type: string
+          example: ትልቅ ክራውለር ኤክስካቫተር (10-50 ቶን)
+        fleets:
+          type: array
+          items:
+            $ref: '#/components/schemas/FleetCompareItemHeader'
+        comparisonMatrix:
+          type: array
+          items:
+            $ref: '#/components/schemas/FleetCompareSpecRow'
+    FleetCompareSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/FleetCompareData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    FleetAvailabilityDateRange:
+      type: object
+      required:
+        - startDate
+        - endDate
+      properties:
+        startDate:
+          type: string
+          format: date
+          example: '2026-11-05'
+        endDate:
+          type: string
+          format: date
+          example: '2026-11-12'
+        reason:
+          type: string
+          nullable: true
+          example: Scheduled Maintenance
+        state:
+          type: string
+          nullable: true
+          example: RESERVED
+    FleetAvailabilityData:
+      type: object
+      required:
+        - fleetId
+        - isAvailable
+      properties:
+        fleetId:
+          type: string
+          format: uuid
+        isAvailable:
+          type: boolean
+          example: true
+        unavailableReason:
+          type: string
+          nullable: true
+          example: HELD_BY_ANOTHER_RENTER
+        holdExpiresInSeconds:
+          type: integer
+          nullable: true
+          example: 1842
+        nextAvailableDate:
+          type: string
+          format: date
+          nullable: true
+          example: '2026-11-15'
+        blackoutRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/FleetAvailabilityDateRange'
+        reservedRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/FleetAvailabilityDateRange'
+    FleetAvailabilitySuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/FleetAvailabilityData'
         error:
           type: object
           nullable: true

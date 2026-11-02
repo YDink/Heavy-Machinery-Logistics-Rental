@@ -1,0 +1,331 @@
+# Discovery, Spatial Search & Dynamic Comparison Schemas (Partition 05-04)
+
+FleetSearchCenter:
+  type: object
+  required: [latitude, longitude, radiusKm]
+  properties:
+    latitude:
+      type: number
+      format: double
+      example: 9.0300
+    longitude:
+      type: number
+      format: double
+      example: 38.7400
+    radiusKm:
+      type: number
+      format: double
+      example: 50.0
+
+FleetSearchOwnerSummary:
+  type: object
+  required: [ownerId, tradingName, averageRating, totalCompletedRentals, isVerified]
+  properties:
+    ownerId:
+      type: string
+      format: uuid
+    tradingName:
+      type: string
+      example: "Tesfaye Heavy Transport PLC"
+    averageRating:
+      type: number
+      format: double
+      example: 4.92
+    totalCompletedRentals:
+      type: integer
+      example: 38
+    isVerified:
+      type: boolean
+      example: true
+
+FleetSearchKeySpecs:
+  type: object
+  properties:
+    operatingWeightKg:
+      type: number
+      format: double
+      nullable: true
+      example: 21800.0
+    payloadCapacityKg:
+      type: number
+      format: double
+      nullable: true
+      example: 15000.0
+    grossPowerHp:
+      type: number
+      format: double
+      nullable: true
+      example: 148.0
+
+FleetSearchResultItem:
+  type: object
+  required: [fleetId, make, model, manufactureYear, dailyRateMinor, distanceMeters, availabilityStatus, selfMoveCapable, operatorIncluded, fuelType, owner]
+  properties:
+    fleetId:
+      type: string
+      format: uuid
+    subcategoryId:
+      type: string
+      format: uuid
+    subcategoryNameEn:
+      type: string
+      example: "Large Crawler Excavator (10-50 tons)"
+    subcategoryNameAm:
+      type: string
+      example: "ትልቅ ክራውለር ኤክስካቫተር (10-50 ቶን)"
+    make:
+      type: string
+      example: "Caterpillar"
+    model:
+      type: string
+      example: "320D"
+    manufactureYear:
+      type: integer
+      example: 2024
+    dailyRateMinor:
+      type: integer
+      format: int64
+      example: 2250000
+    excessHourRateMinor:
+      type: integer
+      format: int64
+      example: 280000
+    distanceMeters:
+      type: number
+      format: double
+      example: 11240.5
+    availabilityStatus:
+      type: string
+      enum: [AVAILABLE_NOW, HELD_PENDING_WIRE, UNAVAILABLE]
+      example: "AVAILABLE_NOW"
+    selfMoveCapable:
+      type: boolean
+      example: false
+    operatorIncluded:
+      type: boolean
+      example: true
+    fuelType:
+      type: string
+      example: "DIESEL"
+    primaryPhotoUri:
+      type: string
+      nullable: true
+      example: "https://cdn.dinkmachinery.com/fleet/front.webp"
+    owner:
+      $ref: '#/FleetSearchOwnerSummary'
+    keySpecs:
+      $ref: '#/FleetSearchKeySpecs'
+
+FleetSearchData:
+  type: object
+  required: [totalMatches, searchCenter, results]
+  properties:
+    totalMatches:
+      type: integer
+      example: 1
+    searchCenter:
+      $ref: '#/FleetSearchCenter'
+    results:
+      type: array
+      items:
+        $ref: '#/FleetSearchResultItem'
+
+FleetSearchSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/FleetSearchData'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+FleetCompareRequest:
+  type: object
+  required: [fleetIds]
+  properties:
+    fleetIds:
+      type: array
+      items:
+        type: string
+        format: uuid
+      minItems: 2
+      maxItems: 3
+      example:
+        - "019a8f2c-8812-7b9a-b812-000000000001"
+        - "019a8f2c-9914-4c12-b812-000000000002"
+
+FleetCompareItemHeader:
+  type: object
+  required: [id, title, dailyRateMinor, selfMoveCapable, operatorIncluded]
+  properties:
+    id:
+      type: string
+      format: uuid
+    title:
+      type: string
+      example: "Caterpillar 320D"
+    dailyRateMinor:
+      type: integer
+      format: int64
+      example: 2250000
+    excessHourRateMinor:
+      type: integer
+      format: int64
+      example: 280000
+    primaryPhotoUri:
+      type: string
+      nullable: true
+    selfMoveCapable:
+      type: boolean
+      example: false
+    operatorIncluded:
+      type: boolean
+      example: true
+    fuelType:
+      type: string
+      example: "DIESEL"
+
+FleetCompareSpecRow:
+  type: object
+  required: [fieldKey, labelEn, labelAm, values, isDifferent]
+  properties:
+    fieldKey:
+      type: string
+      example: "operating_weight_kg"
+    labelEn:
+      type: string
+      example: "Operating Weight"
+    labelAm:
+      type: string
+      example: "የስራ ክብደት"
+    unitSymbol:
+      type: string
+      nullable: true
+      example: "kg"
+    fieldType:
+      type: string
+      example: "DECIMAL"
+    values:
+      type: object
+      additionalProperties:
+        type: string
+      example:
+        "019a8f2c-8812-7b9a-b812-000000000001": "21800"
+        "019a8f2c-9914-4c12-b812-000000000002": "20010"
+    isDifferent:
+      type: boolean
+      example: true
+
+FleetCompareData:
+  type: object
+  required: [subcategoryId, subcategoryNameEn, subcategoryNameAm, fleets, comparisonMatrix]
+  properties:
+    subcategoryId:
+      type: string
+      format: uuid
+    subcategoryNameEn:
+      type: string
+      example: "Large Crawler Excavator (10-50 tons)"
+    subcategoryNameAm:
+      type: string
+      example: "ትልቅ ክራውለር ኤክስካቫተር (10-50 ቶን)"
+    fleets:
+      type: array
+      items:
+        $ref: '#/FleetCompareItemHeader'
+    comparisonMatrix:
+      type: array
+      items:
+        $ref: '#/FleetCompareSpecRow'
+
+FleetCompareSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/FleetCompareData'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+FleetAvailabilityDateRange:
+  type: object
+  required: [startDate, endDate]
+  properties:
+    startDate:
+      type: string
+      format: date
+      example: "2026-11-05"
+    endDate:
+      type: string
+      format: date
+      example: "2026-11-12"
+    reason:
+      type: string
+      nullable: true
+      example: "Scheduled Maintenance"
+    state:
+      type: string
+      nullable: true
+      example: "RESERVED"
+
+FleetAvailabilityData:
+  type: object
+  required: [fleetId, isAvailable]
+  properties:
+    fleetId:
+      type: string
+      format: uuid
+    isAvailable:
+      type: boolean
+      example: true
+    unavailableReason:
+      type: string
+      nullable: true
+      example: "HELD_BY_ANOTHER_RENTER"
+    holdExpiresInSeconds:
+      type: integer
+      nullable: true
+      example: 1842
+    nextAvailableDate:
+      type: string
+      format: date
+      nullable: true
+      example: "2026-11-15"
+    blackoutRanges:
+      type: array
+      items:
+        $ref: '#/FleetAvailabilityDateRange'
+    reservedRanges:
+      type: array
+      items:
+        $ref: '#/FleetAvailabilityDateRange'
+
+FleetAvailabilitySuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/FleetAvailabilityData'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'

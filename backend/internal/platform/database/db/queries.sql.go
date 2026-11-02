@@ -398,6 +398,43 @@ func (q *Queries) CreateFleet(ctx context.Context, arg CreateFleetParams) (Creat
 	return i, err
 }
 
+const createFleetAvailability = `-- name: CreateFleetAvailability :one
+INSERT INTO fleet_availability (
+    fleet_id,
+    hire_period,
+    state,
+    reference_id
+) VALUES (
+    $1, $2, $3, $4
+) RETURNING id, fleet_id, hire_period, state, reference_id, created_at
+`
+
+type CreateFleetAvailabilityParams struct {
+	FleetID     pgtype.UUID               `json:"fleet_id"`
+	HirePeriod  pgtype.Range[pgtype.Date] `json:"hire_period"`
+	State       string                    `json:"state"`
+	ReferenceID pgtype.UUID               `json:"reference_id"`
+}
+
+func (q *Queries) CreateFleetAvailability(ctx context.Context, arg CreateFleetAvailabilityParams) (FleetAvailability, error) {
+	row := q.db.QueryRow(ctx, createFleetAvailability,
+		arg.FleetID,
+		arg.HirePeriod,
+		arg.State,
+		arg.ReferenceID,
+	)
+	var i FleetAvailability
+	err := row.Scan(
+		&i.ID,
+		&i.FleetID,
+		&i.HirePeriod,
+		&i.State,
+		&i.ReferenceID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const createFleetPhoto = `-- name: CreateFleetPhoto :one
 INSERT INTO fleet_photos (
     fleet_id,
@@ -637,6 +674,69 @@ func (q *Queries) GetCategorySpecDefinitions(ctx context.Context, categoryID pgt
 	return items, nil
 }
 
+const getComparableSpecsForFleets = `-- name: GetComparableSpecsForFleets :many
+SELECT 
+    d.field_key,
+    d.label_en,
+    d.label_am,
+    d.unit_symbol,
+    d.field_type,
+    d.display_order,
+    v.fleet_id,
+    v.value_string,
+    v.value_numeric,
+    v.value_boolean
+FROM spec_field_definitions d
+JOIN fleet_spec_values v ON v.spec_definition_id = d.id
+WHERE d.is_comparable = true
+  AND v.fleet_id = ANY($1::uuid[])
+ORDER BY d.display_order ASC
+`
+
+type GetComparableSpecsForFleetsRow struct {
+	FieldKey     string         `json:"field_key"`
+	LabelEn      string         `json:"label_en"`
+	LabelAm      string         `json:"label_am"`
+	UnitSymbol   *string        `json:"unit_symbol"`
+	FieldType    string         `json:"field_type"`
+	DisplayOrder int32          `json:"display_order"`
+	FleetID      pgtype.UUID    `json:"fleet_id"`
+	ValueString  *string        `json:"value_string"`
+	ValueNumeric pgtype.Numeric `json:"value_numeric"`
+	ValueBoolean *bool          `json:"value_boolean"`
+}
+
+func (q *Queries) GetComparableSpecsForFleets(ctx context.Context, fleetIds []pgtype.UUID) ([]GetComparableSpecsForFleetsRow, error) {
+	rows, err := q.db.Query(ctx, getComparableSpecsForFleets, fleetIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetComparableSpecsForFleetsRow{}
+	for rows.Next() {
+		var i GetComparableSpecsForFleetsRow
+		if err := rows.Scan(
+			&i.FieldKey,
+			&i.LabelEn,
+			&i.LabelAm,
+			&i.UnitSymbol,
+			&i.FieldType,
+			&i.DisplayOrder,
+			&i.FleetID,
+			&i.ValueString,
+			&i.ValueNumeric,
+			&i.ValueBoolean,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCountryConfig = `-- name: GetCountryConfig :one
 SELECT country_code, country_name, dialing_prefix, default_currency, currency_minor_unit_exponent, default_timezone, tax_label, standard_tax_rate_bps, withholding_tax_bps, min_age_default, payment_hold_timeout_mins, is_enabled, created_at, updated_at FROM country_configs
 WHERE country_code = $1 AND is_enabled = true
@@ -741,8 +841,33 @@ func (q *Queries) GetFleetByID(ctx context.Context, id pgtype.UUID) (GetFleetByI
 	return i, err
 }
 
+const getFleetInsuranceByFleetID = `-- name: GetFleetInsuranceByFleetID :one
+SELECT id, fleet_id, policy_number, provider_name, coverage_type, status, expires_at, certificate_uri, created_at, updated_at FROM fleet_insurances
+WHERE fleet_id = $1 AND status = 'ACTIVE' AND expires_at >= CURRENT_DATE
+ORDER BY expires_at DESC
+LIMIT 1
+`
+
+func (q *Queries) GetFleetInsuranceByFleetID(ctx context.Context, fleetID pgtype.UUID) (FleetInsurance, error) {
+	row := q.db.QueryRow(ctx, getFleetInsuranceByFleetID, fleetID)
+	var i FleetInsurance
+	err := row.Scan(
+		&i.ID,
+		&i.FleetID,
+		&i.PolicyNumber,
+		&i.ProviderName,
+		&i.CoverageType,
+		&i.Status,
+		&i.ExpiresAt,
+		&i.CertificateUri,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getFleetSpecIndexed = `-- name: GetFleetSpecIndexed :one
-SELECT fleet_id, operating_weight_kg, transport_length_mm, transport_width_mm, transport_height_mm, payload_capacity_kg, gross_engine_power_hp, updated_at FROM fleet_spec_indexed
+SELECT fleet_id, operating_weight_kg, transport_length_mm, transport_width_mm, transport_height_mm, payload_capacity_kg, gross_engine_power_hp, updated_at, specs_json FROM fleet_spec_indexed
 WHERE fleet_id = $1
 `
 
@@ -757,6 +882,97 @@ func (q *Queries) GetFleetSpecIndexed(ctx context.Context, fleetID pgtype.UUID) 
 		&i.TransportHeightMm,
 		&i.PayloadCapacityKg,
 		&i.GrossEnginePowerHp,
+		&i.UpdatedAt,
+		&i.SpecsJson,
+	)
+	return i, err
+}
+
+const getFleetsForComparison = `-- name: GetFleetsForComparison :many
+SELECT 
+    f.id,
+    f.subcategory_id,
+    f.make,
+    f.model,
+    f.manufacture_year,
+    f.daily_rate_minor,
+    f.excess_hour_rate_minor,
+    f.operator_included,
+    f.fuel_type,
+    f.self_move_capable,
+    c.name_en AS subcategory_name_en,
+    c.name_am AS subcategory_name_am,
+    (SELECT storage_uri FROM fleet_photos fp WHERE fp.fleet_id = f.id ORDER BY fp.display_order ASC LIMIT 1) AS primary_photo_uri
+FROM fleets f
+JOIN categories c ON c.id = f.subcategory_id
+WHERE f.id = ANY($1::uuid[]) AND f.status = 'ACTIVE'
+`
+
+type GetFleetsForComparisonRow struct {
+	ID                  pgtype.UUID `json:"id"`
+	SubcategoryID       pgtype.UUID `json:"subcategory_id"`
+	Make                string      `json:"make"`
+	Model               string      `json:"model"`
+	ManufactureYear     int32       `json:"manufacture_year"`
+	DailyRateMinor      int64       `json:"daily_rate_minor"`
+	ExcessHourRateMinor int64       `json:"excess_hour_rate_minor"`
+	OperatorIncluded    bool        `json:"operator_included"`
+	FuelType            string      `json:"fuel_type"`
+	SelfMoveCapable     bool        `json:"self_move_capable"`
+	SubcategoryNameEn   string      `json:"subcategory_name_en"`
+	SubcategoryNameAm   string      `json:"subcategory_name_am"`
+	PrimaryPhotoUri     string      `json:"primary_photo_uri"`
+}
+
+func (q *Queries) GetFleetsForComparison(ctx context.Context, fleetIds []pgtype.UUID) ([]GetFleetsForComparisonRow, error) {
+	rows, err := q.db.Query(ctx, getFleetsForComparison, fleetIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetFleetsForComparisonRow{}
+	for rows.Next() {
+		var i GetFleetsForComparisonRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.SubcategoryID,
+			&i.Make,
+			&i.Model,
+			&i.ManufactureYear,
+			&i.DailyRateMinor,
+			&i.ExcessHourRateMinor,
+			&i.OperatorIncluded,
+			&i.FuelType,
+			&i.SelfMoveCapable,
+			&i.SubcategoryNameEn,
+			&i.SubcategoryNameAm,
+			&i.PrimaryPhotoUri,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getOwnerAggregate = `-- name: GetOwnerAggregate :one
+SELECT owner_id, average_rating, total_rentals_count, total_completed_rentals, completion_rate, is_verified, updated_at FROM owner_aggregates
+WHERE owner_id = $1
+`
+
+func (q *Queries) GetOwnerAggregate(ctx context.Context, ownerID pgtype.UUID) (OwnerAggregate, error) {
+	row := q.db.QueryRow(ctx, getOwnerAggregate, ownerID)
+	var i OwnerAggregate
+	err := row.Scan(
+		&i.OwnerID,
+		&i.AverageRating,
+		&i.TotalRentalsCount,
+		&i.TotalCompletedRentals,
+		&i.CompletionRate,
+		&i.IsVerified,
 		&i.UpdatedAt,
 	)
 	return i, err
@@ -1304,6 +1520,100 @@ func (q *Queries) ListEnabledCountryConfigs(ctx context.Context) ([]CountryConfi
 	return items, nil
 }
 
+const listFleetAvailabilityRanges = `-- name: ListFleetAvailabilityRanges :many
+SELECT id, fleet_id, hire_period, state, created_at
+FROM fleet_availability
+WHERE fleet_id = $1
+  AND hire_period && daterange($2::date, $3::date, '[]')
+`
+
+type ListFleetAvailabilityRangesParams struct {
+	FleetID pgtype.UUID `json:"fleet_id"`
+	Column2 pgtype.Date `json:"column_2"`
+	Column3 pgtype.Date `json:"column_3"`
+}
+
+type ListFleetAvailabilityRangesRow struct {
+	ID         pgtype.UUID               `json:"id"`
+	FleetID    pgtype.UUID               `json:"fleet_id"`
+	HirePeriod pgtype.Range[pgtype.Date] `json:"hire_period"`
+	State      string                    `json:"state"`
+	CreatedAt  pgtype.Timestamptz        `json:"created_at"`
+}
+
+func (q *Queries) ListFleetAvailabilityRanges(ctx context.Context, arg ListFleetAvailabilityRangesParams) ([]ListFleetAvailabilityRangesRow, error) {
+	rows, err := q.db.Query(ctx, listFleetAvailabilityRanges, arg.FleetID, arg.Column2, arg.Column3)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListFleetAvailabilityRangesRow{}
+	for rows.Next() {
+		var i ListFleetAvailabilityRangesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FleetID,
+			&i.HirePeriod,
+			&i.State,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listFleetBlackoutsInRange = `-- name: ListFleetBlackoutsInRange :many
+SELECT id, fleet_id, start_date, end_date, reason
+FROM fleet_blackouts
+WHERE fleet_id = $1
+  AND daterange(start_date, end_date, '[]') && daterange($2::date, $3::date, '[]')
+`
+
+type ListFleetBlackoutsInRangeParams struct {
+	FleetID pgtype.UUID `json:"fleet_id"`
+	Column2 pgtype.Date `json:"column_2"`
+	Column3 pgtype.Date `json:"column_3"`
+}
+
+type ListFleetBlackoutsInRangeRow struct {
+	ID        pgtype.UUID `json:"id"`
+	FleetID   pgtype.UUID `json:"fleet_id"`
+	StartDate pgtype.Date `json:"start_date"`
+	EndDate   pgtype.Date `json:"end_date"`
+	Reason    string      `json:"reason"`
+}
+
+func (q *Queries) ListFleetBlackoutsInRange(ctx context.Context, arg ListFleetBlackoutsInRangeParams) ([]ListFleetBlackoutsInRangeRow, error) {
+	rows, err := q.db.Query(ctx, listFleetBlackoutsInRange, arg.FleetID, arg.Column2, arg.Column3)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListFleetBlackoutsInRangeRow{}
+	for rows.Next() {
+		var i ListFleetBlackoutsInRangeRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FleetID,
+			&i.StartDate,
+			&i.EndDate,
+			&i.Reason,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listFleetPhotos = `-- name: ListFleetPhotos :many
 SELECT id, fleet_id, angle, storage_uri, file_hash, display_order, created_at FROM fleet_photos
 WHERE fleet_id = $1
@@ -1721,6 +2031,188 @@ func (q *Queries) RemoveRoleFromUser(ctx context.Context, arg RemoveRoleFromUser
 	return err
 }
 
+const searchFleetsSpatial = `-- name: SearchFleetsSpatial :many
+
+SELECT 
+    f.id,
+    f.owner_id,
+    f.subcategory_id,
+    f.make,
+    f.model,
+    f.manufacture_year,
+    f.plate_number,
+    f.baseline_meter_hours,
+    f.fuel_type,
+    f.self_move_capable,
+    f.daily_rate_minor,
+    f.excess_hour_rate_minor,
+    f.min_rental_days,
+    f.operator_included,
+    f.status,
+    f.address_text,
+    f.country_code,
+    ST_Y(f.location::geometry) AS latitude,
+    ST_X(f.location::geometry) AS longitude,
+    ST_Distance(f.location, ST_SetSRID(ST_MakePoint($1::float8, $2::float8), 4326)::geography) AS distance_meters,
+    c.name_en AS subcategory_name_en,
+    c.name_am AS subcategory_name_am,
+    COALESCE(oa.average_rating, 5.00) AS owner_rating,
+    COALESCE(oa.total_completed_rentals, 0) AS owner_completed_rentals,
+    COALESCE(oa.is_verified, false) AS owner_verified,
+    fsi.operating_weight_kg,
+    fsi.payload_capacity_kg,
+    fsi.gross_engine_power_hp,
+    (SELECT storage_uri FROM fleet_photos fp WHERE fp.fleet_id = f.id ORDER BY fp.display_order ASC LIMIT 1) AS primary_photo_uri
+FROM fleets f
+JOIN categories c ON c.id = f.subcategory_id
+LEFT JOIN owner_aggregates oa ON oa.owner_id = f.owner_id
+LEFT JOIN fleet_spec_indexed fsi ON fsi.fleet_id = f.id
+WHERE f.status = 'ACTIVE'
+  AND f.country_code = $3
+  AND ST_DWithin(f.location, ST_SetSRID(ST_MakePoint($1::float8, $2::float8), 4326)::geography, $4::float8)
+  AND ($5::uuid IS NULL OR f.subcategory_id = $5)
+  AND ($6::bigint IS NULL OR f.daily_rate_minor >= $6)
+  AND ($7::bigint IS NULL OR f.daily_rate_minor <= $7)
+  AND ($8::text IS NULL OR f.fuel_type = $8)
+  AND ($9::boolean IS NULL OR f.operator_included = $9)
+  AND ($10::boolean IS NULL OR f.self_move_capable = $10)
+  AND ($11::text IS NULL OR f.search_vector ILIKE '%' || $11 || '%')
+  AND (
+      $12::date IS NULL OR $13::date IS NULL OR (
+          NOT EXISTS (
+              SELECT 1 FROM fleet_availability fa 
+              WHERE fa.fleet_id = f.id 
+                AND fa.hire_period && daterange($12::date, $13::date, '[]')
+                AND fa.state IN ('RESERVED', 'MAINTENANCE', 'RENTED')
+          )
+          AND NOT EXISTS (
+              SELECT 1 FROM fleet_blackouts fb 
+              WHERE fb.fleet_id = f.id 
+                AND daterange(fb.start_date, fb.end_date, '[]') && daterange($12::date, $13::date, '[]')
+          )
+      )
+  )
+ORDER BY distance_meters ASC
+LIMIT $15::int OFFSET $14::int
+`
+
+type SearchFleetsSpatialParams struct {
+	Longitude        float64     `json:"longitude"`
+	Latitude         float64     `json:"latitude"`
+	CountryCode      string      `json:"country_code"`
+	RadiusMeters     float64     `json:"radius_meters"`
+	SubcategoryID    pgtype.UUID `json:"subcategory_id"`
+	MinRateMinor     *int64      `json:"min_rate_minor"`
+	MaxRateMinor     *int64      `json:"max_rate_minor"`
+	FuelType         *string     `json:"fuel_type"`
+	OperatorIncluded *bool       `json:"operator_included"`
+	SelfMoveCapable  *bool       `json:"self_move_capable"`
+	QueryText        *string     `json:"query_text"`
+	StartDate        pgtype.Date `json:"start_date"`
+	EndDate          pgtype.Date `json:"end_date"`
+	QueryOffset      int32       `json:"query_offset"`
+	QueryLimit       int32       `json:"query_limit"`
+}
+
+type SearchFleetsSpatialRow struct {
+	ID                    pgtype.UUID    `json:"id"`
+	OwnerID               pgtype.UUID    `json:"owner_id"`
+	SubcategoryID         pgtype.UUID    `json:"subcategory_id"`
+	Make                  string         `json:"make"`
+	Model                 string         `json:"model"`
+	ManufactureYear       int32          `json:"manufacture_year"`
+	PlateNumber           string         `json:"plate_number"`
+	BaselineMeterHours    pgtype.Numeric `json:"baseline_meter_hours"`
+	FuelType              string         `json:"fuel_type"`
+	SelfMoveCapable       bool           `json:"self_move_capable"`
+	DailyRateMinor        int64          `json:"daily_rate_minor"`
+	ExcessHourRateMinor   int64          `json:"excess_hour_rate_minor"`
+	MinRentalDays         int32          `json:"min_rental_days"`
+	OperatorIncluded      bool           `json:"operator_included"`
+	Status                string         `json:"status"`
+	AddressText           string         `json:"address_text"`
+	CountryCode           string         `json:"country_code"`
+	Latitude              interface{}    `json:"latitude"`
+	Longitude             interface{}    `json:"longitude"`
+	DistanceMeters        interface{}    `json:"distance_meters"`
+	SubcategoryNameEn     string         `json:"subcategory_name_en"`
+	SubcategoryNameAm     string         `json:"subcategory_name_am"`
+	OwnerRating           pgtype.Numeric `json:"owner_rating"`
+	OwnerCompletedRentals int32          `json:"owner_completed_rentals"`
+	OwnerVerified         bool           `json:"owner_verified"`
+	OperatingWeightKg     pgtype.Numeric `json:"operating_weight_kg"`
+	PayloadCapacityKg     pgtype.Numeric `json:"payload_capacity_kg"`
+	GrossEnginePowerHp    pgtype.Numeric `json:"gross_engine_power_hp"`
+	PrimaryPhotoUri       string         `json:"primary_photo_uri"`
+}
+
+// Discovery, Spatial Search & Dynamic Comparison (Partition 05-04, SRS §05.04, SR-01 to SR-08, D-05-04-001, D-05-04-002)
+func (q *Queries) SearchFleetsSpatial(ctx context.Context, arg SearchFleetsSpatialParams) ([]SearchFleetsSpatialRow, error) {
+	rows, err := q.db.Query(ctx, searchFleetsSpatial,
+		arg.Longitude,
+		arg.Latitude,
+		arg.CountryCode,
+		arg.RadiusMeters,
+		arg.SubcategoryID,
+		arg.MinRateMinor,
+		arg.MaxRateMinor,
+		arg.FuelType,
+		arg.OperatorIncluded,
+		arg.SelfMoveCapable,
+		arg.QueryText,
+		arg.StartDate,
+		arg.EndDate,
+		arg.QueryOffset,
+		arg.QueryLimit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []SearchFleetsSpatialRow{}
+	for rows.Next() {
+		var i SearchFleetsSpatialRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.OwnerID,
+			&i.SubcategoryID,
+			&i.Make,
+			&i.Model,
+			&i.ManufactureYear,
+			&i.PlateNumber,
+			&i.BaselineMeterHours,
+			&i.FuelType,
+			&i.SelfMoveCapable,
+			&i.DailyRateMinor,
+			&i.ExcessHourRateMinor,
+			&i.MinRentalDays,
+			&i.OperatorIncluded,
+			&i.Status,
+			&i.AddressText,
+			&i.CountryCode,
+			&i.Latitude,
+			&i.Longitude,
+			&i.DistanceMeters,
+			&i.SubcategoryNameEn,
+			&i.SubcategoryNameAm,
+			&i.OwnerRating,
+			&i.OwnerCompletedRentals,
+			&i.OwnerVerified,
+			&i.OperatingWeightKg,
+			&i.PayloadCapacityKg,
+			&i.GrossEnginePowerHp,
+			&i.PrimaryPhotoUri,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateAttachmentStatus = `-- name: UpdateAttachmentStatus :one
 UPDATE attachments
 SET status = $2,
@@ -1769,7 +2261,7 @@ UPDATE fleets
 SET status = $2,
     version = version + 1
 WHERE id = $1
-RETURNING id, owner_id, subcategory_id, make, model, manufacture_year, plate_number, chassis_vin, baseline_meter_hours, fuel_type, self_move_capable, daily_rate_minor, excess_hour_rate_minor, min_rental_days, payment_timeout_hours, operator_included, status, location, address_text, version, created_at, updated_at
+RETURNING id, owner_id, subcategory_id, make, model, manufacture_year, plate_number, chassis_vin, baseline_meter_hours, fuel_type, self_move_capable, daily_rate_minor, excess_hour_rate_minor, min_rental_days, payment_timeout_hours, operator_included, status, location, address_text, version, created_at, updated_at, country_code, search_vector
 `
 
 type UpdateFleetStatusParams struct {
@@ -1803,6 +2295,8 @@ func (q *Queries) UpdateFleetStatus(ctx context.Context, arg UpdateFleetStatusPa
 		&i.Version,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CountryCode,
+		&i.SearchVector,
 	)
 	return i, err
 }
@@ -1978,6 +2472,57 @@ func (q *Queries) UpsertFleetBundledAttachment(ctx context.Context, arg UpsertFl
 	return i, err
 }
 
+const upsertFleetInsurance = `-- name: UpsertFleetInsurance :one
+INSERT INTO fleet_insurances (
+    fleet_id,
+    policy_number,
+    provider_name,
+    coverage_type,
+    status,
+    expires_at,
+    certificate_uri,
+    updated_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, NOW()
+) RETURNING id, fleet_id, policy_number, provider_name, coverage_type, status, expires_at, certificate_uri, created_at, updated_at
+`
+
+type UpsertFleetInsuranceParams struct {
+	FleetID        pgtype.UUID `json:"fleet_id"`
+	PolicyNumber   string      `json:"policy_number"`
+	ProviderName   string      `json:"provider_name"`
+	CoverageType   string      `json:"coverage_type"`
+	Status         string      `json:"status"`
+	ExpiresAt      pgtype.Date `json:"expires_at"`
+	CertificateUri string      `json:"certificate_uri"`
+}
+
+func (q *Queries) UpsertFleetInsurance(ctx context.Context, arg UpsertFleetInsuranceParams) (FleetInsurance, error) {
+	row := q.db.QueryRow(ctx, upsertFleetInsurance,
+		arg.FleetID,
+		arg.PolicyNumber,
+		arg.ProviderName,
+		arg.CoverageType,
+		arg.Status,
+		arg.ExpiresAt,
+		arg.CertificateUri,
+	)
+	var i FleetInsurance
+	err := row.Scan(
+		&i.ID,
+		&i.FleetID,
+		&i.PolicyNumber,
+		&i.ProviderName,
+		&i.CoverageType,
+		&i.Status,
+		&i.ExpiresAt,
+		&i.CertificateUri,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const upsertFleetSpecIndexed = `-- name: UpsertFleetSpecIndexed :one
 INSERT INTO fleet_spec_indexed (
     fleet_id,
@@ -1998,7 +2543,7 @@ INSERT INTO fleet_spec_indexed (
     payload_capacity_kg = EXCLUDED.payload_capacity_kg,
     gross_engine_power_hp = EXCLUDED.gross_engine_power_hp,
     updated_at = NOW()
-RETURNING fleet_id, operating_weight_kg, transport_length_mm, transport_width_mm, transport_height_mm, payload_capacity_kg, gross_engine_power_hp, updated_at
+RETURNING fleet_id, operating_weight_kg, transport_length_mm, transport_width_mm, transport_height_mm, payload_capacity_kg, gross_engine_power_hp, updated_at, specs_json
 `
 
 type UpsertFleetSpecIndexedParams struct {
@@ -2031,6 +2576,7 @@ func (q *Queries) UpsertFleetSpecIndexed(ctx context.Context, arg UpsertFleetSpe
 		&i.PayloadCapacityKg,
 		&i.GrossEnginePowerHp,
 		&i.UpdatedAt,
+		&i.SpecsJson,
 	)
 	return i, err
 }
@@ -2077,6 +2623,58 @@ func (q *Queries) UpsertFleetSpecValue(ctx context.Context, arg UpsertFleetSpecV
 		&i.ValueNumeric,
 		&i.ValueBoolean,
 		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const upsertOwnerAggregate = `-- name: UpsertOwnerAggregate :one
+INSERT INTO owner_aggregates (
+    owner_id,
+    average_rating,
+    total_rentals_count,
+    total_completed_rentals,
+    completion_rate,
+    is_verified,
+    updated_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, NOW()
+) ON CONFLICT (owner_id) DO UPDATE SET
+    average_rating = EXCLUDED.average_rating,
+    total_rentals_count = EXCLUDED.total_rentals_count,
+    total_completed_rentals = EXCLUDED.total_completed_rentals,
+    completion_rate = EXCLUDED.completion_rate,
+    is_verified = EXCLUDED.is_verified,
+    updated_at = NOW()
+RETURNING owner_id, average_rating, total_rentals_count, total_completed_rentals, completion_rate, is_verified, updated_at
+`
+
+type UpsertOwnerAggregateParams struct {
+	OwnerID               pgtype.UUID    `json:"owner_id"`
+	AverageRating         pgtype.Numeric `json:"average_rating"`
+	TotalRentalsCount     int32          `json:"total_rentals_count"`
+	TotalCompletedRentals int32          `json:"total_completed_rentals"`
+	CompletionRate        pgtype.Numeric `json:"completion_rate"`
+	IsVerified            bool           `json:"is_verified"`
+}
+
+func (q *Queries) UpsertOwnerAggregate(ctx context.Context, arg UpsertOwnerAggregateParams) (OwnerAggregate, error) {
+	row := q.db.QueryRow(ctx, upsertOwnerAggregate,
+		arg.OwnerID,
+		arg.AverageRating,
+		arg.TotalRentalsCount,
+		arg.TotalCompletedRentals,
+		arg.CompletionRate,
+		arg.IsVerified,
+	)
+	var i OwnerAggregate
+	err := row.Scan(
+		&i.OwnerID,
+		&i.AverageRating,
+		&i.TotalRentalsCount,
+		&i.TotalCompletedRentals,
+		&i.CompletionRate,
+		&i.IsVerified,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

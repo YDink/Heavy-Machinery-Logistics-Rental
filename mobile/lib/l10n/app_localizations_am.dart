@@ -101,7 +101,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get fuelType => 'የነዳጅ ዓይነት';
 
   @override
-  String get dailyRate => 'የቀን ኪራይ ዋጋ (ብር)';
+  String get dailyRate => 'የቀን ኪራይ';
 
   @override
   String get selfMoveCapable => 'ራሱን ችሎ መጓዝ የሚችል';
@@ -266,4 +266,50 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get perDay => 'ቀን';
+
+  @override
+  String get discoverySearchHint => 'በሞዴል ወይም በከተማ ይፈልጉ...';
+
+  @override
+  String get filterTitle => 'የማሽን ማጣሪያ';
+
+  @override
+  String distanceAway(String km) {
+    return '$km ኪ.ሜ ርቀት';
+  }
+
+  @override
+  String get availableNow => 'አሁን ክፍት ነው';
+
+  @override
+  String get heldPendingWire => 'በይዞታ ላይ';
+
+  @override
+  String compareSelected(int count) {
+    return 'የተመረጡትን አወዳድር ($count)';
+  }
+
+  @override
+  String get comparisonMatrixTitle => 'የማሽነሪ ማነፃፀሪያ';
+
+  @override
+  String get differencesOnly => 'ልዩነቶችን ብቻ አሳይ';
+
+  @override
+  String get crewIncluded => 'ኦፕሬተር ያለው';
+
+  @override
+  String get lowboyRequired => 'ሎውቦይ የሚያስፈልገው';
+
+  @override
+  String get applyFilters => 'አጣራ';
+
+  @override
+  String get resetFilters => 'ዳግም አስጀምር';
+
+  @override
+  String get noFleetsFound => 'በመረጡት መስፈርት የተገኘ ማሽን የለም';
+
+  @override
+  String get clearCompare => 'አጽዳ';
 }

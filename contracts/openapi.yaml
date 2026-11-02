@@ -45,8 +45,14 @@ paths:
     $ref: './endpoints/machinery/categories.yaml'
   /fleets:
     $ref: './endpoints/machinery/fleets.yaml'
+  /fleets/search:
+    $ref: './endpoints/machinery/fleets-search.yaml'
+  /fleets/compare:
+    $ref: './endpoints/machinery/fleets-compare.yaml'
   /fleets/{id}:
     $ref: './endpoints/machinery/fleet-by-id.yaml'
+  /fleets/{id}/availability:
+    $ref: './endpoints/machinery/fleet-availability.yaml'
   /fleets/{id}/attachments/link:
     $ref: './endpoints/machinery/fleet-attachments-link.yaml'
   /attachments:

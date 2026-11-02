@@ -101,7 +101,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fuelType => 'Fuel Type';
 
   @override
-  String get dailyRate => 'Daily Rental Rate (ETB)';
+  String get dailyRate => 'Daily Rate';
 
   @override
   String get selfMoveCapable => 'Self-Move Capable';
@@ -269,4 +269,51 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get perDay => 'day';
+
+  @override
+  String get discoverySearchHint => 'Search by make, model, or city...';
+
+  @override
+  String get filterTitle => 'Filter Machinery';
+
+  @override
+  String distanceAway(String km) {
+    return '$km km away';
+  }
+
+  @override
+  String get availableNow => 'Available Now';
+
+  @override
+  String get heldPendingWire => 'Held (In Checkout)';
+
+  @override
+  String compareSelected(int count) {
+    return 'Compare Selected ($count)';
+  }
+
+  @override
+  String get comparisonMatrixTitle => 'Machinery Comparison';
+
+  @override
+  String get differencesOnly => 'Differences Only';
+
+  @override
+  String get crewIncluded => 'Crew Included';
+
+  @override
+  String get lowboyRequired => 'Lowboy Required';
+
+  @override
+  String get applyFilters => 'Apply Filters';
+
+  @override
+  String get resetFilters => 'Reset';
+
+  @override
+  String get noFleetsFound =>
+      'No machinery found matching your search criteria.';
+
+  @override
+  String get clearCompare => 'Clear';
 }

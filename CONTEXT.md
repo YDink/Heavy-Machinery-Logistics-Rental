@@ -1,9 +1,9 @@
 # CONTEXT.md — Dink Machinery Active Session State
 
 **Project Phase:** Phase 2 (Partition Feature Development)  
-**Active Requirement Partition:** `05-03-attachment-registration-inventory` (Attachment Registration & Inventory Architecture)  
-**Active Branch:** `feature/05-03-attachment-registration-inventory`  
-**Current Stop Point:** Partition 05-03 Fully Implemented & Verified Across PostgreSQL GiST, Go Backend Core, OpenAPI Contracts, and Flutter Mobile
+**Active Requirement Partition:** `05-04-fleet-discovery-search-comparison` (Fleet Discovery, Spatial Search, Multi-Variable Filtering & Comparison Matrix) — **Verified & Complete**  
+**Active Branch:** `feature/05-04-fleet-discovery-search-comparison`  
+**Current Stop Point:** Partition 05-04 fully implemented and verified with 100% test coverage across Go backend and Flutter mobile suites. Ready for git commit and merge to `main`. Next active partition: `05-05-booking-reservation-flow`.
 
 ---
 
@@ -22,55 +22,99 @@
   - Generated `sqlc` queries in `backend/internal/platform/database/db/` (`models.go`, `queries.sql.go`).
 - **OpenAPI 3.1.0 Contracts & Type Generation:**
   - Added schemas in `contracts/components/schemas/attachment.yaml`.
+  - Added endpoint contracts: `POST /attachments`, `GET /attachments/inventory`, `POST /fleets/{id}/attachments/link`, `POST /bookings/check-bundled-availability`.
+  - Redocly bundled, generated TypeScript DTOs and Go chi server types.
+- **Go Backend Core Subsystem (`backend/`):**
+  - Domain entities, invariant validators (`ValidateAttachmentPhotos`, `ValidateCarrierCompatibility`, `ValidateBundledRate`), `AttachmentService`, `PostgresMachineryRepository` and `MemoryMachineryRepository`.
+  - Concurrency tests in `attachment_booking_test.go` verifying dual-booking temporal GiST protection.
+  - 100% backend test pass rate across all packages (`go test ./...`).
+- **Flutter Mobile Client (`mobile/`):**
+  - Full-stack localization: English (`app_en.arb`) and Amharic (`app_am.arb`).
+  - Data & Domain layers: `AttachmentModel`, `AttachmentRepositoryImpl`, use cases.
+  - Presentation: `AttachmentBloc`, `AttachmentPhotoReticle`, `AttachmentRegistrationPage`, `AttachmentInventoryPage`.
+  - 100% mobile test pass rate; 0 issues on `fvm flutter analyze`.
+
+### Completed (Partition 05-04: Fleet Discovery, Spatial Search, Multi-Variable Filtering & Dynamic Comparison Matrix)
+- **Database Schema & Migrations (`migrations/`):**
+  - Created `migrations/000006_create_discovery_search_tables.up.sql` and `.down.sql`:
+    - Enabled `pg_trgm` extension for full-text search across makes, models, and depot locations.
+    - Added `country_code` (VARCHAR(2)) and `search_vector` generated trigram column to `fleets`.
+    - Added `specs_json` (JSONB) with GIN `jsonb_path_ops` index on `fleet_spec_indexed` (`D-05-04-002`).
+    - Created `owner_aggregates` table for ratings and fulfillment tracking.
+    - Created `fleet_insurances` table with status checking.
+    - Created `fleet_availability` table with composite GiST exclusion constraint (`EXCLUDE USING gist (fleet_id WITH =, hire_period WITH &&)`).
+    - Seeded dynamic RBAC permissions `fleets:search` and `fleets:compare` mapped to standard roles.
+  - Added `sqlc` queries in `backend/internal/platform/database/queries.sql` (`SearchFleetsSpatial`, `GetComparableSpecsForFleets`, `GetFleetsForComparison`, `ListFleetAvailabilityRanges`, `ListFleetBlackoutsInRange`, `CreateFleetAvailability`, `UpsertOwnerAggregate`, `GetOwnerAggregate`, `UpsertFleetInsurance`, `GetFleetInsuranceByFleetID`).
+  - Generated Go queries and models cleanly in `backend/internal/platform/database/db/`.
+- **OpenAPI 3.1.0 Canonical Contracts & Type Generation:**
+  - Added schema models in `contracts/components/schemas/discovery.yaml`: `FleetSearchSuccessResponse`, `FleetCompareRequest`, `FleetCompareSuccessResponse`, `FleetAvailabilitySuccessResponse`.
+  - Added RFC 9457 error response definition `contracts/components/responses/unprocessable-entity.yaml`.
   - Added endpoint contracts:
-    - `POST /attachments` (`contracts/endpoints/machinery/attachments.yaml`)
-    - `GET /attachments/inventory` (`contracts/endpoints/machinery/attachments-inventory.yaml`)
-    - `POST /fleets/{id}/attachments/link` (`contracts/endpoints/machinery/fleet-attachments-link.yaml`)
-    - `POST /bookings/check-bundled-availability` (`contracts/endpoints/bookings/check-bundled-availability.yaml`)
-  - Updated `contracts/openapi.yaml`, bundled via Redocly (`admin/package.json`), generated TypeScript DTOs (`admin/src/types/api.generated.ts`), and Go chi server types with `oapi-codegen` (`backend/internal/transport/http/generated/api.gen.go`).
+    - `GET /fleets/search` (`contracts/endpoints/machinery/fleets-search.yaml`): Keyset cursor spatial search, distance radius, multi-facet filtering, deterministic scoring.
+    - `POST /fleets/compare` (`contracts/endpoints/machinery/fleets-compare.yaml`): 2-to-3 machine side-by-side dynamic EAV spec matrix with difference highlighting (`SR-08`, `FL-15`).
+    - `GET /fleets/{id}/availability` (`contracts/endpoints/machinery/fleet-availability.yaml`): Month/day availability heatmap and pre-flight hold diagnostics.
+  - Updated `contracts/openapi.yaml`, bundled via Redocly (`contracts/openapi.bundled.yaml`), generated TypeScript DTOs (`admin/src/types/api.generated.ts`), and Go chi server types with `oapi-codegen` (`backend/internal/transport/http/generated/api.gen.go`).
 - **Go Backend Core Subsystem (`backend/`):**
   - `internal/modules/machinery/domain/`:
-    - Domain entities: `Attachment`, `AttachmentPhoto`, `FleetBundledAttachment`, `AttachmentReservation`.
-    - Invariant validators: `ValidateAttachmentPhotos` (mandating 4 conditioning angles), `ValidateCarrierCompatibility` (carrier weight $\pm 10\%$, pin diameter $\pm 2\text{mm}$, hydraulic pressure and flow envelopes), and `ValidateBundledRate` (bundled rate $\le$ standalone inventory rate).
-    - Unit tests in `compatibility_test.go` verifying compatibility rejections, photo constraints, and bundled pricing rules.
+    - Domain entities & value objects: `FleetSearchFilter`, `FleetSearchResult`, `FleetCompareResult`, `FleetAvailabilityInfo`.
+    - Invariants & math algorithms: `ValidateSearchFilter`, `ValidateComparisonSet` (homogeneity enforcement), `CalculateRecommendationScore` ($0.40R + 0.30P + 0.20U + 0.10C$), `BuildComparisonMatrix`, `SortSearchResults`.
+    - Domain unit tests in `discovery_test.go` (100% pass rate).
   - `internal/modules/machinery/application/`:
-    - `AttachmentService`: `RegisterAttachment`, `ListOwnerInventory`, `LinkAttachmentToFleet`, `CheckBundledAvailability`, `ReserveAttachment`.
-    - Integration concurrency tests in `attachment_booking_test.go` verifying that reserving a bundled host excavator atomically blocks standalone rental of the attached breaker over overlapping dates (`D-05-03-001`, `FL-34`).
+    - `DiscoveryService` with spatial search orchestration, Valkey hold lease pre-flight interception (`HoldLeaseChecker`, `MemoryHoldLeaseChecker`), dynamic comparison matrix generation, and availability range aggregation.
+    - Application unit tests in `discovery_service_test.go` (100% pass rate).
   - `internal/modules/machinery/infrastructure/`:
-    - `MemoryMachineryRepository` with thread-safe atomic range overlap checks.
-    - `PostgresMachineryRepository` implementing `AttachmentRepository` with `pgtype.Range[pgtype.Date]` storage mapping.
+    - `MemoryMachineryRepository` implementing `DiscoveryRepository` with Haversine distance, trigram text matching, blackout/reservation checking, and comparable spec pivoting.
+    - `PostgresMachineryRepository` implementing `DiscoveryRepository`.
   - `internal/transport/http/`:
-    - Handlers: `CreateAttachment`, `ListAttachmentInventory`, `LinkFleetAttachment`, `CheckBundledAvailability`.
-    - Injected `AttachmentService` into `cmd/api/main.go` and test suites.
+    - Handlers: `SearchFleets`, `CompareFleets`, `GetFleetAvailability`, `SearchFleetsByRadius`.
+    - Integrated with `cmd/api/main.go` and full HTTP integration test suite (`discovery_test.go`).
     - 100% backend test pass rate across all packages (`go test ./...`).
 - **Flutter Mobile Client (`mobile/`):**
   - Full-stack localization: English (`app_en.arb`) and verified Amharic (`app_am.arb`) with zero hardcoded user-visible strings.
-  - Data layer: `AttachmentModel`, `AttachmentInventoryItemModel`, `AttachmentRemoteDataSourceImpl`, `AttachmentLocalDataSourceImpl` (draft caching via `FlutterSecureStorage`), `AttachmentRepositoryImpl`.
-  - Domain layer: Entities `Attachment`, `AttachmentPhoto`, `AttachmentType`, `AttachmentPhotoAngle`, `AttachmentInventoryItem`, `BundledAttachmentLink`, `AttachmentRepository`, and use cases `RegisterAttachmentUseCase`, `GetAttachmentInventoryUseCase`, `LinkAttachmentUseCase`.
+  - Data layer: `FleetSearchResultModel`, `FleetCompareModel`, `FleetAvailabilityModel`, `DiscoveryRemoteDataSourceImpl`, `DiscoveryRepositoryImpl`.
+  - Domain layer: Entities `FleetSearchFilter`, `FleetSearchResult`, `FleetCompareMatrix`, `FleetAvailability`, and use cases `SearchFleetsUseCase`, `CompareFleetsUseCase`, `GetFleetAvailabilityUseCase`.
   - Presentation layer:
-    - `AttachmentBloc` handling draft caching, photo capture, registration submission, inventory loading, and fleet bundling.
-    - `AttachmentPhotoReticle` displaying the 4 mandatory conditioning camera angles with completion badges.
-    - `AttachmentRegistrationPage` with full dimensional, hydraulic, and pricing form inputs.
-    - `AttachmentInventoryPage` displaying active attachments, bundled badges, and status pills.
+    - `DiscoveryBloc` handling search filtering, clustered map/list toggling, 3-machine comparison selection, and real-time availability checks.
+    - `FleetFeedCard` with 56x56dp tap targets and WCAG 2.2 AAA contrast readouts.
+    - `MultiFacetFilterSheet` with radius slider, daily rate range, crew toggle, self-move toggle, and fuel chips.
+    - `FleetComparisonMatrixView` side-by-side spec comparison table with difference highlighting.
+    - `DiscoveryPage` and `FleetComparisonPage`.
   - Registered all dependencies in `lib/core/di/injection.dart` (`GetIt`).
-  - 100% mobile test pass rate (33/33 tests passing); 0 issues on `fvm flutter analyze`.
+  - 100% mobile test pass rate (40/40 tests passing); 0 issues on `fvm flutter analyze`.
 - **Governance & Quality Gates:**
   - `scripts/validate-decision-template.sh`: Verified all decisions conform strictly to governance specifications.
   - `scripts/validate-decision-links.sh`: Verified all 19 ADRs and 80 L2 partition decisions have valid bidirectional links.
 
 ---
 
-## 2. Next Immediate Tasks (Partition 05-04: Operator Verification & Fleet Assignment Architecture)
+## 2. Next Immediate Tasks (Partition 05-05: Booking, Reservation & Lifecycle State Machine Architecture)
 
 1. **Database Schema & Migrations (`migrations/`):**
-   - Create `migrations/000006_create_operator_tables.up.sql` and `.down.sql`:
-     - `operators`: Operator profile, government certificate verification (`OP-01`, `OP-02`), competency grading, operator badge status.
-     - `operator_certifications`: Heavy machinery operating license grades, issuing authorities, expiration dates, OCR verified documents.
-     - `fleet_operator_assignments`: Assignment of vetted operators to fleet prime movers with assignment history and active pairing.
-     - Dynamic RBAC permissions for operators.
+   - Create `migrations/000007_create_booking_state_machine_tables.up.sql` and `.down.sql`:
+     - `bookings` table: 16-state/20-state lifecycle topology (`DRAFT`, `HELD_PENDING_WIRE`, `PAYMENT_EVIDENCE_SUBMITTED`, `CONFIRMED`, `DISPATCHED_TO_SITE`, `IN_TRANSIT`, `ON_SITE_ACTIVE`, `BREAKDOWN_PAUSED`, `EXTENSION_REQUESTED`, `RETURN_INITIATED`, `PENDING_FINAL_PAYMENT`, `COMPLETED`, `DISPUTE_RAISED`, `CANCELLED_NO_FEE`, `CANCELLED_WITH_PENALTY`, `REFUNDED`).
+     - Composite keyset pagination indexing (`created_at`, `id`, `renter_id`, `owner_id`, `status`).
+     - Optimistic Concurrency Control (OCC) `version INT NOT NULL DEFAULT 1`.
+     - `booking_audit_logs` append-only audit trail with previous state, new state, actor, reason, timestamp.
+     - `booking_bank_slips` table for non-custodial bank wire settlement and SHA-256 duplicate proof.
+     - Dynamic RBAC permissions for booking transitions and administrative interventions.
+   - Generate `sqlc` queries in `backend/internal/platform/database/db/`.
 2. **OpenAPI 3.1.0 Contracts:**
-   - Define endpoints for operator onboarding, certificate document upload, admin certification verification, and fleet assignment.
-3. **Backend Domain & Application Core (`backend/internal/modules/`):**
-   - Implement certificate validity verification, license class to equipment class mapping, and operator-to-fleet assignment service.
-4. **Flutter Mobile Client (`mobile/lib/features/operator/`):**
-   - Implement operator profile registration, license scanning/capture, and owner fleet operator assignment views.
+   - Define canonical wire contracts in `contracts/`:
+     - `POST /bookings` (`contracts/endpoints/bookings/create-booking.yaml`): Requisition creation & 60-min Valkey hold lock.
+     - `POST /bookings/{id}:submit-slip` (`contracts/endpoints/bookings/submit-payment-slip.yaml`): Slip ingestion & evidence submission.
+     - `POST /bookings/{id}:confirm-payment` (`contracts/endpoints/bookings/confirm-payment.yaml`): Owner receipt verification.
+     - `POST /bookings/{id}:cancel` (`contracts/endpoints/bookings/cancel-booking.yaml`): Bilateral cancellation with penalty calculation.
+     - `GET /bookings/{id}` & `GET /bookings`: Single booking inspector and keyset paginated history.
+   - Bundle OpenAPI specs and generate TypeScript DTOs & Go chi server code.
+3. **Backend Domain & Application Core (`backend/internal/modules/booking/`):**
+   - Implement finite state machine (FSM) with strict transition matrix validation (`ValidateTransition`).
+   - Implement deterministic cost quoting & tariff breakdown (`BK-04`).
+   - Implement 60-minute Valkey distributed hold lease (`BK-05`) with automatic expiration cleanup.
+   - Implement ClamAV slip scanning hook and SHA-256 idempotency check.
+   - Comprehensive unit and integration concurrency tests.
+4. **Flutter Mobile Client (`mobile/lib/features/booking/`):**
+   - Domain, Data, and Presentation layers:
+     - 60-minute countdown hold timer with 15-min warning push notification.
+     - Non-custodial bank slip upload and preview.
+     - Booking checkout price breakdown and status HUD.
+   - 100% test coverage and zero analyzer issues.

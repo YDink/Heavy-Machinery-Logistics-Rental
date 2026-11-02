@@ -1,0 +1,39 @@
+get:
+  tags: [machinery]
+  summary: Fleet asset calendar availability and pre-flight diagnostics
+  description: Returns booked ranges, maintenance blackouts, and real-time hold lease diagnostics for an asset over a target timeframe.
+  operationId: getFleetAvailability
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: startDate
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
+        example: "2026-11-01"
+    - name: endDate
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
+        example: "2026-11-30"
+  responses:
+    '200':
+      description: Fleet availability and blackout ranges returned.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/discovery.yaml#/FleetAvailabilitySuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

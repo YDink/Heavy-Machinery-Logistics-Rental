@@ -347,6 +347,36 @@ func (e FleetAssetStatus) Valid() bool {
 	}
 }
 
+// Defines values for FleetAvailabilitySuccessResponseSuccess.
+const (
+	FleetAvailabilitySuccessResponseSuccessTrue FleetAvailabilitySuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the FleetAvailabilitySuccessResponseSuccess enum.
+func (e FleetAvailabilitySuccessResponseSuccess) Valid() bool {
+	switch e {
+	case FleetAvailabilitySuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for FleetCompareSuccessResponseSuccess.
+const (
+	FleetCompareSuccessResponseSuccessTrue FleetCompareSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the FleetCompareSuccessResponseSuccess enum.
+func (e FleetCompareSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case FleetCompareSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for FleetDetailSuccessResponseSuccess.
 const (
 	FleetDetailSuccessResponseSuccessTrue FleetDetailSuccessResponseSuccess = true
@@ -371,6 +401,42 @@ const (
 func (e FleetListSuccessResponseSuccess) Valid() bool {
 	switch e {
 	case FleetListSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for FleetSearchResultItemAvailabilityStatus.
+const (
+	AVAILABLENOW    FleetSearchResultItemAvailabilityStatus = "AVAILABLE_NOW"
+	HELDPENDINGWIRE FleetSearchResultItemAvailabilityStatus = "HELD_PENDING_WIRE"
+	UNAVAILABLE     FleetSearchResultItemAvailabilityStatus = "UNAVAILABLE"
+)
+
+// Valid indicates whether the value is a known member of the FleetSearchResultItemAvailabilityStatus enum.
+func (e FleetSearchResultItemAvailabilityStatus) Valid() bool {
+	switch e {
+	case AVAILABLENOW:
+		return true
+	case HELDPENDINGWIRE:
+		return true
+	case UNAVAILABLE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for FleetSearchSuccessResponseSuccess.
+const (
+	FleetSearchSuccessResponseSuccessTrue FleetSearchSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the FleetSearchSuccessResponseSuccess enum.
+func (e FleetSearchSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case FleetSearchSuccessResponseSuccessTrue:
 		return true
 	default:
 		return false
@@ -659,6 +725,57 @@ func (e ListFleetsParamsStatus) Valid() bool {
 	case ListFleetsParamsStatusRENTED:
 		return true
 	case ListFleetsParamsStatusUNDERMAINTENANCE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SearchFleetsParamsFuelType.
+const (
+	DIESEL   SearchFleetsParamsFuelType = "DIESEL"
+	ELECTRIC SearchFleetsParamsFuelType = "ELECTRIC"
+	HYBRID   SearchFleetsParamsFuelType = "HYBRID"
+	PETROL   SearchFleetsParamsFuelType = "PETROL"
+)
+
+// Valid indicates whether the value is a known member of the SearchFleetsParamsFuelType enum.
+func (e SearchFleetsParamsFuelType) Valid() bool {
+	switch e {
+	case DIESEL:
+		return true
+	case ELECTRIC:
+		return true
+	case HYBRID:
+		return true
+	case PETROL:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SearchFleetsParamsSortBy.
+const (
+	DISTANCEASC SearchFleetsParamsSortBy = "DISTANCE_ASC"
+	PRICEASC    SearchFleetsParamsSortBy = "PRICE_ASC"
+	PRICEDESC   SearchFleetsParamsSortBy = "PRICE_DESC"
+	RATINGDESC  SearchFleetsParamsSortBy = "RATING_DESC"
+	RECOMMENDED SearchFleetsParamsSortBy = "RECOMMENDED"
+)
+
+// Valid indicates whether the value is a known member of the SearchFleetsParamsSortBy enum.
+func (e SearchFleetsParamsSortBy) Valid() bool {
+	switch e {
+	case DISTANCEASC:
+		return true
+	case PRICEASC:
+		return true
+	case PRICEDESC:
+		return true
+	case RATINGDESC:
+		return true
+	case RECOMMENDED:
 		return true
 	default:
 		return false
@@ -1023,6 +1140,84 @@ type FleetAsset struct {
 // FleetAssetStatus defines model for FleetAsset.Status.
 type FleetAssetStatus string
 
+// FleetAvailabilityData defines model for FleetAvailabilityData.
+type FleetAvailabilityData struct {
+	BlackoutRanges       *[]FleetAvailabilityDateRange `json:"blackoutRanges,omitempty"`
+	FleetId              openapi_types.UUID            `json:"fleetId"`
+	HoldExpiresInSeconds *int                          `json:"holdExpiresInSeconds,omitempty"`
+	IsAvailable          bool                          `json:"isAvailable"`
+	NextAvailableDate    *openapi_types.Date           `json:"nextAvailableDate,omitempty"`
+	ReservedRanges       *[]FleetAvailabilityDateRange `json:"reservedRanges,omitempty"`
+	UnavailableReason    *string                       `json:"unavailableReason,omitempty"`
+}
+
+// FleetAvailabilityDateRange defines model for FleetAvailabilityDateRange.
+type FleetAvailabilityDateRange struct {
+	EndDate   openapi_types.Date `json:"endDate"`
+	Reason    *string            `json:"reason,omitempty"`
+	StartDate openapi_types.Date `json:"startDate"`
+	State     *string            `json:"state,omitempty"`
+}
+
+// FleetAvailabilitySuccessResponse defines model for FleetAvailabilitySuccessResponse.
+type FleetAvailabilitySuccessResponse struct {
+	Data    FleetAvailabilityData                   `json:"data"`
+	Error   map[string]interface{}                  `json:"error"`
+	Meta    ResponseMeta                            `json:"meta"`
+	Success FleetAvailabilitySuccessResponseSuccess `json:"success"`
+}
+
+// FleetAvailabilitySuccessResponseSuccess defines model for FleetAvailabilitySuccessResponse.Success.
+type FleetAvailabilitySuccessResponseSuccess bool
+
+// FleetCompareData defines model for FleetCompareData.
+type FleetCompareData struct {
+	ComparisonMatrix  []FleetCompareSpecRow    `json:"comparisonMatrix"`
+	Fleets            []FleetCompareItemHeader `json:"fleets"`
+	SubcategoryId     openapi_types.UUID       `json:"subcategoryId"`
+	SubcategoryNameAm string                   `json:"subcategoryNameAm"`
+	SubcategoryNameEn string                   `json:"subcategoryNameEn"`
+}
+
+// FleetCompareItemHeader defines model for FleetCompareItemHeader.
+type FleetCompareItemHeader struct {
+	DailyRateMinor      int64              `json:"dailyRateMinor"`
+	ExcessHourRateMinor *int64             `json:"excessHourRateMinor,omitempty"`
+	FuelType            *string            `json:"fuelType,omitempty"`
+	Id                  openapi_types.UUID `json:"id"`
+	OperatorIncluded    bool               `json:"operatorIncluded"`
+	PrimaryPhotoUri     *string            `json:"primaryPhotoUri,omitempty"`
+	SelfMoveCapable     bool               `json:"selfMoveCapable"`
+	Title               string             `json:"title"`
+}
+
+// FleetCompareRequest defines model for FleetCompareRequest.
+type FleetCompareRequest struct {
+	FleetIds []openapi_types.UUID `json:"fleetIds"`
+}
+
+// FleetCompareSpecRow defines model for FleetCompareSpecRow.
+type FleetCompareSpecRow struct {
+	FieldKey    string            `json:"fieldKey"`
+	FieldType   *string           `json:"fieldType,omitempty"`
+	IsDifferent bool              `json:"isDifferent"`
+	LabelAm     string            `json:"labelAm"`
+	LabelEn     string            `json:"labelEn"`
+	UnitSymbol  *string           `json:"unitSymbol,omitempty"`
+	Values      map[string]string `json:"values"`
+}
+
+// FleetCompareSuccessResponse defines model for FleetCompareSuccessResponse.
+type FleetCompareSuccessResponse struct {
+	Data    FleetCompareData                   `json:"data"`
+	Error   map[string]interface{}             `json:"error"`
+	Meta    ResponseMeta                       `json:"meta"`
+	Success FleetCompareSuccessResponseSuccess `json:"success"`
+}
+
+// FleetCompareSuccessResponseSuccess defines model for FleetCompareSuccessResponse.Success.
+type FleetCompareSuccessResponseSuccess bool
+
 // FleetDetailSuccessResponse defines model for FleetDetailSuccessResponse.
 type FleetDetailSuccessResponse struct {
 	Data    FleetAsset                        `json:"data"`
@@ -1044,6 +1239,71 @@ type FleetListSuccessResponse struct {
 
 // FleetListSuccessResponseSuccess defines model for FleetListSuccessResponse.Success.
 type FleetListSuccessResponseSuccess bool
+
+// FleetSearchCenter defines model for FleetSearchCenter.
+type FleetSearchCenter struct {
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+	RadiusKm  float64 `json:"radiusKm"`
+}
+
+// FleetSearchData defines model for FleetSearchData.
+type FleetSearchData struct {
+	Results      []FleetSearchResultItem `json:"results"`
+	SearchCenter FleetSearchCenter       `json:"searchCenter"`
+	TotalMatches int                     `json:"totalMatches"`
+}
+
+// FleetSearchKeySpecs defines model for FleetSearchKeySpecs.
+type FleetSearchKeySpecs struct {
+	GrossPowerHp      *float64 `json:"grossPowerHp,omitempty"`
+	OperatingWeightKg *float64 `json:"operatingWeightKg,omitempty"`
+	PayloadCapacityKg *float64 `json:"payloadCapacityKg,omitempty"`
+}
+
+// FleetSearchOwnerSummary defines model for FleetSearchOwnerSummary.
+type FleetSearchOwnerSummary struct {
+	AverageRating         float64            `json:"averageRating"`
+	IsVerified            bool               `json:"isVerified"`
+	OwnerId               openapi_types.UUID `json:"ownerId"`
+	TotalCompletedRentals int                `json:"totalCompletedRentals"`
+	TradingName           string             `json:"tradingName"`
+}
+
+// FleetSearchResultItem defines model for FleetSearchResultItem.
+type FleetSearchResultItem struct {
+	AvailabilityStatus  FleetSearchResultItemAvailabilityStatus `json:"availabilityStatus"`
+	DailyRateMinor      int64                                   `json:"dailyRateMinor"`
+	DistanceMeters      float64                                 `json:"distanceMeters"`
+	ExcessHourRateMinor *int64                                  `json:"excessHourRateMinor,omitempty"`
+	FleetId             openapi_types.UUID                      `json:"fleetId"`
+	FuelType            string                                  `json:"fuelType"`
+	KeySpecs            *FleetSearchKeySpecs                    `json:"keySpecs,omitempty"`
+	Make                string                                  `json:"make"`
+	ManufactureYear     int                                     `json:"manufactureYear"`
+	Model               string                                  `json:"model"`
+	OperatorIncluded    bool                                    `json:"operatorIncluded"`
+	Owner               FleetSearchOwnerSummary                 `json:"owner"`
+	PrimaryPhotoUri     *string                                 `json:"primaryPhotoUri,omitempty"`
+	SelfMoveCapable     bool                                    `json:"selfMoveCapable"`
+	SubcategoryId       *openapi_types.UUID                     `json:"subcategoryId,omitempty"`
+	SubcategoryNameAm   *string                                 `json:"subcategoryNameAm,omitempty"`
+	SubcategoryNameEn   *string                                 `json:"subcategoryNameEn,omitempty"`
+}
+
+// FleetSearchResultItemAvailabilityStatus defines model for FleetSearchResultItem.AvailabilityStatus.
+type FleetSearchResultItemAvailabilityStatus string
+
+// FleetSearchSuccessResponse defines model for FleetSearchSuccessResponse.
+type FleetSearchSuccessResponse struct {
+	Data    FleetSearchData                   `json:"data"`
+	Error   map[string]interface{}            `json:"error"`
+	Meta    ResponseMeta                      `json:"meta"`
+	Success FleetSearchSuccessResponseSuccess `json:"success"`
+}
+
+// FleetSearchSuccessResponseSuccess defines model for FleetSearchSuccessResponse.Success.
+type FleetSearchSuccessResponseSuccess bool
 
 // InspectionDetailSuccessResponse defines model for InspectionDetailSuccessResponse.
 type InspectionDetailSuccessResponse struct {
@@ -1302,6 +1562,9 @@ type TooManyRequests = ErrorEnvelope
 // Unauthorized defines model for unauthorized.
 type Unauthorized = ErrorEnvelope
 
+// UnprocessableEntity defines model for unprocessable-entity.
+type UnprocessableEntity = ErrorEnvelope
+
 // UpdateCountryConfigParams defines parameters for UpdateCountryConfig.
 type UpdateCountryConfigParams struct {
 	// IdempotencyKey Unique mutation request key preventing duplicate execution.
@@ -1430,6 +1693,45 @@ type CreateFleetAssetParams struct {
 	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
 }
 
+// SearchFleetsParams defines parameters for SearchFleets.
+type SearchFleetsParams struct {
+	Latitude         float64                     `form:"latitude" json:"latitude"`
+	Longitude        float64                     `form:"longitude" json:"longitude"`
+	RadiusKm         *int                        `form:"radiusKm,omitempty" json:"radiusKm,omitempty"`
+	CategoryId       *openapi_types.UUID         `form:"categoryId,omitempty" json:"categoryId,omitempty"`
+	SubcategoryId    *openapi_types.UUID         `form:"subcategoryId,omitempty" json:"subcategoryId,omitempty"`
+	StartDate        *openapi_types.Date         `form:"startDate,omitempty" json:"startDate,omitempty"`
+	EndDate          *openapi_types.Date         `form:"endDate,omitempty" json:"endDate,omitempty"`
+	MinRateMinor     *int64                      `form:"minRateMinor,omitempty" json:"minRateMinor,omitempty"`
+	MaxRateMinor     *int64                      `form:"maxRateMinor,omitempty" json:"maxRateMinor,omitempty"`
+	OperatorIncluded *bool                       `form:"operatorIncluded,omitempty" json:"operatorIncluded,omitempty"`
+	FuelType         *SearchFleetsParamsFuelType `form:"fuelType,omitempty" json:"fuelType,omitempty"`
+	SelfMoveCapable  *bool                       `form:"selfMoveCapable,omitempty" json:"selfMoveCapable,omitempty"`
+	Query            *string                     `form:"query,omitempty" json:"query,omitempty"`
+	SortBy           *SearchFleetsParamsSortBy   `form:"sortBy,omitempty" json:"sortBy,omitempty"`
+
+	// Limit Maximum number of records to return per page.
+	Limit *LimitQueryParam `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Cursor Opaque cursor identifier for deterministic keyset pagination.
+	Cursor *CursorQueryParam `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// XCountryCode ISO 3166-1 alpha-2 operational country code driving multi-country logic.
+	XCountryCode *CountryCodeHeader `json:"X-Country-Code,omitempty"`
+}
+
+// SearchFleetsParamsFuelType defines parameters for SearchFleets.
+type SearchFleetsParamsFuelType string
+
+// SearchFleetsParamsSortBy defines parameters for SearchFleets.
+type SearchFleetsParamsSortBy string
+
+// GetFleetAvailabilityParams defines parameters for GetFleetAvailability.
+type GetFleetAvailabilityParams struct {
+	StartDate openapi_types.Date `form:"startDate" json:"startDate"`
+	EndDate   openapi_types.Date `form:"endDate" json:"endDate"`
+}
+
 // SearchFleetsByRadiusParams defines parameters for SearchFleetsByRadius.
 type SearchFleetsByRadiusParams struct {
 	Latitude  float64 `form:"latitude" json:"latitude"`
@@ -1500,6 +1802,9 @@ type ConfirmBookingPaymentJSONRequestBody ConfirmBookingPaymentJSONBody
 // CreateFleetAssetJSONRequestBody defines body for CreateFleetAsset for application/json ContentType.
 type CreateFleetAssetJSONRequestBody = CreateFleetRequest
 
+// CompareFleetsJSONRequestBody defines body for CompareFleets for application/json ContentType.
+type CompareFleetsJSONRequestBody = FleetCompareRequest
+
 // LinkFleetAttachmentJSONRequestBody defines body for LinkFleetAttachment for application/json ContentType.
 type LinkFleetAttachmentJSONRequestBody = LinkFleetAttachmentRequest
 
@@ -1568,12 +1873,21 @@ type ServerInterface interface {
 	// CreateFleetAsset Register a new machinery asset to fleet
 	// (POST /fleets)
 	CreateFleetAsset(w http.ResponseWriter, r *http.Request, params CreateFleetAssetParams)
+	// CompareFleets Side-by-side dynamic EAV spec comparison
+	// (POST /fleets/compare)
+	CompareFleets(w http.ResponseWriter, r *http.Request)
+	// SearchFleets Spatial radius and multi-variable fleet discovery
+	// (GET /fleets/search)
+	SearchFleets(w http.ResponseWriter, r *http.Request, params SearchFleetsParams)
 	// GetFleetById Retrieve detailed fleet asset by ID
 	// (GET /fleets/{id})
 	GetFleetById(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
 	// LinkFleetAttachment Link attachment to fleet asset
 	// (POST /fleets/{id}/attachments/link)
 	LinkFleetAttachment(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// GetFleetAvailability Fleet asset calendar availability and pre-flight diagnostics
+	// (GET /fleets/{id}/availability)
+	GetFleetAvailability(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params GetFleetAvailabilityParams)
 	// SearchFleetsByRadius Spatial radius search for machinery
 	// (GET /geo/fleets/radius-search)
 	SearchFleetsByRadius(w http.ResponseWriter, r *http.Request, params SearchFleetsByRadiusParams)
@@ -1712,6 +2026,18 @@ func (_ Unimplemented) CreateFleetAsset(w http.ResponseWriter, r *http.Request, 
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// CompareFleets Side-by-side dynamic EAV spec comparison
+// (POST /fleets/compare)
+func (_ Unimplemented) CompareFleets(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// SearchFleets Spatial radius and multi-variable fleet discovery
+// (GET /fleets/search)
+func (_ Unimplemented) SearchFleets(w http.ResponseWriter, r *http.Request, params SearchFleetsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // GetFleetById Retrieve detailed fleet asset by ID
 // (GET /fleets/{id})
 func (_ Unimplemented) GetFleetById(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
@@ -1721,6 +2047,12 @@ func (_ Unimplemented) GetFleetById(w http.ResponseWriter, r *http.Request, id o
 // LinkFleetAttachment Link attachment to fleet asset
 // (POST /fleets/{id}/attachments/link)
 func (_ Unimplemented) LinkFleetAttachment(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetFleetAvailability Fleet asset calendar availability and pre-flight diagnostics
+// (GET /fleets/{id}/availability)
+func (_ Unimplemented) GetFleetAvailability(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params GetFleetAvailabilityParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -2535,6 +2867,269 @@ func (siw *ServerInterfaceWrapper) CreateFleetAsset(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r)
 }
 
+// CompareFleets operation middleware
+func (siw *ServerInterfaceWrapper) CompareFleets(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CompareFleets(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// SearchFleets operation middleware
+func (siw *ServerInterfaceWrapper) SearchFleets(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params SearchFleetsParams
+
+	// ------------- Required query parameter "latitude" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "latitude", r.URL.Query(), &params.Latitude, runtime.BindQueryParameterOptions{Type: "number", Format: "double"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "latitude"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "latitude", Err: err})
+		}
+		return
+	}
+
+	// ------------- Required query parameter "longitude" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "longitude", r.URL.Query(), &params.Longitude, runtime.BindQueryParameterOptions{Type: "number", Format: "double"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "longitude"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "longitude", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "radiusKm" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "radiusKm", r.URL.Query(), &params.RadiusKm, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "radiusKm"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "radiusKm", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "categoryId" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "categoryId", r.URL.Query(), &params.CategoryId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "categoryId"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "categoryId", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "subcategoryId" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "subcategoryId", r.URL.Query(), &params.SubcategoryId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "subcategoryId"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "subcategoryId", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "startDate" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "startDate", r.URL.Query(), &params.StartDate, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "startDate"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "startDate", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "endDate" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "endDate", r.URL.Query(), &params.EndDate, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "endDate"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "endDate", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "minRateMinor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "minRateMinor", r.URL.Query(), &params.MinRateMinor, runtime.BindQueryParameterOptions{Type: "integer", Format: "int64"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "minRateMinor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "minRateMinor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "maxRateMinor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "maxRateMinor", r.URL.Query(), &params.MaxRateMinor, runtime.BindQueryParameterOptions{Type: "integer", Format: "int64"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "maxRateMinor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "maxRateMinor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "operatorIncluded" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "operatorIncluded", r.URL.Query(), &params.OperatorIncluded, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "operatorIncluded"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "operatorIncluded", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "fuelType" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "fuelType", r.URL.Query(), &params.FuelType, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "fuelType"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "fuelType", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "selfMoveCapable" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "selfMoveCapable", r.URL.Query(), &params.SelfMoveCapable, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "selfMoveCapable"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "selfMoveCapable", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "query" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "query", r.URL.Query(), &params.Query, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "query"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "query", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "sortBy" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "sortBy", r.URL.Query(), &params.SortBy, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "sortBy"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "sortBy", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-Country-Code" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Country-Code")]; found {
+		var XCountryCode CountryCodeHeader
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-Country-Code", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Country-Code", valueList[0], &XCountryCode, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-Country-Code", Err: err})
+			return
+		}
+
+		params.XCountryCode = &XCountryCode
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.SearchFleets(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetFleetById operation middleware
 func (siw *ServerInterfaceWrapper) GetFleetById(w http.ResponseWriter, r *http.Request) {
 
@@ -2578,6 +3173,61 @@ func (siw *ServerInterfaceWrapper) LinkFleetAttachment(w http.ResponseWriter, r 
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.LinkFleetAttachment(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetFleetAvailability operation middleware
+func (siw *ServerInterfaceWrapper) GetFleetAvailability(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetFleetAvailabilityParams
+
+	// ------------- Required query parameter "startDate" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "startDate", r.URL.Query(), &params.StartDate, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "startDate"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "startDate", Err: err})
+		}
+		return
+	}
+
+	// ------------- Required query parameter "endDate" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "endDate", r.URL.Query(), &params.EndDate, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "endDate"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "endDate", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetFleetAvailability(w, r, id, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2912,7 +3562,16 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/fleets", wrapper.CreateFleetAsset)
 	})
 	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/fleets/search", wrapper.SearchFleets)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/fleets/compare", wrapper.CompareFleets)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/fleets/{id}", wrapper.GetFleetById)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/fleets/{id}/availability", wrapper.GetFleetAvailability)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/fleets/{id}/attachments/link", wrapper.LinkFleetAttachment)

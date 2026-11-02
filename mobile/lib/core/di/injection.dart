@@ -1,3 +1,12 @@
+import 'package:dink_mobile/features/discovery/data/datasources/discovery_remote_datasource.dart';
+import 'package:dink_mobile/features/discovery/data/repositories/discovery_repository_impl.dart';
+import 'package:dink_mobile/features/discovery/domain/entities/fleet_search_filter.dart';
+import 'package:dink_mobile/features/discovery/domain/repositories/discovery_repository.dart';
+import 'package:dink_mobile/features/discovery/domain/usecases/compare_fleets_usecase.dart';
+import 'package:dink_mobile/features/discovery/domain/usecases/get_fleet_availability_usecase.dart';
+import 'package:dink_mobile/features/discovery/domain/usecases/search_fleets_usecase.dart';
+import 'package:dink_mobile/features/discovery/presentation/bloc/discovery_bloc.dart';
+import 'package:dink_mobile/features/discovery/presentation/bloc/discovery_state.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dink_mobile/core/localization/locale_controller.dart';
@@ -198,4 +207,49 @@ Future<void> initDependencies() async {
       ),
     );
   }
+
+  // Discovery Subsystem (Partition 05-04)
+  if (!sl.isRegistered<DiscoveryRemoteDataSource>()) {
+    sl.registerLazySingleton<DiscoveryRemoteDataSource>(
+      () => DiscoveryRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
+    );
+  }
+
+  if (!sl.isRegistered<DiscoveryRepository>()) {
+    sl.registerLazySingleton<DiscoveryRepository>(
+      () => DiscoveryRepositoryImpl(remoteDataSource: sl<DiscoveryRemoteDataSource>()),
+    );
+  }
+
+  if (!sl.isRegistered<SearchFleetsUseCase>()) {
+    sl.registerLazySingleton<SearchFleetsUseCase>(
+      () => SearchFleetsUseCase(sl<DiscoveryRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<CompareFleetsUseCase>()) {
+    sl.registerLazySingleton<CompareFleetsUseCase>(
+      () => CompareFleetsUseCase(sl<DiscoveryRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<GetFleetAvailabilityUseCase>()) {
+    sl.registerLazySingleton<GetFleetAvailabilityUseCase>(
+      () => GetFleetAvailabilityUseCase(sl<DiscoveryRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<DiscoveryBloc>()) {
+    sl.registerFactory<DiscoveryBloc>(
+      () => DiscoveryBloc(
+        searchFleetsUseCase: sl<SearchFleetsUseCase>(),
+        compareFleetsUseCase: sl<CompareFleetsUseCase>(),
+        getFleetAvailabilityUseCase: sl<GetFleetAvailabilityUseCase>(),
+        initialState: const DiscoveryState(
+          filter: FleetSearchFilter(latitude: 9.0300, longitude: 38.7400),
+        ),
+      ),
+    );
+  }
+
 }

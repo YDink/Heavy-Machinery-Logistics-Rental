@@ -72,7 +72,8 @@ func setupTestMachineryRouter(t *testing.T) (http.Handler, *application.TokenSer
 		machineryRepo,
 	)
 
-	server := transport.NewServer(authService, tokenService, machineryService, nil)
+	discoveryService := machineryApp.NewDiscoveryService(machineryRepo, machineryRepo, nil)
+	server := transport.NewServer(authService, tokenService, machineryService, nil, discoveryService)
 
 	r := chi.NewRouter()
 	r.Use(i18n.LanguageMiddleware)

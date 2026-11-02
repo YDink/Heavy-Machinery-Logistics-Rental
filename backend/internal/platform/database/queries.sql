@@ -477,3 +477,172 @@ INSERT INTO attachment_reservations (
 ) VALUES (
     $1, $2, $3, $4, $5
 ) RETURNING *;
+
+
+-- Discovery, Spatial Search & Dynamic Comparison (Partition 05-04, SRS §05.04, SR-01 to SR-08, D-05-04-001, D-05-04-002)
+
+-- name: SearchFleetsSpatial :many
+SELECT 
+    f.id,
+    f.owner_id,
+    f.subcategory_id,
+    f.make,
+    f.model,
+    f.manufacture_year,
+    f.plate_number,
+    f.baseline_meter_hours,
+    f.fuel_type,
+    f.self_move_capable,
+    f.daily_rate_minor,
+    f.excess_hour_rate_minor,
+    f.min_rental_days,
+    f.operator_included,
+    f.status,
+    f.address_text,
+    f.country_code,
+    ST_Y(f.location::geometry) AS latitude,
+    ST_X(f.location::geometry) AS longitude,
+    ST_Distance(f.location, ST_SetSRID(ST_MakePoint(sqlc.arg(longitude)::float8, sqlc.arg(latitude)::float8), 4326)::geography) AS distance_meters,
+    c.name_en AS subcategory_name_en,
+    c.name_am AS subcategory_name_am,
+    COALESCE(oa.average_rating, 5.00) AS owner_rating,
+    COALESCE(oa.total_completed_rentals, 0) AS owner_completed_rentals,
+    COALESCE(oa.is_verified, false) AS owner_verified,
+    fsi.operating_weight_kg,
+    fsi.payload_capacity_kg,
+    fsi.gross_engine_power_hp,
+    (SELECT storage_uri FROM fleet_photos fp WHERE fp.fleet_id = f.id ORDER BY fp.display_order ASC LIMIT 1) AS primary_photo_uri
+FROM fleets f
+JOIN categories c ON c.id = f.subcategory_id
+LEFT JOIN owner_aggregates oa ON oa.owner_id = f.owner_id
+LEFT JOIN fleet_spec_indexed fsi ON fsi.fleet_id = f.id
+WHERE f.status = 'ACTIVE'
+  AND f.country_code = sqlc.arg(country_code)
+  AND ST_DWithin(f.location, ST_SetSRID(ST_MakePoint(sqlc.arg(longitude)::float8, sqlc.arg(latitude)::float8), 4326)::geography, sqlc.arg(radius_meters)::float8)
+  AND (sqlc.narg(subcategory_id)::uuid IS NULL OR f.subcategory_id = sqlc.narg(subcategory_id))
+  AND (sqlc.narg(min_rate_minor)::bigint IS NULL OR f.daily_rate_minor >= sqlc.narg(min_rate_minor))
+  AND (sqlc.narg(max_rate_minor)::bigint IS NULL OR f.daily_rate_minor <= sqlc.narg(max_rate_minor))
+  AND (sqlc.narg(fuel_type)::text IS NULL OR f.fuel_type = sqlc.narg(fuel_type))
+  AND (sqlc.narg(operator_included)::boolean IS NULL OR f.operator_included = sqlc.narg(operator_included))
+  AND (sqlc.narg(self_move_capable)::boolean IS NULL OR f.self_move_capable = sqlc.narg(self_move_capable))
+  AND (sqlc.narg(query_text)::text IS NULL OR f.search_vector ILIKE '%' || sqlc.narg(query_text) || '%')
+  AND (
+      sqlc.narg(start_date)::date IS NULL OR sqlc.narg(end_date)::date IS NULL OR (
+          NOT EXISTS (
+              SELECT 1 FROM fleet_availability fa 
+              WHERE fa.fleet_id = f.id 
+                AND fa.hire_period && daterange(sqlc.narg(start_date)::date, sqlc.narg(end_date)::date, '[]')
+                AND fa.state IN ('RESERVED', 'MAINTENANCE', 'RENTED')
+          )
+          AND NOT EXISTS (
+              SELECT 1 FROM fleet_blackouts fb 
+              WHERE fb.fleet_id = f.id 
+                AND daterange(fb.start_date, fb.end_date, '[]') && daterange(sqlc.narg(start_date)::date, sqlc.narg(end_date)::date, '[]')
+          )
+      )
+  )
+ORDER BY distance_meters ASC
+LIMIT sqlc.arg(query_limit)::int OFFSET sqlc.arg(query_offset)::int;
+
+-- name: GetComparableSpecsForFleets :many
+SELECT 
+    d.field_key,
+    d.label_en,
+    d.label_am,
+    d.unit_symbol,
+    d.field_type,
+    d.display_order,
+    v.fleet_id,
+    v.value_string,
+    v.value_numeric,
+    v.value_boolean
+FROM spec_field_definitions d
+JOIN fleet_spec_values v ON v.spec_definition_id = d.id
+WHERE d.is_comparable = true
+  AND v.fleet_id = ANY(sqlc.arg(fleet_ids)::uuid[])
+ORDER BY d.display_order ASC;
+
+-- name: GetFleetsForComparison :many
+SELECT 
+    f.id,
+    f.subcategory_id,
+    f.make,
+    f.model,
+    f.manufacture_year,
+    f.daily_rate_minor,
+    f.excess_hour_rate_minor,
+    f.operator_included,
+    f.fuel_type,
+    f.self_move_capable,
+    c.name_en AS subcategory_name_en,
+    c.name_am AS subcategory_name_am,
+    (SELECT storage_uri FROM fleet_photos fp WHERE fp.fleet_id = f.id ORDER BY fp.display_order ASC LIMIT 1) AS primary_photo_uri
+FROM fleets f
+JOIN categories c ON c.id = f.subcategory_id
+WHERE f.id = ANY(sqlc.arg(fleet_ids)::uuid[]) AND f.status = 'ACTIVE';
+
+-- name: ListFleetAvailabilityRanges :many
+SELECT id, fleet_id, hire_period, state, created_at
+FROM fleet_availability
+WHERE fleet_id = $1
+  AND hire_period && daterange($2::date, $3::date, '[]');
+
+-- name: ListFleetBlackoutsInRange :many
+SELECT id, fleet_id, start_date, end_date, reason
+FROM fleet_blackouts
+WHERE fleet_id = $1
+  AND daterange(start_date, end_date, '[]') && daterange($2::date, $3::date, '[]');
+
+-- name: CreateFleetAvailability :one
+INSERT INTO fleet_availability (
+    fleet_id,
+    hire_period,
+    state,
+    reference_id
+) VALUES (
+    $1, $2, $3, $4
+) RETURNING *;
+
+-- name: UpsertOwnerAggregate :one
+INSERT INTO owner_aggregates (
+    owner_id,
+    average_rating,
+    total_rentals_count,
+    total_completed_rentals,
+    completion_rate,
+    is_verified,
+    updated_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, NOW()
+) ON CONFLICT (owner_id) DO UPDATE SET
+    average_rating = EXCLUDED.average_rating,
+    total_rentals_count = EXCLUDED.total_rentals_count,
+    total_completed_rentals = EXCLUDED.total_completed_rentals,
+    completion_rate = EXCLUDED.completion_rate,
+    is_verified = EXCLUDED.is_verified,
+    updated_at = NOW()
+RETURNING *;
+
+-- name: GetOwnerAggregate :one
+SELECT * FROM owner_aggregates
+WHERE owner_id = $1;
+
+-- name: UpsertFleetInsurance :one
+INSERT INTO fleet_insurances (
+    fleet_id,
+    policy_number,
+    provider_name,
+    coverage_type,
+    status,
+    expires_at,
+    certificate_uri,
+    updated_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, NOW()
+) RETURNING *;
+
+-- name: GetFleetInsuranceByFleetID :one
+SELECT * FROM fleet_insurances
+WHERE fleet_id = $1 AND status = 'ACTIVE' AND expires_at >= CURRENT_DATE
+ORDER BY expires_at DESC
+LIMIT 1;

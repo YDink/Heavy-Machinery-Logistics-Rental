@@ -39,7 +39,8 @@ func setupAttachmentTestRouter(t *testing.T) (*chi.Mux, *application.TokenServic
 	)
 	attachmentService := machineryApp.NewAttachmentService(memRepo, memRepo)
 
-	server := transport.NewServer(nil, tokenService, machineryService, attachmentService)
+	discoveryService := machineryApp.NewDiscoveryService(memRepo, memRepo, nil)
+	server := transport.NewServer(nil, tokenService, machineryService, attachmentService, discoveryService)
 
 	r := chi.NewRouter()
 	generated.HandlerWithOptions(server, generated.ChiServerOptions{

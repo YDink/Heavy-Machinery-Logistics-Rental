@@ -155,13 +155,13 @@ Refs: #<issue-or-task-number>
 
 ### The Atomic Doc-Commit Rule
 - Code and tests must never be committed without staging their operational documentation simultaneously.
-- **Mandatory in every commit:** Code changes + Tests + `CONTEXT.md`.
+- **Mandatory in every commit:** Code changes + Tests + `CONTEXT.md` + `REQUIREMENTS_TRACKER.md`.
 - **Conditional:** If a design decision meets any qualification test, the relevant partition decision doc or ADR must be updated and staged within the exact same commit.
 
 ### Pre-Commit Gate Enforcement (`lefthook.yml`)
 Local git hooks block commits failing the following:
 1. `G0` linter, code style, and test runs.
-2. Verification that `CONTEXT.md` is present in the staged index.
+2. Verification that `CONTEXT.md` and `REQUIREMENTS_TRACKER.md` are present in the staged index.
 3. Verification that commit messages include the `Docs:` footer.
 4. Validation that any decision mentioned in commit bodies exists in `docs/decisions/`.
 5. Bypassing checks via `--no-verify` is strictly prohibited on all development branches.
@@ -230,9 +230,25 @@ Every L1 and L2 decision entry must strictly document:
 
 ### Context Window Optimization
 - Avoid bulk-loading the entire documentation tree into active AI context windows.
-- Load only the baseline operating files: `AGENTS.md`, `CONTEXT.md`, and `contracts/openapi.yaml`.
+- Load only the baseline operating files: `AGENTS.md`, `CONTEXT.md`, `REQUIREMENTS_TRACKER.md`, and `contracts/openapi.yaml`.
 - Pull specific partition files on demand based on the active task:
   - Requirements: `docs/shared/requirements/<partition-id>.md`
   - Design/Flows: `docs/shared/flows/<flow-id>.md`
   - Decisions: `docs/decisions/partitions/<partition-id>.md`
 - Always verify open blockers in `docs/OPEN_QUESTIONS.md` before executing new architectural implementations.
+
+---
+
+## 9. Requirement Traceability & Tracking Protocol
+
+### Status Lifecycle Management
+All partitions and requirements follow a strict three-state lifecycle tracked in `REQUIREMENTS_TRACKER.md`:
+1. `NOT_STARTED` (⏳): Partition is specified in `docs/shared/requirements/`, but no active development branch exists.
+2. `IN_PROGRESS` (🔄): Feature branch `feature/<partition-id>` has been checked out, and active implementation or test work is underway.
+3. `COMPLETED` (✅): All required subsystems (`DB`, `OAS`, `BE`, `MOB`, `ADM`) are implemented, 100% tests pass, OpenAPI bundle passes linting with 0 errors, and the branch is rebase-merged into `main`.
+
+### Tracker Synchronization Invariants
+- **Branch Checkout / Task Start:** Transition partition from `NOT_STARTED` to `IN_PROGRESS` in `REQUIREMENTS_TRACKER.md` and `CONTEXT.md`.
+- **Subsystem Milestone:** Check off completed subsystems (`DB`, `BE`, `MOB`, `OAS`, `ADM`) in the tracker matrix.
+- **Merge to Main:** Record the completion date, commit hash, verified test count, and transition status to `COMPLETED`.
+- **Single Source of Truth:** `REQUIREMENTS_TRACKER.md` is the authoritative executive status matrix. Discrepancies between git history and `REQUIREMENTS_TRACKER.md` are treated as quality gate failures.

@@ -1,9 +1,9 @@
 # CONTEXT.md — Dink Machinery Active Session State
 
 **Project Phase:** Phase 2 (Partition Feature Development)  
-**Active Requirement Partition:** `05-06-active-rental-management` (Active Rental Management, Shift Telemetry, Breakdown & Extension Architecture)  
-**Active Branch:** `feature/05-06-active-rental-management` (Partition 05-06 verified & ready to merge into main)  
-**Current Stop Point:** Partition 05-06 Verified across Backend, Mobile, and Governance. Ready to merge to main and advance to Partition 05-07.
+**Active Requirement Partition:** `05-07-rental-completion-return-damage` (Rental Completion, Off-Hire Return Inspection, Damage & Penalty Adjudication Architecture)  
+**Active Branch:** `main` (Partition 05-06 merged into main; preparing `feature/05-07-rental-completion-return-damage`)  
+**Current Stop Point:** Partition 05-06 Merged into Main. Master Requirements Tracker established (`REQUIREMENTS_TRACKER.md`). Ready to begin Partition 05-07.
 
 ---
 

@@ -1,0 +1,510 @@
+# Active Rental Telemetry, Handover, Shift Tracking & Breakdown Schemas (Partition 05-06)
+
+InspectionPhoto:
+  type: object
+  required:
+    - angle
+    - storageUri
+  properties:
+    angle:
+      type: string
+      enum:
+        - METER_CLOSEUP
+        - FRONT_ELEVATION
+        - REAR_ELEVATION
+        - LEFT_TRACK
+        - RIGHT_TRACK
+        - CABIN_INTERIOR
+      description: Camera capture angle for pre-rental condition attestation
+    storageUri:
+      type: string
+      format: uri
+      description: URI of uploaded inspection photograph
+
+HandoverInspectionRequest:
+  type: object
+  required:
+    - checkInMeterHours
+    - inspectionPhotos
+  properties:
+    checkInMeterHours:
+      type: number
+      format: double
+      minimum: 0
+      description: Current mechanical hour meter reading verified at machine handover
+    inspectionPhotos:
+      type: array
+      minItems: 1
+      items:
+        $ref: '#/InspectionPhoto'
+    fluidLevelsOk:
+      type: boolean
+      default: true
+      description: Attestation that engine oil and hydraulic fluid levels are within operating bands
+    safetyGlassIntact:
+      type: boolean
+      default: true
+      description: Attestation that cabin safety glass and mirrors have zero cracks
+    notes:
+      type: string
+      maxLength: 1000
+      description: Additional field handover observations or minor defects
+
+HandoverInspectionResponseData:
+  type: object
+  required:
+    - bookingId
+    - status
+    - meterVerified
+    - photosIngestedCount
+    - inspectedAt
+  properties:
+    bookingId:
+      type: string
+      format: uuid
+    status:
+      type: string
+      example: READY_FOR_PICKUP
+    meterVerified:
+      type: boolean
+      example: true
+    photosIngestedCount:
+      type: integer
+      example: 6
+    inspectedAt:
+      type: string
+      format: date-time
+
+HandoverChallengeResponseData:
+  type: object
+  required:
+    - bookingId
+    - challengePin
+    - expiresAt
+    - maxAttempts
+  properties:
+    bookingId:
+      type: string
+      format: uuid
+    challengePin:
+      type: string
+      pattern: '^[0-9]{6}$'
+      description: 6-digit challenge PIN displayed on owner console for contractor verification
+    expiresAt:
+      type: string
+      format: date-time
+    attemptCount:
+      type: integer
+      default: 0
+    maxAttempts:
+      type: integer
+      default: 3
+
+HandoverConfirmRequest:
+  type: object
+  required:
+    - challengePin
+  properties:
+    challengePin:
+      type: string
+      pattern: '^[0-9]{6}$'
+      description: 6-digit challenge PIN provided physically on site by equipment owner
+    touchSignatureBase64:
+      type: string
+      description: Base64 data URI of contractor signature canvas
+    contractorLocation:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+
+HandoverConfirmResponseData:
+  type: object
+  required:
+    - bookingId
+    - status
+    - activatedAt
+    - shiftBaselineMeterHours
+    - allocatedShiftHoursTotal
+  properties:
+    bookingId:
+      type: string
+      format: uuid
+    status:
+      type: string
+      example: ACTIVE
+    activatedAt:
+      type: string
+      format: date-time
+    shiftBaselineMeterHours:
+      type: number
+      format: double
+      example: 1450.50
+    allocatedShiftHoursTotal:
+      type: number
+      format: double
+      example: 56.0
+
+ActiveRentalHUDResponseData:
+  type: object
+  required:
+    - bookingId
+    - status
+    - fleet
+    - shiftTelemetry
+    - quickActionsEnabled
+  properties:
+    bookingId:
+      type: string
+      format: uuid
+    status:
+      type: string
+      example: ACTIVE
+    fleet:
+      type: object
+      required:
+        - id
+        - title
+        - plateNumber
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: Caterpillar 320D
+        plateNumber:
+          type: string
+          example: ET-3-99120
+    operator:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+          example: Mulugeta Tadesse
+        phoneNumber:
+          type: string
+          example: '+251911200491'
+        licenseClass:
+          type: string
+          example: Class IV Hydraulic Excavator
+    shiftTelemetry:
+      type: object
+      required:
+        - currentRentalDay
+        - totalRentalDays
+        - handoverBaselineHours
+        - accumulatedHoursToday
+        - allowedHoursPerDay
+        - excessHoursTotal
+        - shiftTimerPaused
+      properties:
+        currentRentalDay:
+          type: integer
+          example: 3
+        totalRentalDays:
+          type: integer
+          example: 7
+        handoverBaselineHours:
+          type: number
+          format: double
+          example: 1450.50
+        accumulatedHoursToday:
+          type: number
+          format: double
+          example: 4.5
+        allowedHoursPerDay:
+          type: number
+          format: double
+          example: 8.0
+        excessHoursTotal:
+          type: number
+          format: double
+          example: 0.0
+        shiftTimerPaused:
+          type: boolean
+          example: false
+    quickActionsEnabled:
+      type: object
+      required:
+        - canExtend
+        - canReportBreakdown
+        - canInitiateReturn
+      properties:
+        canExtend:
+          type: boolean
+          example: true
+        canReportBreakdown:
+          type: boolean
+          example: true
+        canInitiateReturn:
+          type: boolean
+          example: true
+
+RentalExtensionRequest:
+  type: object
+  required:
+    - newEndDate
+  properties:
+    newEndDate:
+      type: string
+      format: date
+      description: Requested extended return date (must be after current end date)
+
+RentalExtensionResponseData:
+  type: object
+  required:
+    - bookingId
+    - extensionDays
+    - additionalGrossMinor
+    - incrementalPrepaymentRequiredMinor
+    - currency
+    - ownerApprovalRequired
+    - status
+  properties:
+    bookingId:
+      type: string
+      format: uuid
+    extensionDays:
+      type: integer
+      example: 3
+    additionalGrossMinor:
+      type: integer
+      format: int64
+      example: 6750000
+    incrementalPrepaymentRequiredMinor:
+      type: integer
+      format: int64
+      example: 3375000
+    currency:
+      type: string
+      example: ETB
+    ownerApprovalRequired:
+      type: boolean
+      example: true
+    status:
+      type: string
+      example: ACTIVE_EXTENSION_HOLD
+
+MechanicalBreakdownRequest:
+  type: object
+  required:
+    - faultCategory
+    - faultDescription
+    - currentHourMeter
+  properties:
+    faultCategory:
+      type: string
+      enum:
+        - ENGINE
+        - HYDRAULIC_CIRCUIT
+        - ELECTRICAL
+        - UNDERCARRIAGE
+        - STRUCTURAL
+        - BOOM_BUCKET
+        - OTHER
+      example: HYDRAULIC_CIRCUIT
+    faultDescription:
+      type: string
+      minLength: 10
+      maxLength: 2000
+      example: Main boom hydraulic hose ruptured under load; severe hydraulic oil pressure loss.
+    diagnosticTroubleCodes:
+      type: array
+      items:
+        type: string
+      example: ["DTC-HYD-4912"]
+    currentHourMeter:
+      type: number
+      format: double
+      minimum: 0
+      example: 1472.80
+    incidentPhotos:
+      type: array
+      items:
+        type: string
+      example: ["s3://dink-incident-media/breakdowns/bk_8812/burst_hose.webp"]
+
+MechanicalBreakdownResponseData:
+  type: object
+  required:
+    - incidentId
+    - bookingId
+    - status
+    - shiftTimerPausedAt
+    - ownerSlaDeadline
+  properties:
+    incidentId:
+      type: string
+      format: uuid
+    bookingId:
+      type: string
+      format: uuid
+    status:
+      type: string
+      example: ACTIVE_BREAKDOWN_PAUSED
+    shiftTimerPausedAt:
+      type: string
+      format: date-time
+    ownerSlaDeadline:
+      type: string
+      format: date-time
+
+BreakdownResolutionRequest:
+  type: object
+  required:
+    - mechanicName
+    - mechanicPhone
+    - resolutionNotes
+  properties:
+    mechanicName:
+      type: string
+      example: Solomon Girma
+    mechanicPhone:
+      type: string
+      example: '+251911334455'
+    resolutionNotes:
+      type: string
+      minLength: 10
+      example: Replaced high-pressure boom hose assembly and replenished 40L ISO VG 46 hydraulic fluid.
+
+BreakdownResolutionResponseData:
+  type: object
+  required:
+    - incidentId
+    - bookingId
+    - status
+    - resumedAt
+  properties:
+    incidentId:
+      type: string
+      format: uuid
+    bookingId:
+      type: string
+      format: uuid
+    status:
+      type: string
+      example: ACTIVE
+    resumedAt:
+      type: string
+      format: date-time
+
+
+HandoverInspectionSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/HandoverInspectionResponseData'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+HandoverChallengeSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/HandoverChallengeResponseData'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+HandoverConfirmSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/HandoverConfirmResponseData'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+ActiveRentalHUDSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/ActiveRentalHUDResponseData'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+RentalExtensionSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/RentalExtensionResponseData'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+MechanicalBreakdownSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/MechanicalBreakdownResponseData'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+BreakdownResolutionSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/BreakdownResolutionResponseData'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'

@@ -391,4 +391,103 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get daysUnit => 'days';
+
+  @override
+  String get activeRentalTitle => 'Active Rental Telemetry';
+
+  @override
+  String get handoverInspectionTitle => 'Pre-Dispatch Handover Inspection';
+
+  @override
+  String get meterReadingLabel => 'Certified Hour Meter';
+
+  @override
+  String get fluidLevelsCheck => 'Fluid & Lubricant Levels Verified';
+
+  @override
+  String get safetyGlassCheck => 'Cabin Glass & Mirrors Intact';
+
+  @override
+  String get inspectionPhotosLabel => 'Handover Reticle Photos';
+
+  @override
+  String get generatePINButton => 'Generate Handover PIN';
+
+  @override
+  String get verifyHandoverButton => 'Verify Handover & Activate';
+
+  @override
+  String get pinChallengePrompt => 'Enter 6-Digit Owner PIN';
+
+  @override
+  String get touchSignatureLabel => 'Contractor Touch Signature';
+
+  @override
+  String get shiftProgressTitle => 'Daily Shift Telemetry';
+
+  @override
+  String get shiftQuotaLabel => '8.0 Hr Standard Shift Quota';
+
+  @override
+  String get accumulatedTodayLabel => 'Accumulated Today';
+
+  @override
+  String get excessHoursLabel => 'Excess Hours (Tier 2)';
+
+  @override
+  String get shiftTimerPausedNotice => 'Shift Timer Paused (Breakdown Active)';
+
+  @override
+  String get quickActionExtend => 'Extend Rental';
+
+  @override
+  String get quickActionBreakdown => 'Report Breakdown';
+
+  @override
+  String get quickActionReturn => 'Initiate Return';
+
+  @override
+  String get breakdownModalTitle => 'Report Mechanical Breakdown';
+
+  @override
+  String get faultCategoryLabel => 'Fault Category';
+
+  @override
+  String get faultDescriptionLabel => 'Fault Description & Symptoms';
+
+  @override
+  String get dtcLabel => 'Diagnostic Trouble Codes (DTC)';
+
+  @override
+  String get submitBreakdownButton => 'Submit Breakdown & Pause Timer';
+
+  @override
+  String get slaDeadlineLabel => 'Owner SLA Deadline';
+
+  @override
+  String get extensionSheetTitle => 'Request Rental Extension';
+
+  @override
+  String get newEndDateLabel => 'New End Date';
+
+  @override
+  String get extensionQuoteLabel => 'Incremental Quote & 50% Prepay';
+
+  @override
+  String get submitExtensionButton => 'Confirm Extension Request';
+
+  @override
+  String get resolveBreakdownTitle => 'Certify Repair & Resume Shift';
+
+  @override
+  String get mechanicNameLabel => 'Lead Mechanic Name';
+
+  @override
+  String get mechanicPhoneLabel => 'Mechanic Contact Phone';
+
+  @override
+  String get resolutionNotesLabel => 'Resolution Notes & Replaced Parts';
+
+  @override
+  String get confirmResolutionButton => 'Resume Shift Telemetry';
 }

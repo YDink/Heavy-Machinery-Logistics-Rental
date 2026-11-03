@@ -83,6 +83,20 @@ paths:
     $ref: './endpoints/bookings/return-check-out.yaml'
   /bookings/{id}/inspections:
     $ref: './endpoints/bookings/inspections.yaml'
+  /bookings/{id}/handover-inspect:
+    $ref: './endpoints/rentals/handover-inspect.yaml'
+  /bookings/{id}/handover-challenge:
+    $ref: './endpoints/rentals/handover-challenge.yaml'
+  /bookings/{id}/handover-confirm:
+    $ref: './endpoints/rentals/handover-confirm.yaml'
+  /bookings/{id}/hud:
+    $ref: './endpoints/rentals/hud.yaml'
+  /bookings/{id}/extend:
+    $ref: './endpoints/rentals/extend.yaml'
+  /bookings/{id}/breakdown:
+    $ref: './endpoints/rentals/breakdown.yaml'
+  /bookings/{id}/breakdown/resolve:
+    $ref: './endpoints/rentals/resolve-breakdown.yaml'
   /payments/initiate:
     $ref: './endpoints/payments/initiate-payment.yaml'
   /wallets/me:
@@ -205,3 +219,15 @@ components:
       $ref: './components/schemas/admin.yaml#/AdminUiConfig'
     AdminUiConfigSuccessResponse:
       $ref: './components/schemas/admin.yaml#/AdminUiConfigSuccessResponse'
+    HandoverInspectionRequest:
+      $ref: './components/schemas/rental.yaml#/HandoverInspectionRequest'
+    HandoverConfirmRequest:
+      $ref: './components/schemas/rental.yaml#/HandoverConfirmRequest'
+    ActiveRentalHUDResponseData:
+      $ref: './components/schemas/rental.yaml#/ActiveRentalHUDResponseData'
+    RentalExtensionRequest:
+      $ref: './components/schemas/rental.yaml#/RentalExtensionRequest'
+    MechanicalBreakdownRequest:
+      $ref: './components/schemas/rental.yaml#/MechanicalBreakdownRequest'
+    BreakdownResolutionRequest:
+      $ref: './components/schemas/rental.yaml#/BreakdownResolutionRequest'

@@ -1,0 +1,40 @@
+post:
+  tags: [booking]
+  summary: Confirm machine handover via 6-digit challenge PIN and touch signature
+  description: Validates dynamic PIN from equipment owner, attests physical co-presence, and transitions status to ACTIVE.
+  operationId: confirmHandover
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/rental.yaml#/HandoverConfirmRequest'
+  responses:
+    '200':
+      description: Handover confirmed and active rental HUD unlocked.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/rental.yaml#/HandoverConfirmSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '422':
+      $ref: '../../components/responses/unprocessable-entity.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

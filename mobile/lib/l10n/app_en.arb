@@ -513,5 +513,137 @@
   "daysUnit": "days",
   "@daysUnit": {
     "description": "Unit label for duration in days"
+  },
+  "activeRentalTitle": "Active Rental Telemetry",
+  "@activeRentalTitle": {
+    "description": "Title for active rental telemetry HUD"
+  },
+  "handoverInspectionTitle": "Pre-Dispatch Handover Inspection",
+  "@handoverInspectionTitle": {
+    "description": "Title for physical handover inspection"
+  },
+  "meterReadingLabel": "Certified Hour Meter",
+  "@meterReadingLabel": {
+    "description": "Label for hour meter reading"
+  },
+  "fluidLevelsCheck": "Fluid & Lubricant Levels Verified",
+  "@fluidLevelsCheck": {
+    "description": "Checkbox for fluid levels"
+  },
+  "safetyGlassCheck": "Cabin Glass & Mirrors Intact",
+  "@safetyGlassCheck": {
+    "description": "Checkbox for safety glass"
+  },
+  "inspectionPhotosLabel": "Handover Reticle Photos",
+  "@inspectionPhotosLabel": {
+    "description": "Label for inspection reticle photos"
+  },
+  "generatePINButton": "Generate Handover PIN",
+  "@generatePINButton": {
+    "description": "Button to generate owner challenge PIN"
+  },
+  "verifyHandoverButton": "Verify Handover & Activate",
+  "@verifyHandoverButton": {
+    "description": "Button to verify handover and activate rental"
+  },
+  "pinChallengePrompt": "Enter 6-Digit Owner PIN",
+  "@pinChallengePrompt": {
+    "description": "Prompt for entering 6-digit challenge PIN"
+  },
+  "touchSignatureLabel": "Contractor Touch Signature",
+  "@touchSignatureLabel": {
+    "description": "Label for touch signature canvas"
+  },
+  "shiftProgressTitle": "Daily Shift Telemetry",
+  "@shiftProgressTitle": {
+    "description": "Title for daily shift telemetry card"
+  },
+  "shiftQuotaLabel": "8.0 Hr Standard Shift Quota",
+  "@shiftQuotaLabel": {
+    "description": "Label for 8-hour shift quota"
+  },
+  "accumulatedTodayLabel": "Accumulated Today",
+  "@accumulatedTodayLabel": {
+    "description": "Label for hours accumulated today"
+  },
+  "excessHoursLabel": "Excess Hours (Tier 2)",
+  "@excessHoursLabel": {
+    "description": "Label for excess billable hours"
+  },
+  "shiftTimerPausedNotice": "Shift Timer Paused (Breakdown Active)",
+  "@shiftTimerPausedNotice": {
+    "description": "Notice when shift timer is paused due to breakdown"
+  },
+  "quickActionExtend": "Extend Rental",
+  "@quickActionExtend": {
+    "description": "Quick action button to extend rental"
+  },
+  "quickActionBreakdown": "Report Breakdown",
+  "@quickActionBreakdown": {
+    "description": "Quick action button to report breakdown"
+  },
+  "quickActionReturn": "Initiate Return",
+  "@quickActionReturn": {
+    "description": "Quick action button to initiate return"
+  },
+  "breakdownModalTitle": "Report Mechanical Breakdown",
+  "@breakdownModalTitle": {
+    "description": "Title for breakdown reporting modal"
+  },
+  "faultCategoryLabel": "Fault Category",
+  "@faultCategoryLabel": {
+    "description": "Label for fault category picker"
+  },
+  "faultDescriptionLabel": "Fault Description & Symptoms",
+  "@faultDescriptionLabel": {
+    "description": "Label for fault description field"
+  },
+  "dtcLabel": "Diagnostic Trouble Codes (DTC)",
+  "@dtcLabel": {
+    "description": "Label for diagnostic trouble codes"
+  },
+  "submitBreakdownButton": "Submit Breakdown & Pause Timer",
+  "@submitBreakdownButton": {
+    "description": "Button to submit breakdown"
+  },
+  "slaDeadlineLabel": "Owner SLA Deadline",
+  "@slaDeadlineLabel": {
+    "description": "Label for owner 4-hour SLA deadline"
+  },
+  "extensionSheetTitle": "Request Rental Extension",
+  "@extensionSheetTitle": {
+    "description": "Title for extension request bottom sheet"
+  },
+  "newEndDateLabel": "New End Date",
+  "@newEndDateLabel": {
+    "description": "Label for new rental end date"
+  },
+  "extensionQuoteLabel": "Incremental Quote & 50% Prepay",
+  "@extensionQuoteLabel": {
+    "description": "Label for extension quote and prepayment"
+  },
+  "submitExtensionButton": "Confirm Extension Request",
+  "@submitExtensionButton": {
+    "description": "Button to confirm extension request"
+  },
+  "resolveBreakdownTitle": "Certify Repair & Resume Shift",
+  "@resolveBreakdownTitle": {
+    "description": "Title for breakdown resolution modal"
+  },
+  "mechanicNameLabel": "Lead Mechanic Name",
+  "@mechanicNameLabel": {
+    "description": "Label for mechanic name"
+  },
+  "mechanicPhoneLabel": "Mechanic Contact Phone",
+  "@mechanicPhoneLabel": {
+    "description": "Label for mechanic phone"
+  },
+  "resolutionNotesLabel": "Resolution Notes & Replaced Parts",
+  "@resolutionNotesLabel": {
+    "description": "Label for repair resolution notes"
+  },
+  "confirmResolutionButton": "Resume Shift Telemetry",
+  "@confirmResolutionButton": {
+    "description": "Button to confirm resolution and resume shift"
   }
 }

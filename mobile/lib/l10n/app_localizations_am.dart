@@ -387,4 +387,103 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get daysUnit => 'ቀናት';
+
+  @override
+  String get activeRentalTitle => 'የነቃ ኪራይ መረጃ';
+
+  @override
+  String get handoverInspectionTitle => 'ማሽን ከማስረከብ በፊት የሚደረግ ፍተሻ';
+
+  @override
+  String get meterReadingLabel => 'የማሽን የስራ ሰዓት ቆጣሪ';
+
+  @override
+  String get fluidLevelsCheck => 'የዘይት እና ፈሳሽ መጠን ተረጋግጧል';
+
+  @override
+  String get safetyGlassCheck => 'የካቢን መስታወቶች ያልተሰበሩ';
+
+  @override
+  String get inspectionPhotosLabel => 'የማስረከቢያ ፎቶዎች';
+
+  @override
+  String get generatePINButton => 'የማስረከቢያ ፒን አፍልቅ';
+
+  @override
+  String get verifyHandoverButton => 'ማስረከቢያውን አረጋግጥ እና አስጀምር';
+
+  @override
+  String get pinChallengePrompt => 'የባለቤቱን 6 አሃዝ ፒን ያስገቡ';
+
+  @override
+  String get touchSignatureLabel => 'የተከራይ ፊርማ';
+
+  @override
+  String get shiftProgressTitle => 'የዕለት ፈረቃ የስራ ሂደት';
+
+  @override
+  String get shiftQuotaLabel => '8.0 ሰዓት መደበኛ የፈረቃ ድልድል';
+
+  @override
+  String get accumulatedTodayLabel => 'ዛሬ የተሰራ ሰዓት';
+
+  @override
+  String get excessHoursLabel => 'ትርፍ ሰዓታት (ደረጃ 2)';
+
+  @override
+  String get shiftTimerPausedNotice => 'የፈረቃ ቆጣሪ ቆሟል (ብልሽት ተመዝግቧል)';
+
+  @override
+  String get quickActionExtend => 'ኪራይ ያራዝሙ';
+
+  @override
+  String get quickActionBreakdown => 'ብልሽት ያመልክቱ';
+
+  @override
+  String get quickActionReturn => 'ማስመለስ ይጀምሩ';
+
+  @override
+  String get breakdownModalTitle => 'የማሽን ብልሽት ማሳወቂያ';
+
+  @override
+  String get faultCategoryLabel => 'የብልሽቱ አይነት';
+
+  @override
+  String get faultDescriptionLabel => 'የብልሽቱ ዝርዝር መግለጫ';
+
+  @override
+  String get dtcLabel => 'የዲያግኖስቲክስ ኮዶች (DTC)';
+
+  @override
+  String get submitBreakdownButton => 'ብልሽቱን አስመዝግብ እና ቆጣሪውን አቁም';
+
+  @override
+  String get slaDeadlineLabel => 'የባለቤቱ የጥገና ምላሽ ገደብ';
+
+  @override
+  String get extensionSheetTitle => 'የኪራይ ማራዘሚያ ጥያቄ';
+
+  @override
+  String get newEndDateLabel => 'አዲሱ የማብቂያ ቀን';
+
+  @override
+  String get extensionQuoteLabel => 'የተጨማሪ ክፍያ እና 50% ቅድመ ክፍያ';
+
+  @override
+  String get submitExtensionButton => 'የማራዘሚያ ጥያቄውን አረጋግጥ';
+
+  @override
+  String get resolveBreakdownTitle => 'ጥገናውን አረጋግጥ እና ፈረቃውን አስጀምር';
+
+  @override
+  String get mechanicNameLabel => 'የመካኒኩ ስም';
+
+  @override
+  String get mechanicPhoneLabel => 'የመካኒኩ ስልክ ቁጥር';
+
+  @override
+  String get resolutionNotesLabel => 'የተከናወኑ ጥገናዎች እና የተተኩ እቃዎች';
+
+  @override
+  String get confirmResolutionButton => 'የፈረቃ ቆጣሪውን ቀጥል';
 }

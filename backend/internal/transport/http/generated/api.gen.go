@@ -9,6 +9,21 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for ActiveRentalHUDSuccessResponseSuccess.
+const (
+	ActiveRentalHUDSuccessResponseSuccessTrue ActiveRentalHUDSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the ActiveRentalHUDSuccessResponseSuccess enum.
+func (e ActiveRentalHUDSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case ActiveRentalHUDSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AdminUiConfigSuccessResponseSuccess.
 const (
 	AdminUiConfigSuccessResponseSuccessTrue AdminUiConfigSuccessResponseSuccess = true
@@ -213,6 +228,21 @@ func (e BookingStatus) Valid() bool {
 	case BookingStatusREADYFORPICKUP:
 		return true
 	case BookingStatusRETURNINITIATED:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BreakdownResolutionSuccessResponseSuccess.
+const (
+	BreakdownResolutionSuccessResponseSuccessTrue BreakdownResolutionSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the BreakdownResolutionSuccessResponseSuccess enum.
+func (e BreakdownResolutionSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case BreakdownResolutionSuccessResponseSuccessTrue:
 		return true
 	default:
 		return false
@@ -471,6 +501,51 @@ func (e FleetSearchSuccessResponseSuccess) Valid() bool {
 	}
 }
 
+// Defines values for HandoverChallengeSuccessResponseSuccess.
+const (
+	HandoverChallengeSuccessResponseSuccessTrue HandoverChallengeSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the HandoverChallengeSuccessResponseSuccess enum.
+func (e HandoverChallengeSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case HandoverChallengeSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for HandoverConfirmSuccessResponseSuccess.
+const (
+	HandoverConfirmSuccessResponseSuccessTrue HandoverConfirmSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the HandoverConfirmSuccessResponseSuccess enum.
+func (e HandoverConfirmSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case HandoverConfirmSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for HandoverInspectionSuccessResponseSuccess.
+const (
+	HandoverInspectionSuccessResponseSuccessTrue HandoverInspectionSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the HandoverInspectionSuccessResponseSuccess enum.
+func (e HandoverInspectionSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case HandoverInspectionSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for InspectionDetailSuccessResponseSuccess.
 const (
 	InspectionDetailSuccessResponseSuccessTrue InspectionDetailSuccessResponseSuccess = true
@@ -480,6 +555,36 @@ const (
 func (e InspectionDetailSuccessResponseSuccess) Valid() bool {
 	switch e {
 	case InspectionDetailSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for InspectionPhotoAngle.
+const (
+	CABININTERIOR  InspectionPhotoAngle = "CABIN_INTERIOR"
+	FRONTELEVATION InspectionPhotoAngle = "FRONT_ELEVATION"
+	LEFTTRACK      InspectionPhotoAngle = "LEFT_TRACK"
+	METERCLOSEUP   InspectionPhotoAngle = "METER_CLOSEUP"
+	REARELEVATION  InspectionPhotoAngle = "REAR_ELEVATION"
+	RIGHTTRACK     InspectionPhotoAngle = "RIGHT_TRACK"
+)
+
+// Valid indicates whether the value is a known member of the InspectionPhotoAngle enum.
+func (e InspectionPhotoAngle) Valid() bool {
+	switch e {
+	case CABININTERIOR:
+		return true
+	case FRONTELEVATION:
+		return true
+	case LEFTTRACK:
+		return true
+	case METERCLOSEUP:
+		return true
+	case REARELEVATION:
+		return true
+	case RIGHTTRACK:
 		return true
 	default:
 		return false
@@ -513,6 +618,54 @@ const (
 func (e LinkFleetAttachmentSuccessResponseSuccess) Valid() bool {
 	switch e {
 	case LinkFleetAttachmentSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MechanicalBreakdownRequestFaultCategory.
+const (
+	BOOMBUCKET       MechanicalBreakdownRequestFaultCategory = "BOOM_BUCKET"
+	ELECTRICAL       MechanicalBreakdownRequestFaultCategory = "ELECTRICAL"
+	ENGINE           MechanicalBreakdownRequestFaultCategory = "ENGINE"
+	HYDRAULICCIRCUIT MechanicalBreakdownRequestFaultCategory = "HYDRAULIC_CIRCUIT"
+	OTHER            MechanicalBreakdownRequestFaultCategory = "OTHER"
+	STRUCTURAL       MechanicalBreakdownRequestFaultCategory = "STRUCTURAL"
+	UNDERCARRIAGE    MechanicalBreakdownRequestFaultCategory = "UNDERCARRIAGE"
+)
+
+// Valid indicates whether the value is a known member of the MechanicalBreakdownRequestFaultCategory enum.
+func (e MechanicalBreakdownRequestFaultCategory) Valid() bool {
+	switch e {
+	case BOOMBUCKET:
+		return true
+	case ELECTRICAL:
+		return true
+	case ENGINE:
+		return true
+	case HYDRAULICCIRCUIT:
+		return true
+	case OTHER:
+		return true
+	case STRUCTURAL:
+		return true
+	case UNDERCARRIAGE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MechanicalBreakdownSuccessResponseSuccess.
+const (
+	MechanicalBreakdownSuccessResponseSuccessTrue MechanicalBreakdownSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the MechanicalBreakdownSuccessResponseSuccess enum.
+func (e MechanicalBreakdownSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case MechanicalBreakdownSuccessResponseSuccessTrue:
 		return true
 	default:
 		return false
@@ -579,6 +732,21 @@ const (
 func (e PaymentSlipSuccessResponseSuccess) Valid() bool {
 	switch e {
 	case PaymentSlipSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RentalExtensionSuccessResponseSuccess.
+const (
+	RentalExtensionSuccessResponseSuccessTrue RentalExtensionSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the RentalExtensionSuccessResponseSuccess enum.
+func (e RentalExtensionSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case RentalExtensionSuccessResponseSuccessTrue:
 		return true
 	default:
 		return false
@@ -870,6 +1038,48 @@ func (e InitiatePaymentJSONBodyPaymentMethod) Valid() bool {
 	}
 }
 
+// ActiveRentalHUDResponseData defines model for ActiveRentalHUDResponseData.
+type ActiveRentalHUDResponseData struct {
+	BookingId openapi_types.UUID `json:"bookingId"`
+	Fleet     struct {
+		Id          openapi_types.UUID `json:"id"`
+		PlateNumber string             `json:"plateNumber"`
+		Title       string             `json:"title"`
+	} `json:"fleet"`
+	Operator *struct {
+		FullName     *string             `json:"fullName,omitempty"`
+		Id           *openapi_types.UUID `json:"id,omitempty"`
+		LicenseClass *string             `json:"licenseClass,omitempty"`
+		PhoneNumber  *string             `json:"phoneNumber,omitempty"`
+	} `json:"operator,omitempty"`
+	QuickActionsEnabled struct {
+		CanExtend          bool `json:"canExtend"`
+		CanInitiateReturn  bool `json:"canInitiateReturn"`
+		CanReportBreakdown bool `json:"canReportBreakdown"`
+	} `json:"quickActionsEnabled"`
+	ShiftTelemetry struct {
+		AccumulatedHoursToday float64 `json:"accumulatedHoursToday"`
+		AllowedHoursPerDay    float64 `json:"allowedHoursPerDay"`
+		CurrentRentalDay      int     `json:"currentRentalDay"`
+		ExcessHoursTotal      float64 `json:"excessHoursTotal"`
+		HandoverBaselineHours float64 `json:"handoverBaselineHours"`
+		ShiftTimerPaused      bool    `json:"shiftTimerPaused"`
+		TotalRentalDays       int     `json:"totalRentalDays"`
+	} `json:"shiftTelemetry"`
+	Status string `json:"status"`
+}
+
+// ActiveRentalHUDSuccessResponse defines model for ActiveRentalHUDSuccessResponse.
+type ActiveRentalHUDSuccessResponse struct {
+	Data    ActiveRentalHUDResponseData           `json:"data"`
+	Error   map[string]interface{}                `json:"error"`
+	Meta    ResponseMeta                          `json:"meta"`
+	Success ActiveRentalHUDSuccessResponseSuccess `json:"success"`
+}
+
+// ActiveRentalHUDSuccessResponseSuccess defines model for ActiveRentalHUDSuccessResponse.Success.
+type ActiveRentalHUDSuccessResponseSuccess bool
+
 // AdminUiConfig defines model for AdminUiConfig.
 type AdminUiConfig struct {
 	FeatureToggles map[string]bool `json:"featureToggles"`
@@ -1076,6 +1286,32 @@ type BookingListSuccessResponseSuccess bool
 
 // BookingStatus defines model for BookingStatus.
 type BookingStatus string
+
+// BreakdownResolutionRequest defines model for BreakdownResolutionRequest.
+type BreakdownResolutionRequest struct {
+	MechanicName    string `json:"mechanicName"`
+	MechanicPhone   string `json:"mechanicPhone"`
+	ResolutionNotes string `json:"resolutionNotes"`
+}
+
+// BreakdownResolutionResponseData defines model for BreakdownResolutionResponseData.
+type BreakdownResolutionResponseData struct {
+	BookingId  openapi_types.UUID `json:"bookingId"`
+	IncidentId openapi_types.UUID `json:"incidentId"`
+	ResumedAt  time.Time          `json:"resumedAt"`
+	Status     string             `json:"status"`
+}
+
+// BreakdownResolutionSuccessResponse defines model for BreakdownResolutionSuccessResponse.
+type BreakdownResolutionSuccessResponse struct {
+	Data    BreakdownResolutionResponseData           `json:"data"`
+	Error   map[string]interface{}                    `json:"error"`
+	Meta    ResponseMeta                              `json:"meta"`
+	Success BreakdownResolutionSuccessResponseSuccess `json:"success"`
+}
+
+// BreakdownResolutionSuccessResponseSuccess defines model for BreakdownResolutionSuccessResponse.Success.
+type BreakdownResolutionSuccessResponseSuccess bool
 
 // Category defines model for Category.
 type Category struct {
@@ -1431,6 +1667,28 @@ type FleetSearchSuccessResponse struct {
 // FleetSearchSuccessResponseSuccess defines model for FleetSearchSuccessResponse.Success.
 type FleetSearchSuccessResponseSuccess bool
 
+// HandoverChallengeResponseData defines model for HandoverChallengeResponseData.
+type HandoverChallengeResponseData struct {
+	AttemptCount *int               `json:"attemptCount,omitempty"`
+	BookingId    openapi_types.UUID `json:"bookingId"`
+
+	// ChallengePin 6-digit challenge PIN displayed on owner console for contractor verification
+	ChallengePin string    `json:"challengePin"`
+	ExpiresAt    time.Time `json:"expiresAt"`
+	MaxAttempts  int       `json:"maxAttempts"`
+}
+
+// HandoverChallengeSuccessResponse defines model for HandoverChallengeSuccessResponse.
+type HandoverChallengeSuccessResponse struct {
+	Data    HandoverChallengeResponseData           `json:"data"`
+	Error   map[string]interface{}                  `json:"error"`
+	Meta    ResponseMeta                            `json:"meta"`
+	Success HandoverChallengeSuccessResponseSuccess `json:"success"`
+}
+
+// HandoverChallengeSuccessResponseSuccess defines model for HandoverChallengeSuccessResponse.Success.
+type HandoverChallengeSuccessResponseSuccess bool
+
 // HandoverCheckInRequest defines model for HandoverCheckInRequest.
 type HandoverCheckInRequest struct {
 	ExpectedVersion     int       `json:"expectedVersion"`
@@ -1438,6 +1696,75 @@ type HandoverCheckInRequest struct {
 	OperatingHoursMeter float32   `json:"operatingHoursMeter"`
 	PhotoUris           *[]string `json:"photoUris,omitempty"`
 }
+
+// HandoverConfirmRequest defines model for HandoverConfirmRequest.
+type HandoverConfirmRequest struct {
+	// ChallengePin 6-digit challenge PIN provided physically on site by equipment owner
+	ChallengePin       string `json:"challengePin"`
+	ContractorLocation *struct {
+		Latitude  *float64 `json:"latitude,omitempty"`
+		Longitude *float64 `json:"longitude,omitempty"`
+	} `json:"contractorLocation,omitempty"`
+
+	// TouchSignatureBase64 Base64 data URI of contractor signature canvas
+	TouchSignatureBase64 *string `json:"touchSignatureBase64,omitempty"`
+}
+
+// HandoverConfirmResponseData defines model for HandoverConfirmResponseData.
+type HandoverConfirmResponseData struct {
+	ActivatedAt              time.Time          `json:"activatedAt"`
+	AllocatedShiftHoursTotal float64            `json:"allocatedShiftHoursTotal"`
+	BookingId                openapi_types.UUID `json:"bookingId"`
+	ShiftBaselineMeterHours  float64            `json:"shiftBaselineMeterHours"`
+	Status                   string             `json:"status"`
+}
+
+// HandoverConfirmSuccessResponse defines model for HandoverConfirmSuccessResponse.
+type HandoverConfirmSuccessResponse struct {
+	Data    HandoverConfirmResponseData           `json:"data"`
+	Error   map[string]interface{}                `json:"error"`
+	Meta    ResponseMeta                          `json:"meta"`
+	Success HandoverConfirmSuccessResponseSuccess `json:"success"`
+}
+
+// HandoverConfirmSuccessResponseSuccess defines model for HandoverConfirmSuccessResponse.Success.
+type HandoverConfirmSuccessResponseSuccess bool
+
+// HandoverInspectionRequest defines model for HandoverInspectionRequest.
+type HandoverInspectionRequest struct {
+	// CheckInMeterHours Current mechanical hour meter reading verified at machine handover
+	CheckInMeterHours float64 `json:"checkInMeterHours"`
+
+	// FluidLevelsOk Attestation that engine oil and hydraulic fluid levels are within operating bands
+	FluidLevelsOk    *bool             `json:"fluidLevelsOk,omitempty"`
+	InspectionPhotos []InspectionPhoto `json:"inspectionPhotos"`
+
+	// Notes Additional field handover observations or minor defects
+	Notes *string `json:"notes,omitempty"`
+
+	// SafetyGlassIntact Attestation that cabin safety glass and mirrors have zero cracks
+	SafetyGlassIntact *bool `json:"safetyGlassIntact,omitempty"`
+}
+
+// HandoverInspectionResponseData defines model for HandoverInspectionResponseData.
+type HandoverInspectionResponseData struct {
+	BookingId           openapi_types.UUID `json:"bookingId"`
+	InspectedAt         time.Time          `json:"inspectedAt"`
+	MeterVerified       bool               `json:"meterVerified"`
+	PhotosIngestedCount int                `json:"photosIngestedCount"`
+	Status              string             `json:"status"`
+}
+
+// HandoverInspectionSuccessResponse defines model for HandoverInspectionSuccessResponse.
+type HandoverInspectionSuccessResponse struct {
+	Data    HandoverInspectionResponseData           `json:"data"`
+	Error   map[string]interface{}                   `json:"error"`
+	Meta    ResponseMeta                             `json:"meta"`
+	Success HandoverInspectionSuccessResponseSuccess `json:"success"`
+}
+
+// HandoverInspectionSuccessResponseSuccess defines model for HandoverInspectionSuccessResponse.Success.
+type HandoverInspectionSuccessResponseSuccess bool
 
 // InspectionDetailSuccessResponse defines model for InspectionDetailSuccessResponse.
 type InspectionDetailSuccessResponse struct {
@@ -1449,6 +1776,18 @@ type InspectionDetailSuccessResponse struct {
 
 // InspectionDetailSuccessResponseSuccess defines model for InspectionDetailSuccessResponse.Success.
 type InspectionDetailSuccessResponseSuccess bool
+
+// InspectionPhoto defines model for InspectionPhoto.
+type InspectionPhoto struct {
+	// Angle Camera capture angle for pre-rental condition attestation
+	Angle InspectionPhotoAngle `json:"angle"`
+
+	// StorageUri URI of uploaded inspection photograph
+	StorageUri string `json:"storageUri"`
+}
+
+// InspectionPhotoAngle Camera capture angle for pre-rental condition attestation
+type InspectionPhotoAngle string
 
 // InspectionRecord defines model for InspectionRecord.
 type InspectionRecord struct {
@@ -1496,6 +1835,38 @@ type LinkFleetAttachmentSuccessResponse struct {
 
 // LinkFleetAttachmentSuccessResponseSuccess defines model for LinkFleetAttachmentSuccessResponse.Success.
 type LinkFleetAttachmentSuccessResponseSuccess bool
+
+// MechanicalBreakdownRequest defines model for MechanicalBreakdownRequest.
+type MechanicalBreakdownRequest struct {
+	CurrentHourMeter       float64                                 `json:"currentHourMeter"`
+	DiagnosticTroubleCodes *[]string                               `json:"diagnosticTroubleCodes,omitempty"`
+	FaultCategory          MechanicalBreakdownRequestFaultCategory `json:"faultCategory"`
+	FaultDescription       string                                  `json:"faultDescription"`
+	IncidentPhotos         *[]string                               `json:"incidentPhotos,omitempty"`
+}
+
+// MechanicalBreakdownRequestFaultCategory defines model for MechanicalBreakdownRequest.FaultCategory.
+type MechanicalBreakdownRequestFaultCategory string
+
+// MechanicalBreakdownResponseData defines model for MechanicalBreakdownResponseData.
+type MechanicalBreakdownResponseData struct {
+	BookingId          openapi_types.UUID `json:"bookingId"`
+	IncidentId         openapi_types.UUID `json:"incidentId"`
+	OwnerSlaDeadline   time.Time          `json:"ownerSlaDeadline"`
+	ShiftTimerPausedAt time.Time          `json:"shiftTimerPausedAt"`
+	Status             string             `json:"status"`
+}
+
+// MechanicalBreakdownSuccessResponse defines model for MechanicalBreakdownSuccessResponse.
+type MechanicalBreakdownSuccessResponse struct {
+	Data    MechanicalBreakdownResponseData           `json:"data"`
+	Error   map[string]interface{}                    `json:"error"`
+	Meta    ResponseMeta                              `json:"meta"`
+	Success MechanicalBreakdownSuccessResponseSuccess `json:"success"`
+}
+
+// MechanicalBreakdownSuccessResponseSuccess defines model for MechanicalBreakdownSuccessResponse.Success.
+type MechanicalBreakdownSuccessResponseSuccess bool
 
 // MoneyAmount Integer minor currency units preventing precision truncation.
 type MoneyAmount struct {
@@ -1598,6 +1969,34 @@ type RFC9457ProblemDetails struct {
 	Title         string          `json:"title"`
 	Type          string          `json:"type"`
 }
+
+// RentalExtensionRequest defines model for RentalExtensionRequest.
+type RentalExtensionRequest struct {
+	// NewEndDate Requested extended return date (must be after current end date)
+	NewEndDate openapi_types.Date `json:"newEndDate"`
+}
+
+// RentalExtensionResponseData defines model for RentalExtensionResponseData.
+type RentalExtensionResponseData struct {
+	AdditionalGrossMinor               int64              `json:"additionalGrossMinor"`
+	BookingId                          openapi_types.UUID `json:"bookingId"`
+	Currency                           string             `json:"currency"`
+	ExtensionDays                      int                `json:"extensionDays"`
+	IncrementalPrepaymentRequiredMinor int64              `json:"incrementalPrepaymentRequiredMinor"`
+	OwnerApprovalRequired              bool               `json:"ownerApprovalRequired"`
+	Status                             string             `json:"status"`
+}
+
+// RentalExtensionSuccessResponse defines model for RentalExtensionSuccessResponse.
+type RentalExtensionSuccessResponse struct {
+	Data    RentalExtensionResponseData           `json:"data"`
+	Error   map[string]interface{}                `json:"error"`
+	Meta    ResponseMeta                          `json:"meta"`
+	Success RentalExtensionSuccessResponseSuccess `json:"success"`
+}
+
+// RentalExtensionSuccessResponseSuccess defines model for RentalExtensionSuccessResponse.Success.
+type RentalExtensionSuccessResponseSuccess bool
 
 // ResponseMeta defines model for ResponseMeta.
 type ResponseMeta struct {
@@ -1826,6 +2225,42 @@ type CreateBookingParams struct {
 	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
 }
 
+// ReportMechanicalBreakdownParams defines parameters for ReportMechanicalBreakdown.
+type ReportMechanicalBreakdownParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// ResolveMechanicalBreakdownParams defines parameters for ResolveMechanicalBreakdown.
+type ResolveMechanicalBreakdownParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// RequestRentalExtensionParams defines parameters for RequestRentalExtension.
+type RequestRentalExtensionParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// GenerateHandoverChallengeParams defines parameters for GenerateHandoverChallenge.
+type GenerateHandoverChallengeParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// ConfirmHandoverParams defines parameters for ConfirmHandover.
+type ConfirmHandoverParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// HandoverInspectParams defines parameters for HandoverInspect.
+type HandoverInspectParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
 // SubmitBookingInspectionParams defines parameters for SubmitBookingInspection.
 type SubmitBookingInspectionParams struct {
 	// IdempotencyKey Unique mutation request key preventing duplicate execution.
@@ -2003,6 +2438,21 @@ type CreateBookingJSONRequestBody = CreateBookingRequest
 
 // CheckBundledAvailabilityJSONRequestBody defines body for CheckBundledAvailability for application/json ContentType.
 type CheckBundledAvailabilityJSONRequestBody = CheckBundledAvailabilityRequest
+
+// ReportMechanicalBreakdownJSONRequestBody defines body for ReportMechanicalBreakdown for application/json ContentType.
+type ReportMechanicalBreakdownJSONRequestBody = MechanicalBreakdownRequest
+
+// ResolveMechanicalBreakdownJSONRequestBody defines body for ResolveMechanicalBreakdown for application/json ContentType.
+type ResolveMechanicalBreakdownJSONRequestBody = BreakdownResolutionRequest
+
+// RequestRentalExtensionJSONRequestBody defines body for RequestRentalExtension for application/json ContentType.
+type RequestRentalExtensionJSONRequestBody = RentalExtensionRequest
+
+// ConfirmHandoverJSONRequestBody defines body for ConfirmHandover for application/json ContentType.
+type ConfirmHandoverJSONRequestBody = HandoverConfirmRequest
+
+// HandoverInspectJSONRequestBody defines body for HandoverInspect for application/json ContentType.
+type HandoverInspectJSONRequestBody = HandoverInspectionRequest
 
 // SubmitBookingInspectionJSONRequestBody defines body for SubmitBookingInspection for application/json ContentType.
 type SubmitBookingInspectionJSONRequestBody = SubmitInspectionRequest

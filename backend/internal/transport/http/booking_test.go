@@ -131,7 +131,7 @@ func setupBookingTestEnv(t *testing.T) *bookingTestEnv {
 	holdLease := bookingInfra.NewMemoryHoldLeaseManager()
 	bookingService := bookingApp.NewBookingService(bookingRepo, holdLease, machineryService, nil)
 
-	server := transport.NewServer(authService, tokenService, machineryService, nil, nil, bookingService)
+	server := transport.NewServer(authService, tokenService, machineryService, nil, nil, bookingService, nil)
 	mux := http.NewServeMux()
 	server.RegisterRoutes(mux)
 	handler := i18n.LanguageMiddleware(mux)

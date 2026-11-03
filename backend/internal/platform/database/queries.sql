@@ -799,3 +799,208 @@ INSERT INTO booking_audit_logs (
 SELECT * FROM booking_audit_logs
 WHERE booking_id = $1
 ORDER BY created_at ASC;
+
+
+-- Active Rental Management, Shift Telemetry, Breakdown & Extension (Partition 05-06, SRS §05.06, RENT-01 to RENT-12, D-05-06-001, D-05-06-002)
+
+-- name: CreateHandoverInspection :one
+INSERT INTO handover_inspections (
+    booking_id,
+    inspector_id,
+    check_in_meter_hours,
+    fluid_levels_ok,
+    safety_glass_intact,
+    notes,
+    photos_json
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7
+) RETURNING *;
+
+-- name: GetHandoverInspectionByBookingID :one
+SELECT * FROM handover_inspections
+WHERE booking_id = $1
+ORDER BY created_at DESC
+LIMIT 1;
+
+-- name: CreateHandoverChallenge :one
+INSERT INTO handover_challenges (
+    booking_id,
+    challenge_pin,
+    expires_at,
+    attempt_count,
+    max_attempts,
+    is_verified
+) VALUES (
+    $1, $2, $3, 0, $4, false
+) RETURNING *;
+
+-- name: GetActiveHandoverChallenge :one
+SELECT * FROM handover_challenges
+WHERE booking_id = $1 AND is_verified = false AND expires_at > NOW()
+ORDER BY created_at DESC
+LIMIT 1;
+
+-- name: IncrementHandoverChallengeAttempts :one
+UPDATE handover_challenges
+SET attempt_count = attempt_count + 1
+WHERE id = $1
+RETURNING *;
+
+-- name: VerifyHandoverChallenge :one
+UPDATE handover_challenges
+SET is_verified = true,
+    verified_at = NOW(),
+    touch_signature_base64 = $2,
+    contractor_lat = $3,
+    contractor_lng = $4
+WHERE id = $1
+RETURNING *;
+
+-- name: CreateRentalShift :one
+INSERT INTO rental_shifts (
+    booking_id,
+    operator_id,
+    shift_date,
+    start_time,
+    start_meter_hours,
+    allocated_hours,
+    accumulated_hours,
+    excess_hours,
+    is_paused
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
+) RETURNING *;
+
+-- name: GetActiveRentalShift :one
+SELECT * FROM rental_shifts
+WHERE booking_id = $1 AND end_time IS NULL
+ORDER BY created_at DESC
+LIMIT 1;
+
+-- name: UpdateRentalShiftProgress :one
+UPDATE rental_shifts
+SET accumulated_hours = $2,
+    excess_hours = $3,
+    end_meter_hours = $4,
+    is_paused = $5,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: EndRentalShift :one
+UPDATE rental_shifts
+SET end_time = NOW(),
+    end_meter_hours = $2,
+    accumulated_hours = $3,
+    excess_hours = $4,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: ListRentalShiftsByBookingID :many
+SELECT * FROM rental_shifts
+WHERE booking_id = $1
+ORDER BY shift_date DESC, created_at DESC;
+
+-- name: CreateRentalExtension :one
+INSERT INTO rental_extensions (
+    booking_id,
+    requested_by_id,
+    original_end_date,
+    new_end_date,
+    extension_days,
+    incremental_gross_minor,
+    incremental_prepayment_minor,
+    currency,
+    status
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
+) RETURNING *;
+
+-- name: GetRentalExtensionByID :one
+SELECT * FROM rental_extensions
+WHERE id = $1;
+
+-- name: ListRentalExtensionsByBookingID :many
+SELECT * FROM rental_extensions
+WHERE booking_id = $1
+ORDER BY created_at DESC;
+
+-- name: UpdateRentalExtensionStatus :one
+UPDATE rental_extensions
+SET status = $2,
+    owner_decided_at = COALESCE($3, owner_decided_at),
+    owner_decision_notes = COALESCE($4, owner_decision_notes),
+    slip_storage_uri = COALESCE($5, slip_storage_uri),
+    slip_file_hash = COALESCE($6, slip_file_hash),
+    confirmed_at = CASE WHEN $2 = 'CONFIRMED' THEN NOW() ELSE confirmed_at END,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: ExpandBookingHirePeriod :one
+UPDATE bookings
+SET end_date = $2,
+    hire_period = daterange(start_date, $2, '[)'),
+    duration_days = duration_days + $3,
+    gross_rental_amount_minor = gross_rental_amount_minor + $4,
+    prepayment_amount_minor = prepayment_amount_minor + $5,
+    version = version + 1,
+    updated_at = NOW()
+WHERE id = $1 AND version = $6 AND deleted_at IS NULL
+RETURNING *;
+
+-- name: CreateMechanicalBreakdown :one
+INSERT INTO mechanical_breakdowns (
+    booking_id,
+    reported_by_id,
+    fault_category,
+    fault_description,
+    diagnostic_trouble_codes,
+    current_hour_meter,
+    incident_photos_json,
+    status,
+    sla_deadline
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
+) RETURNING *;
+
+-- name: GetMechanicalBreakdownByID :one
+SELECT * FROM mechanical_breakdowns
+WHERE id = $1;
+
+-- name: GetActiveMechanicalBreakdownByBookingID :one
+SELECT * FROM mechanical_breakdowns
+WHERE booking_id = $1 AND status IN ('ACTIVE_BREAKDOWN_PAUSED', 'MECHANIC_DISPATCHED')
+ORDER BY created_at DESC
+LIMIT 1;
+
+-- name: ListMechanicalBreakdownsByBookingID :many
+SELECT * FROM mechanical_breakdowns
+WHERE booking_id = $1
+ORDER BY created_at DESC;
+
+-- name: ResolveMechanicalBreakdown :one
+UPDATE mechanical_breakdowns
+SET status = 'RESOLVED',
+    mechanic_name = $2,
+    mechanic_phone = $3,
+    resolution_notes = $4,
+    resolved_at = NOW(),
+    updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: GetFleetBaselineMeter :one
+SELECT id, baseline_meter_hours FROM fleets
+WHERE id = $1;
+
+-- name: CheckFleetAvailabilityConflict :one
+SELECT EXISTS (
+    SELECT 1 FROM bookings
+    WHERE fleet_id = sqlc.arg(fleet_id)
+      AND id != sqlc.arg(exclude_booking_id)
+      AND hire_period && sqlc.arg(hire_period)::daterange
+      AND status IN ('HOLD_PENDING', 'PAYMENT_EVIDENCE_UPLOADED', 'CONFIRMED', 'ACTIVE', 'RETURN_INITIATED', 'ACTIVE_BREAKDOWN_PAUSED', 'ACTIVE_EXTENSION_HOLD')
+      AND deleted_at IS NULL
+);

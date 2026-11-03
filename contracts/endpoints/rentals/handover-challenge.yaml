@@ -1,0 +1,32 @@
+post:
+  tags: [booking]
+  summary: Generate dynamic 6-digit cryptographic challenge PIN for machine handover
+  description: Generates a 15-minute validity challenge PIN on the fleet owner console for contractor entry.
+  operationId: generateHandoverChallenge
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  responses:
+    '200':
+      description: Dynamic challenge PIN successfully generated.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/rental.yaml#/HandoverChallengeSuccessResponse'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/forbidden.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

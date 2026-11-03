@@ -94,6 +94,7 @@ type Booking struct {
 	CreatedAt              pgtype.Timestamptz        `json:"created_at"`
 	UpdatedAt              pgtype.Timestamptz        `json:"updated_at"`
 	DeletedAt              pgtype.Timestamptz        `json:"deleted_at"`
+	AssignedOperatorID     pgtype.UUID               `json:"assigned_operator_id"`
 }
 
 type BookingAttachment struct {
@@ -269,6 +270,33 @@ type FleetSpecValue struct {
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 }
 
+type HandoverChallenge struct {
+	ID                   pgtype.UUID        `json:"id"`
+	BookingID            pgtype.UUID        `json:"booking_id"`
+	ChallengePin         string             `json:"challenge_pin"`
+	ExpiresAt            pgtype.Timestamptz `json:"expires_at"`
+	AttemptCount         int32              `json:"attempt_count"`
+	MaxAttempts          int32              `json:"max_attempts"`
+	IsVerified           bool               `json:"is_verified"`
+	VerifiedAt           pgtype.Timestamptz `json:"verified_at"`
+	TouchSignatureBase64 *string            `json:"touch_signature_base64"`
+	ContractorLat        *float64           `json:"contractor_lat"`
+	ContractorLng        *float64           `json:"contractor_lng"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+}
+
+type HandoverInspection struct {
+	ID                pgtype.UUID        `json:"id"`
+	BookingID         pgtype.UUID        `json:"booking_id"`
+	InspectorID       pgtype.UUID        `json:"inspector_id"`
+	CheckInMeterHours pgtype.Numeric     `json:"check_in_meter_hours"`
+	FluidLevelsOk     bool               `json:"fluid_levels_ok"`
+	SafetyGlassIntact bool               `json:"safety_glass_intact"`
+	Notes             *string            `json:"notes"`
+	PhotosJson        []byte             `json:"photos_json"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+}
+
 type LocalizationKey struct {
 	ID                  pgtype.UUID        `json:"id"`
 	NamespaceID         pgtype.UUID        `json:"namespace_id"`
@@ -297,6 +325,25 @@ type LocalizationTranslation struct {
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
 }
 
+type MechanicalBreakdown struct {
+	ID                     pgtype.UUID        `json:"id"`
+	BookingID              pgtype.UUID        `json:"booking_id"`
+	ReportedByID           pgtype.UUID        `json:"reported_by_id"`
+	FaultCategory          string             `json:"fault_category"`
+	FaultDescription       string             `json:"fault_description"`
+	DiagnosticTroubleCodes []string           `json:"diagnostic_trouble_codes"`
+	CurrentHourMeter       pgtype.Numeric     `json:"current_hour_meter"`
+	IncidentPhotosJson     []byte             `json:"incident_photos_json"`
+	Status                 string             `json:"status"`
+	SlaDeadline            pgtype.Timestamptz `json:"sla_deadline"`
+	MechanicName           *string            `json:"mechanic_name"`
+	MechanicPhone          *string            `json:"mechanic_phone"`
+	ResolutionNotes        *string            `json:"resolution_notes"`
+	ResolvedAt             pgtype.Timestamptz `json:"resolved_at"`
+	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt              pgtype.Timestamptz `json:"updated_at"`
+}
+
 type OwnerAggregate struct {
 	OwnerID               pgtype.UUID        `json:"owner_id"`
 	AverageRating         pgtype.Numeric     `json:"average_rating"`
@@ -321,6 +368,43 @@ type Permission struct {
 	Action      string             `json:"action"`
 	Description *string            `json:"description"`
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+}
+
+type RentalExtension struct {
+	ID                         pgtype.UUID        `json:"id"`
+	BookingID                  pgtype.UUID        `json:"booking_id"`
+	RequestedByID              pgtype.UUID        `json:"requested_by_id"`
+	OriginalEndDate            pgtype.Date        `json:"original_end_date"`
+	NewEndDate                 pgtype.Date        `json:"new_end_date"`
+	ExtensionDays              int32              `json:"extension_days"`
+	IncrementalGrossMinor      int64              `json:"incremental_gross_minor"`
+	IncrementalPrepaymentMinor int64              `json:"incremental_prepayment_minor"`
+	Currency                   string             `json:"currency"`
+	Status                     string             `json:"status"`
+	OwnerDecidedAt             pgtype.Timestamptz `json:"owner_decided_at"`
+	OwnerDecisionNotes         *string            `json:"owner_decision_notes"`
+	SlipStorageUri             *string            `json:"slip_storage_uri"`
+	SlipFileHash               *string            `json:"slip_file_hash"`
+	ConfirmedAt                pgtype.Timestamptz `json:"confirmed_at"`
+	CreatedAt                  pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                  pgtype.Timestamptz `json:"updated_at"`
+}
+
+type RentalShift struct {
+	ID               pgtype.UUID        `json:"id"`
+	BookingID        pgtype.UUID        `json:"booking_id"`
+	OperatorID       pgtype.UUID        `json:"operator_id"`
+	ShiftDate        pgtype.Date        `json:"shift_date"`
+	StartTime        pgtype.Timestamptz `json:"start_time"`
+	EndTime          pgtype.Timestamptz `json:"end_time"`
+	StartMeterHours  pgtype.Numeric     `json:"start_meter_hours"`
+	EndMeterHours    pgtype.Numeric     `json:"end_meter_hours"`
+	AllocatedHours   pgtype.Numeric     `json:"allocated_hours"`
+	AccumulatedHours pgtype.Numeric     `json:"accumulated_hours"`
+	ExcessHours      pgtype.Numeric     `json:"excess_hours"`
+	IsPaused         bool               `json:"is_paused"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Role struct {

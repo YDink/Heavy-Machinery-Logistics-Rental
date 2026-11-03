@@ -50,6 +50,10 @@ func toDomainBooking(b db.Booking) *domain.Booking {
 		UpdatedAt:              b.UpdatedAt.Time,
 	}
 
+	if b.AssignedOperatorID.Valid {
+		opID := uuid.UUID(b.AssignedOperatorID.Bytes)
+		res.AssignedOperatorID = &opID
+	}
 	if b.CancelledBy.Valid {
 		id := uuid.UUID(b.CancelledBy.Bytes)
 		res.CancelledBy = &id

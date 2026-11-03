@@ -54,7 +54,19 @@ var permittedTransitions = map[BookingStatus][]BookingStatus{
 		StatusCancelled,
 	},
 	StatusActive: {
+		StatusActiveBreakdownPaused,
+		StatusActiveExtensionHold,
 		StatusReturnInitiated,
+	},
+	StatusActiveBreakdownPaused: {
+		StatusActive,
+		StatusReturnInitiated,
+		StatusCancelled,
+	},
+	StatusActiveExtensionHold: {
+		StatusActive,
+		StatusReturnInitiated,
+		StatusCancelled,
 	},
 	StatusReturnInitiated: {
 		StatusPendingFinalPayment,

@@ -14,6 +14,7 @@ import (
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/domain"
 	bookingApp "github.com/dinkmachinery/dink-core/internal/modules/booking/application"
 	bookingDomain "github.com/dinkmachinery/dink-core/internal/modules/booking/domain"
+	rentalApp "github.com/dinkmachinery/dink-core/internal/modules/rental/application"
 	machineryApp "github.com/dinkmachinery/dink-core/internal/modules/machinery/application"
 	machineryDomain "github.com/dinkmachinery/dink-core/internal/modules/machinery/domain"
 	"github.com/dinkmachinery/dink-core/internal/platform/i18n"
@@ -28,6 +29,7 @@ type Server struct {
 	attachmentService *machineryApp.AttachmentService
 	discoveryService  *machineryApp.DiscoveryService
 	bookingService    *bookingApp.BookingService
+	rentalService     *rentalApp.RentalService
 }
 
 func NewServer(
@@ -37,6 +39,7 @@ func NewServer(
 	attachmentService *machineryApp.AttachmentService,
 	discoveryService *machineryApp.DiscoveryService,
 	bookingService *bookingApp.BookingService,
+	rentalService *rentalApp.RentalService,
 ) *Server {
 	return &Server{
 		authService:       authService,
@@ -45,6 +48,7 @@ func NewServer(
 		attachmentService: attachmentService,
 		discoveryService:  discoveryService,
 		bookingService:    bookingService,
+		rentalService:     rentalService,
 	}
 }
 
@@ -95,6 +99,15 @@ func (s *Server) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/payments", s.InitiatePayment)
 	mux.HandleFunc("GET /api/v1/wallets/me", s.GetMyWallet)
 	mux.HandleFunc("GET /api/v1/wallets/me/transactions", s.ListWalletTransactions)
+
+	// Active Rental Management & Shift Telemetry (Partition 05-06)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/handover-inspect", s.HandoverInspect)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/handover-challenge", s.GenerateHandoverChallenge)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/handover-confirm", s.ConfirmHandover)
+	mux.HandleFunc("GET /api/v1/bookings/{id}/hud", s.GetActiveRentalHUD)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/extend", s.RequestRentalExtension)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/breakdown", s.ReportMechanicalBreakdown)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/breakdown/resolve", s.ResolveMechanicalBreakdown)
 }
 
 // RequestOtp handles POST /auth/otp/request

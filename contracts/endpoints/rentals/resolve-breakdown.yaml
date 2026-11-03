@@ -1,0 +1,40 @@
+post:
+  tags: [booking]
+  summary: Certify field mechanical repair and resume rental shifts
+  description: Records mechanic repair sign-off docket, fluid replenishment details, and transitions state back to ACTIVE.
+  operationId: resolveMechanicalBreakdown
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/rental.yaml#/BreakdownResolutionRequest'
+  responses:
+    '200':
+      description: Repair certified, state returned to ACTIVE, and shift timer resumed.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/rental.yaml#/BreakdownResolutionSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/forbidden.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

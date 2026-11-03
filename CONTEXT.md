@@ -2,8 +2,8 @@
 
 **Project Phase:** Phase 2 (Partition Feature Development)  
 **Active Requirement Partition:** `05-06-active-rental-management` (Active Rental Management, Shift Telemetry, Breakdown & Extension Architecture)  
-**Active Branch:** `feature/05-05-booking-reservation-flow` (Partition 05-05 verified & ready to merge into main)  
-**Current Stop Point:** Partition 05-05 Verified across Backend, Mobile, and Governance. Ready to merge to main and begin Partition 05-06.
+**Active Branch:** `feature/05-06-active-rental-management` (Partition 05-06 verified & ready to merge into main)  
+**Current Stop Point:** Partition 05-06 Verified across Backend, Mobile, and Governance. Ready to merge to main and advance to Partition 05-07.
 
 ---
 
@@ -145,36 +145,100 @@
   - Dependency Injection: Registered in `mobile/lib/core/di/injection.dart` (`GetIt`).
   - Comprehensive unit and widget tests: 19 tests in `test/features/booking/` (100% pass rate).
   - 100% mobile test pass rate (59/59 tests passing); 0 issues on `fvm flutter analyze`.
+
+### Completed (Partition 05-06: Active Rental Management, Shift Telemetry, Breakdown & Extension Architecture)
+- **Database Schema & Migrations (`migrations/`):**
+  - Created `migrations/000008_create_active_rental_telemetry_tables.up.sql` and `.down.sql`:
+    - `handover_inspections`: Pre-rental inspection with 5 mandatory photo angles (`CABIN`, `CHASSIS`, `HYDRAULICS`, `TRACKS_TIRES`, `HOUR_METER`), baseline meter reading, fluid levels/safety glass checks, site GPS location, signed confirmation (`AR-01`, `D-05-06-002`).
+    - `handover_challenges`: Dual-party 6-digit random PIN generation with 15-minute TTL, max 3 attempts, contractor GPS capture, touch signature verification (`AR-02`).
+    - `rental_shifts`: Shift telemetry logging with 8.0 hr daily shift quota baseline, start/end timestamps, operator assignment, operating hours meter deltas, excess hours accounting (`AR-03`).
+    - `rental_extensions`: Extension requisitions with GiST temporal range availability conflict checking (`CheckFleetAvailabilityConflict`), 50% advance prepayment calculation, owner approval workflow (`AR-04`).
+    - `mechanical_breakdowns`: Stoppage logging with breakdown photo evidence, automated shift telemetry timer pausing (`ACTIVE_BREAKDOWN_PAUSED`), 4-hour owner service SLA clock, resolution restore workflow (`AR-05`).
+    - Seeded dynamic RBAC permissions: `rentals:inspect`, `rentals:challenge`, `rentals:hud`, `rentals:extend`, `rentals:breakdown`, `rentals:resolve` mapped to standard roles.
+  - Added queries to `backend/internal/platform/database/queries.sql` (`CheckFleetAvailabilityConflict`, `GetFleetBaselineMeter`), compiled cleanly via `sqlc generate` into `backend/internal/platform/database/db/` (`models.go`, `queries.sql.go`).
+- **OpenAPI 3.1.0 Canonical Contracts & Type Generation:**
+  - Added schema models in `contracts/components/schemas/rental.yaml`: `HandoverInspectionRequest`, `HandoverConfirmRequest`, `ActiveRentalHUDResponseData`, `RentalExtensionRequest`, `MechanicalBreakdownRequest`, `BreakdownResolutionRequest`.
+  - Added 7 endpoint contracts under `contracts/endpoints/rentals/`:
+    - `POST /api/v1/bookings/{id}:handover-inspect`
+    - `POST /api/v1/bookings/{id}:handover-challenge`
+    - `POST /api/v1/bookings/{id}:handover-confirm`
+    - `GET /api/v1/bookings/{id}/hud`
+    - `POST /api/v1/bookings/{id}:extend`
+    - `POST /api/v1/bookings/{id}:breakdown`
+    - `POST /api/v1/bookings/{id}:resolve-breakdown`
+  - Redocly bundled contract (`contracts/openapi.bundled.yaml`) validated with Spectral CLI (0 errors).
+  - Generated TypeScript DTOs (`admin/src/types/api.generated.ts`) and Go types (`backend/internal/transport/http/generated/api.gen.go`).
+- **Go Backend Core Subsystem (`backend/`):**
+  - Pure standard library `net/http.ServeMux` and `log/slog` with zero third-party web frameworks.
+  - `internal/modules/rental/domain/`:
+    - Value objects and entities: `HandoverInspection`, `HandoverChallenge`, `RentalShift`, `RentalExtension`, `MechanicalBreakdown`, `ActiveRentalHUD`.
+    - Invariant validators: `ValidateMonotonicMeterFloor` (regression prevention), `ValidateHandoverPhotos` (5 mandatory angles), `GenerateChallengePIN` (crypto 6-digit PIN with 15-min TTL), `CalculateShiftPacing`, `CalculateExtensionQuote` (50% advance prepay), `ValidateFaultCategory`.
+    - 100% domain unit test pass rate (`invariants_test.go`).
+  - `internal/modules/rental/infrastructure/`:
+    - `MemoryRentalRepository`: Thread-safe in-memory repository for deterministic testing.
+    - `PostgresRentalRepository`: Full `pgx/v5` transactional persistence with availability conflict detection.
+  - `internal/modules/rental/application/`:
+    - `RentalService` implementing `InspectHandover`, `GenerateHandoverPIN`, `ConfirmHandover`, `GetActiveRentalHUD`, `RequestExtension`, `ReportMechanicalBreakdown`, `ResolveMechanicalBreakdown`.
+    - 100% application unit test pass rate (`rental_service_test.go`).
+  - `internal/transport/http/`:
+    - Handlers in `rental_handler.go` with standard unified response envelopes and RFC 9457 Problem Details error models.
+    - Integration tests in `rental_test.go` verifying PIN generation, handover verification, HUD telemetry, extension conflict handling, and breakdown timer pausing/restoration.
+  - 100% backend test suite pass rate (`go test -count=1 ./...`).
+- **Flutter Mobile Client (`mobile/`):**
+  - Full-stack localization: English (`app_en.arb`) and Amharic (`app_am.arb`) with 32 verified keys and zero hardcoded strings (`fvm flutter gen-l10n`).
+  - Data layer: `ActiveRentalRemoteDataSourceImpl` and `ActiveRentalRepositoryImpl`.
+  - Domain layer: Entities (`ActiveRentalHUD`, `HandoverInspection`, `HandoverChallenge`, `RentalExtension`, `MechanicalBreakdown`), Repository interface, 7 Use Cases.
+  - Presentation layer:
+    - `ActiveRentalBloc` handling HUD telemetry, inspections, PIN challenges, extensions, and breakdowns.
+    - `ActiveRentalHUDView`: High-contrast dark styling (`#111827`) optimized for outdoor sunlight conditions, 56dp minimum touch targets.
+    - `ShiftTelemetryProgressCard`: 8.0 hr daily shift progress bar, pacing indicator, and breakdown pause banner.
+    - `BreakdownReportModal`: Fault category dropdown, description, DTC code inputs, meter reading, 56dp action button.
+    - `ExtensionRequestSheet`: Forward date selector, 50% prepay calculation, 56dp submit button.
+  - Registered all dependencies in `mobile/lib/core/di/injection.dart`.
+  - 100% mobile test pass rate (72/72 tests passing); 0 issues on `fvm flutter analyze`.
 - **Governance & Quality Gates:**
-  - `scripts/validate-decision-template.sh`: Verified all decisions conform strictly to governance specifications.
-  - `scripts/validate-decision-links.sh`: Verified all 19 ADRs and 80 L2 partition decisions have valid bidirectional links.
+  - `scripts/validate-decision-template.sh`: All architectural decision templates strictly adhere to governance specifications.
+  - `scripts/validate-decision-links.sh`: All 19 ADRs and 80 L2 partition decisions have valid bidirectional links.
+  - Spectral OpenAPI contract validation: 0 errors on bundled contract.
 
 ---
 
-## 2. Next Immediate Tasks (Partition 05-06: Active Rental Management, Shift Telemetry, Breakdown & Extension Architecture)
+## 2. Next Immediate Tasks (Partition 05-07: Rental Completion, Return Inspection, Damage & Penalty Adjudication Architecture)
 
 1. **Database Schema & Migrations (`migrations/`):**
-   - Create `migrations/000008_create_active_rental_telemetry_tables.up.sql` and `.down.sql`:
-     - `handover_inspections`: Pre-rental inspection with multi-angle photos (`CABIN`, `CHASSIS`, `HYDRAULICS`, `TRACKS_TIRES`, `HOUR_METER`), initial engine meter, site GPS location, signed confirmation.
-     - `rental_shifts`: Shift telemetry logging with 8.0 hr standard daily shift baseline, start/end timestamps, operator assignment, operating hours meter deltas.
-     - `rental_extensions`: Extension requisitions with daily rate differential accounting, GiST temporal range expansion on `fleet_availability` and `attachment_reservations`, advance prepayment calculation, owner approval workflow.
-     - `mechanical_breakdowns`: Stoppage logging with breakdown photo evidence, automated shift timer pausing, SLA resolution timer clock, field mechanic dispatch details.
-     - Dynamic RBAC permissions for active rental management (`rentals:inspect`, `rentals:shift_log`, `rentals:extend`, `rentals:breakdown`).
+   - Create `migrations/000009_create_rental_completion_tables.up.sql` and `.down.sql`:
+     - `return_inspections`: Off-hire return inspection with 5 mandatory return photo angles, final engine hour meter, site GPS location, signed off-hire acceptance.
+     - `damage_assessments`: Physical damage incident records, itemized repair cost estimation, severity tiering, photo evidence.
+     - `rental_settlements`: Final financial settlement ledger calculations (excess shift hours overtime surcharge, fuel deficit charges, security deposit release/deduction, owner payout balance).
+     - Dynamic RBAC permissions for rental return and damage adjudication (`rentals:return_inspect`, `rentals:damage_claim`, `rentals:settle`).
    - Generate `sqlc` queries in `backend/internal/platform/database/db/`.
 2. **OpenAPI 3.1.0 Canonical Contracts:**
    - Define contracts in `contracts/`:
-     - `POST /api/v1/bookings/{id}/handover-inspect`
-     - `POST /api/v1/bookings/{id}/handover-confirm`
-     - `GET /api/v1/bookings/{id}/hud`: Active rental heads-up display telemetry
-     - `POST /api/v1/bookings/{id}/extend`
-     - `POST /api/v1/bookings/{id}/breakdown`
+     - `POST /api/v1/bookings/{id}:return-inspect`
+     - `POST /api/v1/bookings/{id}:damage-claim`
+     - `POST /api/v1/bookings/{id}:dispute-damage`
+     - `POST /api/v1/bookings/{id}:settle`
+     - `GET /api/v1/bookings/{id}/settlement-summary`
    - Bundle OpenAPI specs and generate TypeScript DTOs & Go types.
-3. **Backend Domain & Application Core (`backend/internal/modules/rental/`):**
-   - Invariant validators: Shift hour calculations ($8.0\text{ hrs/day}$ shift quota), monotonic hour meter verification, dual challenge PIN verification, temporal GiST range expansion.
-   - Domain unit and application service integration tests.
-4. **Flutter Mobile Client (`mobile/lib/features/active_rental/`):**
-   - Field Heads-Up Display (HUD) viewport with high-contrast AAA outdoor readability.
-   - Shift telemetry tracker with cumulative engine hours counter.
-   - Breakdown stoppage reporting form with camera capture reticle.
-   - Rental extension requisition sheet with instant rate calculation.
+3. **Backend Domain & Application Core (`backend/internal/modules/settlement/` or `rental/`):**
+   - Invariant validators: Final meter monotonic validation ($\ge$ check-in meter), overtime excess hour calculation ($> 8.0\text{ hrs/day}$ quota), deposit forfeiture calculation, settlement ledger balance.
+   - Comprehensive unit and integration test coverage.
+4. **Flutter Mobile Client:**
+   - Return inspection checklist with photo capture reticles.
+   - Damage reporting and dispute submission view.
+   - Final settlement ledger card and escrow release acknowledgment.
    - 100% test coverage and zero analyzer issues.
+
+---
+
+## 3. Active Decisions & Open Blockers
+
+### Active Architectural Decisions
+- `ADR-006`: Event-driven state machine and transactional outbox for booking and rental lifecycle events.
+- `ADR-012`: Double-entry minor unit financial ledger and non-custodial payment processing.
+- `D-05-06-001`: Real-time incident reporting with offline Isar outbox queuing.
+- `D-05-06-002`: Daily operating log tracking with monotonic engine hour validation.
+
+### Open Questions & Blockers
+- No active blockers for Partition 05-06 completion.
+- Ready for rebase-merge into `main`.

@@ -42,6 +42,17 @@ import 'package:dink_mobile/features/booking/domain/usecases/create_booking_usec
 import 'package:dink_mobile/features/booking/domain/usecases/get_booking_usecase.dart';
 import 'package:dink_mobile/features/booking/domain/usecases/submit_payment_slip_usecase.dart';
 import 'package:dink_mobile/features/booking/presentation/bloc/booking_bloc.dart';
+import 'package:dink_mobile/features/active_rental/data/datasources/active_rental_remote_data_source.dart';
+import 'package:dink_mobile/features/active_rental/data/repositories/active_rental_repository_impl.dart';
+import 'package:dink_mobile/features/active_rental/domain/repositories/active_rental_repository.dart';
+import 'package:dink_mobile/features/active_rental/domain/usecases/get_active_rental_hud_usecase.dart';
+import 'package:dink_mobile/features/active_rental/domain/usecases/inspect_handover_usecase.dart';
+import 'package:dink_mobile/features/active_rental/domain/usecases/generate_handover_pin_usecase.dart';
+import 'package:dink_mobile/features/active_rental/domain/usecases/confirm_handover_usecase.dart';
+import 'package:dink_mobile/features/active_rental/domain/usecases/request_extension_usecase.dart';
+import 'package:dink_mobile/features/active_rental/domain/usecases/report_breakdown_usecase.dart';
+import 'package:dink_mobile/features/active_rental/domain/usecases/resolve_breakdown_usecase.dart';
+import 'package:dink_mobile/features/active_rental/presentation/bloc/active_rental_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -293,6 +304,67 @@ Future<void> initDependencies() async {
   if (!sl.isRegistered<BookingBloc>()) {
     sl.registerFactory<BookingBloc>(
       () => BookingBloc(repository: sl<BookingRepository>()),
+    );
+  }
+
+  // Active Rental (Partition 05-06)
+  if (!sl.isRegistered<ActiveRentalRemoteDataSource>()) {
+    sl.registerLazySingleton<ActiveRentalRemoteDataSource>(
+      () => ActiveRentalRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
+    );
+  }
+
+  if (!sl.isRegistered<ActiveRentalRepository>()) {
+    sl.registerLazySingleton<ActiveRentalRepository>(
+      () => ActiveRentalRepositoryImpl(remoteDataSource: sl<ActiveRentalRemoteDataSource>()),
+    );
+  }
+
+  if (!sl.isRegistered<GetActiveRentalHUDUseCase>()) {
+    sl.registerLazySingleton<GetActiveRentalHUDUseCase>(
+      () => GetActiveRentalHUDUseCase(sl<ActiveRentalRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<InspectHandoverUseCase>()) {
+    sl.registerLazySingleton<InspectHandoverUseCase>(
+      () => InspectHandoverUseCase(sl<ActiveRentalRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<GenerateHandoverPINUseCase>()) {
+    sl.registerLazySingleton<GenerateHandoverPINUseCase>(
+      () => GenerateHandoverPINUseCase(sl<ActiveRentalRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<ConfirmHandoverUseCase>()) {
+    sl.registerLazySingleton<ConfirmHandoverUseCase>(
+      () => ConfirmHandoverUseCase(sl<ActiveRentalRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<RequestExtensionUseCase>()) {
+    sl.registerLazySingleton<RequestExtensionUseCase>(
+      () => RequestExtensionUseCase(sl<ActiveRentalRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<ReportBreakdownUseCase>()) {
+    sl.registerLazySingleton<ReportBreakdownUseCase>(
+      () => ReportBreakdownUseCase(sl<ActiveRentalRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<ResolveBreakdownUseCase>()) {
+    sl.registerLazySingleton<ResolveBreakdownUseCase>(
+      () => ResolveBreakdownUseCase(sl<ActiveRentalRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<ActiveRentalBloc>()) {
+    sl.registerFactory<ActiveRentalBloc>(
+      () => ActiveRentalBloc(repository: sl<ActiveRentalRepository>()),
     );
   }
 }

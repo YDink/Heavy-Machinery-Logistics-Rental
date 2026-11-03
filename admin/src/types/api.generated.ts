@@ -512,6 +512,146 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/bookings/{id}/handover-inspect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit pre-rental photographic reticle inspection and hour meter reading
+         * @description Validates multi-angle condition photos and asserts check-in meter is non-regressive against machine baseline.
+         */
+        post: operations["handoverInspect"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/handover-challenge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate dynamic 6-digit cryptographic challenge PIN for machine handover
+         * @description Generates a 15-minute validity challenge PIN on the fleet owner console for contractor entry.
+         */
+        post: operations["generateHandoverChallenge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/handover-confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm machine handover via 6-digit challenge PIN and touch signature
+         * @description Validates dynamic PIN from equipment owner, attests physical co-presence, and transitions status to ACTIVE.
+         */
+        post: operations["confirmHandover"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/hud": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve real-time Active Rental HUD operational telemetry
+         * @description Returns 8.0 hr/day shift pacing, assigned operator details, machine status, and quick-action permissions.
+         */
+        get: operations["getActiveRentalHUD"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/extend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit a rental extension request for forward dates
+         * @description Validates forward availability against GiST exclusion constraints, computes 50% advance quote, and locks dates.
+         */
+        post: operations["requestRentalExtension"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/breakdown": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report on-site mechanical breakdown and pause billable shift clock
+         * @description Ingests fault photos, DTC codes, and hour meter, immediately halts the contractual shift timer, and starts the 4-hour owner SLA.
+         */
+        post: operations["reportMechanicalBreakdown"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/breakdown/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Certify field mechanical repair and resume rental shifts
+         * @description Records mechanic repair sign-off docket, fluid replenishment details, and transitions state back to ACTIVE.
+         */
+        post: operations["resolveMechanicalBreakdown"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/payments/initiate": {
         parameters: {
             query?: never;
@@ -1128,6 +1268,139 @@ export interface components {
             error: Record<string, never> | null;
             meta: components["schemas"]["ResponseMeta"];
         };
+        HandoverInspectionRequest: {
+            /**
+             * Format: double
+             * @description Current mechanical hour meter reading verified at machine handover
+             */
+            checkInMeterHours: number;
+            inspectionPhotos: components["schemas"]["InspectionPhoto"][];
+            /**
+             * @description Attestation that engine oil and hydraulic fluid levels are within operating bands
+             * @default true
+             */
+            fluidLevelsOk: boolean;
+            /**
+             * @description Attestation that cabin safety glass and mirrors have zero cracks
+             * @default true
+             */
+            safetyGlassIntact: boolean;
+            /** @description Additional field handover observations or minor defects */
+            notes?: string;
+        };
+        HandoverConfirmRequest: {
+            /** @description 6-digit challenge PIN provided physically on site by equipment owner */
+            challengePin: string;
+            /** @description Base64 data URI of contractor signature canvas */
+            touchSignatureBase64?: string;
+            contractorLocation?: {
+                /** Format: double */
+                latitude?: number;
+                /** Format: double */
+                longitude?: number;
+            };
+        };
+        ActiveRentalHUDResponseData: {
+            /** Format: uuid */
+            bookingId: string;
+            /** @example ACTIVE */
+            status: string;
+            fleet: {
+                /** Format: uuid */
+                id: string;
+                /** @example Caterpillar 320D */
+                title: string;
+                /** @example ET-3-99120 */
+                plateNumber: string;
+            };
+            operator?: {
+                /** Format: uuid */
+                id?: string;
+                /** @example Mulugeta Tadesse */
+                fullName?: string;
+                /** @example +251911200491 */
+                phoneNumber?: string;
+                /** @example Class IV Hydraulic Excavator */
+                licenseClass?: string;
+            };
+            shiftTelemetry: {
+                /** @example 3 */
+                currentRentalDay: number;
+                /** @example 7 */
+                totalRentalDays: number;
+                /**
+                 * Format: double
+                 * @example 1450.5
+                 */
+                handoverBaselineHours: number;
+                /**
+                 * Format: double
+                 * @example 4.5
+                 */
+                accumulatedHoursToday: number;
+                /**
+                 * Format: double
+                 * @example 8
+                 */
+                allowedHoursPerDay: number;
+                /**
+                 * Format: double
+                 * @example 0
+                 */
+                excessHoursTotal: number;
+                /** @example false */
+                shiftTimerPaused: boolean;
+            };
+            quickActionsEnabled: {
+                /** @example true */
+                canExtend: boolean;
+                /** @example true */
+                canReportBreakdown: boolean;
+                /** @example true */
+                canInitiateReturn: boolean;
+            };
+        };
+        RentalExtensionRequest: {
+            /**
+             * Format: date
+             * @description Requested extended return date (must be after current end date)
+             */
+            newEndDate: string;
+        };
+        MechanicalBreakdownRequest: {
+            /**
+             * @example HYDRAULIC_CIRCUIT
+             * @enum {string}
+             */
+            faultCategory: "ENGINE" | "HYDRAULIC_CIRCUIT" | "ELECTRICAL" | "UNDERCARRIAGE" | "STRUCTURAL" | "BOOM_BUCKET" | "OTHER";
+            /** @example Main boom hydraulic hose ruptured under load; severe hydraulic oil pressure loss. */
+            faultDescription: string;
+            /**
+             * @example [
+             *       "DTC-HYD-4912"
+             *     ]
+             */
+            diagnosticTroubleCodes?: string[];
+            /**
+             * Format: double
+             * @example 1472.8
+             */
+            currentHourMeter: number;
+            /**
+             * @example [
+             *       "s3://dink-incident-media/breakdowns/bk_8812/burst_hose.webp"
+             *     ]
+             */
+            incidentPhotos?: string[];
+        };
+        BreakdownResolutionRequest: {
+            /** @example Solomon Girma */
+            mechanicName: string;
+            /** @example +251911334455 */
+            mechanicPhone: string;
+            /** @example Replaced high-pressure boom hose assembly and replenished 40L ISO VG 46 hydraulic fluid. */
+            resolutionNotes: string;
+        };
         FleetSearchCenter: {
             /**
              * Format: double
@@ -1584,6 +1857,160 @@ export interface components {
             operatingHoursMeter: number;
             photoUris?: string[];
             damageNotes?: string | null;
+        };
+        InspectionPhoto: {
+            /**
+             * @description Camera capture angle for pre-rental condition attestation
+             * @enum {string}
+             */
+            angle: "METER_CLOSEUP" | "FRONT_ELEVATION" | "REAR_ELEVATION" | "LEFT_TRACK" | "RIGHT_TRACK" | "CABIN_INTERIOR";
+            /**
+             * Format: uri
+             * @description URI of uploaded inspection photograph
+             */
+            storageUri: string;
+        };
+        HandoverInspectionResponseData: {
+            /** Format: uuid */
+            bookingId: string;
+            /** @example READY_FOR_PICKUP */
+            status: string;
+            /** @example true */
+            meterVerified: boolean;
+            /** @example 6 */
+            photosIngestedCount: number;
+            /** Format: date-time */
+            inspectedAt: string;
+        };
+        HandoverInspectionSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["HandoverInspectionResponseData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        HandoverChallengeResponseData: {
+            /** Format: uuid */
+            bookingId: string;
+            /** @description 6-digit challenge PIN displayed on owner console for contractor verification */
+            challengePin: string;
+            /** Format: date-time */
+            expiresAt: string;
+            /** @default 0 */
+            attemptCount: number;
+            /** @default 3 */
+            maxAttempts: number;
+        };
+        HandoverChallengeSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["HandoverChallengeResponseData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        HandoverConfirmResponseData: {
+            /** Format: uuid */
+            bookingId: string;
+            /** @example ACTIVE */
+            status: string;
+            /** Format: date-time */
+            activatedAt: string;
+            /**
+             * Format: double
+             * @example 1450.5
+             */
+            shiftBaselineMeterHours: number;
+            /**
+             * Format: double
+             * @example 56
+             */
+            allocatedShiftHoursTotal: number;
+        };
+        HandoverConfirmSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["HandoverConfirmResponseData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        ActiveRentalHUDSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["ActiveRentalHUDResponseData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        RentalExtensionResponseData: {
+            /** Format: uuid */
+            bookingId: string;
+            /** @example 3 */
+            extensionDays: number;
+            /**
+             * Format: int64
+             * @example 6750000
+             */
+            additionalGrossMinor: number;
+            /**
+             * Format: int64
+             * @example 3375000
+             */
+            incrementalPrepaymentRequiredMinor: number;
+            /** @example ETB */
+            currency: string;
+            /** @example true */
+            ownerApprovalRequired: boolean;
+            /** @example ACTIVE_EXTENSION_HOLD */
+            status: string;
+        };
+        RentalExtensionSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["RentalExtensionResponseData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        MechanicalBreakdownResponseData: {
+            /** Format: uuid */
+            incidentId: string;
+            /** Format: uuid */
+            bookingId: string;
+            /** @example ACTIVE_BREAKDOWN_PAUSED */
+            status: string;
+            /** Format: date-time */
+            shiftTimerPausedAt: string;
+            /** Format: date-time */
+            ownerSlaDeadline: string;
+        };
+        MechanicalBreakdownSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["MechanicalBreakdownResponseData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        BreakdownResolutionResponseData: {
+            /** Format: uuid */
+            incidentId: string;
+            /** Format: uuid */
+            bookingId: string;
+            /** @example ACTIVE */
+            status: string;
+            /** Format: date-time */
+            resumedAt: string;
+        };
+        BreakdownResolutionSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["BreakdownResolutionResponseData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
         };
     };
     responses: {
@@ -2561,6 +2988,236 @@ export interface operations {
             };
             400: components["responses"]["bad-request"];
             401: components["responses"]["unauthorized"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    handoverInspect: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HandoverInspectionRequest"];
+            };
+        };
+        responses: {
+            /** @description Inspection photos and meter reading successfully attested. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HandoverInspectionSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            422: components["responses"]["unprocessable-entity"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    generateHandoverChallenge: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Dynamic challenge PIN successfully generated. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HandoverChallengeSuccessResponse"];
+                };
+            };
+            401: components["responses"]["unauthorized"];
+            403: components["responses"]["forbidden"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    confirmHandover: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HandoverConfirmRequest"];
+            };
+        };
+        responses: {
+            /** @description Handover confirmed and active rental HUD unlocked. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HandoverConfirmSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            422: components["responses"]["unprocessable-entity"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    getActiveRentalHUD: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Active Rental HUD telemetry payload. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActiveRentalHUDSuccessResponse"];
+                };
+            };
+            401: components["responses"]["unauthorized"];
+            403: components["responses"]["forbidden"];
+            404: components["responses"]["not-found"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    requestRentalExtension: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RentalExtensionRequest"];
+            };
+        };
+        responses: {
+            /** @description Extension request registered and forward dates held. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RentalExtensionSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            422: components["responses"]["unprocessable-entity"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    reportMechanicalBreakdown: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MechanicalBreakdownRequest"];
+            };
+        };
+        responses: {
+            /** @description Breakdown registered, shift timer frozen, and SLA clock started. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MechanicalBreakdownSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            422: components["responses"]["unprocessable-entity"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    resolveMechanicalBreakdown: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BreakdownResolutionRequest"];
+            };
+        };
+        responses: {
+            /** @description Repair certified, state returned to ACTIVE, and shift timer resumed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BreakdownResolutionSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            403: components["responses"]["forbidden"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
             500: components["responses"]["internal-server-error"];
         };
     };

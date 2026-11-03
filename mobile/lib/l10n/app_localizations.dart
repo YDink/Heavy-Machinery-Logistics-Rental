@@ -823,6 +823,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'days'**
   String get daysUnit;
+
+  /// Title for active rental telemetry HUD
+  ///
+  /// In en, this message translates to:
+  /// **'Active Rental Telemetry'**
+  String get activeRentalTitle;
+
+  /// Title for physical handover inspection
+  ///
+  /// In en, this message translates to:
+  /// **'Pre-Dispatch Handover Inspection'**
+  String get handoverInspectionTitle;
+
+  /// Label for hour meter reading
+  ///
+  /// In en, this message translates to:
+  /// **'Certified Hour Meter'**
+  String get meterReadingLabel;
+
+  /// Checkbox for fluid levels
+  ///
+  /// In en, this message translates to:
+  /// **'Fluid & Lubricant Levels Verified'**
+  String get fluidLevelsCheck;
+
+  /// Checkbox for safety glass
+  ///
+  /// In en, this message translates to:
+  /// **'Cabin Glass & Mirrors Intact'**
+  String get safetyGlassCheck;
+
+  /// Label for inspection reticle photos
+  ///
+  /// In en, this message translates to:
+  /// **'Handover Reticle Photos'**
+  String get inspectionPhotosLabel;
+
+  /// Button to generate owner challenge PIN
+  ///
+  /// In en, this message translates to:
+  /// **'Generate Handover PIN'**
+  String get generatePINButton;
+
+  /// Button to verify handover and activate rental
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Handover & Activate'**
+  String get verifyHandoverButton;
+
+  /// Prompt for entering 6-digit challenge PIN
+  ///
+  /// In en, this message translates to:
+  /// **'Enter 6-Digit Owner PIN'**
+  String get pinChallengePrompt;
+
+  /// Label for touch signature canvas
+  ///
+  /// In en, this message translates to:
+  /// **'Contractor Touch Signature'**
+  String get touchSignatureLabel;
+
+  /// Title for daily shift telemetry card
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Shift Telemetry'**
+  String get shiftProgressTitle;
+
+  /// Label for 8-hour shift quota
+  ///
+  /// In en, this message translates to:
+  /// **'8.0 Hr Standard Shift Quota'**
+  String get shiftQuotaLabel;
+
+  /// Label for hours accumulated today
+  ///
+  /// In en, this message translates to:
+  /// **'Accumulated Today'**
+  String get accumulatedTodayLabel;
+
+  /// Label for excess billable hours
+  ///
+  /// In en, this message translates to:
+  /// **'Excess Hours (Tier 2)'**
+  String get excessHoursLabel;
+
+  /// Notice when shift timer is paused due to breakdown
+  ///
+  /// In en, this message translates to:
+  /// **'Shift Timer Paused (Breakdown Active)'**
+  String get shiftTimerPausedNotice;
+
+  /// Quick action button to extend rental
+  ///
+  /// In en, this message translates to:
+  /// **'Extend Rental'**
+  String get quickActionExtend;
+
+  /// Quick action button to report breakdown
+  ///
+  /// In en, this message translates to:
+  /// **'Report Breakdown'**
+  String get quickActionBreakdown;
+
+  /// Quick action button to initiate return
+  ///
+  /// In en, this message translates to:
+  /// **'Initiate Return'**
+  String get quickActionReturn;
+
+  /// Title for breakdown reporting modal
+  ///
+  /// In en, this message translates to:
+  /// **'Report Mechanical Breakdown'**
+  String get breakdownModalTitle;
+
+  /// Label for fault category picker
+  ///
+  /// In en, this message translates to:
+  /// **'Fault Category'**
+  String get faultCategoryLabel;
+
+  /// Label for fault description field
+  ///
+  /// In en, this message translates to:
+  /// **'Fault Description & Symptoms'**
+  String get faultDescriptionLabel;
+
+  /// Label for diagnostic trouble codes
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostic Trouble Codes (DTC)'**
+  String get dtcLabel;
+
+  /// Button to submit breakdown
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Breakdown & Pause Timer'**
+  String get submitBreakdownButton;
+
+  /// Label for owner 4-hour SLA deadline
+  ///
+  /// In en, this message translates to:
+  /// **'Owner SLA Deadline'**
+  String get slaDeadlineLabel;
+
+  /// Title for extension request bottom sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Request Rental Extension'**
+  String get extensionSheetTitle;
+
+  /// Label for new rental end date
+  ///
+  /// In en, this message translates to:
+  /// **'New End Date'**
+  String get newEndDateLabel;
+
+  /// Label for extension quote and prepayment
+  ///
+  /// In en, this message translates to:
+  /// **'Incremental Quote & 50% Prepay'**
+  String get extensionQuoteLabel;
+
+  /// Button to confirm extension request
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Extension Request'**
+  String get submitExtensionButton;
+
+  /// Title for breakdown resolution modal
+  ///
+  /// In en, this message translates to:
+  /// **'Certify Repair & Resume Shift'**
+  String get resolveBreakdownTitle;
+
+  /// Label for mechanic name
+  ///
+  /// In en, this message translates to:
+  /// **'Lead Mechanic Name'**
+  String get mechanicNameLabel;
+
+  /// Label for mechanic phone
+  ///
+  /// In en, this message translates to:
+  /// **'Mechanic Contact Phone'**
+  String get mechanicPhoneLabel;
+
+  /// Label for repair resolution notes
+  ///
+  /// In en, this message translates to:
+  /// **'Resolution Notes & Replaced Parts'**
+  String get resolutionNotesLabel;
+
+  /// Button to confirm resolution and resume shift
+  ///
+  /// In en, this message translates to:
+  /// **'Resume Shift Telemetry'**
+  String get confirmResolutionButton;
 }
 
 class _AppLocalizationsDelegate

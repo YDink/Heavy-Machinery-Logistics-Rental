@@ -100,7 +100,7 @@ func setupTestRouter(t *testing.T) (http.Handler, *application.TokenService) {
 	}
 
 	authService := application.NewAuthService(userRepo, otpService, tokenService)
-	server := transport.NewServer(authService, tokenService, nil, nil, nil, nil)
+	server := transport.NewServer(authService, tokenService, nil, nil, nil, nil, nil)
 
 	mux := http.NewServeMux()
 	server.RegisterRoutes(mux)

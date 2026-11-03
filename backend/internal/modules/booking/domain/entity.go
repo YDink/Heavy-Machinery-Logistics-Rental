@@ -38,6 +38,8 @@ const (
 	StatusPendingAdditionalPayment  BookingStatus = "PENDING_ADDITIONAL_PAYMENT"
 	StatusReadyForPickup            BookingStatus = "READY_FOR_PICKUP"
 	StatusActive                    BookingStatus = "ACTIVE"
+	StatusActiveBreakdownPaused     BookingStatus = "ACTIVE_BREAKDOWN_PAUSED"
+	StatusActiveExtensionHold       BookingStatus = "ACTIVE_EXTENSION_HOLD"
 	StatusReturnInitiated           BookingStatus = "RETURN_INITIATED"
 	StatusPendingFinalPayment       BookingStatus = "PENDING_FINAL_PAYMENT"
 	StatusCompleted                 BookingStatus = "COMPLETED"
@@ -82,6 +84,7 @@ type Booking struct {
 	CompletedAt            *time.Time
 	CancelledAt            *time.Time
 	HandoverPIN            *string
+	AssignedOperatorID     *uuid.UUID
 	CheckInMeterHours      *float64
 	CheckOutMeterHours     *float64
 	Attachments            []BookingAttachment

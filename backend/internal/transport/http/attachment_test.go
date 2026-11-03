@@ -38,7 +38,7 @@ func setupAttachmentTestRouter(t *testing.T) (http.Handler, *application.TokenSe
 	attachmentService := machineryApp.NewAttachmentService(memRepo, memRepo)
 
 	discoveryService := machineryApp.NewDiscoveryService(memRepo, memRepo, nil)
-	server := transport.NewServer(nil, tokenService, machineryService, attachmentService, discoveryService, nil)
+	server := transport.NewServer(nil, tokenService, machineryService, attachmentService, discoveryService, nil, nil)
 
 	mux := http.NewServeMux()
 	server.RegisterRoutes(mux)

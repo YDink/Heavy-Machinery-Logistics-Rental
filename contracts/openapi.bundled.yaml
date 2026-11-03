@@ -1071,6 +1071,279 @@ paths:
           $ref: '#/components/responses/unauthorized'
         '500':
           $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/handover-inspect:
+    post:
+      tags:
+        - booking
+      summary: Submit pre-rental photographic reticle inspection and hour meter reading
+      description: Validates multi-angle condition photos and asserts check-in meter is non-regressive against machine baseline.
+      operationId: handoverInspect
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HandoverInspectionRequest'
+      responses:
+        '200':
+          description: Inspection photos and meter reading successfully attested.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandoverInspectionSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '422':
+          $ref: '#/components/responses/unprocessable-entity'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/handover-challenge:
+    post:
+      tags:
+        - booking
+      summary: Generate dynamic 6-digit cryptographic challenge PIN for machine handover
+      description: Generates a 15-minute validity challenge PIN on the fleet owner console for contractor entry.
+      operationId: generateHandoverChallenge
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      responses:
+        '200':
+          description: Dynamic challenge PIN successfully generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandoverChallengeSuccessResponse'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/handover-confirm:
+    post:
+      tags:
+        - booking
+      summary: Confirm machine handover via 6-digit challenge PIN and touch signature
+      description: Validates dynamic PIN from equipment owner, attests physical co-presence, and transitions status to ACTIVE.
+      operationId: confirmHandover
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HandoverConfirmRequest'
+      responses:
+        '200':
+          description: Handover confirmed and active rental HUD unlocked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandoverConfirmSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '422':
+          $ref: '#/components/responses/unprocessable-entity'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/hud:
+    get:
+      tags:
+        - booking
+      summary: Retrieve real-time Active Rental HUD operational telemetry
+      description: Returns 8.0 hr/day shift pacing, assigned operator details, machine status, and quick-action permissions.
+      operationId: getActiveRentalHUD
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Active Rental HUD telemetry payload.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActiveRentalHUDSuccessResponse'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/extend:
+    post:
+      tags:
+        - booking
+      summary: Submit a rental extension request for forward dates
+      description: Validates forward availability against GiST exclusion constraints, computes 50% advance quote, and locks dates.
+      operationId: requestRentalExtension
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RentalExtensionRequest'
+      responses:
+        '200':
+          description: Extension request registered and forward dates held.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentalExtensionSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '422':
+          $ref: '#/components/responses/unprocessable-entity'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/breakdown:
+    post:
+      tags:
+        - booking
+      summary: Report on-site mechanical breakdown and pause billable shift clock
+      description: Ingests fault photos, DTC codes, and hour meter, immediately halts the contractual shift timer, and starts the 4-hour owner SLA.
+      operationId: reportMechanicalBreakdown
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MechanicalBreakdownRequest'
+      responses:
+        '200':
+          description: Breakdown registered, shift timer frozen, and SLA clock started.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MechanicalBreakdownSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '422':
+          $ref: '#/components/responses/unprocessable-entity'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/breakdown/resolve:
+    post:
+      tags:
+        - booking
+      summary: Certify field mechanical repair and resume rental shifts
+      description: Records mechanic repair sign-off docket, fluid replenishment details, and transitions state back to ACTIVE.
+      operationId: resolveMechanicalBreakdown
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BreakdownResolutionRequest'
+      responses:
+        '200':
+          description: Repair certified, state returned to ACTIVE, and shift timer resumed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreakdownResolutionSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
   /payments/initiate:
     post:
       tags:
@@ -2430,6 +2703,219 @@ components:
           default: null
         meta:
           $ref: '#/components/schemas/ResponseMeta'
+    HandoverInspectionRequest:
+      type: object
+      required:
+        - checkInMeterHours
+        - inspectionPhotos
+      properties:
+        checkInMeterHours:
+          type: number
+          format: double
+          minimum: 0
+          description: Current mechanical hour meter reading verified at machine handover
+        inspectionPhotos:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/InspectionPhoto'
+        fluidLevelsOk:
+          type: boolean
+          default: true
+          description: Attestation that engine oil and hydraulic fluid levels are within operating bands
+        safetyGlassIntact:
+          type: boolean
+          default: true
+          description: Attestation that cabin safety glass and mirrors have zero cracks
+        notes:
+          type: string
+          maxLength: 1000
+          description: Additional field handover observations or minor defects
+    HandoverConfirmRequest:
+      type: object
+      required:
+        - challengePin
+      properties:
+        challengePin:
+          type: string
+          pattern: ^[0-9]{6}$
+          description: 6-digit challenge PIN provided physically on site by equipment owner
+        touchSignatureBase64:
+          type: string
+          description: Base64 data URI of contractor signature canvas
+        contractorLocation:
+          type: object
+          properties:
+            latitude:
+              type: number
+              format: double
+            longitude:
+              type: number
+              format: double
+    ActiveRentalHUDResponseData:
+      type: object
+      required:
+        - bookingId
+        - status
+        - fleet
+        - shiftTelemetry
+        - quickActionsEnabled
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: ACTIVE
+        fleet:
+          type: object
+          required:
+            - id
+            - title
+            - plateNumber
+          properties:
+            id:
+              type: string
+              format: uuid
+            title:
+              type: string
+              example: Caterpillar 320D
+            plateNumber:
+              type: string
+              example: ET-3-99120
+        operator:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            fullName:
+              type: string
+              example: Mulugeta Tadesse
+            phoneNumber:
+              type: string
+              example: '+251911200491'
+            licenseClass:
+              type: string
+              example: Class IV Hydraulic Excavator
+        shiftTelemetry:
+          type: object
+          required:
+            - currentRentalDay
+            - totalRentalDays
+            - handoverBaselineHours
+            - accumulatedHoursToday
+            - allowedHoursPerDay
+            - excessHoursTotal
+            - shiftTimerPaused
+          properties:
+            currentRentalDay:
+              type: integer
+              example: 3
+            totalRentalDays:
+              type: integer
+              example: 7
+            handoverBaselineHours:
+              type: number
+              format: double
+              example: 1450.5
+            accumulatedHoursToday:
+              type: number
+              format: double
+              example: 4.5
+            allowedHoursPerDay:
+              type: number
+              format: double
+              example: 8
+            excessHoursTotal:
+              type: number
+              format: double
+              example: 0
+            shiftTimerPaused:
+              type: boolean
+              example: false
+        quickActionsEnabled:
+          type: object
+          required:
+            - canExtend
+            - canReportBreakdown
+            - canInitiateReturn
+          properties:
+            canExtend:
+              type: boolean
+              example: true
+            canReportBreakdown:
+              type: boolean
+              example: true
+            canInitiateReturn:
+              type: boolean
+              example: true
+    RentalExtensionRequest:
+      type: object
+      required:
+        - newEndDate
+      properties:
+        newEndDate:
+          type: string
+          format: date
+          description: Requested extended return date (must be after current end date)
+    MechanicalBreakdownRequest:
+      type: object
+      required:
+        - faultCategory
+        - faultDescription
+        - currentHourMeter
+      properties:
+        faultCategory:
+          type: string
+          enum:
+            - ENGINE
+            - HYDRAULIC_CIRCUIT
+            - ELECTRICAL
+            - UNDERCARRIAGE
+            - STRUCTURAL
+            - BOOM_BUCKET
+            - OTHER
+          example: HYDRAULIC_CIRCUIT
+        faultDescription:
+          type: string
+          minLength: 10
+          maxLength: 2000
+          example: Main boom hydraulic hose ruptured under load; severe hydraulic oil pressure loss.
+        diagnosticTroubleCodes:
+          type: array
+          items:
+            type: string
+          example:
+            - DTC-HYD-4912
+        currentHourMeter:
+          type: number
+          format: double
+          minimum: 0
+          example: 1472.8
+        incidentPhotos:
+          type: array
+          items:
+            type: string
+          example:
+            - s3://dink-incident-media/breakdowns/bk_8812/burst_hose.webp
+    BreakdownResolutionRequest:
+      type: object
+      required:
+        - mechanicName
+        - mechanicPhone
+        - resolutionNotes
+      properties:
+        mechanicName:
+          type: string
+          example: Solomon Girma
+        mechanicPhone:
+          type: string
+          example: '+251911334455'
+        resolutionNotes:
+          type: string
+          minLength: 10
+          example: Replaced high-pressure boom hose assembly and replenished 40L ISO VG 46 hydraulic fluid.
     FleetSearchCenter:
       type: object
       required:
@@ -3343,3 +3829,315 @@ components:
         damageNotes:
           type: string
           nullable: true
+    InspectionPhoto:
+      type: object
+      required:
+        - angle
+        - storageUri
+      properties:
+        angle:
+          type: string
+          enum:
+            - METER_CLOSEUP
+            - FRONT_ELEVATION
+            - REAR_ELEVATION
+            - LEFT_TRACK
+            - RIGHT_TRACK
+            - CABIN_INTERIOR
+          description: Camera capture angle for pre-rental condition attestation
+        storageUri:
+          type: string
+          format: uri
+          description: URI of uploaded inspection photograph
+    HandoverInspectionResponseData:
+      type: object
+      required:
+        - bookingId
+        - status
+        - meterVerified
+        - photosIngestedCount
+        - inspectedAt
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: READY_FOR_PICKUP
+        meterVerified:
+          type: boolean
+          example: true
+        photosIngestedCount:
+          type: integer
+          example: 6
+        inspectedAt:
+          type: string
+          format: date-time
+    HandoverInspectionSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/HandoverInspectionResponseData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    HandoverChallengeResponseData:
+      type: object
+      required:
+        - bookingId
+        - challengePin
+        - expiresAt
+        - maxAttempts
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        challengePin:
+          type: string
+          pattern: ^[0-9]{6}$
+          description: 6-digit challenge PIN displayed on owner console for contractor verification
+        expiresAt:
+          type: string
+          format: date-time
+        attemptCount:
+          type: integer
+          default: 0
+        maxAttempts:
+          type: integer
+          default: 3
+    HandoverChallengeSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/HandoverChallengeResponseData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    HandoverConfirmResponseData:
+      type: object
+      required:
+        - bookingId
+        - status
+        - activatedAt
+        - shiftBaselineMeterHours
+        - allocatedShiftHoursTotal
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: ACTIVE
+        activatedAt:
+          type: string
+          format: date-time
+        shiftBaselineMeterHours:
+          type: number
+          format: double
+          example: 1450.5
+        allocatedShiftHoursTotal:
+          type: number
+          format: double
+          example: 56
+    HandoverConfirmSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/HandoverConfirmResponseData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ActiveRentalHUDSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/ActiveRentalHUDResponseData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    RentalExtensionResponseData:
+      type: object
+      required:
+        - bookingId
+        - extensionDays
+        - additionalGrossMinor
+        - incrementalPrepaymentRequiredMinor
+        - currency
+        - ownerApprovalRequired
+        - status
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        extensionDays:
+          type: integer
+          example: 3
+        additionalGrossMinor:
+          type: integer
+          format: int64
+          example: 6750000
+        incrementalPrepaymentRequiredMinor:
+          type: integer
+          format: int64
+          example: 3375000
+        currency:
+          type: string
+          example: ETB
+        ownerApprovalRequired:
+          type: boolean
+          example: true
+        status:
+          type: string
+          example: ACTIVE_EXTENSION_HOLD
+    RentalExtensionSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/RentalExtensionResponseData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    MechanicalBreakdownResponseData:
+      type: object
+      required:
+        - incidentId
+        - bookingId
+        - status
+        - shiftTimerPausedAt
+        - ownerSlaDeadline
+      properties:
+        incidentId:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: ACTIVE_BREAKDOWN_PAUSED
+        shiftTimerPausedAt:
+          type: string
+          format: date-time
+        ownerSlaDeadline:
+          type: string
+          format: date-time
+    MechanicalBreakdownSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/MechanicalBreakdownResponseData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    BreakdownResolutionResponseData:
+      type: object
+      required:
+        - incidentId
+        - bookingId
+        - status
+        - resumedAt
+      properties:
+        incidentId:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: ACTIVE
+        resumedAt:
+          type: string
+          format: date-time
+    BreakdownResolutionSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/BreakdownResolutionResponseData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'

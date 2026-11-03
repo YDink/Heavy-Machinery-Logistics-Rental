@@ -1,0 +1,29 @@
+get:
+  tags: [booking]
+  summary: Retrieve real-time Active Rental HUD operational telemetry
+  description: Returns 8.0 hr/day shift pacing, assigned operator details, machine status, and quick-action permissions.
+  operationId: getActiveRentalHUD
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    '200':
+      description: Active Rental HUD telemetry payload.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/rental.yaml#/ActiveRentalHUDSuccessResponse'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/forbidden.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

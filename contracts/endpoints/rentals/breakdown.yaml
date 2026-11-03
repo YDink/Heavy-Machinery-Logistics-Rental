@@ -1,0 +1,40 @@
+post:
+  tags: [booking]
+  summary: Report on-site mechanical breakdown and pause billable shift clock
+  description: Ingests fault photos, DTC codes, and hour meter, immediately halts the contractual shift timer, and starts the 4-hour owner SLA.
+  operationId: reportMechanicalBreakdown
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/rental.yaml#/MechanicalBreakdownRequest'
+  responses:
+    '200':
+      description: Breakdown registered, shift timer frozen, and SLA clock started.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/rental.yaml#/MechanicalBreakdownSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '422':
+      $ref: '../../components/responses/unprocessable-entity.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

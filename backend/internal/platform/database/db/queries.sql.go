@@ -11,6 +11,35 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const addBookingAttachment = `-- name: AddBookingAttachment :one
+INSERT INTO booking_attachments (
+    booking_id,
+    attachment_id,
+    bundled_daily_rate_minor
+) VALUES (
+    $1, $2, $3
+) RETURNING id, booking_id, attachment_id, bundled_daily_rate_minor, created_at
+`
+
+type AddBookingAttachmentParams struct {
+	BookingID             pgtype.UUID `json:"booking_id"`
+	AttachmentID          pgtype.UUID `json:"attachment_id"`
+	BundledDailyRateMinor int64       `json:"bundled_daily_rate_minor"`
+}
+
+func (q *Queries) AddBookingAttachment(ctx context.Context, arg AddBookingAttachmentParams) (BookingAttachment, error) {
+	row := q.db.QueryRow(ctx, addBookingAttachment, arg.BookingID, arg.AttachmentID, arg.BundledDailyRateMinor)
+	var i BookingAttachment
+	err := row.Scan(
+		&i.ID,
+		&i.BookingID,
+		&i.AttachmentID,
+		&i.BundledDailyRateMinor,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const assignRoleByCodeToUser = `-- name: AssignRoleByCodeToUser :exec
 INSERT INTO user_roles (user_id, role_id, assigned_by)
 SELECT $1, r.id, $3
@@ -262,6 +291,222 @@ func (q *Queries) CreateAttachmentReservation(ctx context.Context, arg CreateAtt
 		&i.DailyRateAppliedMinor,
 		&i.Status,
 		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const createBooking = `-- name: CreateBooking :one
+
+INSERT INTO bookings (
+    booking_reference,
+    renter_id,
+    owner_id,
+    fleet_id,
+    start_date,
+    end_date,
+    hire_period,
+    duration_days,
+    daily_rate_applied_minor,
+    base_hire_fee_minor,
+    attachments_fee_minor,
+    gross_rental_amount_minor,
+    prepayment_amount_minor,
+    currency,
+    site_location_address,
+    status,
+    expires_at,
+    handover_pin,
+    version
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, 1
+) RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at
+`
+
+type CreateBookingParams struct {
+	BookingReference       string                    `json:"booking_reference"`
+	RenterID               pgtype.UUID               `json:"renter_id"`
+	OwnerID                pgtype.UUID               `json:"owner_id"`
+	FleetID                pgtype.UUID               `json:"fleet_id"`
+	StartDate              pgtype.Date               `json:"start_date"`
+	EndDate                pgtype.Date               `json:"end_date"`
+	HirePeriod             pgtype.Range[pgtype.Date] `json:"hire_period"`
+	DurationDays           int32                     `json:"duration_days"`
+	DailyRateAppliedMinor  int64                     `json:"daily_rate_applied_minor"`
+	BaseHireFeeMinor       int64                     `json:"base_hire_fee_minor"`
+	AttachmentsFeeMinor    int64                     `json:"attachments_fee_minor"`
+	GrossRentalAmountMinor int64                     `json:"gross_rental_amount_minor"`
+	PrepaymentAmountMinor  int64                     `json:"prepayment_amount_minor"`
+	Currency               string                    `json:"currency"`
+	SiteLocationAddress    string                    `json:"site_location_address"`
+	Status                 string                    `json:"status"`
+	ExpiresAt              pgtype.Timestamptz        `json:"expires_at"`
+	HandoverPin            *string                   `json:"handover_pin"`
+}
+
+// ==================== Booking State Machine (Partition 05-05) ====================
+func (q *Queries) CreateBooking(ctx context.Context, arg CreateBookingParams) (Booking, error) {
+	row := q.db.QueryRow(ctx, createBooking,
+		arg.BookingReference,
+		arg.RenterID,
+		arg.OwnerID,
+		arg.FleetID,
+		arg.StartDate,
+		arg.EndDate,
+		arg.HirePeriod,
+		arg.DurationDays,
+		arg.DailyRateAppliedMinor,
+		arg.BaseHireFeeMinor,
+		arg.AttachmentsFeeMinor,
+		arg.GrossRentalAmountMinor,
+		arg.PrepaymentAmountMinor,
+		arg.Currency,
+		arg.SiteLocationAddress,
+		arg.Status,
+		arg.ExpiresAt,
+		arg.HandoverPin,
+	)
+	var i Booking
+	err := row.Scan(
+		&i.ID,
+		&i.BookingReference,
+		&i.RenterID,
+		&i.OwnerID,
+		&i.FleetID,
+		&i.StartDate,
+		&i.EndDate,
+		&i.HirePeriod,
+		&i.DurationDays,
+		&i.DailyRateAppliedMinor,
+		&i.BaseHireFeeMinor,
+		&i.AttachmentsFeeMinor,
+		&i.GrossRentalAmountMinor,
+		&i.PrepaymentAmountMinor,
+		&i.Currency,
+		&i.SiteLocationAddress,
+		&i.Status,
+		&i.RejectionReasonCode,
+		&i.RejectionNotes,
+		&i.CancellationReason,
+		&i.CancelledBy,
+		&i.PenaltyAmountMinor,
+		&i.RefundAmountMinor,
+		&i.ExpiresAt,
+		&i.ConfirmedAt,
+		&i.ActivatedAt,
+		&i.CompletedAt,
+		&i.CancelledAt,
+		&i.HandoverPin,
+		&i.CheckInMeterHours,
+		&i.CheckOutMeterHours,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const createBookingAuditLog = `-- name: CreateBookingAuditLog :one
+INSERT INTO booking_audit_logs (
+    booking_id,
+    actor_id,
+    action,
+    from_status,
+    to_status,
+    reason,
+    payload
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7
+) RETURNING id, booking_id, actor_id, action, from_status, to_status, reason, payload, created_at
+`
+
+type CreateBookingAuditLogParams struct {
+	BookingID  pgtype.UUID `json:"booking_id"`
+	ActorID    pgtype.UUID `json:"actor_id"`
+	Action     string      `json:"action"`
+	FromStatus string      `json:"from_status"`
+	ToStatus   string      `json:"to_status"`
+	Reason     *string     `json:"reason"`
+	Payload    []byte      `json:"payload"`
+}
+
+func (q *Queries) CreateBookingAuditLog(ctx context.Context, arg CreateBookingAuditLogParams) (BookingAuditLog, error) {
+	row := q.db.QueryRow(ctx, createBookingAuditLog,
+		arg.BookingID,
+		arg.ActorID,
+		arg.Action,
+		arg.FromStatus,
+		arg.ToStatus,
+		arg.Reason,
+		arg.Payload,
+	)
+	var i BookingAuditLog
+	err := row.Scan(
+		&i.ID,
+		&i.BookingID,
+		&i.ActorID,
+		&i.Action,
+		&i.FromStatus,
+		&i.ToStatus,
+		&i.Reason,
+		&i.Payload,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const createBookingBankSlip = `-- name: CreateBookingBankSlip :one
+INSERT INTO booking_bank_slips (
+    booking_id,
+    uploader_id,
+    storage_uri,
+    file_hash_sha256,
+    transaction_reference,
+    amount_minor,
+    currency,
+    status
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8
+) RETURNING id, booking_id, uploader_id, storage_uri, file_hash_sha256, transaction_reference, amount_minor, currency, status, rejection_reason_code, rejection_notes, created_at, audited_at
+`
+
+type CreateBookingBankSlipParams struct {
+	BookingID            pgtype.UUID `json:"booking_id"`
+	UploaderID           pgtype.UUID `json:"uploader_id"`
+	StorageUri           string      `json:"storage_uri"`
+	FileHashSha256       string      `json:"file_hash_sha256"`
+	TransactionReference *string     `json:"transaction_reference"`
+	AmountMinor          int64       `json:"amount_minor"`
+	Currency             string      `json:"currency"`
+	Status               string      `json:"status"`
+}
+
+func (q *Queries) CreateBookingBankSlip(ctx context.Context, arg CreateBookingBankSlipParams) (BookingBankSlip, error) {
+	row := q.db.QueryRow(ctx, createBookingBankSlip,
+		arg.BookingID,
+		arg.UploaderID,
+		arg.StorageUri,
+		arg.FileHashSha256,
+		arg.TransactionReference,
+		arg.AmountMinor,
+		arg.Currency,
+		arg.Status,
+	)
+	var i BookingBankSlip
+	err := row.Scan(
+		&i.ID,
+		&i.BookingID,
+		&i.UploaderID,
+		&i.StorageUri,
+		&i.FileHashSha256,
+		&i.TransactionReference,
+		&i.AmountMinor,
+		&i.Currency,
+		&i.Status,
+		&i.RejectionReasonCode,
+		&i.RejectionNotes,
+		&i.CreatedAt,
+		&i.AuditedAt,
 	)
 	return i, err
 }
@@ -561,6 +806,102 @@ func (q *Queries) GetAttachmentByID(ctx context.Context, id pgtype.UUID) (Attach
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getBookingByID = `-- name: GetBookingByID :one
+SELECT id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at FROM bookings
+WHERE id = $1 AND deleted_at IS NULL
+`
+
+func (q *Queries) GetBookingByID(ctx context.Context, id pgtype.UUID) (Booking, error) {
+	row := q.db.QueryRow(ctx, getBookingByID, id)
+	var i Booking
+	err := row.Scan(
+		&i.ID,
+		&i.BookingReference,
+		&i.RenterID,
+		&i.OwnerID,
+		&i.FleetID,
+		&i.StartDate,
+		&i.EndDate,
+		&i.HirePeriod,
+		&i.DurationDays,
+		&i.DailyRateAppliedMinor,
+		&i.BaseHireFeeMinor,
+		&i.AttachmentsFeeMinor,
+		&i.GrossRentalAmountMinor,
+		&i.PrepaymentAmountMinor,
+		&i.Currency,
+		&i.SiteLocationAddress,
+		&i.Status,
+		&i.RejectionReasonCode,
+		&i.RejectionNotes,
+		&i.CancellationReason,
+		&i.CancelledBy,
+		&i.PenaltyAmountMinor,
+		&i.RefundAmountMinor,
+		&i.ExpiresAt,
+		&i.ConfirmedAt,
+		&i.ActivatedAt,
+		&i.CompletedAt,
+		&i.CancelledAt,
+		&i.HandoverPin,
+		&i.CheckInMeterHours,
+		&i.CheckOutMeterHours,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const getBookingByReference = `-- name: GetBookingByReference :one
+SELECT id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at FROM bookings
+WHERE booking_reference = $1 AND deleted_at IS NULL
+`
+
+func (q *Queries) GetBookingByReference(ctx context.Context, bookingReference string) (Booking, error) {
+	row := q.db.QueryRow(ctx, getBookingByReference, bookingReference)
+	var i Booking
+	err := row.Scan(
+		&i.ID,
+		&i.BookingReference,
+		&i.RenterID,
+		&i.OwnerID,
+		&i.FleetID,
+		&i.StartDate,
+		&i.EndDate,
+		&i.HirePeriod,
+		&i.DurationDays,
+		&i.DailyRateAppliedMinor,
+		&i.BaseHireFeeMinor,
+		&i.AttachmentsFeeMinor,
+		&i.GrossRentalAmountMinor,
+		&i.PrepaymentAmountMinor,
+		&i.Currency,
+		&i.SiteLocationAddress,
+		&i.Status,
+		&i.RejectionReasonCode,
+		&i.RejectionNotes,
+		&i.CancellationReason,
+		&i.CancelledBy,
+		&i.PenaltyAmountMinor,
+		&i.RefundAmountMinor,
+		&i.ExpiresAt,
+		&i.ConfirmedAt,
+		&i.ActivatedAt,
+		&i.CompletedAt,
+		&i.CancelledAt,
+		&i.HandoverPin,
+		&i.CheckInMeterHours,
+		&i.CheckOutMeterHours,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
@@ -956,6 +1297,34 @@ func (q *Queries) GetFleetsForComparison(ctx context.Context, fleetIds []pgtype.
 		return nil, err
 	}
 	return items, nil
+}
+
+const getLatestBankSlipForBooking = `-- name: GetLatestBankSlipForBooking :one
+SELECT id, booking_id, uploader_id, storage_uri, file_hash_sha256, transaction_reference, amount_minor, currency, status, rejection_reason_code, rejection_notes, created_at, audited_at FROM booking_bank_slips
+WHERE booking_id = $1
+ORDER BY created_at DESC
+LIMIT 1
+`
+
+func (q *Queries) GetLatestBankSlipForBooking(ctx context.Context, bookingID pgtype.UUID) (BookingBankSlip, error) {
+	row := q.db.QueryRow(ctx, getLatestBankSlipForBooking, bookingID)
+	var i BookingBankSlip
+	err := row.Scan(
+		&i.ID,
+		&i.BookingID,
+		&i.UploaderID,
+		&i.StorageUri,
+		&i.FileHashSha256,
+		&i.TransactionReference,
+		&i.AmountMinor,
+		&i.Currency,
+		&i.Status,
+		&i.RejectionReasonCode,
+		&i.RejectionNotes,
+		&i.CreatedAt,
+		&i.AuditedAt,
+	)
+	return i, err
 }
 
 const getOwnerAggregate = `-- name: GetOwnerAggregate :one
@@ -1401,6 +1770,233 @@ func (q *Queries) ListAttachmentsByOwner(ctx context.Context, arg ListAttachment
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listBookingAttachments = `-- name: ListBookingAttachments :many
+SELECT ba.id, ba.booking_id, ba.attachment_id, ba.bundled_daily_rate_minor, ba.created_at, a.attachment_type, a.make, a.model, a.serial_number
+FROM booking_attachments ba
+JOIN attachments a ON a.id = ba.attachment_id
+WHERE ba.booking_id = $1
+`
+
+type ListBookingAttachmentsRow struct {
+	ID                    pgtype.UUID        `json:"id"`
+	BookingID             pgtype.UUID        `json:"booking_id"`
+	AttachmentID          pgtype.UUID        `json:"attachment_id"`
+	BundledDailyRateMinor int64              `json:"bundled_daily_rate_minor"`
+	CreatedAt             pgtype.Timestamptz `json:"created_at"`
+	AttachmentType        string             `json:"attachment_type"`
+	Make                  string             `json:"make"`
+	Model                 string             `json:"model"`
+	SerialNumber          string             `json:"serial_number"`
+}
+
+func (q *Queries) ListBookingAttachments(ctx context.Context, bookingID pgtype.UUID) ([]ListBookingAttachmentsRow, error) {
+	rows, err := q.db.Query(ctx, listBookingAttachments, bookingID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListBookingAttachmentsRow{}
+	for rows.Next() {
+		var i ListBookingAttachmentsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.BookingID,
+			&i.AttachmentID,
+			&i.BundledDailyRateMinor,
+			&i.CreatedAt,
+			&i.AttachmentType,
+			&i.Make,
+			&i.Model,
+			&i.SerialNumber,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listBookingAuditLogs = `-- name: ListBookingAuditLogs :many
+SELECT id, booking_id, actor_id, action, from_status, to_status, reason, payload, created_at FROM booking_audit_logs
+WHERE booking_id = $1
+ORDER BY created_at ASC
+`
+
+func (q *Queries) ListBookingAuditLogs(ctx context.Context, bookingID pgtype.UUID) ([]BookingAuditLog, error) {
+	rows, err := q.db.Query(ctx, listBookingAuditLogs, bookingID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []BookingAuditLog{}
+	for rows.Next() {
+		var i BookingAuditLog
+		if err := rows.Scan(
+			&i.ID,
+			&i.BookingID,
+			&i.ActorID,
+			&i.Action,
+			&i.FromStatus,
+			&i.ToStatus,
+			&i.Reason,
+			&i.Payload,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listBookingsByOwner = `-- name: ListBookingsByOwner :many
+SELECT id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at FROM bookings
+WHERE owner_id = $1 
+  AND ($2::text = '' OR status = $2)
+  AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $3
+`
+
+type ListBookingsByOwnerParams struct {
+	OwnerID pgtype.UUID `json:"owner_id"`
+	Column2 string      `json:"column_2"`
+	Limit   int32       `json:"limit"`
+}
+
+func (q *Queries) ListBookingsByOwner(ctx context.Context, arg ListBookingsByOwnerParams) ([]Booking, error) {
+	rows, err := q.db.Query(ctx, listBookingsByOwner, arg.OwnerID, arg.Column2, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Booking{}
+	for rows.Next() {
+		var i Booking
+		if err := rows.Scan(
+			&i.ID,
+			&i.BookingReference,
+			&i.RenterID,
+			&i.OwnerID,
+			&i.FleetID,
+			&i.StartDate,
+			&i.EndDate,
+			&i.HirePeriod,
+			&i.DurationDays,
+			&i.DailyRateAppliedMinor,
+			&i.BaseHireFeeMinor,
+			&i.AttachmentsFeeMinor,
+			&i.GrossRentalAmountMinor,
+			&i.PrepaymentAmountMinor,
+			&i.Currency,
+			&i.SiteLocationAddress,
+			&i.Status,
+			&i.RejectionReasonCode,
+			&i.RejectionNotes,
+			&i.CancellationReason,
+			&i.CancelledBy,
+			&i.PenaltyAmountMinor,
+			&i.RefundAmountMinor,
+			&i.ExpiresAt,
+			&i.ConfirmedAt,
+			&i.ActivatedAt,
+			&i.CompletedAt,
+			&i.CancelledAt,
+			&i.HandoverPin,
+			&i.CheckInMeterHours,
+			&i.CheckOutMeterHours,
+			&i.Version,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listBookingsByRenter = `-- name: ListBookingsByRenter :many
+SELECT id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at FROM bookings
+WHERE renter_id = $1 
+  AND ($2::text = '' OR status = $2)
+  AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $3
+`
+
+type ListBookingsByRenterParams struct {
+	RenterID pgtype.UUID `json:"renter_id"`
+	Column2  string      `json:"column_2"`
+	Limit    int32       `json:"limit"`
+}
+
+func (q *Queries) ListBookingsByRenter(ctx context.Context, arg ListBookingsByRenterParams) ([]Booking, error) {
+	rows, err := q.db.Query(ctx, listBookingsByRenter, arg.RenterID, arg.Column2, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Booking{}
+	for rows.Next() {
+		var i Booking
+		if err := rows.Scan(
+			&i.ID,
+			&i.BookingReference,
+			&i.RenterID,
+			&i.OwnerID,
+			&i.FleetID,
+			&i.StartDate,
+			&i.EndDate,
+			&i.HirePeriod,
+			&i.DurationDays,
+			&i.DailyRateAppliedMinor,
+			&i.BaseHireFeeMinor,
+			&i.AttachmentsFeeMinor,
+			&i.GrossRentalAmountMinor,
+			&i.PrepaymentAmountMinor,
+			&i.Currency,
+			&i.SiteLocationAddress,
+			&i.Status,
+			&i.RejectionReasonCode,
+			&i.RejectionNotes,
+			&i.CancellationReason,
+			&i.CancelledBy,
+			&i.PenaltyAmountMinor,
+			&i.RefundAmountMinor,
+			&i.ExpiresAt,
+			&i.ConfirmedAt,
+			&i.ActivatedAt,
+			&i.CompletedAt,
+			&i.CancelledAt,
+			&i.HandoverPin,
+			&i.CheckInMeterHours,
+			&i.CheckOutMeterHours,
+			&i.Version,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -2252,6 +2848,262 @@ func (q *Queries) UpdateAttachmentStatus(ctx context.Context, arg UpdateAttachme
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateBankSlipStatus = `-- name: UpdateBankSlipStatus :one
+UPDATE booking_bank_slips
+SET status = $2,
+    rejection_reason_code = $3,
+    rejection_notes = $4,
+    audited_at = NOW()
+WHERE id = $1
+RETURNING id, booking_id, uploader_id, storage_uri, file_hash_sha256, transaction_reference, amount_minor, currency, status, rejection_reason_code, rejection_notes, created_at, audited_at
+`
+
+type UpdateBankSlipStatusParams struct {
+	ID                  pgtype.UUID `json:"id"`
+	Status              string      `json:"status"`
+	RejectionReasonCode *string     `json:"rejection_reason_code"`
+	RejectionNotes      *string     `json:"rejection_notes"`
+}
+
+func (q *Queries) UpdateBankSlipStatus(ctx context.Context, arg UpdateBankSlipStatusParams) (BookingBankSlip, error) {
+	row := q.db.QueryRow(ctx, updateBankSlipStatus,
+		arg.ID,
+		arg.Status,
+		arg.RejectionReasonCode,
+		arg.RejectionNotes,
+	)
+	var i BookingBankSlip
+	err := row.Scan(
+		&i.ID,
+		&i.BookingID,
+		&i.UploaderID,
+		&i.StorageUri,
+		&i.FileHashSha256,
+		&i.TransactionReference,
+		&i.AmountMinor,
+		&i.Currency,
+		&i.Status,
+		&i.RejectionReasonCode,
+		&i.RejectionNotes,
+		&i.CreatedAt,
+		&i.AuditedAt,
+	)
+	return i, err
+}
+
+const updateBookingHandover = `-- name: UpdateBookingHandover :one
+UPDATE bookings
+SET status = 'ACTIVE',
+    check_in_meter_hours = $2,
+    activated_at = NOW(),
+    version = version + 1,
+    updated_at = NOW()
+WHERE id = $1 AND version = $3 AND deleted_at IS NULL
+RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at
+`
+
+type UpdateBookingHandoverParams struct {
+	ID                pgtype.UUID    `json:"id"`
+	CheckInMeterHours pgtype.Numeric `json:"check_in_meter_hours"`
+	Version           int32          `json:"version"`
+}
+
+func (q *Queries) UpdateBookingHandover(ctx context.Context, arg UpdateBookingHandoverParams) (Booking, error) {
+	row := q.db.QueryRow(ctx, updateBookingHandover, arg.ID, arg.CheckInMeterHours, arg.Version)
+	var i Booking
+	err := row.Scan(
+		&i.ID,
+		&i.BookingReference,
+		&i.RenterID,
+		&i.OwnerID,
+		&i.FleetID,
+		&i.StartDate,
+		&i.EndDate,
+		&i.HirePeriod,
+		&i.DurationDays,
+		&i.DailyRateAppliedMinor,
+		&i.BaseHireFeeMinor,
+		&i.AttachmentsFeeMinor,
+		&i.GrossRentalAmountMinor,
+		&i.PrepaymentAmountMinor,
+		&i.Currency,
+		&i.SiteLocationAddress,
+		&i.Status,
+		&i.RejectionReasonCode,
+		&i.RejectionNotes,
+		&i.CancellationReason,
+		&i.CancelledBy,
+		&i.PenaltyAmountMinor,
+		&i.RefundAmountMinor,
+		&i.ExpiresAt,
+		&i.ConfirmedAt,
+		&i.ActivatedAt,
+		&i.CompletedAt,
+		&i.CancelledAt,
+		&i.HandoverPin,
+		&i.CheckInMeterHours,
+		&i.CheckOutMeterHours,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const updateBookingReturn = `-- name: UpdateBookingReturn :one
+UPDATE bookings
+SET status = $2,
+    check_out_meter_hours = $3,
+    completed_at = CASE WHEN $2 = 'COMPLETED' THEN NOW() ELSE completed_at END,
+    version = version + 1,
+    updated_at = NOW()
+WHERE id = $1 AND version = $4 AND deleted_at IS NULL
+RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at
+`
+
+type UpdateBookingReturnParams struct {
+	ID                 pgtype.UUID    `json:"id"`
+	Status             string         `json:"status"`
+	CheckOutMeterHours pgtype.Numeric `json:"check_out_meter_hours"`
+	Version            int32          `json:"version"`
+}
+
+func (q *Queries) UpdateBookingReturn(ctx context.Context, arg UpdateBookingReturnParams) (Booking, error) {
+	row := q.db.QueryRow(ctx, updateBookingReturn,
+		arg.ID,
+		arg.Status,
+		arg.CheckOutMeterHours,
+		arg.Version,
+	)
+	var i Booking
+	err := row.Scan(
+		&i.ID,
+		&i.BookingReference,
+		&i.RenterID,
+		&i.OwnerID,
+		&i.FleetID,
+		&i.StartDate,
+		&i.EndDate,
+		&i.HirePeriod,
+		&i.DurationDays,
+		&i.DailyRateAppliedMinor,
+		&i.BaseHireFeeMinor,
+		&i.AttachmentsFeeMinor,
+		&i.GrossRentalAmountMinor,
+		&i.PrepaymentAmountMinor,
+		&i.Currency,
+		&i.SiteLocationAddress,
+		&i.Status,
+		&i.RejectionReasonCode,
+		&i.RejectionNotes,
+		&i.CancellationReason,
+		&i.CancelledBy,
+		&i.PenaltyAmountMinor,
+		&i.RefundAmountMinor,
+		&i.ExpiresAt,
+		&i.ConfirmedAt,
+		&i.ActivatedAt,
+		&i.CompletedAt,
+		&i.CancelledAt,
+		&i.HandoverPin,
+		&i.CheckInMeterHours,
+		&i.CheckOutMeterHours,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const updateBookingStatusOCC = `-- name: UpdateBookingStatusOCC :one
+UPDATE bookings
+SET status = $2,
+    version = version + 1,
+    rejection_reason_code = COALESCE($3, rejection_reason_code),
+    rejection_notes = COALESCE($4, rejection_notes),
+    cancellation_reason = COALESCE($5, cancellation_reason),
+    cancelled_by = COALESCE($6, cancelled_by),
+    penalty_amount_minor = COALESCE($7, penalty_amount_minor),
+    refund_amount_minor = COALESCE($8, refund_amount_minor),
+    confirmed_at = CASE WHEN $2 = 'CONFIRMED' THEN NOW() ELSE confirmed_at END,
+    activated_at = CASE WHEN $2 = 'ACTIVE' THEN NOW() ELSE activated_at END,
+    completed_at = CASE WHEN $2 = 'COMPLETED' THEN NOW() ELSE completed_at END,
+    cancelled_at = CASE WHEN $2 = 'CANCELLED' THEN NOW() ELSE cancelled_at END,
+    expires_at = COALESCE($9, expires_at),
+    updated_at = NOW()
+WHERE id = $1 AND version = $10 AND deleted_at IS NULL
+RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at
+`
+
+type UpdateBookingStatusOCCParams struct {
+	ID                  pgtype.UUID        `json:"id"`
+	Status              string             `json:"status"`
+	RejectionReasonCode *string            `json:"rejection_reason_code"`
+	RejectionNotes      *string            `json:"rejection_notes"`
+	CancellationReason  *string            `json:"cancellation_reason"`
+	CancelledBy         pgtype.UUID        `json:"cancelled_by"`
+	PenaltyAmountMinor  int64              `json:"penalty_amount_minor"`
+	RefundAmountMinor   int64              `json:"refund_amount_minor"`
+	ExpiresAt           pgtype.Timestamptz `json:"expires_at"`
+	Version             int32              `json:"version"`
+}
+
+func (q *Queries) UpdateBookingStatusOCC(ctx context.Context, arg UpdateBookingStatusOCCParams) (Booking, error) {
+	row := q.db.QueryRow(ctx, updateBookingStatusOCC,
+		arg.ID,
+		arg.Status,
+		arg.RejectionReasonCode,
+		arg.RejectionNotes,
+		arg.CancellationReason,
+		arg.CancelledBy,
+		arg.PenaltyAmountMinor,
+		arg.RefundAmountMinor,
+		arg.ExpiresAt,
+		arg.Version,
+	)
+	var i Booking
+	err := row.Scan(
+		&i.ID,
+		&i.BookingReference,
+		&i.RenterID,
+		&i.OwnerID,
+		&i.FleetID,
+		&i.StartDate,
+		&i.EndDate,
+		&i.HirePeriod,
+		&i.DurationDays,
+		&i.DailyRateAppliedMinor,
+		&i.BaseHireFeeMinor,
+		&i.AttachmentsFeeMinor,
+		&i.GrossRentalAmountMinor,
+		&i.PrepaymentAmountMinor,
+		&i.Currency,
+		&i.SiteLocationAddress,
+		&i.Status,
+		&i.RejectionReasonCode,
+		&i.RejectionNotes,
+		&i.CancellationReason,
+		&i.CancelledBy,
+		&i.PenaltyAmountMinor,
+		&i.RefundAmountMinor,
+		&i.ExpiresAt,
+		&i.ConfirmedAt,
+		&i.ActivatedAt,
+		&i.CompletedAt,
+		&i.CancelledAt,
+		&i.HandoverPin,
+		&i.CheckInMeterHours,
+		&i.CheckOutMeterHours,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }

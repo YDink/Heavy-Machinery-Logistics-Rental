@@ -312,4 +312,79 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get clearCompare => 'አጽዳ';
+
+  @override
+  String get requestToBook => 'ይከራዩ';
+
+  @override
+  String get bookingDetails => 'የኪራይ ዝርዝር መረጃ';
+
+  @override
+  String get rentalDuration => 'የኪራይ ቆይታ';
+
+  @override
+  String get baseHireFee => 'መሰረታዊ የኪራይ ክፍያ';
+
+  @override
+  String get attachmentsFee => 'የተጨማሪ መገልገያዎች ክፍያ';
+
+  @override
+  String get grossRentalAmount => 'ጠቅላላ የኪራይ ክፍያ';
+
+  @override
+  String get advancePrepayment => 'የቅድመ ክፍያ (50%)';
+
+  @override
+  String get remainingBalance => 'የቀረው ክፍያ';
+
+  @override
+  String get siteLocation => 'የስራ ቦታ አድራሻ';
+
+  @override
+  String get paymentHoldTimer => 'የክፍያ ማቆያ ጊዜ';
+
+  @override
+  String get uploadBankSlip => 'የባንክ ዝውውር ደረሰኝ ያስገቡ';
+
+  @override
+  String get confirmPaymentReceived => 'ክፍያ መቀበሉን ያረጋግጡ';
+
+  @override
+  String get declinePayment => 'ክፍያውን አይቀበሉ';
+
+  @override
+  String get disputeDecline => 'የተቃውሞ አቤቱታ ያቅርቡ';
+
+  @override
+  String get cancelBooking => 'ኪራዩን ይሰርዙ';
+
+  @override
+  String get handoverPIN => 'የማስረከቢያ ፒን';
+
+  @override
+  String get checkInMeter => 'የመጀመሪያ የሰዓት ቆጣሪ';
+
+  @override
+  String get checkOutMeter => 'የመጨረሻ የሰዓት ቆጣሪ';
+
+  @override
+  String get bookingStatusPendingPayment => 'ክፍያ በመጠባበቅ ላይ';
+
+  @override
+  String get bookingStatusEvidenceUploaded => 'የክፍያ ደረሰኝ ተጭኗል';
+
+  @override
+  String get bookingStatusConfirmed => 'ተረጋግጧል';
+
+  @override
+  String get bookingStatusActive => 'በስራ ላይ';
+
+  @override
+  String get bookingStatusCompleted => 'ተጠናቋል';
+
+  @override
+  String get bookingStatusCancelled => 'ተሰርዟል';
+
+  @override
+  String get daysUnit => 'ቀናት';
 }

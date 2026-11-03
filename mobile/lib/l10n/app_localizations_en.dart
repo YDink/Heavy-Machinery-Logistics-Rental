@@ -316,4 +316,79 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clearCompare => 'Clear';
+
+  @override
+  String get requestToBook => 'Request to Book';
+
+  @override
+  String get bookingDetails => 'Booking Details';
+
+  @override
+  String get rentalDuration => 'Rental Duration';
+
+  @override
+  String get baseHireFee => 'Base Hire Fee';
+
+  @override
+  String get attachmentsFee => 'Attachments Fee';
+
+  @override
+  String get grossRentalAmount => 'Gross Rental Amount';
+
+  @override
+  String get advancePrepayment => 'Advance Prepayment (50%)';
+
+  @override
+  String get remainingBalance => 'Estimated Remaining Balance';
+
+  @override
+  String get siteLocation => 'Site Location';
+
+  @override
+  String get paymentHoldTimer => 'Payment Hold Timer';
+
+  @override
+  String get uploadBankSlip => 'Upload Bank Transfer Slip';
+
+  @override
+  String get confirmPaymentReceived => 'Confirm Payment Received';
+
+  @override
+  String get declinePayment => 'Decline Payment';
+
+  @override
+  String get disputeDecline => 'Dispute Decline';
+
+  @override
+  String get cancelBooking => 'Cancel Booking';
+
+  @override
+  String get handoverPIN => 'Handover PIN';
+
+  @override
+  String get checkInMeter => 'Check-In Meter Hours';
+
+  @override
+  String get checkOutMeter => 'Check-Out Meter Hours';
+
+  @override
+  String get bookingStatusPendingPayment => 'Pending Payment';
+
+  @override
+  String get bookingStatusEvidenceUploaded => 'Payment Evidence Uploaded';
+
+  @override
+  String get bookingStatusConfirmed => 'Confirmed';
+
+  @override
+  String get bookingStatusActive => 'Active Rental';
+
+  @override
+  String get bookingStatusCompleted => 'Completed';
+
+  @override
+  String get bookingStatusCancelled => 'Cancelled';
+
+  @override
+  String get daysUnit => 'days';
 }

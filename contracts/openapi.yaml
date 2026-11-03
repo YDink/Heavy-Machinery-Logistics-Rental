@@ -69,8 +69,18 @@ paths:
     $ref: './endpoints/bookings/booking-by-id.yaml'
   /bookings/{id}:confirm-payment:
     $ref: './endpoints/bookings/confirm-payment.yaml'
+  /bookings/{id}:decline-payment:
+    $ref: './endpoints/bookings/decline-payment.yaml'
+  /bookings/{id}:dispute:
+    $ref: './endpoints/bookings/dispute-booking.yaml'
   /bookings/{id}:cancel:
     $ref: './endpoints/bookings/cancel-booking.yaml'
+  /bookings/{id}/payment-evidence:
+    $ref: './endpoints/bookings/payment-evidence.yaml'
+  /bookings/{id}:handover-check-in:
+    $ref: './endpoints/bookings/handover-check-in.yaml'
+  /bookings/{id}:return-check-out:
+    $ref: './endpoints/bookings/return-check-out.yaml'
   /bookings/{id}/inspections:
     $ref: './endpoints/bookings/inspections.yaml'
   /payments/initiate:

@@ -26,7 +26,7 @@ func setupDiscoveryTestServer(t *testing.T) (http.Handler, *machineryInfra.Memor
 	leaseChecker := machineryApp.NewMemoryHoldLeaseChecker()
 
 	discoveryService := machineryApp.NewDiscoveryService(memRepo, memRepo, leaseChecker)
-	server := transport.NewServer(nil, nil, nil, nil, discoveryService)
+	server := transport.NewServer(nil, nil, nil, nil, discoveryService, nil)
 
 	mux := http.NewServeMux()
 	server.RegisterRoutes(mux)

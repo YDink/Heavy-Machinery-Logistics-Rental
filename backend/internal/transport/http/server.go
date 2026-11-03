@@ -12,6 +12,8 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/application"
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/domain"
+	bookingApp "github.com/dinkmachinery/dink-core/internal/modules/booking/application"
+	bookingDomain "github.com/dinkmachinery/dink-core/internal/modules/booking/domain"
 	machineryApp "github.com/dinkmachinery/dink-core/internal/modules/machinery/application"
 	machineryDomain "github.com/dinkmachinery/dink-core/internal/modules/machinery/domain"
 	"github.com/dinkmachinery/dink-core/internal/platform/i18n"
@@ -25,6 +27,7 @@ type Server struct {
 	machineryService  *machineryApp.MachineryService
 	attachmentService *machineryApp.AttachmentService
 	discoveryService  *machineryApp.DiscoveryService
+	bookingService    *bookingApp.BookingService
 }
 
 func NewServer(
@@ -33,6 +36,7 @@ func NewServer(
 	machineryService *machineryApp.MachineryService,
 	attachmentService *machineryApp.AttachmentService,
 	discoveryService *machineryApp.DiscoveryService,
+	bookingService *bookingApp.BookingService,
 ) *Server {
 	return &Server{
 		authService:       authService,
@@ -40,6 +44,7 @@ func NewServer(
 		machineryService:  machineryService,
 		attachmentService: attachmentService,
 		discoveryService:  discoveryService,
+		bookingService:    bookingService,
 	}
 }
 
@@ -74,12 +79,19 @@ func (s *Server) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/country-configs/{code}", s.GetCountryConfigByCode)
 	mux.HandleFunc("PUT /api/v1/country-configs/{code}", s.UpdateCountryConfig)
 	mux.HandleFunc("GET /api/v1/admin/ui-config", s.GetAdminUiConfig)
+	// Booking & Lifecycle State Machine (Partition 05-05)
 	mux.HandleFunc("GET /api/v1/bookings", s.ListBookings)
 	mux.HandleFunc("POST /api/v1/bookings", s.CreateBooking)
 	mux.HandleFunc("GET /api/v1/bookings/{id}", s.GetBookingById)
-	mux.HandleFunc("POST /api/v1/bookings/{id}/inspections", s.SubmitBookingInspection)
-	mux.HandleFunc("POST /api/v1/bookings/{id}/cancel", s.CancelBooking)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/payment-evidence", s.SubmitBookingPaymentEvidence)
 	mux.HandleFunc("POST /api/v1/bookings/{id}/confirm-payment", s.ConfirmBookingPayment)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/decline-payment", s.DeclineBookingPayment)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/dispute", s.DisputeBookingPayment)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/cancel", s.CancelBooking)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/handover-check-in", s.HandoverCheckIn)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/return-check-out", s.ReturnCheckOut)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/inspections", s.SubmitBookingInspection)
+	mux.HandleFunc("POST /api/v1/bookings/{action}", s.DispatchBookingAction)
 	mux.HandleFunc("POST /api/v1/payments", s.InitiatePayment)
 	mux.HandleFunc("GET /api/v1/wallets/me", s.GetMyWallet)
 	mux.HandleFunc("GET /api/v1/wallets/me/transactions", s.ListWalletTransactions)
@@ -1336,6 +1348,919 @@ func (s *Server) SearchFleetsByRadius(w http.ResponseWriter, r *http.Request) {
 	s.SearchFleets(w, r)
 }
 
+func toGeneratedBooking(b *bookingDomain.Booking) generated.Booking {
+	dto := generated.Booking{
+		Id:               openapi_types.UUID(b.ID),
+		BookingReference: b.BookingReference,
+		FleetId:          openapi_types.UUID(b.FleetID),
+		RenterId:         openapi_types.UUID(b.RenterID),
+		OwnerId:          openapi_types.UUID(b.OwnerID),
+		Status:           generated.BookingStatus(b.Status),
+		StartDate:        openapi_types.Date{Time: b.StartDate},
+		EndDate:          openapi_types.Date{Time: b.EndDate},
+		DurationDays:     b.DurationDays,
+		DailyRate: generated.MoneyAmount{
+			AmountMinor: b.DailyRateAppliedMinor,
+			Currency:    b.Currency,
+		},
+		BaseHireFee: generated.MoneyAmount{
+			AmountMinor: b.BaseHireFeeMinor,
+			Currency:    b.Currency,
+		},
+		AttachmentsFee: generated.MoneyAmount{
+			AmountMinor: b.AttachmentsFeeMinor,
+			Currency:    b.Currency,
+		},
+		GrossRentalAmount: generated.MoneyAmount{
+			AmountMinor: b.GrossRentalAmountMinor,
+			Currency:    b.Currency,
+		},
+		PrepaymentAmount: generated.MoneyAmount{
+			AmountMinor: b.PrepaymentAmountMinor,
+			Currency:    b.Currency,
+		},
+		SiteLocationAddress: b.SiteLocationAddress,
+		RejectionReasonCode: b.RejectionReasonCode,
+		RejectionNotes:      b.RejectionNotes,
+		CancellationReason:  b.CancellationReason,
+		HandoverPin:         b.HandoverPIN,
+		ExpiresAt:           b.ExpiresAt,
+		ConfirmedAt:         b.ConfirmedAt,
+		ActivatedAt:         b.ActivatedAt,
+		CompletedAt:         b.CompletedAt,
+		CancelledAt:         b.CancelledAt,
+		Version:             b.Version,
+		CreatedAt:           b.CreatedAt,
+		UpdatedAt:           &b.UpdatedAt,
+	}
+
+	if b.PenaltyAmountMinor > 0 {
+		dto.PenaltyAmount = &generated.MoneyAmount{
+			AmountMinor: b.PenaltyAmountMinor,
+			Currency:    b.Currency,
+		}
+	}
+	if b.RefundAmountMinor > 0 {
+		dto.RefundAmount = &generated.MoneyAmount{
+			AmountMinor: b.RefundAmountMinor,
+			Currency:    b.Currency,
+		}
+	}
+	if b.CheckInMeterHours != nil {
+		m := float32(*b.CheckInMeterHours)
+		dto.CheckInMeterHours = &m
+	}
+	if b.CheckOutMeterHours != nil {
+		m := float32(*b.CheckOutMeterHours)
+		dto.CheckOutMeterHours = &m
+	}
+
+	if len(b.Attachments) > 0 {
+		var attSummaries []generated.BookingAttachmentSummary
+		for _, att := range b.Attachments {
+			attSummaries = append(attSummaries, generated.BookingAttachmentSummary{
+				Id:             openapi_types.UUID(att.ID),
+				AttachmentId:   openapi_types.UUID(att.AttachmentID),
+				AttachmentType: &att.AttachmentType,
+				Make:           &att.Make,
+				Model:          &att.Model,
+				SerialNumber:   &att.SerialNumber,
+				BundledDailyRate: generated.MoneyAmount{
+					AmountMinor: att.BundledDailyRateMinor,
+					Currency:    b.Currency,
+				},
+			})
+		}
+		dto.Attachments = &attSummaries
+	}
+
+	return dto
+}
+
+// ==================== Booking State Machine Handlers (Partition 05-05) ====================
+
+// CreateBooking handles POST /api/v1/bookings
+func (s *Server) CreateBooking(w http.ResponseWriter, r *http.Request) {
+	if s.bookingService == nil {
+		s.notImplemented(w, r, "05-05")
+		return
+	}
+
+	authHeader := r.Header.Get("Authorization")
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Missing or malformed Authorization header.",
+		})
+		return
+	}
+
+	claims, err := s.tokenService.VerifyAccessToken(r.Context(), strings.TrimPrefix(authHeader, "Bearer "))
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_INVALID_TOKEN",
+			Detail: "Access token is invalid or expired.",
+		})
+		return
+	}
+
+	userUUID, err := uuid.Parse(claims.Subject)
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_INVALID_SUBJECT",
+			Detail: "Subject claim is not a valid UUID.",
+		})
+		return
+	}
+
+	var body generated.CreateBookingRequest
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Bad Request",
+			Code:   "ERR_MALFORMED_JSON",
+			Detail: "Request body could not be parsed as valid JSON.",
+		})
+		return
+	}
+
+	var attUUIDs []uuid.UUID
+	if body.AttachmentIds != nil {
+		for _, id := range *body.AttachmentIds {
+			attUUIDs = append(attUUIDs, uuid.UUID(id))
+		}
+	}
+
+	input := bookingApp.CreateBookingInput{
+		RenterID:            userUUID,
+		FleetID:             uuid.UUID(body.FleetId),
+		StartDate:           body.StartDate.Time,
+		EndDate:             body.EndDate.Time,
+		SiteLocationAddress: body.SiteLocationAddress,
+		AttachmentIDs:       attUUIDs,
+	}
+
+	b, err := s.bookingService.CreateBooking(r.Context(), input)
+	if err != nil {
+		if errors.Is(err, bookingDomain.ErrSelfBookingProhibited) {
+			response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+				Title:  "Self Booking Prohibited",
+				Code:   "ERR_SELF_BOOKING_PROHIBITED",
+				Detail: "Equipment fleet owners cannot book their own machinery.",
+			})
+			return
+		}
+		if errors.Is(err, bookingDomain.ErrConcurrentReservationCollision) {
+			response.Error(w, r, http.StatusConflict, response.ProblemDetails{
+				Title:  "Reservation Collision",
+				Code:   "ERR_CONCURRENT_RESERVATION_COLLISION",
+				Detail: "This fleet asset or an attachment is currently reserved or on hold for requested dates.",
+			})
+			return
+		}
+		if errors.Is(err, bookingDomain.ErrInvalidDateRange) || errors.Is(err, bookingDomain.ErrInvalidDuration) {
+			response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+				Title:  "Invalid Rental Duration",
+				Code:   "ERR_INVALID_RENTAL_DURATION",
+				Detail: err.Error(),
+			})
+			return
+		}
+		if errors.Is(err, machineryDomain.ErrFleetNotFound) {
+			response.Error(w, r, http.StatusNotFound, response.ProblemDetails{
+				Title:  "Fleet Not Found",
+				Code:   "ERR_FLEET_NOT_FOUND",
+				Detail: "The specified machinery fleet could not be found.",
+			})
+			return
+		}
+		response.Error(w, r, http.StatusInternalServerError, response.ProblemDetails{
+			Title:  "Internal Server Error",
+			Code:   "ERR_INTERNAL",
+			Detail: err.Error(),
+		})
+		return
+	}
+
+	response.JSON(w, r, http.StatusCreated, toGeneratedBooking(b))
+}
+
+// ListBookings handles GET /api/v1/bookings
+func (s *Server) ListBookings(w http.ResponseWriter, r *http.Request) {
+	if s.bookingService == nil {
+		s.notImplemented(w, r, "05-05")
+		return
+	}
+
+	authHeader := r.Header.Get("Authorization")
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Missing or malformed Authorization header.",
+		})
+		return
+	}
+
+	claims, err := s.tokenService.VerifyAccessToken(r.Context(), strings.TrimPrefix(authHeader, "Bearer "))
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_INVALID_TOKEN",
+			Detail: "Access token is invalid or expired.",
+		})
+		return
+	}
+
+	userUUID, err := uuid.Parse(claims.Subject)
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_INVALID_SUBJECT",
+			Detail: "Subject claim is not a valid UUID.",
+		})
+		return
+	}
+
+	statusFilter := r.URL.Query().Get("status")
+	bookings, err := s.bookingService.ListUserBookings(r.Context(), userUUID, claims.Role, statusFilter, 50)
+	if err != nil {
+		response.Error(w, r, http.StatusInternalServerError, response.ProblemDetails{
+			Title:  "Internal Server Error",
+			Code:   "ERR_INTERNAL",
+			Detail: "Failed to list user bookings.",
+		})
+		return
+	}
+
+	dtos := make([]generated.Booking, len(bookings))
+	for i, b := range bookings {
+		dtos[i] = toGeneratedBooking(b)
+	}
+
+	response.JSON(w, r, http.StatusOK, dtos)
+}
+
+// GetBookingById handles GET /api/v1/bookings/{id}
+func (s *Server) GetBookingById(w http.ResponseWriter, r *http.Request) {
+	if s.bookingService == nil {
+		s.notImplemented(w, r, "05-05")
+		return
+	}
+
+	idStr := r.PathValue("id")
+	bookingUUID, err := uuid.Parse(idStr)
+	if err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Invalid Booking ID",
+			Code:   "ERR_INVALID_UUID",
+			Detail: "The provided booking ID path parameter is not a valid UUID.",
+		})
+		return
+	}
+
+	b, err := s.bookingService.GetBooking(r.Context(), bookingUUID)
+	if err != nil {
+		if errors.Is(err, bookingDomain.ErrBookingNotFound) {
+			response.Error(w, r, http.StatusNotFound, response.ProblemDetails{
+				Title:  "Booking Not Found",
+				Code:   "ERR_BOOKING_NOT_FOUND",
+				Detail: "The requested booking reservation does not exist.",
+			})
+			return
+		}
+		response.Error(w, r, http.StatusInternalServerError, response.ProblemDetails{
+			Title:  "Internal Server Error",
+			Code:   "ERR_INTERNAL",
+			Detail: err.Error(),
+		})
+		return
+	}
+
+	response.JSON(w, r, http.StatusOK, toGeneratedBooking(b))
+}
+
+// SubmitBookingPaymentEvidence handles POST /api/v1/bookings/{id}/payment-evidence
+func (s *Server) SubmitBookingPaymentEvidence(w http.ResponseWriter, r *http.Request) {
+	if s.bookingService == nil {
+		s.notImplemented(w, r, "05-05")
+		return
+	}
+
+	authHeader := r.Header.Get("Authorization")
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Missing Authorization header.",
+		})
+		return
+	}
+
+	claims, err := s.tokenService.VerifyAccessToken(r.Context(), strings.TrimPrefix(authHeader, "Bearer "))
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_INVALID_TOKEN",
+			Detail: "Access token is invalid or expired.",
+		})
+		return
+	}
+
+	userUUID, _ := uuid.Parse(claims.Subject)
+	idStr := r.PathValue("id")
+	bookingUUID, err := uuid.Parse(idStr)
+	if err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Invalid Booking ID",
+			Code:   "ERR_INVALID_UUID",
+			Detail: "Invalid booking UUID format.",
+		})
+		return
+	}
+
+	var body generated.SubmitPaymentSlipRequest
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Bad Request",
+			Code:   "ERR_MALFORMED_JSON",
+			Detail: "Malformed JSON body.",
+		})
+		return
+	}
+
+	txnRef := ""
+	if body.TransactionReference != nil {
+		txnRef = *body.TransactionReference
+	}
+	currency := "ETB"
+	if body.Currency != nil {
+		currency = *body.Currency
+	}
+
+	slip, err := s.bookingService.SubmitPaymentSlip(r.Context(), bookingApp.SubmitPaymentSlipInput{
+		BookingID:            bookingUUID,
+		UploaderID:           userUUID,
+		StorageURI:           body.StorageUri,
+		FileHashSHA256:       body.FileHash,
+		TransactionReference: txnRef,
+		AmountMinor:          body.AmountMinor,
+		Currency:             currency,
+	})
+	if err != nil {
+		if errors.Is(err, bookingDomain.ErrUnauthorizedAction) {
+			response.Error(w, r, http.StatusForbidden, response.ProblemDetails{
+				Title:  "Forbidden",
+				Code:   "ERR_UNAUTHORIZED_ACTION",
+				Detail: "Only the renting contractor can submit payment evidence.",
+			})
+			return
+		}
+		if errors.Is(err, bookingDomain.ErrInvalidStateTransition) {
+			response.Error(w, r, http.StatusConflict, response.ProblemDetails{
+				Title:  "Invalid State Transition",
+				Code:   "ERR_INVALID_STATE_TRANSITION",
+				Detail: err.Error(),
+			})
+			return
+		}
+		response.Error(w, r, http.StatusInternalServerError, response.ProblemDetails{
+			Title:  "Internal Server Error",
+			Code:   "ERR_INTERNAL",
+			Detail: err.Error(),
+		})
+		return
+	}
+
+	slipDTO := generated.PaymentSlip{
+		Id:                   openapi_types.UUID(slip.ID),
+		BookingId:            openapi_types.UUID(slip.BookingID),
+		UploaderId:           openapi_types.UUID(slip.UploaderID),
+		StorageUri:           slip.StorageURI,
+		FileHash:             slip.FileHashSHA256,
+		TransactionReference: slip.TransactionReference,
+		Amount: generated.MoneyAmount{
+			AmountMinor: slip.AmountMinor,
+			Currency:    slip.Currency,
+		},
+		Status:    generated.PaymentSlipStatus(slip.Status),
+		CreatedAt: slip.CreatedAt,
+	}
+
+	response.JSON(w, r, http.StatusCreated, slipDTO)
+}
+
+// ConfirmBookingPayment handles POST /api/v1/bookings/{id}:confirm-payment
+func (s *Server) ConfirmBookingPayment(w http.ResponseWriter, r *http.Request) {
+	if s.bookingService == nil {
+		s.notImplemented(w, r, "05-05")
+		return
+	}
+
+	authHeader := r.Header.Get("Authorization")
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Missing Authorization header.",
+		})
+		return
+	}
+
+	claims, err := s.tokenService.VerifyAccessToken(r.Context(), strings.TrimPrefix(authHeader, "Bearer "))
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_INVALID_TOKEN",
+			Detail: "Access token is invalid or expired.",
+		})
+		return
+	}
+
+	userUUID, _ := uuid.Parse(claims.Subject)
+	idStr := r.PathValue("id")
+	bookingUUID, err := uuid.Parse(idStr)
+	if err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Invalid Booking ID",
+			Code:   "ERR_INVALID_UUID",
+			Detail: "Invalid booking UUID format.",
+		})
+		return
+	}
+
+	var body generated.ConfirmBookingPaymentJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Bad Request",
+			Code:   "ERR_MALFORMED_JSON",
+			Detail: "Malformed JSON body.",
+		})
+		return
+	}
+
+	b, err := s.bookingService.ConfirmPayment(r.Context(), bookingApp.ConfirmPaymentInput{
+		BookingID:       bookingUUID,
+		ActorID:         userUUID,
+		ExpectedVersion: body.ExpectedVersion,
+		PaymentRef:      body.PaymentReference,
+		Notes:           "",
+	})
+	if err != nil {
+		if errors.Is(err, bookingDomain.ErrUnauthorizedAction) {
+			response.Error(w, r, http.StatusForbidden, response.ProblemDetails{
+				Title:  "Forbidden",
+				Code:   "ERR_UNAUTHORIZED_ACTION",
+				Detail: "Only the fleet owner can confirm receipt of payment.",
+			})
+			return
+		}
+		if errors.Is(err, bookingDomain.ErrConcurrencyConflict) {
+			response.Error(w, r, http.StatusConflict, response.ProblemDetails{
+				Title:  "Concurrency Conflict",
+				Code:   "BOOKING_CONCURRENCY_CONFLICT",
+				Detail: "The booking was modified by another transaction. Reload and retry.",
+			})
+			return
+		}
+		response.Error(w, r, http.StatusInternalServerError, response.ProblemDetails{
+			Title:  "Internal Server Error",
+			Code:   "ERR_INTERNAL",
+			Detail: err.Error(),
+		})
+		return
+	}
+
+	response.JSON(w, r, http.StatusOK, toGeneratedBooking(b))
+}
+
+// DeclineBookingPayment handles POST /api/v1/bookings/{id}:decline-payment
+func (s *Server) DeclineBookingPayment(w http.ResponseWriter, r *http.Request) {
+	if s.bookingService == nil {
+		s.notImplemented(w, r, "05-05")
+		return
+	}
+
+	authHeader := r.Header.Get("Authorization")
+	claims, err := s.tokenService.VerifyAccessToken(r.Context(), strings.TrimPrefix(authHeader, "Bearer "))
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Access token is invalid.",
+		})
+		return
+	}
+
+	userUUID, _ := uuid.Parse(claims.Subject)
+	idStr := r.PathValue("id")
+	bookingUUID, err := uuid.Parse(idStr)
+	if err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Invalid Booking ID",
+			Code:   "ERR_INVALID_UUID",
+			Detail: "Invalid booking UUID format.",
+		})
+		return
+	}
+
+	var body generated.DeclinePaymentRequest
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Bad Request",
+			Code:   "ERR_MALFORMED_JSON",
+			Detail: "Malformed JSON body.",
+		})
+		return
+	}
+
+	rejectionNotes := ""
+	if body.RejectionNotes != nil {
+		rejectionNotes = *body.RejectionNotes
+	}
+
+	b, err := s.bookingService.DeclinePayment(r.Context(), bookingApp.DeclinePaymentInput{
+		BookingID:       bookingUUID,
+		ActorID:         userUUID,
+		ExpectedVersion: body.ExpectedVersion,
+		ReasonCode:      string(body.ReasonCode),
+		RejectionNotes:  rejectionNotes,
+	})
+	if err != nil {
+		if errors.Is(err, bookingDomain.ErrUnauthorizedAction) {
+			response.Error(w, r, http.StatusForbidden, response.ProblemDetails{
+				Title:  "Forbidden",
+				Code:   "ERR_UNAUTHORIZED_ACTION",
+				Detail: "Only the fleet owner can decline payment.",
+			})
+			return
+		}
+		if errors.Is(err, bookingDomain.ErrConcurrencyConflict) {
+			response.Error(w, r, http.StatusConflict, response.ProblemDetails{
+				Title:  "Concurrency Conflict",
+				Code:   "BOOKING_CONCURRENCY_CONFLICT",
+				Detail: "The booking was modified by another transaction.",
+			})
+			return
+		}
+		response.Error(w, r, http.StatusInternalServerError, response.ProblemDetails{
+			Title:  "Internal Server Error",
+			Code:   "ERR_INTERNAL",
+			Detail: err.Error(),
+		})
+		return
+	}
+
+	response.JSON(w, r, http.StatusOK, toGeneratedBooking(b))
+}
+
+// DisputeBookingPayment handles POST /api/v1/bookings/{id}:dispute
+func (s *Server) DisputeBookingPayment(w http.ResponseWriter, r *http.Request) {
+	if s.bookingService == nil {
+		s.notImplemented(w, r, "05-05")
+		return
+	}
+
+	authHeader := r.Header.Get("Authorization")
+	claims, err := s.tokenService.VerifyAccessToken(r.Context(), strings.TrimPrefix(authHeader, "Bearer "))
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Access token is invalid.",
+		})
+		return
+	}
+
+	userUUID, _ := uuid.Parse(claims.Subject)
+	idStr := r.PathValue("id")
+	bookingUUID, err := uuid.Parse(idStr)
+	if err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Invalid Booking ID",
+			Code:   "ERR_INVALID_UUID",
+			Detail: "Invalid booking UUID format.",
+		})
+		return
+	}
+
+	var body generated.DisputeBookingRequest
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Bad Request",
+			Code:   "ERR_MALFORMED_JSON",
+			Detail: "Malformed JSON body.",
+		})
+		return
+	}
+
+	var uris []string
+	if body.EvidenceUris != nil {
+		uris = *body.EvidenceUris
+	}
+
+	b, err := s.bookingService.DisputeBooking(r.Context(), bookingApp.DisputeBookingInput{
+		BookingID:       bookingUUID,
+		ActorID:         userUUID,
+		ExpectedVersion: body.ExpectedVersion,
+		DisputeReason:   body.DisputeReason,
+		EvidenceURIs:    uris,
+	})
+	if err != nil {
+		if errors.Is(err, bookingDomain.ErrUnauthorizedAction) {
+			response.Error(w, r, http.StatusForbidden, response.ProblemDetails{
+				Title:  "Forbidden",
+				Code:   "ERR_UNAUTHORIZED_ACTION",
+				Detail: "Only the renting contractor can dispute a payment decline.",
+			})
+			return
+		}
+		response.Error(w, r, http.StatusInternalServerError, response.ProblemDetails{
+			Title:  "Internal Server Error",
+			Code:   "ERR_INTERNAL",
+			Detail: err.Error(),
+		})
+		return
+	}
+
+	response.JSON(w, r, http.StatusOK, toGeneratedBooking(b))
+}
+
+// CancelBooking handles POST /api/v1/bookings/{id}:cancel
+func (s *Server) CancelBooking(w http.ResponseWriter, r *http.Request) {
+	if s.bookingService == nil {
+		s.notImplemented(w, r, "05-05")
+		return
+	}
+
+	authHeader := r.Header.Get("Authorization")
+	claims, err := s.tokenService.VerifyAccessToken(r.Context(), strings.TrimPrefix(authHeader, "Bearer "))
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Access token is invalid.",
+		})
+		return
+	}
+
+	userUUID, _ := uuid.Parse(claims.Subject)
+	idStr := r.PathValue("id")
+	bookingUUID, err := uuid.Parse(idStr)
+	if err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Invalid Booking ID",
+			Code:   "ERR_INVALID_UUID",
+			Detail: "Invalid booking UUID format.",
+		})
+		return
+	}
+
+	var body generated.CancelBookingJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Bad Request",
+			Code:   "ERR_MALFORMED_JSON",
+			Detail: "Malformed JSON body.",
+		})
+		return
+	}
+
+	b, err := s.bookingService.CancelBooking(r.Context(), bookingApp.CancelBookingInput{
+		BookingID:       bookingUUID,
+		ActorID:         userUUID,
+		ExpectedVersion: body.ExpectedVersion,
+		Reason:          body.Reason,
+		IsForceMajeure:  false,
+	})
+	if err != nil {
+		if errors.Is(err, bookingDomain.ErrUnauthorizedAction) {
+			response.Error(w, r, http.StatusForbidden, response.ProblemDetails{
+				Title:  "Forbidden",
+				Code:   "ERR_UNAUTHORIZED_ACTION",
+				Detail: "You are not a recognized party to this booking.",
+			})
+			return
+		}
+		if errors.Is(err, bookingDomain.ErrConcurrencyConflict) {
+			response.Error(w, r, http.StatusConflict, response.ProblemDetails{
+				Title:  "Concurrency Conflict",
+				Code:   "BOOKING_CONCURRENCY_CONFLICT",
+				Detail: "The booking was modified by another transaction.",
+			})
+			return
+		}
+		if errors.Is(err, bookingDomain.ErrInvalidStateTransition) {
+			response.Error(w, r, http.StatusConflict, response.ProblemDetails{
+				Title:  "Invalid State Transition",
+				Code:   "ERR_INVALID_STATE_TRANSITION",
+				Detail: err.Error(),
+			})
+			return
+		}
+		response.Error(w, r, http.StatusInternalServerError, response.ProblemDetails{
+			Title:  "Internal Server Error",
+			Code:   "ERR_INTERNAL",
+			Detail: err.Error(),
+		})
+		return
+	}
+
+	response.JSON(w, r, http.StatusOK, toGeneratedBooking(b))
+}
+
+// HandoverCheckIn handles POST /api/v1/bookings/{id}:handover-check-in
+func (s *Server) HandoverCheckIn(w http.ResponseWriter, r *http.Request) {
+	if s.bookingService == nil {
+		s.notImplemented(w, r, "05-05")
+		return
+	}
+
+	authHeader := r.Header.Get("Authorization")
+	claims, err := s.tokenService.VerifyAccessToken(r.Context(), strings.TrimPrefix(authHeader, "Bearer "))
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Access token is invalid.",
+		})
+		return
+	}
+
+	userUUID, _ := uuid.Parse(claims.Subject)
+	idStr := r.PathValue("id")
+	bookingUUID, err := uuid.Parse(idStr)
+	if err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Invalid Booking ID",
+			Code:   "ERR_INVALID_UUID",
+			Detail: "Invalid booking UUID format.",
+		})
+		return
+	}
+
+	var body generated.HandoverCheckInRequest
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Bad Request",
+			Code:   "ERR_MALFORMED_JSON",
+			Detail: "Malformed JSON body.",
+		})
+		return
+	}
+
+	var uris []string
+	if body.PhotoUris != nil {
+		uris = *body.PhotoUris
+	}
+
+	b, err := s.bookingService.HandoverCheckIn(r.Context(), bookingApp.HandoverCheckInInput{
+		BookingID:           bookingUUID,
+		ActorID:             userUUID,
+		ExpectedVersion:     body.ExpectedVersion,
+		HandoverPIN:         body.HandoverPin,
+		OperatingHoursMeter: float64(body.OperatingHoursMeter),
+		PhotoURIs:           uris,
+	})
+	if err != nil {
+		if errors.Is(err, bookingDomain.ErrInvalidChallengePIN) {
+			response.Error(w, r, http.StatusUnprocessableEntity, response.ProblemDetails{
+				Title:  "Invalid PIN",
+				Code:   "ERR_INVALID_CHALLENGE_PIN",
+				Detail: "The entered 6-digit challenge PIN does not match the active booking lease.",
+			})
+			return
+		}
+		if errors.Is(err, bookingDomain.ErrInvalidMeterReading) {
+			response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+				Title:  "Invalid Meter Reading",
+				Code:   "ERR_INVALID_METER_READING",
+				Detail: "Check-in engine hour meter reading cannot be lower than the machinery baseline.",
+			})
+			return
+		}
+		response.Error(w, r, http.StatusInternalServerError, response.ProblemDetails{
+			Title:  "Internal Server Error",
+			Code:   "ERR_INTERNAL",
+			Detail: err.Error(),
+		})
+		return
+	}
+
+	response.JSON(w, r, http.StatusOK, toGeneratedBooking(b))
+}
+
+// ReturnCheckOut handles POST /api/v1/bookings/{id}:return-check-out
+func (s *Server) ReturnCheckOut(w http.ResponseWriter, r *http.Request) {
+	if s.bookingService == nil {
+		s.notImplemented(w, r, "05-05")
+		return
+	}
+
+	authHeader := r.Header.Get("Authorization")
+	claims, err := s.tokenService.VerifyAccessToken(r.Context(), strings.TrimPrefix(authHeader, "Bearer "))
+	if err != nil {
+		response.Error(w, r, http.StatusUnauthorized, response.ProblemDetails{
+			Title:  "Unauthorized",
+			Code:   "ERR_UNAUTHORIZED",
+			Detail: "Access token is invalid.",
+		})
+		return
+	}
+
+	userUUID, _ := uuid.Parse(claims.Subject)
+	idStr := r.PathValue("id")
+	bookingUUID, err := uuid.Parse(idStr)
+	if err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Invalid Booking ID",
+			Code:   "ERR_INVALID_UUID",
+			Detail: "Invalid booking UUID format.",
+		})
+		return
+	}
+
+	var body generated.ReturnCheckOutRequest
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+			Title:  "Bad Request",
+			Code:   "ERR_MALFORMED_JSON",
+			Detail: "Malformed JSON body.",
+		})
+		return
+	}
+
+	notes := ""
+	if body.DamageNotes != nil {
+		notes = *body.DamageNotes
+	}
+	var uris []string
+	if body.PhotoUris != nil {
+		uris = *body.PhotoUris
+	}
+
+	b, err := s.bookingService.ReturnCheckOut(r.Context(), bookingApp.ReturnCheckOutInput{
+		BookingID:           bookingUUID,
+		ActorID:             userUUID,
+		ExpectedVersion:     body.ExpectedVersion,
+		OperatingHoursMeter: float64(body.OperatingHoursMeter),
+		PhotoURIs:           uris,
+		DamageNotes:         notes,
+	})
+	if err != nil {
+		if errors.Is(err, bookingDomain.ErrInvalidMeterReading) {
+			response.Error(w, r, http.StatusBadRequest, response.ProblemDetails{
+				Title:  "Invalid Meter Reading",
+				Code:   "ERR_INVALID_METER_READING",
+				Detail: "Return check-out hour meter cannot regress below the check-in reading.",
+			})
+			return
+		}
+		response.Error(w, r, http.StatusInternalServerError, response.ProblemDetails{
+			Title:  "Internal Server Error",
+			Code:   "ERR_INTERNAL",
+			Detail: err.Error(),
+		})
+		return
+	}
+
+	response.JSON(w, r, http.StatusOK, toGeneratedBooking(b))
+}
+
+// DispatchBookingAction dispatches colon-action syntax POST /bookings/{id}:{action} to specific handlers
+func (s *Server) DispatchBookingAction(w http.ResponseWriter, r *http.Request) {
+	action := r.PathValue("action")
+	parts := strings.SplitN(action, ":", 2)
+	if len(parts) == 2 {
+		id := parts[0]
+		verb := parts[1]
+		r.SetPathValue("id", id)
+		switch verb {
+		case "confirm-payment":
+			s.ConfirmBookingPayment(w, r)
+			return
+		case "decline-payment":
+			s.DeclineBookingPayment(w, r)
+			return
+		case "dispute":
+			s.DisputeBookingPayment(w, r)
+			return
+		case "cancel":
+			s.CancelBooking(w, r)
+			return
+		case "handover-check-in":
+			s.HandoverCheckIn(w, r)
+			return
+		case "return-check-out":
+			s.ReturnCheckOut(w, r)
+			return
+		}
+	}
+	s.notImplemented(w, r, "05-05")
+}
+
 // ==================== Unimplemented Stubs for Future Partitions ====================
 
 func (s *Server) notImplemented(w http.ResponseWriter, r *http.Request, partition string) {
@@ -1350,12 +2275,8 @@ func (s *Server) ListCountryConfigs(w http.ResponseWriter, r *http.Request) { s.
 func (s *Server) GetCountryConfigByCode(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-11") }
 func (s *Server) UpdateCountryConfig(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-11") }
 func (s *Server) GetAdminUiConfig(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-11") }
-func (s *Server) ListBookings(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-05") }
-func (s *Server) CreateBooking(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-05") }
-func (s *Server) GetBookingById(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-05") }
 func (s *Server) SubmitBookingInspection(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-07") }
-func (s *Server) CancelBooking(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-05") }
-func (s *Server) ConfirmBookingPayment(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-05") }
 func (s *Server) InitiatePayment(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-06") }
 func (s *Server) GetMyWallet(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-09") }
 func (s *Server) ListWalletTransactions(w http.ResponseWriter, r *http.Request) { s.notImplemented(w, r, "05-09") }
+

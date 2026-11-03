@@ -1,0 +1,38 @@
+post:
+  tags: [booking]
+  summary: Raise dispute on declined payment evidence
+  description: Contractor disputes owner payment decline and escalates to compliance officer arbitration docket.
+  operationId: disputeBookingPayment
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/booking.yaml#/DisputeBookingRequest'
+  responses:
+    '200':
+      description: Dispute opened and routed to compliance arbitration.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/booking.yaml#/BookingDetailSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

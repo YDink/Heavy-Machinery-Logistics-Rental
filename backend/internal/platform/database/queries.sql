@@ -646,3 +646,156 @@ SELECT * FROM fleet_insurances
 WHERE fleet_id = $1 AND status = 'ACTIVE' AND expires_at >= CURRENT_DATE
 ORDER BY expires_at DESC
 LIMIT 1;
+
+
+-- ==================== Booking State Machine (Partition 05-05) ====================
+
+-- name: CreateBooking :one
+INSERT INTO bookings (
+    booking_reference,
+    renter_id,
+    owner_id,
+    fleet_id,
+    start_date,
+    end_date,
+    hire_period,
+    duration_days,
+    daily_rate_applied_minor,
+    base_hire_fee_minor,
+    attachments_fee_minor,
+    gross_rental_amount_minor,
+    prepayment_amount_minor,
+    currency,
+    site_location_address,
+    status,
+    expires_at,
+    handover_pin,
+    version
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, 1
+) RETURNING *;
+
+-- name: GetBookingByID :one
+SELECT * FROM bookings
+WHERE id = $1 AND deleted_at IS NULL;
+
+-- name: GetBookingByReference :one
+SELECT * FROM bookings
+WHERE booking_reference = $1 AND deleted_at IS NULL;
+
+-- name: ListBookingsByRenter :many
+SELECT * FROM bookings
+WHERE renter_id = $1 
+  AND ($2::text = '' OR status = $2)
+  AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $3;
+
+-- name: ListBookingsByOwner :many
+SELECT * FROM bookings
+WHERE owner_id = $1 
+  AND ($2::text = '' OR status = $2)
+  AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $3;
+
+-- name: UpdateBookingStatusOCC :one
+UPDATE bookings
+SET status = $2,
+    version = version + 1,
+    rejection_reason_code = COALESCE($3, rejection_reason_code),
+    rejection_notes = COALESCE($4, rejection_notes),
+    cancellation_reason = COALESCE($5, cancellation_reason),
+    cancelled_by = COALESCE($6, cancelled_by),
+    penalty_amount_minor = COALESCE($7, penalty_amount_minor),
+    refund_amount_minor = COALESCE($8, refund_amount_minor),
+    confirmed_at = CASE WHEN $2 = 'CONFIRMED' THEN NOW() ELSE confirmed_at END,
+    activated_at = CASE WHEN $2 = 'ACTIVE' THEN NOW() ELSE activated_at END,
+    completed_at = CASE WHEN $2 = 'COMPLETED' THEN NOW() ELSE completed_at END,
+    cancelled_at = CASE WHEN $2 = 'CANCELLED' THEN NOW() ELSE cancelled_at END,
+    expires_at = COALESCE($9, expires_at),
+    updated_at = NOW()
+WHERE id = $1 AND version = $10 AND deleted_at IS NULL
+RETURNING *;
+
+-- name: UpdateBookingHandover :one
+UPDATE bookings
+SET status = 'ACTIVE',
+    check_in_meter_hours = $2,
+    activated_at = NOW(),
+    version = version + 1,
+    updated_at = NOW()
+WHERE id = $1 AND version = $3 AND deleted_at IS NULL
+RETURNING *;
+
+-- name: UpdateBookingReturn :one
+UPDATE bookings
+SET status = $2,
+    check_out_meter_hours = $3,
+    completed_at = CASE WHEN $2 = 'COMPLETED' THEN NOW() ELSE completed_at END,
+    version = version + 1,
+    updated_at = NOW()
+WHERE id = $1 AND version = $4 AND deleted_at IS NULL
+RETURNING *;
+
+-- name: AddBookingAttachment :one
+INSERT INTO booking_attachments (
+    booking_id,
+    attachment_id,
+    bundled_daily_rate_minor
+) VALUES (
+    $1, $2, $3
+) RETURNING *;
+
+-- name: ListBookingAttachments :many
+SELECT ba.*, a.attachment_type, a.make, a.model, a.serial_number
+FROM booking_attachments ba
+JOIN attachments a ON a.id = ba.attachment_id
+WHERE ba.booking_id = $1;
+
+-- name: CreateBookingBankSlip :one
+INSERT INTO booking_bank_slips (
+    booking_id,
+    uploader_id,
+    storage_uri,
+    file_hash_sha256,
+    transaction_reference,
+    amount_minor,
+    currency,
+    status
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8
+) RETURNING *;
+
+-- name: GetLatestBankSlipForBooking :one
+SELECT * FROM booking_bank_slips
+WHERE booking_id = $1
+ORDER BY created_at DESC
+LIMIT 1;
+
+-- name: UpdateBankSlipStatus :one
+UPDATE booking_bank_slips
+SET status = $2,
+    rejection_reason_code = $3,
+    rejection_notes = $4,
+    audited_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: CreateBookingAuditLog :one
+INSERT INTO booking_audit_logs (
+    booking_id,
+    actor_id,
+    action,
+    from_status,
+    to_status,
+    reason,
+    payload
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7
+) RETURNING *;
+
+-- name: ListBookingAuditLogs :many
+SELECT * FROM booking_audit_logs
+WHERE booking_id = $1
+ORDER BY created_at ASC;

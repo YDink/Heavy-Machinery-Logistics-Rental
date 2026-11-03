@@ -69,7 +69,7 @@ func setupTestMachineryRouter(t *testing.T) (http.Handler, *application.TokenSer
 	)
 
 	discoveryService := machineryApp.NewDiscoveryService(machineryRepo, machineryRepo, nil)
-	server := transport.NewServer(authService, tokenService, machineryService, nil, discoveryService)
+	server := transport.NewServer(authService, tokenService, machineryService, nil, discoveryService, nil)
 
 	mux := http.NewServeMux()
 	server.RegisterRoutes(mux)

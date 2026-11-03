@@ -58,6 +58,80 @@ type AttachmentReservation struct {
 	CreatedAt             pgtype.Timestamptz        `json:"created_at"`
 }
 
+type Booking struct {
+	ID                     pgtype.UUID               `json:"id"`
+	BookingReference       string                    `json:"booking_reference"`
+	RenterID               pgtype.UUID               `json:"renter_id"`
+	OwnerID                pgtype.UUID               `json:"owner_id"`
+	FleetID                pgtype.UUID               `json:"fleet_id"`
+	StartDate              pgtype.Date               `json:"start_date"`
+	EndDate                pgtype.Date               `json:"end_date"`
+	HirePeriod             pgtype.Range[pgtype.Date] `json:"hire_period"`
+	DurationDays           int32                     `json:"duration_days"`
+	DailyRateAppliedMinor  int64                     `json:"daily_rate_applied_minor"`
+	BaseHireFeeMinor       int64                     `json:"base_hire_fee_minor"`
+	AttachmentsFeeMinor    int64                     `json:"attachments_fee_minor"`
+	GrossRentalAmountMinor int64                     `json:"gross_rental_amount_minor"`
+	PrepaymentAmountMinor  int64                     `json:"prepayment_amount_minor"`
+	Currency               string                    `json:"currency"`
+	SiteLocationAddress    string                    `json:"site_location_address"`
+	Status                 string                    `json:"status"`
+	RejectionReasonCode    *string                   `json:"rejection_reason_code"`
+	RejectionNotes         *string                   `json:"rejection_notes"`
+	CancellationReason     *string                   `json:"cancellation_reason"`
+	CancelledBy            pgtype.UUID               `json:"cancelled_by"`
+	PenaltyAmountMinor     int64                     `json:"penalty_amount_minor"`
+	RefundAmountMinor      int64                     `json:"refund_amount_minor"`
+	ExpiresAt              pgtype.Timestamptz        `json:"expires_at"`
+	ConfirmedAt            pgtype.Timestamptz        `json:"confirmed_at"`
+	ActivatedAt            pgtype.Timestamptz        `json:"activated_at"`
+	CompletedAt            pgtype.Timestamptz        `json:"completed_at"`
+	CancelledAt            pgtype.Timestamptz        `json:"cancelled_at"`
+	HandoverPin            *string                   `json:"handover_pin"`
+	CheckInMeterHours      pgtype.Numeric            `json:"check_in_meter_hours"`
+	CheckOutMeterHours     pgtype.Numeric            `json:"check_out_meter_hours"`
+	Version                int32                     `json:"version"`
+	CreatedAt              pgtype.Timestamptz        `json:"created_at"`
+	UpdatedAt              pgtype.Timestamptz        `json:"updated_at"`
+	DeletedAt              pgtype.Timestamptz        `json:"deleted_at"`
+}
+
+type BookingAttachment struct {
+	ID                    pgtype.UUID        `json:"id"`
+	BookingID             pgtype.UUID        `json:"booking_id"`
+	AttachmentID          pgtype.UUID        `json:"attachment_id"`
+	BundledDailyRateMinor int64              `json:"bundled_daily_rate_minor"`
+	CreatedAt             pgtype.Timestamptz `json:"created_at"`
+}
+
+type BookingAuditLog struct {
+	ID         pgtype.UUID        `json:"id"`
+	BookingID  pgtype.UUID        `json:"booking_id"`
+	ActorID    pgtype.UUID        `json:"actor_id"`
+	Action     string             `json:"action"`
+	FromStatus string             `json:"from_status"`
+	ToStatus   string             `json:"to_status"`
+	Reason     *string            `json:"reason"`
+	Payload    []byte             `json:"payload"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+}
+
+type BookingBankSlip struct {
+	ID                   pgtype.UUID        `json:"id"`
+	BookingID            pgtype.UUID        `json:"booking_id"`
+	UploaderID           pgtype.UUID        `json:"uploader_id"`
+	StorageUri           string             `json:"storage_uri"`
+	FileHashSha256       string             `json:"file_hash_sha256"`
+	TransactionReference *string            `json:"transaction_reference"`
+	AmountMinor          int64              `json:"amount_minor"`
+	Currency             string             `json:"currency"`
+	Status               string             `json:"status"`
+	RejectionReasonCode  *string            `json:"rejection_reason_code"`
+	RejectionNotes       *string            `json:"rejection_notes"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	AuditedAt            pgtype.Timestamptz `json:"audited_at"`
+}
+
 type Category struct {
 	ID           pgtype.UUID        `json:"id"`
 	ParentID     pgtype.UUID        `json:"parent_id"`

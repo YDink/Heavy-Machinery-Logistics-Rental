@@ -1,9 +1,9 @@
 # CONTEXT.md — Dink Machinery Active Session State
 
 **Project Phase:** Phase 2 (Partition Feature Development)  
-**Active Requirement Partition:** `05-05-booking-reservation-flow` (20-State Booking Machine & Hold Concurrency Engine)  
-**Active Branch:** `main` (Pending checkout of `feature/05-05-booking-reservation-flow`)  
-**Current Stop Point:** Partition 05-04 Verified & Merged into Main. Ready to begin Partition 05-05.
+**Active Requirement Partition:** `05-06-active-rental-management` (Active Rental Management, Shift Telemetry, Breakdown & Extension Architecture)  
+**Active Branch:** `feature/05-05-booking-reservation-flow` (Partition 05-05 verified & ready to merge into main)  
+**Current Stop Point:** Partition 05-05 Verified across Backend, Mobile, and Governance. Ready to merge to main and begin Partition 05-06.
 
 ---
 
@@ -53,7 +53,7 @@
     - `GET /fleets/search` (`contracts/endpoints/machinery/fleets-search.yaml`): Keyset cursor spatial search, distance radius, multi-facet filtering, deterministic scoring.
     - `POST /fleets/compare` (`contracts/endpoints/machinery/fleets-compare.yaml`): 2-to-3 machine side-by-side dynamic EAV spec matrix with difference highlighting (`SR-08`, `FL-15`).
     - `GET /fleets/{id}/availability` (`contracts/endpoints/machinery/fleet-availability.yaml`): Month/day availability heatmap and pre-flight hold diagnostics.
-  - Updated `contracts/openapi.yaml`, bundled via Redocly (`contracts/openapi.bundled.yaml`), generated TypeScript DTOs (`admin/src/types/api.generated.ts`), and Go chi server types with `oapi-codegen` (`backend/internal/transport/http/generated/api.gen.go`).
+  - Updated `contracts/openapi.yaml`, bundled via Redocly (`contracts/openapi.bundled.yaml`), generated TypeScript DTOs (`admin/src/types/api.generated.ts`), and Go types with `oapi-codegen` (`backend/internal/transport/http/generated/api.gen.go`).
 - **Go Backend Core Subsystem (`backend/`):**
   - `internal/modules/machinery/domain/`:
     - Domain entities & value objects: `FleetSearchFilter`, `FleetSearchResult`, `FleetCompareResult`, `FleetAvailabilityInfo`.
@@ -80,10 +80,7 @@
     - `FleetComparisonMatrixView` side-by-side spec comparison table with difference highlighting.
     - `DiscoveryPage` and `FleetComparisonPage`.
   - Registered all dependencies in `lib/core/di/injection.dart` (`GetIt`).
-  - 100% mobile test pass rate (40/40 tests passing); 0 issues on `fvm flutter analyze`.
-- **Governance & Quality Gates:**
-  - `scripts/validate-decision-template.sh`: Verified all decisions conform strictly to governance specifications.
-  - `scripts/validate-decision-links.sh`: Verified all 19 ADRs and 80 L2 partition decisions have valid bidirectional links.
+  - 100% mobile test pass rate; 0 issues on `fvm flutter analyze`.
 
 ### Completed (Zero Web Framework Migration — Pure Go Standard Library Architecture)
 - **Elimination of Web Frameworks & Third-Party Logging:**
@@ -98,36 +95,86 @@
   - 100% mobile test pass rate (40/40 tests passing; `fvm flutter test`).
   - Updated `docs/TECH_STACK.md` and `docs/components/backend/AGENTS.md`.
 
+### Completed (Partition 05-05: Booking Reservation Flow, 16-State Lifecycle FSM & Hold Concurrency Engine)
+- **Database Schema & Migrations (`migrations/`):**
+  - Created `migrations/000007_create_booking_state_machine_tables.up.sql` and `.down.sql`:
+    - `bookings`: 16-state canonical lifecycle (`DRAFT`, `PENDING_PAYMENT`, `PAYMENT_EVIDENCE_UPLOADED`, `PAYMENT_DECLINED`, `DISPUTE_OPENED`, `DISPUTE_RESOLVED_RENTER`, `DISPUTE_RESOLVED_OWNER`, `CONFIRMED`, `AWAITING_FLEET_READINESS`, `PENDING_ADDITIONAL_PAYMENT`, `READY_FOR_PICKUP`, `ACTIVE`, `RETURN_INITIATED`, `PENDING_FINAL_PAYMENT`, `COMPLETED`, `RATED`, `CANCELLED`).
+    - Optimistic Concurrency Control (OCC) column `version INT NOT NULL DEFAULT 1`.
+    - Strict monetary minor units (`daily_rate_minor`, `base_hire_fee_minor`, `attachments_fee_minor`, `gross_rental_amount_minor`, `prepayment_amount_minor`, `penalty_amount_minor`, `refund_amount_minor`).
+    - 4-digit site handover verification PIN (`handover_pin VARCHAR(8)`).
+    - Cabin engine hour meters (`check_in_meter_hours NUMERIC(10,2)`, `check_out_meter_hours NUMERIC(10,2)`).
+    - Keyset indexes on `(fleet_id, start_date, end_date)`, `(renter_id, created_at)`, `(owner_id, created_at)`.
+    - `booking_attachments`: Embedded bundled attachment rates.
+    - `booking_bank_slips`: Non-custodial wire receipts with SHA-256 duplicate proof.
+    - `booking_audit_logs`: Immutable, append-only state transition audit trail with OCC version recording and actor IDs.
+    - Seeded dynamic RBAC permissions: `bookings:create`, `bookings:read`, `bookings:confirm`, `bookings:decline`, `bookings:dispute`, `bookings:cancel`, `bookings:checkin`, `bookings:checkout` mapped to standard roles.
+  - Added 15 sqlc queries in `backend/internal/platform/database/queries.sql`, compiled to Go in `backend/internal/platform/database/db/` (`models.go`, `queries.sql.go`).
+- **OpenAPI 3.1.0 Canonical Contracts & Type Generation:**
+  - Updated `contracts/components/schemas/booking.yaml` with 16-state schema, monetary envelopes, and DTOs.
+  - Added endpoint contracts: `contracts/endpoints/bookings/payment-evidence.yaml`, `decline-payment.yaml`, `dispute-booking.yaml`, `handover-check-in.yaml`, `return-check-out.yaml`.
+  - Re-bundled OpenAPI schema with Redocly (`contracts/openapi.bundled.yaml`).
+  - Generated TypeScript DTOs (`admin/src/types/api.generated.ts`) and Go types (`backend/internal/transport/http/generated/api.gen.go`).
+- **Go Backend Core Subsystem (`backend/`):**
+  - `internal/modules/booking/domain/`:
+    - Strict 16-state FSM transition validator (`ValidateTransition`).
+    - Deterministic cost quoting engine (`CalculateQuote`) enforcing 50% advance prepayment and duration invariants.
+    - Bilateral cancellation matrix (`CalculateCancellation`) enforcing 20%/50% penalty tiers, owner debt accounting, and force majeure (`BK-07`, `BK-08`).
+    - Domain entities (`Booking`, `BankSlip`, `AuditLog`) and interfaces (`BookingRepository`, `HoldLeaseManager`).
+    - 100% unit test pass rate (`fsm_test.go`, `quote_test.go`).
+  - `internal/modules/booking/infrastructure/`:
+    - `MemoryHoldLeaseManager`: Volatile Redis/Valkey 60-minute distributed mutex hold leases.
+    - `PostgresRepository`: Full `pgx/v5` transactional persistence with OCC conflict detection.
+    - `MemoryBookingRepository`: In-memory thread-safe repository for unit/integration testing.
+  - `internal/modules/booking/application/`:
+    - `BookingService` orchestrating reservation creation with distributed lease locks, bank slip upload, owner confirmation, payment dispute handling, bilateral cancellations, and physical handover/return meter validations.
+    - 100% application test pass rate (`booking_service_test.go`).
+  - `internal/transport/http/`:
+    - Standard library `net/http.ServeMux` REST and RPC colon action endpoints (`POST /api/v1/bookings`, `GET /api/v1/bookings/{id}`, `POST /api/v1/bookings/{id}:confirm-payment`, `POST /api/v1/bookings/{id}:decline-payment`, `POST /api/v1/bookings/{id}:dispute`, `POST /api/v1/bookings/{id}:cancel`, `POST /api/v1/bookings/{id}:handover-check-in`, `POST /api/v1/bookings/{id}:return-check-out`, `POST /api/v1/bookings/{id}/payment-evidence`).
+    - Full HTTP integration test suite (`booking_test.go`) verifying auth, self-booking prevention, 409 collision blocking, 422 bad PIN, 201 creation, and meter progression.
+  - 100% backend test pass rate across all packages (`go test -count=1 ./...`).
+- **Flutter Mobile Client (`mobile/`):**
+  - Full-stack localization: English (`app_en.arb`) and Amharic (`app_am.arb`) with zero hardcoded strings.
+  - Data layer: `BookingModel`, `BookingAttachmentModel`, `BankSlipModel`, `BookingRemoteDataSourceImpl`, `BookingRepositoryImpl`.
+  - Domain layer: `BookingEntity` (with `copyWith`), `BookingAttachmentEntity`, `BankSlipEntity`, use cases (`CreateBookingUseCase`, `GetBookingUseCase`, `SubmitPaymentSlipUseCase`).
+  - Presentation layer:
+    - `BookingBloc` handling hold reservations, slip uploads, owner confirmations, disputes, cancellations, and handovers.
+    - `BookingPriceBreakdownCard` rendering monetary amounts in minor units, daily tariffs, and 50% advance splits.
+    - `HoldCountdownTimer` displaying real-time 60-minute reservation expiration.
+    - `BookingStatusBadge` supporting 16-state lifecycle with color mapping and bilingual labels.
+    - `BookingCheckoutPage` and `BookingDetailPage`.
+  - Dependency Injection: Registered in `mobile/lib/core/di/injection.dart` (`GetIt`).
+  - Comprehensive unit and widget tests: 19 tests in `test/features/booking/` (100% pass rate).
+  - 100% mobile test pass rate (59/59 tests passing); 0 issues on `fvm flutter analyze`.
+- **Governance & Quality Gates:**
+  - `scripts/validate-decision-template.sh`: Verified all decisions conform strictly to governance specifications.
+  - `scripts/validate-decision-links.sh`: Verified all 19 ADRs and 80 L2 partition decisions have valid bidirectional links.
+
 ---
 
-## 2. Next Immediate Tasks (Partition 05-05: Booking, Reservation & Lifecycle State Machine Architecture)
+## 2. Next Immediate Tasks (Partition 05-06: Active Rental Management, Shift Telemetry, Breakdown & Extension Architecture)
 
 1. **Database Schema & Migrations (`migrations/`):**
-   - Create `migrations/000007_create_booking_state_machine_tables.up.sql` and `.down.sql`:
-     - `bookings` table: 16-state/20-state lifecycle topology (`DRAFT`, `HELD_PENDING_WIRE`, `PAYMENT_EVIDENCE_SUBMITTED`, `CONFIRMED`, `DISPATCHED_TO_SITE`, `IN_TRANSIT`, `ON_SITE_ACTIVE`, `BREAKDOWN_PAUSED`, `EXTENSION_REQUESTED`, `RETURN_INITIATED`, `PENDING_FINAL_PAYMENT`, `COMPLETED`, `DISPUTE_RAISED`, `CANCELLED_NO_FEE`, `CANCELLED_WITH_PENALTY`, `REFUNDED`).
-     - Composite keyset pagination indexing (`created_at`, `id`, `renter_id`, `owner_id`, `status`).
-     - Optimistic Concurrency Control (OCC) `version INT NOT NULL DEFAULT 1`.
-     - `booking_audit_logs` append-only audit trail with previous state, new state, actor, reason, timestamp.
-     - `booking_bank_slips` table for non-custodial bank wire settlement and SHA-256 duplicate proof.
-     - Dynamic RBAC permissions for booking transitions and administrative interventions.
+   - Create `migrations/000008_create_active_rental_telemetry_tables.up.sql` and `.down.sql`:
+     - `handover_inspections`: Pre-rental inspection with multi-angle photos (`CABIN`, `CHASSIS`, `HYDRAULICS`, `TRACKS_TIRES`, `HOUR_METER`), initial engine meter, site GPS location, signed confirmation.
+     - `rental_shifts`: Shift telemetry logging with 8.0 hr standard daily shift baseline, start/end timestamps, operator assignment, operating hours meter deltas.
+     - `rental_extensions`: Extension requisitions with daily rate differential accounting, GiST temporal range expansion on `fleet_availability` and `attachment_reservations`, advance prepayment calculation, owner approval workflow.
+     - `mechanical_breakdowns`: Stoppage logging with breakdown photo evidence, automated shift timer pausing, SLA resolution timer clock, field mechanic dispatch details.
+     - Dynamic RBAC permissions for active rental management (`rentals:inspect`, `rentals:shift_log`, `rentals:extend`, `rentals:breakdown`).
    - Generate `sqlc` queries in `backend/internal/platform/database/db/`.
-2. **OpenAPI 3.1.0 Contracts:**
-   - Define canonical wire contracts in `contracts/`:
-     - `POST /bookings` (`contracts/endpoints/bookings/create-booking.yaml`): Requisition creation & 60-min Valkey hold lock.
-     - `POST /bookings/{id}:submit-slip` (`contracts/endpoints/bookings/submit-payment-slip.yaml`): Slip ingestion & evidence submission.
-     - `POST /bookings/{id}:confirm-payment` (`contracts/endpoints/bookings/confirm-payment.yaml`): Owner receipt verification.
-     - `POST /bookings/{id}:cancel` (`contracts/endpoints/bookings/cancel-booking.yaml`): Bilateral cancellation with penalty calculation.
-     - `GET /bookings/{id}` & `GET /bookings`: Single booking inspector and keyset paginated history.
+2. **OpenAPI 3.1.0 Canonical Contracts:**
+   - Define contracts in `contracts/`:
+     - `POST /api/v1/bookings/{id}/handover-inspect`
+     - `POST /api/v1/bookings/{id}/handover-confirm`
+     - `GET /api/v1/bookings/{id}/hud`: Active rental heads-up display telemetry
+     - `POST /api/v1/bookings/{id}/extend`
+     - `POST /api/v1/bookings/{id}/breakdown`
    - Bundle OpenAPI specs and generate TypeScript DTOs & Go types.
-3. **Backend Domain & Application Core (`backend/internal/modules/booking/`):**
-   - Implement finite state machine (FSM) with strict transition matrix validation (`ValidateTransition`).
-   - Implement deterministic cost quoting & tariff breakdown (`BK-04`).
-   - Implement 60-minute Valkey distributed hold lease (`BK-05`) with automatic expiration cleanup.
-   - Implement ClamAV slip scanning hook and SHA-256 idempotency check.
-   - Comprehensive unit and integration concurrency tests.
-4. **Flutter Mobile Client (`mobile/lib/features/booking/`):**
-   - Domain, Data, and Presentation layers:
-     - 60-minute countdown hold timer with 15-min warning push notification.
-     - Non-custodial bank slip upload and preview.
-     - Booking checkout price breakdown and status HUD.
+3. **Backend Domain & Application Core (`backend/internal/modules/rental/`):**
+   - Invariant validators: Shift hour calculations ($8.0\text{ hrs/day}$ shift quota), monotonic hour meter verification, dual challenge PIN verification, temporal GiST range expansion.
+   - Domain unit and application service integration tests.
+4. **Flutter Mobile Client (`mobile/lib/features/active_rental/`):**
+   - Field Heads-Up Display (HUD) viewport with high-contrast AAA outdoor readability.
+   - Shift telemetry tracker with cumulative engine hours counter.
+   - Breakdown stoppage reporting form with camera capture reticle.
+   - Rental extension requisition sheet with instant rate calculation.
    - 100% test coverage and zero analyzer issues.

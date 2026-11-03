@@ -1,0 +1,38 @@
+post:
+  tags: [booking]
+  summary: Decline bank transfer payment evidence
+  description: Fleet owner declines submitted bank transfer slip specifying mandatory reason code.
+  operationId: declineBookingPayment
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/booking.yaml#/DeclinePaymentRequest'
+  responses:
+    '200':
+      description: Payment declined and booking state updated to PAYMENT_DECLINED.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/booking.yaml#/BookingDetailSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

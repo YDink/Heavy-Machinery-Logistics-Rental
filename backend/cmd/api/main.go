@@ -13,6 +13,9 @@ import (
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/application"
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/domain"
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/infrastructure"
+	bookingApp "github.com/dinkmachinery/dink-core/internal/modules/booking/application"
+	bookingDomain "github.com/dinkmachinery/dink-core/internal/modules/booking/domain"
+	bookingInfra "github.com/dinkmachinery/dink-core/internal/modules/booking/infrastructure"
 	machineryApp "github.com/dinkmachinery/dink-core/internal/modules/machinery/application"
 	machineryDomain "github.com/dinkmachinery/dink-core/internal/modules/machinery/domain"
 	machineryInfra "github.com/dinkmachinery/dink-core/internal/modules/machinery/infrastructure"
@@ -66,6 +69,7 @@ func main() {
 	var specRepo machineryDomain.FleetSpecRepository
 	var attachmentRepo machineryDomain.AttachmentRepository
 	var discoveryRepo machineryDomain.DiscoveryRepository
+	var bookingRepo bookingDomain.BookingRepository
 
 	dbPool, err := pgxpool.New(ctx, cfg.DatabaseURL)
 	if err == nil && dbPool.Ping(ctx) == nil {
@@ -79,6 +83,7 @@ func main() {
 		specRepo = pgMachineryRepo
 		attachmentRepo = pgMachineryRepo
 		discoveryRepo = pgMachineryRepo
+		bookingRepo = bookingInfra.NewPostgresBookingRepository(queries)
 		logger.Info("Connected to PostgreSQL database for repositories")
 	} else {
 		logger.Warn("PostgreSQL connection unavailable; using in-memory caches for bootstrapping")
@@ -91,6 +96,7 @@ func main() {
 		specRepo = memMachineryRepo
 		attachmentRepo = memMachineryRepo
 		discoveryRepo = memMachineryRepo
+		bookingRepo = bookingInfra.NewMemoryBookingRepository()
 	}
 
 	authService := application.NewAuthService(userRepo, otpService, tokenService)
@@ -103,7 +109,11 @@ func main() {
 	)
 	attachmentService := machineryApp.NewAttachmentService(attachmentRepo, fleetRepo)
 	discoveryService := machineryApp.NewDiscoveryService(discoveryRepo, categoryRepo, nil)
-	server := transport.NewServer(authService, tokenService, machineryService, attachmentService, discoveryService)
+
+	holdLeaseManager := bookingInfra.NewMemoryHoldLeaseManager()
+	bookingService := bookingApp.NewBookingService(bookingRepo, holdLeaseManager, machineryService, nil)
+
+	server := transport.NewServer(authService, tokenService, machineryService, attachmentService, discoveryService, bookingService)
 
 	// Standard Library net/http.ServeMux Router
 	mux := http.NewServeMux()

@@ -372,6 +372,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/bookings/{id}:decline-payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decline bank transfer payment evidence
+         * @description Fleet owner declines submitted bank transfer slip specifying mandatory reason code.
+         */
+        post: operations["declineBookingPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}:dispute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Raise dispute on declined payment evidence
+         * @description Contractor disputes owner payment decline and escalates to compliance officer arbitration docket.
+         */
+        post: operations["disputeBookingPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/bookings/{id}:cancel": {
         parameters: {
             query?: never;
@@ -386,6 +426,66 @@ export interface paths {
          * @description Traces cancellation rules, evaluates cancellation grace periods, and calculates refunds.
          */
         post: operations["cancelBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/payment-evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit bank transfer payment slip
+         * @description Ingests non-custodial bank wire evidence, performs ClamAV scanning, and advances booking state.
+         */
+        post: operations["submitBookingPaymentEvidence"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}:handover-check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Execute machine handover check-in via challenge PIN
+         * @description Validates dynamic 6-digit challenge PIN and baseline check-in hour meter, transitioning state to ACTIVE.
+         */
+        post: operations["handoverCheckIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}:return-check-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Execute machine return check-out
+         * @description Validates monotonic return hour meter, calculates excess shift hours, and transitions to RETURN_INITIATED or COMPLETED.
+         */
+        post: operations["returnCheckOut"];
         delete?: never;
         options?: never;
         head?: never;
@@ -759,14 +859,18 @@ export interface components {
             meta: components["schemas"]["ResponseMeta"];
         };
         /** @enum {string} */
-        BookingStatus: "DRAFT" | "PENDING_HOLD" | "PENDING_PAYMENT" | "PAYMENT_PROCESSING" | "CONFIRMED" | "SITE_DISPATCHED" | "CHECKED_IN" | "ACTIVE_OPERATION" | "INSPECTION_PENDING" | "DISPUTED" | "EXTENSION_REQUESTED" | "COMPLETED" | "CANCELLED" | "EXPIRED";
+        BookingStatus: "DRAFT" | "PENDING_PAYMENT" | "PAYMENT_EVIDENCE_UPLOADED" | "PAYMENT_DECLINED" | "DISPUTE_OPENED" | "DISPUTE_RESOLVED_RENTER" | "DISPUTE_RESOLVED_OWNER" | "CONFIRMED" | "AWAITING_FLEET_READINESS" | "PENDING_ADDITIONAL_PAYMENT" | "READY_FOR_PICKUP" | "ACTIVE" | "RETURN_INITIATED" | "PENDING_FINAL_PAYMENT" | "COMPLETED" | "RATED" | "CANCELLED";
         Booking: {
             /** Format: uuid */
             id: string;
+            /** @example BK-8812 */
+            bookingReference: string;
             /** Format: uuid */
             fleetId: string;
             /** Format: uuid */
             renterId: string;
+            /** Format: uuid */
+            ownerId: string;
             status: components["schemas"]["BookingStatus"];
             /**
              * Format: date
@@ -778,24 +882,61 @@ export interface components {
              * @example 2026-11-07
              */
             endDate: string;
-            totalCost: components["schemas"]["MoneyAmount"];
-            depositHold: components["schemas"]["MoneyAmount"];
+            /** @example 6 */
+            durationDays: number;
+            dailyRate: components["schemas"]["MoneyAmount"];
+            baseHireFee: components["schemas"]["MoneyAmount"];
+            attachmentsFee: components["schemas"]["MoneyAmount"];
+            grossRentalAmount: components["schemas"]["MoneyAmount"];
+            prepaymentAmount: components["schemas"]["MoneyAmount"];
+            penaltyAmount?: components["schemas"]["MoneyAmount"];
+            refundAmount?: components["schemas"]["MoneyAmount"];
             /** @example Kilinto Industrial Park, Addis Ababa */
-            siteLocationAddress?: string;
+            siteLocationAddress: string;
+            /** @example FUNDS_NOT_RECEIVED_IN_ACCOUNT */
+            rejectionReasonCode?: string | null;
+            rejectionNotes?: string | null;
+            cancellationReason?: string | null;
+            /** @example 819204 */
+            handoverPin?: string | null;
+            /** @example 1450.5 */
+            checkInMeterHours?: number | null;
+            /** @example 1486 */
+            checkOutMeterHours?: number | null;
+            /** Format: date-time */
+            expiresAt?: string | null;
+            /** Format: date-time */
+            confirmedAt?: string | null;
+            /** Format: date-time */
+            activatedAt?: string | null;
+            /** Format: date-time */
+            completedAt?: string | null;
+            /** Format: date-time */
+            cancelledAt?: string | null;
+            attachments?: components["schemas"]["BookingAttachmentSummary"][];
             /** @example 1 */
             version: number;
             /** Format: date-time */
             createdAt: string;
+            /** Format: date-time */
+            updatedAt?: string;
         };
         CreateBookingRequest: {
             /** Format: uuid */
             fleetId: string;
-            /** Format: date */
+            /**
+             * Format: date
+             * @example 2026-11-01
+             */
             startDate: string;
-            /** Format: date */
+            /**
+             * Format: date
+             * @example 2026-11-07
+             */
             endDate: string;
-            /** @example Bole Lemi Industrial Zone Phase 2 */
+            /** @example Bole Lemi Industrial Zone Phase 2, Addis Ababa */
             siteLocationAddress: string;
+            attachmentIds?: string[];
         };
         SubmitInspectionRequest: {
             /** @enum {string} */
@@ -1314,6 +1455,21 @@ export interface components {
             error: Record<string, never> | null;
             meta: components["schemas"]["ResponseMeta"];
         };
+        BookingAttachmentSummary: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            attachmentId: string;
+            /** @example HYDRAULIC_BREAKER */
+            attachmentType?: string;
+            /** @example Montabert */
+            make?: string;
+            /** @example SC-36 */
+            model?: string;
+            /** @example SN-98234-MB */
+            serialNumber?: string;
+            bundledDailyRate: components["schemas"]["MoneyAmount"];
+        };
         CheckBundledAvailabilityRequest: {
             /** Format: uuid */
             fleetId: string;
@@ -1344,6 +1500,90 @@ export interface components {
             /** @default null */
             error: Record<string, never> | null;
             meta: components["schemas"]["ResponseMeta"];
+        };
+        DeclinePaymentRequest: {
+            /** @example 1 */
+            expectedVersion: number;
+            /**
+             * @example FUNDS_NOT_RECEIVED_IN_ACCOUNT
+             * @enum {string}
+             */
+            reasonCode: "FUNDS_NOT_RECEIVED_IN_ACCOUNT" | "INCORRECT_AMOUNT_TRANSFERRED" | "UNREADABLE_SLIP_IMAGE" | "SUSPECTED_FRAUDULENT_RECEIPT";
+            /** @example Branch statement does not reflect credited wire. */
+            rejectionNotes?: string;
+        };
+        DisputeBookingRequest: {
+            /** @example 1 */
+            expectedVersion: number;
+            /** @example Funds debited from sender bank account with valid reference. */
+            disputeReason: string;
+            evidenceUris?: string[];
+        };
+        SubmitPaymentSlipRequest: {
+            /** @example s3://dink-payment-vault/bookings/prepayment_wire.webp */
+            storageUri: string;
+            /**
+             * @description SHA-256 hash of the slip image file
+             * @example e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+             */
+            fileHash: string;
+            /** @example FT2611029831002 */
+            transactionReference?: string;
+            /**
+             * Format: int64
+             * @example 11250000
+             */
+            amountMinor: number;
+            /**
+             * @default ETB
+             * @example ETB
+             */
+            currency: string;
+        };
+        PaymentSlip: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            bookingId: string;
+            /** Format: uuid */
+            uploaderId: string;
+            storageUri: string;
+            fileHash: string;
+            transactionReference?: string | null;
+            amount: components["schemas"]["MoneyAmount"];
+            /** @enum {string} */
+            status: "PENDING_AUDIT" | "VERIFIED" | "REJECTED";
+            rejectionReasonCode?: string | null;
+            rejectionNotes?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            auditedAt?: string | null;
+        };
+        PaymentSlipSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["PaymentSlip"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        HandoverCheckInRequest: {
+            /** @example 2 */
+            expectedVersion: number;
+            /** @example 819204 */
+            handoverPin: string;
+            /** @example 1450.5 */
+            operatingHoursMeter: number;
+            photoUris?: string[];
+        };
+        ReturnCheckOutRequest: {
+            /** @example 3 */
+            expectedVersion: number;
+            /** @example 1486 */
+            operatingHoursMeter: number;
+            photoUris?: string[];
+            damageNotes?: string | null;
         };
     };
     responses: {
@@ -2083,6 +2323,74 @@ export interface operations {
             500: components["responses"]["internal-server-error"];
         };
     };
+    declineBookingPayment: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeclinePaymentRequest"];
+            };
+        };
+        responses: {
+            /** @description Payment declined and booking state updated to PAYMENT_DECLINED. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingDetailSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    disputeBookingPayment: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DisputeBookingRequest"];
+            };
+        };
+        responses: {
+            /** @description Dispute opened and routed to compliance arbitration. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingDetailSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
     cancelBooking: {
         parameters: {
             query?: never;
@@ -2117,6 +2425,109 @@ export interface operations {
             };
             400: components["responses"]["bad-request"];
             401: components["responses"]["unauthorized"];
+            409: components["responses"]["conflict"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    submitBookingPaymentEvidence: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitPaymentSlipRequest"];
+            };
+        };
+        responses: {
+            /** @description Payment slip uploaded and queued for owner audit. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentSlipSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            422: components["responses"]["unprocessable-entity"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    handoverCheckIn: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HandoverCheckInRequest"];
+            };
+        };
+        responses: {
+            /** @description Handover confirmed and rental active. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingDetailSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    returnCheckOut: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReturnCheckOutRequest"];
+            };
+        };
+        responses: {
+            /** @description Machine return recorded. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingDetailSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
             409: components["responses"]["conflict"];
             500: components["responses"]["internal-server-error"];
         };

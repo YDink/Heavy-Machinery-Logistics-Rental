@@ -2,31 +2,82 @@ BookingStatus:
   type: string
   enum:
     - DRAFT
-    - PENDING_HOLD
     - PENDING_PAYMENT
-    - PAYMENT_PROCESSING
+    - PAYMENT_EVIDENCE_UPLOADED
+    - PAYMENT_DECLINED
+    - DISPUTE_OPENED
+    - DISPUTE_RESOLVED_RENTER
+    - DISPUTE_RESOLVED_OWNER
     - CONFIRMED
-    - SITE_DISPATCHED
-    - CHECKED_IN
-    - ACTIVE_OPERATION
-    - INSPECTION_PENDING
-    - DISPUTED
-    - EXTENSION_REQUESTED
+    - AWAITING_FLEET_READINESS
+    - PENDING_ADDITIONAL_PAYMENT
+    - READY_FOR_PICKUP
+    - ACTIVE
+    - RETURN_INITIATED
+    - PENDING_FINAL_PAYMENT
     - COMPLETED
+    - RATED
     - CANCELLED
-    - EXPIRED
 
-Booking:
+BookingAttachmentSummary:
   type: object
-  required: [id, fleetId, renterId, status, startDate, endDate, totalCost, depositHold, version, createdAt]
+  required: [id, attachmentId, bundledDailyRate]
   properties:
     id:
       type: string
       format: uuid
+    attachmentId:
+      type: string
+      format: uuid
+    attachmentType:
+      type: string
+      example: "HYDRAULIC_BREAKER"
+    make:
+      type: string
+      example: "Montabert"
+    model:
+      type: string
+      example: "SC-36"
+    serialNumber:
+      type: string
+      example: "SN-98234-MB"
+    bundledDailyRate:
+      $ref: './common.yaml#/MoneyAmount'
+
+Booking:
+  type: object
+  required: 
+    - id
+    - bookingReference
+    - fleetId
+    - renterId
+    - ownerId
+    - status
+    - startDate
+    - endDate
+    - durationDays
+    - dailyRate
+    - baseHireFee
+    - attachmentsFee
+    - grossRentalAmount
+    - prepaymentAmount
+    - siteLocationAddress
+    - version
+    - createdAt
+  properties:
+    id:
+      type: string
+      format: uuid
+    bookingReference:
+      type: string
+      example: "BK-8812"
     fleetId:
       type: string
       format: uuid
     renterId:
+      type: string
+      format: uuid
+    ownerId:
       type: string
       format: uuid
     status:
@@ -39,17 +90,79 @@ Booking:
       type: string
       format: date
       example: "2026-11-07"
-    totalCost:
+    durationDays:
+      type: integer
+      example: 6
+    dailyRate:
       $ref: './common.yaml#/MoneyAmount'
-    depositHold:
+    baseHireFee:
+      $ref: './common.yaml#/MoneyAmount'
+    attachmentsFee:
+      $ref: './common.yaml#/MoneyAmount'
+    grossRentalAmount:
+      $ref: './common.yaml#/MoneyAmount'
+    prepaymentAmount:
+      $ref: './common.yaml#/MoneyAmount'
+    penaltyAmount:
+      $ref: './common.yaml#/MoneyAmount'
+    refundAmount:
       $ref: './common.yaml#/MoneyAmount'
     siteLocationAddress:
       type: string
       example: "Kilinto Industrial Park, Addis Ababa"
+    rejectionReasonCode:
+      type: string
+      nullable: true
+      example: "FUNDS_NOT_RECEIVED_IN_ACCOUNT"
+    rejectionNotes:
+      type: string
+      nullable: true
+    cancellationReason:
+      type: string
+      nullable: true
+    handoverPin:
+      type: string
+      nullable: true
+      example: "819204"
+    checkInMeterHours:
+      type: number
+      nullable: true
+      example: 1450.5
+    checkOutMeterHours:
+      type: number
+      nullable: true
+      example: 1486.0
+    expiresAt:
+      type: string
+      format: date-time
+      nullable: true
+    confirmedAt:
+      type: string
+      format: date-time
+      nullable: true
+    activatedAt:
+      type: string
+      format: date-time
+      nullable: true
+    completedAt:
+      type: string
+      format: date-time
+      nullable: true
+    cancelledAt:
+      type: string
+      format: date-time
+      nullable: true
+    attachments:
+      type: array
+      items:
+        $ref: '#/BookingAttachmentSummary'
     version:
       type: integer
       example: 1
     createdAt:
+      type: string
+      format: date-time
+    updatedAt:
       type: string
       format: date-time
 
@@ -63,12 +176,176 @@ CreateBookingRequest:
     startDate:
       type: string
       format: date
+      example: "2026-11-01"
     endDate:
       type: string
       format: date
+      example: "2026-11-07"
     siteLocationAddress:
       type: string
-      example: "Bole Lemi Industrial Zone Phase 2"
+      example: "Bole Lemi Industrial Zone Phase 2, Addis Ababa"
+    attachmentIds:
+      type: array
+      items:
+        type: string
+        format: uuid
+
+SubmitPaymentSlipRequest:
+  type: object
+  required: [storageUri, fileHash, amountMinor]
+  properties:
+    storageUri:
+      type: string
+      example: "s3://dink-payment-vault/bookings/prepayment_wire.webp"
+    fileHash:
+      type: string
+      description: SHA-256 hash of the slip image file
+      example: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    transactionReference:
+      type: string
+      example: "FT2611029831002"
+    amountMinor:
+      type: integer
+      format: int64
+      example: 11250000
+    currency:
+      type: string
+      default: "ETB"
+      example: "ETB"
+
+PaymentSlip:
+  type: object
+  required: [id, bookingId, uploaderId, storageUri, fileHash, amount, status, createdAt]
+  properties:
+    id:
+      type: string
+      format: uuid
+    bookingId:
+      type: string
+      format: uuid
+    uploaderId:
+      type: string
+      format: uuid
+    storageUri:
+      type: string
+    fileHash:
+      type: string
+    transactionReference:
+      type: string
+      nullable: true
+    amount:
+      $ref: './common.yaml#/MoneyAmount'
+    status:
+      type: string
+      enum: [PENDING_AUDIT, VERIFIED, REJECTED]
+    rejectionReasonCode:
+      type: string
+      nullable: true
+    rejectionNotes:
+      type: string
+      nullable: true
+    createdAt:
+      type: string
+      format: date-time
+    auditedAt:
+      type: string
+      format: date-time
+      nullable: true
+
+ConfirmPaymentRequest:
+  type: object
+  required: [expectedVersion]
+  properties:
+    expectedVersion:
+      type: integer
+      example: 1
+    paymentReference:
+      type: string
+      example: "TXN-ETB-902348"
+    notes:
+      type: string
+      example: "CBE branch statement audited and confirmed."
+
+DeclinePaymentRequest:
+  type: object
+  required: [expectedVersion, reasonCode]
+  properties:
+    expectedVersion:
+      type: integer
+      example: 1
+    reasonCode:
+      type: string
+      enum:
+        - FUNDS_NOT_RECEIVED_IN_ACCOUNT
+        - INCORRECT_AMOUNT_TRANSFERRED
+        - UNREADABLE_SLIP_IMAGE
+        - SUSPECTED_FRAUDULENT_RECEIPT
+      example: "FUNDS_NOT_RECEIVED_IN_ACCOUNT"
+    rejectionNotes:
+      type: string
+      example: "Branch statement does not reflect credited wire."
+
+DisputeBookingRequest:
+  type: object
+  required: [expectedVersion, disputeReason]
+  properties:
+    expectedVersion:
+      type: integer
+      example: 1
+    disputeReason:
+      type: string
+      example: "Funds debited from sender bank account with valid reference."
+    evidenceUris:
+      type: array
+      items:
+        type: string
+
+CancelBookingRequest:
+  type: object
+  required: [expectedVersion, reason]
+  properties:
+    expectedVersion:
+      type: integer
+      example: 1
+    reason:
+      type: string
+      example: "Site excavation postponed due to unforeseen geological constraints."
+
+HandoverCheckInRequest:
+  type: object
+  required: [expectedVersion, handoverPin, operatingHoursMeter]
+  properties:
+    expectedVersion:
+      type: integer
+      example: 2
+    handoverPin:
+      type: string
+      example: "819204"
+    operatingHoursMeter:
+      type: number
+      example: 1450.5
+    photoUris:
+      type: array
+      items:
+        type: string
+
+ReturnCheckOutRequest:
+  type: object
+  required: [expectedVersion, operatingHoursMeter]
+  properties:
+    expectedVersion:
+      type: integer
+      example: 3
+    operatingHoursMeter:
+      type: number
+      example: 1486.0
+    photoUris:
+      type: array
+      items:
+        type: string
+    damageNotes:
+      type: string
+      nullable: true
 
 SubmitInspectionRequest:
   type: object
@@ -149,6 +426,22 @@ BookingDetailSuccessResponse:
       enum: [true]
     data:
       $ref: '#/Booking'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+PaymentSlipSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/PaymentSlip'
     error:
       type: object
       nullable: true

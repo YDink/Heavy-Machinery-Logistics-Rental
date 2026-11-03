@@ -1,0 +1,38 @@
+post:
+  tags: [booking]
+  summary: Execute machine return check-out
+  description: Validates monotonic return hour meter, calculates excess shift hours, and transitions to RETURN_INITIATED or COMPLETED.
+  operationId: returnCheckOut
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/booking.yaml#/ReturnCheckOutRequest'
+  responses:
+    '200':
+      description: Machine return recorded.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/booking.yaml#/BookingDetailSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

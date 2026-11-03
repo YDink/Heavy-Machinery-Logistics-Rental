@@ -673,6 +673,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear'**
   String get clearCompare;
+
+  /// Button to submit rental booking request
+  ///
+  /// In en, this message translates to:
+  /// **'Request to Book'**
+  String get requestToBook;
+
+  /// Title for booking checkout breakdown
+  ///
+  /// In en, this message translates to:
+  /// **'Booking Details'**
+  String get bookingDetails;
+
+  /// Label for rental duration
+  ///
+  /// In en, this message translates to:
+  /// **'Rental Duration'**
+  String get rentalDuration;
+
+  /// Fee for primary machinery asset hire
+  ///
+  /// In en, this message translates to:
+  /// **'Base Hire Fee'**
+  String get baseHireFee;
+
+  /// Fee for attached bundled implements
+  ///
+  /// In en, this message translates to:
+  /// **'Attachments Fee'**
+  String get attachmentsFee;
+
+  /// Total combined rental cost
+  ///
+  /// In en, this message translates to:
+  /// **'Gross Rental Amount'**
+  String get grossRentalAmount;
+
+  /// Required 50 percent direct bank transfer advance
+  ///
+  /// In en, this message translates to:
+  /// **'Advance Prepayment (50%)'**
+  String get advancePrepayment;
+
+  /// Balance due upon rental return
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated Remaining Balance'**
+  String get remainingBalance;
+
+  /// Physical destination of rented machinery
+  ///
+  /// In en, this message translates to:
+  /// **'Site Location'**
+  String get siteLocation;
+
+  /// Radial countdown for 60-minute Valkey lease
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Hold Timer'**
+  String get paymentHoldTimer;
+
+  /// Button to upload wire payment slip
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Bank Transfer Slip'**
+  String get uploadBankSlip;
+
+  /// Fleet owner button to confirm receipt of bank wire
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Payment Received'**
+  String get confirmPaymentReceived;
+
+  /// Fleet owner button to decline unverified bank wire
+  ///
+  /// In en, this message translates to:
+  /// **'Decline Payment'**
+  String get declinePayment;
+
+  /// Contractor button to dispute declined payment
+  ///
+  /// In en, this message translates to:
+  /// **'Dispute Decline'**
+  String get disputeDecline;
+
+  /// Action to cancel booking
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Booking'**
+  String get cancelBooking;
+
+  /// 6-digit challenge PIN for site handover
+  ///
+  /// In en, this message translates to:
+  /// **'Handover PIN'**
+  String get handoverPIN;
+
+  /// Baseline cabin engine hour meter reading
+  ///
+  /// In en, this message translates to:
+  /// **'Check-In Meter Hours'**
+  String get checkInMeter;
+
+  /// Return check-out cabin engine hour meter reading
+  ///
+  /// In en, this message translates to:
+  /// **'Check-Out Meter Hours'**
+  String get checkOutMeter;
+
+  /// Status badge for pending payment
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Payment'**
+  String get bookingStatusPendingPayment;
+
+  /// Status badge for uploaded slip
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Evidence Uploaded'**
+  String get bookingStatusEvidenceUploaded;
+
+  /// Status badge for confirmed booking
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed'**
+  String get bookingStatusConfirmed;
+
+  /// Status badge for active in-field operation
+  ///
+  /// In en, this message translates to:
+  /// **'Active Rental'**
+  String get bookingStatusActive;
+
+  /// Status badge for successfully concluded rental
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get bookingStatusCompleted;
+
+  /// Status badge for cancelled booking
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get bookingStatusCancelled;
+
+  /// Unit label for duration in days
+  ///
+  /// In en, this message translates to:
+  /// **'days'**
+  String get daysUnit;
 }
 
 class _AppLocalizationsDelegate

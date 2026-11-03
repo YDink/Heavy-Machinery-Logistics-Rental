@@ -124,9 +124,9 @@
   "@fuelType": {
     "description": "Label for fuel type"
   },
-  "dailyRate": "Daily Rental Rate (ETB)",
+  "dailyRate": "Daily Rate",
   "@dailyRate": {
-    "description": "Label for daily rental price in ETB"
+    "description": "Label for daily rate"
   },
   "selfMoveCapable": "Self-Move Capable",
   "@selfMoveCapable": {
@@ -336,8 +336,12 @@
   "@photosCapturedCount": {
     "description": "Count of captured conditioning photos",
     "placeholders": {
-      "count": { "type": "int" },
-      "total": { "type": "int" }
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "perDay": "day",
@@ -352,15 +356,13 @@
   "@filterTitle": {
     "description": "Title for multi-facet filter sheet"
   },
-  "dailyRate": "Daily Rate",
-  "@dailyRate": {
-    "description": "Label for daily rate"
-  },
   "distanceAway": "{km} km away",
   "@distanceAway": {
     "description": "Distance indicator for fleet card",
     "placeholders": {
-      "km": { "type": "String" }
+      "km": {
+        "type": "String"
+      }
     }
   },
   "availableNow": "Available Now",
@@ -375,7 +377,9 @@
   "@compareSelected": {
     "description": "Button to open comparison matrix",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "comparisonMatrixTitle": "Machinery Comparison",
@@ -409,5 +413,105 @@
   "clearCompare": "Clear",
   "@clearCompare": {
     "description": "Button to clear comparison selection"
+  },
+  "requestToBook": "Request to Book",
+  "@requestToBook": {
+    "description": "Button to submit rental booking request"
+  },
+  "bookingDetails": "Booking Details",
+  "@bookingDetails": {
+    "description": "Title for booking checkout breakdown"
+  },
+  "rentalDuration": "Rental Duration",
+  "@rentalDuration": {
+    "description": "Label for rental duration"
+  },
+  "baseHireFee": "Base Hire Fee",
+  "@baseHireFee": {
+    "description": "Fee for primary machinery asset hire"
+  },
+  "attachmentsFee": "Attachments Fee",
+  "@attachmentsFee": {
+    "description": "Fee for attached bundled implements"
+  },
+  "grossRentalAmount": "Gross Rental Amount",
+  "@grossRentalAmount": {
+    "description": "Total combined rental cost"
+  },
+  "advancePrepayment": "Advance Prepayment (50%)",
+  "@advancePrepayment": {
+    "description": "Required 50 percent direct bank transfer advance"
+  },
+  "remainingBalance": "Estimated Remaining Balance",
+  "@remainingBalance": {
+    "description": "Balance due upon rental return"
+  },
+  "siteLocation": "Site Location",
+  "@siteLocation": {
+    "description": "Physical destination of rented machinery"
+  },
+  "paymentHoldTimer": "Payment Hold Timer",
+  "@paymentHoldTimer": {
+    "description": "Radial countdown for 60-minute Valkey lease"
+  },
+  "uploadBankSlip": "Upload Bank Transfer Slip",
+  "@uploadBankSlip": {
+    "description": "Button to upload wire payment slip"
+  },
+  "confirmPaymentReceived": "Confirm Payment Received",
+  "@confirmPaymentReceived": {
+    "description": "Fleet owner button to confirm receipt of bank wire"
+  },
+  "declinePayment": "Decline Payment",
+  "@declinePayment": {
+    "description": "Fleet owner button to decline unverified bank wire"
+  },
+  "disputeDecline": "Dispute Decline",
+  "@disputeDecline": {
+    "description": "Contractor button to dispute declined payment"
+  },
+  "cancelBooking": "Cancel Booking",
+  "@cancelBooking": {
+    "description": "Action to cancel booking"
+  },
+  "handoverPIN": "Handover PIN",
+  "@handoverPIN": {
+    "description": "6-digit challenge PIN for site handover"
+  },
+  "checkInMeter": "Check-In Meter Hours",
+  "@checkInMeter": {
+    "description": "Baseline cabin engine hour meter reading"
+  },
+  "checkOutMeter": "Check-Out Meter Hours",
+  "@checkOutMeter": {
+    "description": "Return check-out cabin engine hour meter reading"
+  },
+  "bookingStatusPendingPayment": "Pending Payment",
+  "@bookingStatusPendingPayment": {
+    "description": "Status badge for pending payment"
+  },
+  "bookingStatusEvidenceUploaded": "Payment Evidence Uploaded",
+  "@bookingStatusEvidenceUploaded": {
+    "description": "Status badge for uploaded slip"
+  },
+  "bookingStatusConfirmed": "Confirmed",
+  "@bookingStatusConfirmed": {
+    "description": "Status badge for confirmed booking"
+  },
+  "bookingStatusActive": "Active Rental",
+  "@bookingStatusActive": {
+    "description": "Status badge for active in-field operation"
+  },
+  "bookingStatusCompleted": "Completed",
+  "@bookingStatusCompleted": {
+    "description": "Status badge for successfully concluded rental"
+  },
+  "bookingStatusCancelled": "Cancelled",
+  "@bookingStatusCancelled": {
+    "description": "Status badge for cancelled booking"
+  },
+  "daysUnit": "days",
+  "@daysUnit": {
+    "description": "Unit label for duration in days"
   }
 }

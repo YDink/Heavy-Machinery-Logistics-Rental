@@ -35,6 +35,13 @@ import 'package:dink_mobile/features/attachment/domain/usecases/get_attachment_i
 import 'package:dink_mobile/features/attachment/domain/usecases/link_attachment_usecase.dart';
 import 'package:dink_mobile/features/attachment/domain/usecases/register_attachment_usecase.dart';
 import 'package:dink_mobile/features/attachment/presentation/bloc/attachment_bloc.dart';
+import 'package:dink_mobile/features/booking/data/datasources/booking_remote_datasource.dart';
+import 'package:dink_mobile/features/booking/data/repositories/booking_repository_impl.dart';
+import 'package:dink_mobile/features/booking/domain/repositories/booking_repository.dart';
+import 'package:dink_mobile/features/booking/domain/usecases/create_booking_usecase.dart';
+import 'package:dink_mobile/features/booking/domain/usecases/get_booking_usecase.dart';
+import 'package:dink_mobile/features/booking/domain/usecases/submit_payment_slip_usecase.dart';
+import 'package:dink_mobile/features/booking/presentation/bloc/booking_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -252,4 +259,40 @@ Future<void> initDependencies() async {
     );
   }
 
+  // Booking Subsystem (Partition 05-05)
+  if (!sl.isRegistered<BookingRemoteDataSource>()) {
+    sl.registerLazySingleton<BookingRemoteDataSource>(
+      () => BookingRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
+    );
+  }
+
+  if (!sl.isRegistered<BookingRepository>()) {
+    sl.registerLazySingleton<BookingRepository>(
+      () => BookingRepositoryImpl(remoteDataSource: sl<BookingRemoteDataSource>()),
+    );
+  }
+
+  if (!sl.isRegistered<CreateBookingUseCase>()) {
+    sl.registerLazySingleton<CreateBookingUseCase>(
+      () => CreateBookingUseCase(sl<BookingRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<GetBookingUseCase>()) {
+    sl.registerLazySingleton<GetBookingUseCase>(
+      () => GetBookingUseCase(sl<BookingRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<SubmitPaymentSlipUseCase>()) {
+    sl.registerLazySingleton<SubmitPaymentSlipUseCase>(
+      () => SubmitPaymentSlipUseCase(sl<BookingRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<BookingBloc>()) {
+    sl.registerFactory<BookingBloc>(
+      () => BookingBloc(repository: sl<BookingRepository>()),
+    );
+  }
 }

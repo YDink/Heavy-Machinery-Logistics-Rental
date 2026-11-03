@@ -785,6 +785,86 @@ paths:
           $ref: '#/components/responses/conflict'
         '500':
           $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}:decline-payment:
+    post:
+      tags:
+        - booking
+      summary: Decline bank transfer payment evidence
+      description: Fleet owner declines submitted bank transfer slip specifying mandatory reason code.
+      operationId: declineBookingPayment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeclinePaymentRequest'
+      responses:
+        '200':
+          description: Payment declined and booking state updated to PAYMENT_DECLINED.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingDetailSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}:dispute:
+    post:
+      tags:
+        - booking
+      summary: Raise dispute on declined payment evidence
+      description: Contractor disputes owner payment decline and escalates to compliance officer arbitration docket.
+      operationId: disputeBookingPayment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisputeBookingRequest'
+      responses:
+        '200':
+          description: Dispute opened and routed to compliance arbitration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingDetailSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
   /bookings/{id}:cancel:
     post:
       tags:
@@ -829,6 +909,128 @@ paths:
           $ref: '#/components/responses/bad-request'
         '401':
           $ref: '#/components/responses/unauthorized'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/payment-evidence:
+    post:
+      tags:
+        - booking
+      summary: Submit bank transfer payment slip
+      description: Ingests non-custodial bank wire evidence, performs ClamAV scanning, and advances booking state.
+      operationId: submitBookingPaymentEvidence
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitPaymentSlipRequest'
+      responses:
+        '201':
+          description: Payment slip uploaded and queued for owner audit.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSlipSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '422':
+          $ref: '#/components/responses/unprocessable-entity'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}:handover-check-in:
+    post:
+      tags:
+        - booking
+      summary: Execute machine handover check-in via challenge PIN
+      description: Validates dynamic 6-digit challenge PIN and baseline check-in hour meter, transitioning state to ACTIVE.
+      operationId: handoverCheckIn
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HandoverCheckInRequest'
+      responses:
+        '200':
+          description: Handover confirmed and rental active.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingDetailSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}:return-check-out:
+    post:
+      tags:
+        - booking
+      summary: Execute machine return check-out
+      description: Validates monotonic return hour meter, calculates excess shift hours, and transitions to RETURN_INITIATED or COMPLETED.
+      operationId: returnCheckOut
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnCheckOutRequest'
+      responses:
+        '200':
+          description: Machine return recorded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingDetailSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not-found'
         '409':
           $ref: '#/components/responses/conflict'
         '500':
@@ -1626,40 +1828,56 @@ components:
       type: string
       enum:
         - DRAFT
-        - PENDING_HOLD
         - PENDING_PAYMENT
-        - PAYMENT_PROCESSING
+        - PAYMENT_EVIDENCE_UPLOADED
+        - PAYMENT_DECLINED
+        - DISPUTE_OPENED
+        - DISPUTE_RESOLVED_RENTER
+        - DISPUTE_RESOLVED_OWNER
         - CONFIRMED
-        - SITE_DISPATCHED
-        - CHECKED_IN
-        - ACTIVE_OPERATION
-        - INSPECTION_PENDING
-        - DISPUTED
-        - EXTENSION_REQUESTED
+        - AWAITING_FLEET_READINESS
+        - PENDING_ADDITIONAL_PAYMENT
+        - READY_FOR_PICKUP
+        - ACTIVE
+        - RETURN_INITIATED
+        - PENDING_FINAL_PAYMENT
         - COMPLETED
+        - RATED
         - CANCELLED
-        - EXPIRED
     Booking:
       type: object
       required:
         - id
+        - bookingReference
         - fleetId
         - renterId
+        - ownerId
         - status
         - startDate
         - endDate
-        - totalCost
-        - depositHold
+        - durationDays
+        - dailyRate
+        - baseHireFee
+        - attachmentsFee
+        - grossRentalAmount
+        - prepaymentAmount
+        - siteLocationAddress
         - version
         - createdAt
       properties:
         id:
           type: string
           format: uuid
+        bookingReference:
+          type: string
+          example: BK-8812
         fleetId:
           type: string
           format: uuid
         renterId:
+          type: string
+          format: uuid
+        ownerId:
           type: string
           format: uuid
         status:
@@ -1672,17 +1890,79 @@ components:
           type: string
           format: date
           example: '2026-11-07'
-        totalCost:
+        durationDays:
+          type: integer
+          example: 6
+        dailyRate:
           $ref: '#/components/schemas/MoneyAmount'
-        depositHold:
+        baseHireFee:
+          $ref: '#/components/schemas/MoneyAmount'
+        attachmentsFee:
+          $ref: '#/components/schemas/MoneyAmount'
+        grossRentalAmount:
+          $ref: '#/components/schemas/MoneyAmount'
+        prepaymentAmount:
+          $ref: '#/components/schemas/MoneyAmount'
+        penaltyAmount:
+          $ref: '#/components/schemas/MoneyAmount'
+        refundAmount:
           $ref: '#/components/schemas/MoneyAmount'
         siteLocationAddress:
           type: string
           example: Kilinto Industrial Park, Addis Ababa
+        rejectionReasonCode:
+          type: string
+          nullable: true
+          example: FUNDS_NOT_RECEIVED_IN_ACCOUNT
+        rejectionNotes:
+          type: string
+          nullable: true
+        cancellationReason:
+          type: string
+          nullable: true
+        handoverPin:
+          type: string
+          nullable: true
+          example: '819204'
+        checkInMeterHours:
+          type: number
+          nullable: true
+          example: 1450.5
+        checkOutMeterHours:
+          type: number
+          nullable: true
+          example: 1486
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        confirmedAt:
+          type: string
+          format: date-time
+          nullable: true
+        activatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        cancelledAt:
+          type: string
+          format: date-time
+          nullable: true
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingAttachmentSummary'
         version:
           type: integer
           example: 1
         createdAt:
+          type: string
+          format: date-time
+        updatedAt:
           type: string
           format: date-time
     CreateBookingRequest:
@@ -1699,12 +1979,19 @@ components:
         startDate:
           type: string
           format: date
+          example: '2026-11-01'
         endDate:
           type: string
           format: date
+          example: '2026-11-07'
         siteLocationAddress:
           type: string
-          example: Bole Lemi Industrial Zone Phase 2
+          example: Bole Lemi Industrial Zone Phase 2, Addis Ababa
+        attachmentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
     SubmitInspectionRequest:
       type: object
       required:
@@ -2784,6 +3071,33 @@ components:
           default: null
         meta:
           $ref: '#/components/schemas/ResponseMeta'
+    BookingAttachmentSummary:
+      type: object
+      required:
+        - id
+        - attachmentId
+        - bundledDailyRate
+      properties:
+        id:
+          type: string
+          format: uuid
+        attachmentId:
+          type: string
+          format: uuid
+        attachmentType:
+          type: string
+          example: HYDRAULIC_BREAKER
+        make:
+          type: string
+          example: Montabert
+        model:
+          type: string
+          example: SC-36
+        serialNumber:
+          type: string
+          example: SN-98234-MB
+        bundledDailyRate:
+          $ref: '#/components/schemas/MoneyAmount'
     CheckBundledAvailabilityRequest:
       type: object
       required:
@@ -2860,3 +3174,172 @@ components:
           default: null
         meta:
           $ref: '#/components/schemas/ResponseMeta'
+    DeclinePaymentRequest:
+      type: object
+      required:
+        - expectedVersion
+        - reasonCode
+      properties:
+        expectedVersion:
+          type: integer
+          example: 1
+        reasonCode:
+          type: string
+          enum:
+            - FUNDS_NOT_RECEIVED_IN_ACCOUNT
+            - INCORRECT_AMOUNT_TRANSFERRED
+            - UNREADABLE_SLIP_IMAGE
+            - SUSPECTED_FRAUDULENT_RECEIPT
+          example: FUNDS_NOT_RECEIVED_IN_ACCOUNT
+        rejectionNotes:
+          type: string
+          example: Branch statement does not reflect credited wire.
+    DisputeBookingRequest:
+      type: object
+      required:
+        - expectedVersion
+        - disputeReason
+      properties:
+        expectedVersion:
+          type: integer
+          example: 1
+        disputeReason:
+          type: string
+          example: Funds debited from sender bank account with valid reference.
+        evidenceUris:
+          type: array
+          items:
+            type: string
+    SubmitPaymentSlipRequest:
+      type: object
+      required:
+        - storageUri
+        - fileHash
+        - amountMinor
+      properties:
+        storageUri:
+          type: string
+          example: s3://dink-payment-vault/bookings/prepayment_wire.webp
+        fileHash:
+          type: string
+          description: SHA-256 hash of the slip image file
+          example: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        transactionReference:
+          type: string
+          example: FT2611029831002
+        amountMinor:
+          type: integer
+          format: int64
+          example: 11250000
+        currency:
+          type: string
+          default: ETB
+          example: ETB
+    PaymentSlip:
+      type: object
+      required:
+        - id
+        - bookingId
+        - uploaderId
+        - storageUri
+        - fileHash
+        - amount
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        uploaderId:
+          type: string
+          format: uuid
+        storageUri:
+          type: string
+        fileHash:
+          type: string
+        transactionReference:
+          type: string
+          nullable: true
+        amount:
+          $ref: '#/components/schemas/MoneyAmount'
+        status:
+          type: string
+          enum:
+            - PENDING_AUDIT
+            - VERIFIED
+            - REJECTED
+        rejectionReasonCode:
+          type: string
+          nullable: true
+        rejectionNotes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        auditedAt:
+          type: string
+          format: date-time
+          nullable: true
+    PaymentSlipSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/PaymentSlip'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    HandoverCheckInRequest:
+      type: object
+      required:
+        - expectedVersion
+        - handoverPin
+        - operatingHoursMeter
+      properties:
+        expectedVersion:
+          type: integer
+          example: 2
+        handoverPin:
+          type: string
+          example: '819204'
+        operatingHoursMeter:
+          type: number
+          example: 1450.5
+        photoUris:
+          type: array
+          items:
+            type: string
+    ReturnCheckOutRequest:
+      type: object
+      required:
+        - expectedVersion
+        - operatingHoursMeter
+      properties:
+        expectedVersion:
+          type: integer
+          example: 3
+        operatingHoursMeter:
+          type: number
+          example: 1486
+        photoUris:
+          type: array
+          items:
+            type: string
+        damageNotes:
+          type: string
+          nullable: true

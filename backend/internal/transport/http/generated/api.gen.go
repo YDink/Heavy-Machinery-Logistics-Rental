@@ -158,52 +158,61 @@ func (e BookingListSuccessResponseSuccess) Valid() bool {
 
 // Defines values for BookingStatus.
 const (
-	BookingStatusACTIVEOPERATION    BookingStatus = "ACTIVE_OPERATION"
-	BookingStatusCANCELLED          BookingStatus = "CANCELLED"
-	BookingStatusCHECKEDIN          BookingStatus = "CHECKED_IN"
-	BookingStatusCOMPLETED          BookingStatus = "COMPLETED"
-	BookingStatusCONFIRMED          BookingStatus = "CONFIRMED"
-	BookingStatusDISPUTED           BookingStatus = "DISPUTED"
-	BookingStatusDRAFT              BookingStatus = "DRAFT"
-	BookingStatusEXPIRED            BookingStatus = "EXPIRED"
-	BookingStatusEXTENSIONREQUESTED BookingStatus = "EXTENSION_REQUESTED"
-	BookingStatusINSPECTIONPENDING  BookingStatus = "INSPECTION_PENDING"
-	BookingStatusPAYMENTPROCESSING  BookingStatus = "PAYMENT_PROCESSING"
-	BookingStatusPENDINGHOLD        BookingStatus = "PENDING_HOLD"
-	BookingStatusPENDINGPAYMENT     BookingStatus = "PENDING_PAYMENT"
-	BookingStatusSITEDISPATCHED     BookingStatus = "SITE_DISPATCHED"
+	BookingStatusACTIVE                   BookingStatus = "ACTIVE"
+	BookingStatusAWAITINGFLEETREADINESS   BookingStatus = "AWAITING_FLEET_READINESS"
+	BookingStatusCANCELLED                BookingStatus = "CANCELLED"
+	BookingStatusCOMPLETED                BookingStatus = "COMPLETED"
+	BookingStatusCONFIRMED                BookingStatus = "CONFIRMED"
+	BookingStatusDISPUTEOPENED            BookingStatus = "DISPUTE_OPENED"
+	BookingStatusDISPUTERESOLVEDOWNER     BookingStatus = "DISPUTE_RESOLVED_OWNER"
+	BookingStatusDISPUTERESOLVEDRENTER    BookingStatus = "DISPUTE_RESOLVED_RENTER"
+	BookingStatusDRAFT                    BookingStatus = "DRAFT"
+	BookingStatusPAYMENTDECLINED          BookingStatus = "PAYMENT_DECLINED"
+	BookingStatusPAYMENTEVIDENCEUPLOADED  BookingStatus = "PAYMENT_EVIDENCE_UPLOADED"
+	BookingStatusPENDINGADDITIONALPAYMENT BookingStatus = "PENDING_ADDITIONAL_PAYMENT"
+	BookingStatusPENDINGFINALPAYMENT      BookingStatus = "PENDING_FINAL_PAYMENT"
+	BookingStatusPENDINGPAYMENT           BookingStatus = "PENDING_PAYMENT"
+	BookingStatusRATED                    BookingStatus = "RATED"
+	BookingStatusREADYFORPICKUP           BookingStatus = "READY_FOR_PICKUP"
+	BookingStatusRETURNINITIATED          BookingStatus = "RETURN_INITIATED"
 )
 
 // Valid indicates whether the value is a known member of the BookingStatus enum.
 func (e BookingStatus) Valid() bool {
 	switch e {
-	case BookingStatusACTIVEOPERATION:
+	case BookingStatusACTIVE:
+		return true
+	case BookingStatusAWAITINGFLEETREADINESS:
 		return true
 	case BookingStatusCANCELLED:
-		return true
-	case BookingStatusCHECKEDIN:
 		return true
 	case BookingStatusCOMPLETED:
 		return true
 	case BookingStatusCONFIRMED:
 		return true
-	case BookingStatusDISPUTED:
+	case BookingStatusDISPUTEOPENED:
+		return true
+	case BookingStatusDISPUTERESOLVEDOWNER:
+		return true
+	case BookingStatusDISPUTERESOLVEDRENTER:
 		return true
 	case BookingStatusDRAFT:
 		return true
-	case BookingStatusEXPIRED:
+	case BookingStatusPAYMENTDECLINED:
 		return true
-	case BookingStatusEXTENSIONREQUESTED:
+	case BookingStatusPAYMENTEVIDENCEUPLOADED:
 		return true
-	case BookingStatusINSPECTIONPENDING:
+	case BookingStatusPENDINGADDITIONALPAYMENT:
 		return true
-	case BookingStatusPAYMENTPROCESSING:
-		return true
-	case BookingStatusPENDINGHOLD:
+	case BookingStatusPENDINGFINALPAYMENT:
 		return true
 	case BookingStatusPENDINGPAYMENT:
 		return true
-	case BookingStatusSITEDISPATCHED:
+	case BookingStatusRATED:
+		return true
+	case BookingStatusREADYFORPICKUP:
+		return true
+	case BookingStatusRETURNINITIATED:
 		return true
 	default:
 		return false
@@ -297,6 +306,30 @@ func (e CreateAttachmentRequestAttachmentType) Valid() bool {
 	case STANDARDBUCKET:
 		return true
 	case TRENCHINGBUCKET:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeclinePaymentRequestReasonCode.
+const (
+	FUNDSNOTRECEIVEDINACCOUNT  DeclinePaymentRequestReasonCode = "FUNDS_NOT_RECEIVED_IN_ACCOUNT"
+	INCORRECTAMOUNTTRANSFERRED DeclinePaymentRequestReasonCode = "INCORRECT_AMOUNT_TRANSFERRED"
+	SUSPECTEDFRAUDULENTRECEIPT DeclinePaymentRequestReasonCode = "SUSPECTED_FRAUDULENT_RECEIPT"
+	UNREADABLESLIPIMAGE        DeclinePaymentRequestReasonCode = "UNREADABLE_SLIP_IMAGE"
+)
+
+// Valid indicates whether the value is a known member of the DeclinePaymentRequestReasonCode enum.
+func (e DeclinePaymentRequestReasonCode) Valid() bool {
+	switch e {
+	case FUNDSNOTRECEIVEDINACCOUNT:
+		return true
+	case INCORRECTAMOUNTTRANSFERRED:
+		return true
+	case SUSPECTEDFRAUDULENTRECEIPT:
+		return true
+	case UNREADABLESLIPIMAGE:
 		return true
 	default:
 		return false
@@ -510,6 +543,42 @@ const (
 func (e PaymentInitiateSuccessResponseSuccess) Valid() bool {
 	switch e {
 	case PaymentInitiateSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PaymentSlipStatus.
+const (
+	PENDINGAUDIT PaymentSlipStatus = "PENDING_AUDIT"
+	REJECTED     PaymentSlipStatus = "REJECTED"
+	VERIFIED     PaymentSlipStatus = "VERIFIED"
+)
+
+// Valid indicates whether the value is a known member of the PaymentSlipStatus enum.
+func (e PaymentSlipStatus) Valid() bool {
+	switch e {
+	case PENDINGAUDIT:
+		return true
+	case REJECTED:
+		return true
+	case VERIFIED:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PaymentSlipSuccessResponseSuccess.
+const (
+	PaymentSlipSuccessResponseSuccessTrue PaymentSlipSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the PaymentSlipSuccessResponseSuccess enum.
+func (e PaymentSlipSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case PaymentSlipSuccessResponseSuccessTrue:
 		return true
 	default:
 		return false
@@ -922,21 +991,65 @@ type AuthTokenSuccessResponseSuccess bool
 
 // Booking defines model for Booking.
 type Booking struct {
-	CreatedAt time.Time `json:"createdAt"`
+	ActivatedAt *time.Time                  `json:"activatedAt,omitempty"`
+	Attachments *[]BookingAttachmentSummary `json:"attachments,omitempty"`
 
-	// DepositHold Integer minor currency units preventing precision truncation.
-	DepositHold         MoneyAmount        `json:"depositHold"`
-	EndDate             openapi_types.Date `json:"endDate"`
-	FleetId             openapi_types.UUID `json:"fleetId"`
-	Id                  openapi_types.UUID `json:"id"`
+	// AttachmentsFee Integer minor currency units preventing precision truncation.
+	AttachmentsFee MoneyAmount `json:"attachmentsFee"`
+
+	// BaseHireFee Integer minor currency units preventing precision truncation.
+	BaseHireFee        MoneyAmount `json:"baseHireFee"`
+	BookingReference   string      `json:"bookingReference"`
+	CancellationReason *string     `json:"cancellationReason,omitempty"`
+	CancelledAt        *time.Time  `json:"cancelledAt,omitempty"`
+	CheckInMeterHours  *float32    `json:"checkInMeterHours,omitempty"`
+	CheckOutMeterHours *float32    `json:"checkOutMeterHours,omitempty"`
+	CompletedAt        *time.Time  `json:"completedAt,omitempty"`
+	ConfirmedAt        *time.Time  `json:"confirmedAt,omitempty"`
+	CreatedAt          time.Time   `json:"createdAt"`
+
+	// DailyRate Integer minor currency units preventing precision truncation.
+	DailyRate    MoneyAmount        `json:"dailyRate"`
+	DurationDays int                `json:"durationDays"`
+	EndDate      openapi_types.Date `json:"endDate"`
+	ExpiresAt    *time.Time         `json:"expiresAt,omitempty"`
+	FleetId      openapi_types.UUID `json:"fleetId"`
+
+	// GrossRentalAmount Integer minor currency units preventing precision truncation.
+	GrossRentalAmount MoneyAmount        `json:"grossRentalAmount"`
+	HandoverPin       *string            `json:"handoverPin,omitempty"`
+	Id                openapi_types.UUID `json:"id"`
+	OwnerId           openapi_types.UUID `json:"ownerId"`
+
+	// PenaltyAmount Integer minor currency units preventing precision truncation.
+	PenaltyAmount *MoneyAmount `json:"penaltyAmount,omitempty"`
+
+	// PrepaymentAmount Integer minor currency units preventing precision truncation.
+	PrepaymentAmount MoneyAmount `json:"prepaymentAmount"`
+
+	// RefundAmount Integer minor currency units preventing precision truncation.
+	RefundAmount        *MoneyAmount       `json:"refundAmount,omitempty"`
+	RejectionNotes      *string            `json:"rejectionNotes,omitempty"`
+	RejectionReasonCode *string            `json:"rejectionReasonCode,omitempty"`
 	RenterId            openapi_types.UUID `json:"renterId"`
-	SiteLocationAddress *string            `json:"siteLocationAddress,omitempty"`
+	SiteLocationAddress string             `json:"siteLocationAddress"`
 	StartDate           openapi_types.Date `json:"startDate"`
 	Status              BookingStatus      `json:"status"`
+	UpdatedAt           *time.Time         `json:"updatedAt,omitempty"`
+	Version             int                `json:"version"`
+}
 
-	// TotalCost Integer minor currency units preventing precision truncation.
-	TotalCost MoneyAmount `json:"totalCost"`
-	Version   int         `json:"version"`
+// BookingAttachmentSummary defines model for BookingAttachmentSummary.
+type BookingAttachmentSummary struct {
+	AttachmentId   openapi_types.UUID `json:"attachmentId"`
+	AttachmentType *string            `json:"attachmentType,omitempty"`
+
+	// BundledDailyRate Integer minor currency units preventing precision truncation.
+	BundledDailyRate MoneyAmount        `json:"bundledDailyRate"`
+	Id               openapi_types.UUID `json:"id"`
+	Make             *string            `json:"make,omitempty"`
+	Model            *string            `json:"model,omitempty"`
+	SerialNumber     *string            `json:"serialNumber,omitempty"`
 }
 
 // BookingDetailSuccessResponse defines model for BookingDetailSuccessResponse.
@@ -1077,10 +1190,11 @@ type CreateAttachmentRequestAttachmentType string
 
 // CreateBookingRequest defines model for CreateBookingRequest.
 type CreateBookingRequest struct {
-	EndDate             openapi_types.Date `json:"endDate"`
-	FleetId             openapi_types.UUID `json:"fleetId"`
-	SiteLocationAddress string             `json:"siteLocationAddress"`
-	StartDate           openapi_types.Date `json:"startDate"`
+	AttachmentIds       *[]openapi_types.UUID `json:"attachmentIds,omitempty"`
+	EndDate             openapi_types.Date    `json:"endDate"`
+	FleetId             openapi_types.UUID    `json:"fleetId"`
+	SiteLocationAddress string                `json:"siteLocationAddress"`
+	StartDate           openapi_types.Date    `json:"startDate"`
 }
 
 // CreateFleetRequest defines model for CreateFleetRequest.
@@ -1098,6 +1212,23 @@ type CreateFleetRequest struct {
 	ManufacturingYear  int    `json:"manufacturingYear"`
 	Model              string `json:"model"`
 	RegistrationNumber string `json:"registrationNumber"`
+}
+
+// DeclinePaymentRequest defines model for DeclinePaymentRequest.
+type DeclinePaymentRequest struct {
+	ExpectedVersion int                             `json:"expectedVersion"`
+	ReasonCode      DeclinePaymentRequestReasonCode `json:"reasonCode"`
+	RejectionNotes  *string                         `json:"rejectionNotes,omitempty"`
+}
+
+// DeclinePaymentRequestReasonCode defines model for DeclinePaymentRequest.ReasonCode.
+type DeclinePaymentRequestReasonCode string
+
+// DisputeBookingRequest defines model for DisputeBookingRequest.
+type DisputeBookingRequest struct {
+	DisputeReason   string    `json:"disputeReason"`
+	EvidenceUris    *[]string `json:"evidenceUris,omitempty"`
+	ExpectedVersion int       `json:"expectedVersion"`
 }
 
 // ErrorEnvelope defines model for ErrorEnvelope.
@@ -1300,6 +1431,14 @@ type FleetSearchSuccessResponse struct {
 // FleetSearchSuccessResponseSuccess defines model for FleetSearchSuccessResponse.Success.
 type FleetSearchSuccessResponseSuccess bool
 
+// HandoverCheckInRequest defines model for HandoverCheckInRequest.
+type HandoverCheckInRequest struct {
+	ExpectedVersion     int       `json:"expectedVersion"`
+	HandoverPin         string    `json:"handoverPin"`
+	OperatingHoursMeter float32   `json:"operatingHoursMeter"`
+	PhotoUris           *[]string `json:"photoUris,omitempty"`
+}
+
 // InspectionDetailSuccessResponse defines model for InspectionDetailSuccessResponse.
 type InspectionDetailSuccessResponse struct {
 	Data    InspectionRecord                       `json:"data"`
@@ -1419,6 +1558,37 @@ type PaymentInitiateSuccessResponse struct {
 // PaymentInitiateSuccessResponseSuccess defines model for PaymentInitiateSuccessResponse.Success.
 type PaymentInitiateSuccessResponseSuccess bool
 
+// PaymentSlip defines model for PaymentSlip.
+type PaymentSlip struct {
+	// Amount Integer minor currency units preventing precision truncation.
+	Amount               MoneyAmount        `json:"amount"`
+	AuditedAt            *time.Time         `json:"auditedAt,omitempty"`
+	BookingId            openapi_types.UUID `json:"bookingId"`
+	CreatedAt            time.Time          `json:"createdAt"`
+	FileHash             string             `json:"fileHash"`
+	Id                   openapi_types.UUID `json:"id"`
+	RejectionNotes       *string            `json:"rejectionNotes,omitempty"`
+	RejectionReasonCode  *string            `json:"rejectionReasonCode,omitempty"`
+	Status               PaymentSlipStatus  `json:"status"`
+	StorageUri           string             `json:"storageUri"`
+	TransactionReference *string            `json:"transactionReference,omitempty"`
+	UploaderId           openapi_types.UUID `json:"uploaderId"`
+}
+
+// PaymentSlipStatus defines model for PaymentSlip.Status.
+type PaymentSlipStatus string
+
+// PaymentSlipSuccessResponse defines model for PaymentSlipSuccessResponse.
+type PaymentSlipSuccessResponse struct {
+	Data    PaymentSlip                       `json:"data"`
+	Error   map[string]interface{}            `json:"error"`
+	Meta    ResponseMeta                      `json:"meta"`
+	Success PaymentSlipSuccessResponseSuccess `json:"success"`
+}
+
+// PaymentSlipSuccessResponseSuccess defines model for PaymentSlipSuccessResponse.Success.
+type PaymentSlipSuccessResponseSuccess bool
+
 // RFC9457ProblemDetails defines model for RFC9457ProblemDetails.
 type RFC9457ProblemDetails struct {
 	Code          string          `json:"code"`
@@ -1438,6 +1608,14 @@ type ResponseMeta struct {
 	Warnings   *[]string       `json:"warnings,omitempty"`
 }
 
+// ReturnCheckOutRequest defines model for ReturnCheckOutRequest.
+type ReturnCheckOutRequest struct {
+	DamageNotes         *string   `json:"damageNotes,omitempty"`
+	ExpectedVersion     int       `json:"expectedVersion"`
+	OperatingHoursMeter float32   `json:"operatingHoursMeter"`
+	PhotoUris           *[]string `json:"photoUris,omitempty"`
+}
+
 // SubmitInspectionRequest defines model for SubmitInspectionRequest.
 type SubmitInspectionRequest struct {
 	ConditionReport     string                       `json:"conditionReport"`
@@ -1450,6 +1628,17 @@ type SubmitInspectionRequest struct {
 
 // SubmitInspectionRequestStage defines model for SubmitInspectionRequest.Stage.
 type SubmitInspectionRequestStage string
+
+// SubmitPaymentSlipRequest defines model for SubmitPaymentSlipRequest.
+type SubmitPaymentSlipRequest struct {
+	AmountMinor int64   `json:"amountMinor"`
+	Currency    *string `json:"currency,omitempty"`
+
+	// FileHash SHA-256 hash of the slip image file
+	FileHash             string  `json:"fileHash"`
+	StorageUri           string  `json:"storageUri"`
+	TransactionReference *string `json:"transactionReference,omitempty"`
+}
 
 // UpdateCountryConfigRequest defines model for UpdateCountryConfigRequest.
 type UpdateCountryConfigRequest struct {
@@ -1643,6 +1832,12 @@ type SubmitBookingInspectionParams struct {
 	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
 }
 
+// SubmitBookingPaymentEvidenceParams defines parameters for SubmitBookingPaymentEvidence.
+type SubmitBookingPaymentEvidenceParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
 // CancelBookingJSONBody defines parameters for CancelBooking.
 type CancelBookingJSONBody struct {
 	ExpectedVersion int    `json:"expectedVersion"`
@@ -1664,6 +1859,30 @@ type ConfirmBookingPaymentJSONBody struct {
 
 // ConfirmBookingPaymentParams defines parameters for ConfirmBookingPayment.
 type ConfirmBookingPaymentParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// DeclineBookingPaymentParams defines parameters for DeclineBookingPayment.
+type DeclineBookingPaymentParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// DisputeBookingPaymentParams defines parameters for DisputeBookingPayment.
+type DisputeBookingPaymentParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// HandoverCheckInParams defines parameters for HandoverCheckIn.
+type HandoverCheckInParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// ReturnCheckOutParams defines parameters for ReturnCheckOut.
+type ReturnCheckOutParams struct {
 	// IdempotencyKey Unique mutation request key preventing duplicate execution.
 	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
 }
@@ -1788,11 +2007,26 @@ type CheckBundledAvailabilityJSONRequestBody = CheckBundledAvailabilityRequest
 // SubmitBookingInspectionJSONRequestBody defines body for SubmitBookingInspection for application/json ContentType.
 type SubmitBookingInspectionJSONRequestBody = SubmitInspectionRequest
 
+// SubmitBookingPaymentEvidenceJSONRequestBody defines body for SubmitBookingPaymentEvidence for application/json ContentType.
+type SubmitBookingPaymentEvidenceJSONRequestBody = SubmitPaymentSlipRequest
+
 // CancelBookingJSONRequestBody defines body for CancelBooking for application/json ContentType.
 type CancelBookingJSONRequestBody CancelBookingJSONBody
 
 // ConfirmBookingPaymentJSONRequestBody defines body for ConfirmBookingPayment for application/json ContentType.
 type ConfirmBookingPaymentJSONRequestBody ConfirmBookingPaymentJSONBody
+
+// DeclineBookingPaymentJSONRequestBody defines body for DeclineBookingPayment for application/json ContentType.
+type DeclineBookingPaymentJSONRequestBody = DeclinePaymentRequest
+
+// DisputeBookingPaymentJSONRequestBody defines body for DisputeBookingPayment for application/json ContentType.
+type DisputeBookingPaymentJSONRequestBody = DisputeBookingRequest
+
+// HandoverCheckInJSONRequestBody defines body for HandoverCheckIn for application/json ContentType.
+type HandoverCheckInJSONRequestBody = HandoverCheckInRequest
+
+// ReturnCheckOutJSONRequestBody defines body for ReturnCheckOut for application/json ContentType.
+type ReturnCheckOutJSONRequestBody = ReturnCheckOutRequest
 
 // CreateFleetAssetJSONRequestBody defines body for CreateFleetAsset for application/json ContentType.
 type CreateFleetAssetJSONRequestBody = CreateFleetRequest

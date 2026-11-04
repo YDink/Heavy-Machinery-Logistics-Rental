@@ -65,6 +65,69 @@ Every subsystem must strictly enforce these foundational rules. Pull requests vi
 - **Universal Scope:** "When we say everything, we mean everything." Every entity, model, value object, invariant rule, repository interface, repository implementation, use case/command, HTTP route handler, UI widget, and test MUST reside in its own dedicated, specifically named file in the appropriate directory.
 - **1:1 Test Symmetry:** Every code file has its own individual `<name>_test.go` or `<name>_test.dart`. Monolithic test suites containing multiple concepts are banned.
 
+### 1.10. Strict Layer & Type Segregation ("No Type/Layer Mix-Ups")
+To avoid architectural erosion and mixed responsibilities across tiers, the codebase enforces absolute isolation between the following 5 data and contract types:
+
+#### 1. The 5 Core Data Categories
+1. **Domain Entities & Value Objects (`domain/entities/<name>.go` / `.dart`, `domain/value_objects/<name>.go`):**
+   - Pure representations of business rules, domain invariants, and identity.
+   - **Strictly Banned:** Zero JSON serialization tags (`json:"..."`), zero database tags (`db:"..."`), zero serialization methods (`fromJson`, `toJson`), and zero third-party/driver imports.
+   - Domain entities must never be directly returned in HTTP JSON response envelopes or used as database records.
+2. **Data Transfer Objects / DTOs (`transport/http/dto/`, `data/models/`):**
+   - Transport and network contract models matching the OpenAPI specification.
+   - Responsible for wire serialization, field format validation, and envelope encapsulation.
+   - **Strictly Banned:** Never imported by domain packages; never passed to repository interfaces; never contain core domain invariant logic.
+3. **Database / Persistence Models (`infrastructure/persistence/models/` or generated `sqlc` models):**
+   - Direct representations of physical database tables (`snake_case` fields, database null types like `sql.NullTime`, `pgtype.UUID`).
+   - Strictly private to repository persistence adapters.
+   - **Strictly Banned:** Never exposed outside repository implementations; application and domain layers must never import or see DB models.
+4. **Application Commands & Queries (`application/usecases/`):**
+   - Pure parameter structures capturing use-case inputs without HTTP status codes, headers, or framework bindings.
+5. **UI View Models & BLoC States (`presentation/bloc/`, `presentation/models/`):**
+   - Presentation-tier models formatted strictly for display (localized strings, formatted currency, UI-only booleans).
+
+#### 2. Repository Interface vs. Repository Implementation Contract
+- **Repository Interface (`domain/repositories/<name>_repository.go` / `<name>_repository.dart`):**
+  - Resides strictly in the **Domain Layer**.
+  - Methods MUST accept and return **Domain Entities, Value Objects, or primitive domain IDs** exclusively.
+  - **Forbidden:** Repository interfaces must never accept or return DTOs, HTTP structs, or database persistence models.
+- **Repository Implementation (`infrastructure/persistence/<type>/<name>_<type>_repository.go` / `data/repositories/<name>_repository_impl.dart`):**
+  - Resides strictly in the **Infrastructure / Data Layer**.
+  - Connects to database/APIs and **explicitly maps** between persistence models / data source models and domain entities using private mapper functions (`toDomain()`, `toDB()`).
+  - **Forbidden:** Implementations must never leak database records or data source DTOs to callers.
+
+#### 3. Mobile Data Source vs. Repository Implementation
+- **Data Source (`data/datasources/<name>_data_source.dart`):**
+  - Interacts directly with the network client (`Dio`) or local storage.
+  - Exclusively accepts and returns **Data Models / DTOs**.
+  - **Forbidden:** Data sources must NEVER import or return Domain Entities.
+- **Repository Implementation (`data/repositories/<name>_repository_impl.dart`):**
+  - Bridges the data source to the domain repository interface.
+  - Calls data sources to obtain Data Models, maps them to Domain Entities, and returns Domain Entities to use cases.
+
+#### 4. Mandatory Mapping Pipeline (Zero-Leakage Boundary)
+```
+[Client Request]
+       ↓
+  HTTP DTO (transport/http/dto/)
+       ↓ (Mapped by Handler)
+  Application Command (application/usecases/)
+       ↓ (Passed to Use Case)
+  Domain Entity & Invariants (domain/entities/, domain/invariants/)
+       ↓ (Passed to Repository Port)
+  Repository Implementation (infrastructure/persistence/)
+       ↓ (Mapped to DB Record via private toDB())
+  Database Queries (sqlc / postgres)
+       ↓ (Returns DB Record)
+  Repository Implementation (infrastructure/persistence/)
+       ↓ (Mapped to Domain Entity via private toDomain())
+  Domain Entity returned to Use Case
+       ↓ (Mapped to Response DTO)
+  HTTP Response DTO (transport/http/dto/)
+       ↓
+[Client Response Envelope]
+```
+
 ---
 
 ## 2. Go Backend Standards (Go 1.27.3)
@@ -86,14 +149,14 @@ backend/
         ├── inspection/
         ├── geo/
         └── admin/
-            ├── domain/       # Pure entities, domain events, errors, value objects
-            ├── application/  # Command/Query handlers, use-case interactors, repository ports
-            └── infrastructure/# sqlc persistence adapters, external payment gateway clients
+            ├── domain/       # entities/, value_objects/, invariants/, repositories/ (ports)
+            ├── application/  # usecases/ (command/query handlers), dto/
+            └── infrastructure/# persistence/ (postgres adapters, memory adapters), external clients
 ```
 
 ### 2.2. Package & Dependency Rules
 - **Domain Independence:** The `domain` package must have zero external imports (no database drivers, no HTTP packages, no third-party libraries).
-- **Interface Segregation:** Repositories and external service interfaces are declared in `application` (ports) and implemented in `infrastructure` (adapters).
+- **Interface Segregation:** Repository interfaces are declared in `domain/repositories/` (domain ports accepting/returning domain entities only) and implemented in `infrastructure/persistence/` (adapters). Use-case interfaces are declared in `application/usecases/`.
 - **No Circular Dependencies:** Cross-module communication must happen via published domain interfaces or structured domain events, never direct circular package imports.
 
 ### 2.3. Error Handling & Sentinel Definitions
@@ -142,9 +205,9 @@ mobile/lib/
 ├── core/                     # Common widgets, network interceptors, crypto, secure storage
 └── features/                 # Feature-partitioned modules
     └── <feature>/            # e.g., booking, machinery_catalog, inspections
-        ├── data/             # DTOs, data sources, repository implementations
-        ├── domain/           # Entities, use cases, repository interfaces
-        └── presentation/     # BLoCs, screens, widgets, state models
+        ├── data/             # models/ (DTOs), datasources/ (remote/local), repositories/ (implementations)
+        ├── domain/           # entities/ (pure domain), repositories/ (interfaces), usecases/
+        └── presentation/     # bloc/, views/, views/widgets/
 ```
 
 ### 3.2. State Management via BLoC (`flutter_bloc`)

@@ -122,6 +122,14 @@ All client-facing errors (4xx and 5xx) must serve `application/problem+json` sem
   - Shared, catch-all, or monolithic files are strictly forbidden across every tier (`entity.go`, `models.go`, `types.go`, `helpers.go`, `utils.go`, `invariants.go`, `repository.go`, `memory_repository.go`, `postgres_repository.go`, monolithic `*_handler.go`).
   - Every single entity, value object, invariant rule, model, repository interface, repository implementation, use case/service command, HTTP route handler, UI widget, and test MUST reside in its own dedicated, specifically named file in the appropriate directory.
   - "When we say everything, we mean everything." Zero exceptions across Backend, Mobile, Admin, Contracts, and Tests.
+- **Strict Layer & Type Segregation ("No Type/Layer Mix-Ups"):**
+  - Concrete isolation across the 5 core data representations:
+    1. **Domain Entities (`domain/entities/<entity>.go` / `<entity>.dart`):** Pure business state and invariants. Strictly prohibited from having serialization tags (`json:"..."`, `db:"..."`), HTTP annotations, or framework imports. Never used as HTTP request/response payloads or database persistence rows.
+    2. **Data Transfer Objects / DTOs:** Reside strictly in `transport/http/dto/` (Backend) or `data/models/` (Mobile). Strictly match OpenAPI contracts with wire JSON tags. Never passed into domain logic or database repository interfaces.
+    3. **Database / Persistence Models:** Private to `infrastructure/persistence/` (or generated `sqlc` models). Strictly mirror database schema (`snake_case`). Never exposed outside repository persistence adapters.
+    4. **Repository Interfaces (`domain/repositories/<name>_repository.go` / `<name>_repository.dart`):** Pure domain port interfaces. Must strictly accept and return Domain Entities, Value Objects, or primitive domain IDs. Never accept or return DTOs or DB models.
+    5. **Repository Implementations (`infrastructure/persistence/<type>/<name>_<type>_repository.go` / `data/repositories/<name>_repository_impl.dart`):** Pure infrastructure/data adapters. Solely responsible for mapping between persistence records/data sources and domain entities. Never leak DB models to callers.
+    6. **Mobile Data Sources (`data/datasources/<name>_data_source.dart`):** Pure network/cache adapters. Strictly accept and return Data Models/DTOs. Never import or return Domain Entities directly (mapping happens exclusively inside Repository Implementations).
 - **UI Design-First with Stitch MCP:**
   - **Just-In-Time Generation per Requirement:** Designs must be created individually via Stitch MCP at the exact moment when the development of that specific requirement/feature is initiated, rather than generating all partition screens at once in bulk.
   - **Design System & Flow Continuity:** Every generated screen must adhere to the core design requirements (high-contrast outdoor palette `#111827`, $\ge 7:1$ contrast ratio, $\ge 56\text{dp}$ touch targets) and maintain seamless visual and ergonomic flow from the preceding screen in the user journey (referencing canonical user flows in `docs/shared/flows/` and preceding Stitch screens).
@@ -137,12 +145,14 @@ All client-facing errors (4xx and 5xx) must serve `application/problem+json` sem
 - `sqlc` is the standard for SQL generation. Raw SQL strings within application logic are prohibited.
 - HTTP routing relies strictly on pure Go standard library `net/http.ServeMux` and `log/slog` (zero third-party web frameworks).
 - **Strict Granular File Layout:**
-  - `domain/entities/<entity_name>.go`: Strictly one entity per file.
+  - `domain/entities/<entity_name>.go`: Strictly one entity per file (pure domain model, zero JSON or DB tags).
+  - `domain/value_objects/<vo_name>.go`: Strictly one value object per file.
   - `domain/invariants/<invariant_name>.go`: Strictly one business invariant rule per file.
-  - `domain/repositories/<repository_name>.go`: Strictly one repository interface per file.
+  - `domain/repositories/<repository_name>_repository.go`: Strictly one repository interface per file (contracts accept/return domain types only).
   - `infrastructure/persistence/postgres/<entity_name>_postgres_repository.go`: Strictly one postgres repository adapter per file.
   - `infrastructure/persistence/memory/<entity_name>_memory_repository.go`: Strictly one in-memory repository adapter per file.
-  - `application/usecases/<command_or_query_name>.go`: Strictly one command/query use case per file.
+  - `application/usecases/<command_or_query_name>_usecase.go`: Strictly one command/query use case per file.
+  - `transport/http/dto/<endpoint_action>_request.go` & `transport/http/dto/<endpoint_action>_response.go`: Strictly one DTO per file (handles JSON wire formats).
   - `transport/http/handlers/<endpoint_action>_handler.go`: Strictly one route/action handler per file.
   - Tests mirror implementation files 1:1 (`<name>_test.go`). No monolithic test files.
 
@@ -151,12 +161,12 @@ All client-facing errors (4xx and 5xx) must serve `application/problem+json` sem
 - State management relies strictly on the BLoC pattern (`flutter_bloc`). UI widgets emit events; state changes are received via typed states.
 - **UI Design via Stitch MCP:** Each screen and interactive sheet must be designed just-in-time via Stitch MCP when active requirement work begins, maintaining visual and flow continuity from the preceding screen.
 - Clean separation & granular file layout:
-  - `domain/entities/<entity_name>.dart`: One entity per file.
-  - `domain/repositories/<repository_name>.dart`: One repository interface per file.
-  - `domain/usecases/<usecase_name>.dart`: One use case per file.
-  - `data/models/<model_name>.dart`: One model/DTO per file.
-  - `data/datasources/<datasource_name>.dart`: One remote/local data source per file.
-  - `data/repositories/<repository_impl_name>.dart`: One repository implementation per file.
+  - `domain/entities/<entity_name>.dart`: One entity per file (pure domain model, zero JSON serialization).
+  - `domain/repositories/<repository_name>_repository.dart`: One repository interface per file (contracts accept/return domain entities only).
+  - `domain/usecases/<usecase_name>_usecase.dart`: One use case per file.
+  - `data/models/<model_name>_model.dart`: One model/DTO per file (handles JSON parsing, `toEntity()` / `fromEntity()` mapping).
+  - `data/datasources/<datasource_name>_data_source.dart`: One remote/local data source per file (works strictly with Models/DTOs, zero domain entities).
+  - `data/repositories/<repository_name>_repository_impl.dart`: One repository implementation per file (calls data sources, maps Models ↔ Entities).
   - `presentation/bloc/<feature>_bloc.dart`, `<feature>_event.dart`, `<feature>_state.dart`.
   - `presentation/views/<screen_name>_view.dart`: One view per file.
   - `presentation/views/widgets/<widget_name>.dart`: One component/widget per file.

@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:dink_mobile/core/network/api_client.dart';
-import 'package:dink_mobile/features/auth/data/models/auth_tokens_model.dart';
-import 'package:dink_mobile/features/auth/data/models/auth_user_model.dart';
+import '../models/auth_tokens_model.dart';
+import '../models/auth_user_model.dart';
 
 abstract class AuthRemoteDataSource {
   Future<String> requestOtp({required String phoneNumber, required String purpose, String? countryCode});

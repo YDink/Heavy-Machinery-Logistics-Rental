@@ -1,5 +1,5 @@
 import 'package:dink_mobile/core/storage/secure_storage_service.dart';
-import 'package:dink_mobile/features/auth/data/datasources/auth_remote_datasource.dart';
+import '../datasources/auth_remote_data_source.dart';
 import 'package:dink_mobile/features/auth/domain/entities/auth_tokens.dart';
 import 'package:dink_mobile/features/auth/domain/entities/auth_user.dart';
 import 'package:dink_mobile/features/auth/domain/repositories/auth_repository.dart';

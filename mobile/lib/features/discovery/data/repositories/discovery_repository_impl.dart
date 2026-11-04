@@ -1,9 +1,10 @@
-import 'package:dink_mobile/features/discovery/data/datasources/discovery_remote_datasource.dart';
-import 'package:dink_mobile/features/discovery/domain/entities/fleet_availability.dart';
-import 'package:dink_mobile/features/discovery/domain/entities/fleet_compare_matrix.dart';
-import 'package:dink_mobile/features/discovery/domain/entities/fleet_search_filter.dart';
-import 'package:dink_mobile/features/discovery/domain/entities/fleet_search_result.dart';
-import 'package:dink_mobile/features/discovery/domain/repositories/discovery_repository.dart';
+import '../datasources/discovery_remote_data_source.dart';
+import '../models/fleet_search_filter_model.dart';
+import '../../domain/entities/fleet_availability.dart';
+import '../../domain/entities/fleet_compare_matrix.dart';
+import '../../domain/entities/fleet_search_filter.dart';
+import '../../domain/entities/fleet_search_result.dart';
+import '../../domain/repositories/discovery_repository.dart';
 
 class DiscoveryRepositoryImpl implements DiscoveryRepository {
   final DiscoveryRemoteDataSource remoteDataSource;
@@ -12,7 +13,7 @@ class DiscoveryRepositoryImpl implements DiscoveryRepository {
 
   @override
   Future<FleetSearchData> searchFleets(FleetSearchFilter filter) {
-    return remoteDataSource.searchFleets(filter);
+    return remoteDataSource.searchFleets(FleetSearchFilterModel.fromEntity(filter));
   }
 
   @override

@@ -1,9 +1,10 @@
-import 'package:dink_mobile/features/fleet_catalog/data/datasources/fleet_local_datasource.dart';
-import 'package:dink_mobile/features/fleet_catalog/data/datasources/fleet_remote_datasource.dart';
-import 'package:dink_mobile/features/fleet_catalog/domain/entities/category.dart';
-import 'package:dink_mobile/features/fleet_catalog/domain/entities/fleet_asset.dart';
-import 'package:dink_mobile/features/fleet_catalog/domain/entities/spec_field_group.dart';
-import 'package:dink_mobile/features/fleet_catalog/domain/repositories/fleet_repository.dart';
+import '../datasources/fleet_local_data_source.dart';
+import '../datasources/fleet_remote_data_source.dart';
+import '../models/fleet_registration_request_model.dart';
+import '../../domain/entities/category.dart';
+import '../../domain/entities/fleet_asset.dart';
+import '../../domain/entities/spec_field_group.dart';
+import '../../domain/repositories/fleet_repository.dart';
 
 class FleetRepositoryImpl implements FleetRepository {
   final FleetRemoteDataSource remoteDataSource;
@@ -26,18 +27,56 @@ class FleetRepositoryImpl implements FleetRepository {
 
   @override
   Future<FleetAsset> registerFleet(FleetRegistrationRequest request) async {
-    final asset = await remoteDataSource.registerFleet(request);
+    final model = FleetRegistrationRequestModel.fromEntity(request);
+    final asset = await remoteDataSource.registerFleet(model);
     await localDataSource.clearDraft(request.categoryId);
     return asset;
   }
 
   @override
   Future<void> saveDraft(FleetRegistrationRequest draft) async {
-    await localDataSource.saveDraft(draft);
+    final model = FleetRegistrationRequestModel.fromEntity(draft);
+    await localDataSource.saveDraft(model);
   }
 
   @override
   Future<FleetRegistrationRequest?> getDraft(String categoryId) async {
-    return localDataSource.getDraft(categoryId);
+    final model = await localDataSource.getDraft(categoryId);
+    if (model == null) return null;
+    return FleetRegistrationRequest(
+      categoryId: model.categoryId,
+      make: model.make,
+      model: model.model,
+      manufacturingYear: model.manufacturingYear,
+      registrationNumber: model.registrationNumber,
+      chassisVin: model.chassisVin,
+      baselineMeterHours: model.baselineMeterHours,
+      fuelType: model.fuelType,
+      selfMoveCapable: model.selfMoveCapable,
+      dailyRateMinor: model.dailyRateMinor,
+      excessHourRateMinor: model.excessHourRateMinor,
+      minRentalDays: model.minRentalDays,
+      paymentTimeoutHours: model.paymentTimeoutHours,
+      operatorIncluded: model.operatorIncluded,
+      latitude: model.latitude,
+      longitude: model.longitude,
+      addressText: model.addressText,
+      photos: model.photos
+          .map((p) => FleetPhoto(
+                angle: p.angle,
+                storageUri: p.storageUri,
+                fileHash: p.fileHash,
+                localFilePath: p.localFilePath,
+              ))
+          .toList(),
+      specValues: model.specValues
+          .map((v) => FleetSpecValueInput(
+                fieldKey: v.fieldKey,
+                valueString: v.valueString,
+                valueNumeric: v.valueNumeric,
+                valueBoolean: v.valueBoolean,
+              ))
+          .toList(),
+    );
   }
 }

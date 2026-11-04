@@ -1,14 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:dink_mobile/core/network/api_client.dart';
-import 'package:dink_mobile/features/fleet_catalog/data/models/category_model.dart';
-import 'package:dink_mobile/features/fleet_catalog/data/models/fleet_asset_model.dart';
-import 'package:dink_mobile/features/fleet_catalog/data/models/spec_definition_model.dart';
-import 'package:dink_mobile/features/fleet_catalog/domain/entities/fleet_asset.dart';
+import '../models/category_model.dart';
+import '../models/fleet_asset_model.dart';
+import '../models/fleet_registration_request_model.dart';
+import '../models/spec_definition_model.dart';
 
 abstract class FleetRemoteDataSource {
   Future<List<CategoryModel>> getCategories();
   Future<List<SpecFieldGroupModel>> getSpecDefinitions(String categoryId);
-  Future<FleetAssetModel> registerFleet(FleetRegistrationRequest request);
+  Future<FleetAssetModel> registerFleet(FleetRegistrationRequestModel request);
 }
 
 class FleetRemoteDataSourceImpl implements FleetRemoteDataSource {
@@ -43,7 +43,7 @@ class FleetRemoteDataSourceImpl implements FleetRemoteDataSource {
   }
 
   @override
-  Future<FleetAssetModel> registerFleet(FleetRegistrationRequest request) async {
+  Future<FleetAssetModel> registerFleet(FleetRegistrationRequestModel request) async {
     try {
       final payload = {
         'categoryId': request.categoryId,
@@ -59,7 +59,10 @@ class FleetRemoteDataSourceImpl implements FleetRemoteDataSource {
           'amountMinor': request.dailyRateMinor,
           'currency': 'ETB',
         },
-        'excessHourRateMinor': request.excessHourRateMinor,
+        'excessHourRate': {
+          'amountMinor': request.excessHourRateMinor,
+          'currency': 'ETB',
+        },
         'minRentalDays': request.minRentalDays,
         'paymentTimeoutHours': request.paymentTimeoutHours,
         'operatorIncluded': request.operatorIncluded,
@@ -75,14 +78,7 @@ class FleetRemoteDataSourceImpl implements FleetRemoteDataSource {
                   'fileHash': p.fileHash,
                 })
             .toList(),
-        'specValues': request.specValues
-            .map((v) => {
-                  'fieldKey': v.fieldKey,
-                  'valueString': v.valueString,
-                  'valueNumeric': v.valueNumeric,
-                  'valueBoolean': v.valueBoolean,
-                })
-            .toList(),
+        'specValues': request.specValues.map((v) => v.toJson()).toList(),
       };
 
       final response = await apiClient.dio.post(

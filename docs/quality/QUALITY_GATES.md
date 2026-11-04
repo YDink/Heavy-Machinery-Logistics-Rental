@@ -106,11 +106,14 @@ The quality lifecycle comprises seven sequential gates executed between the deve
    pnpm dlx commitlint --config .github/commitlint.config.js --edit {1}
    ```
    *Threshold:* Must match `^(\[([A-Z0-9-]+)\]\s)?(\w+)(?:\(([^)]+)\))?:\s(.+)$`.
-5. **The Atomic Context Checkpoint Invariant:**
+5. **The Atomic Context & Tracker Checkpoint Invariant:**
    ```bash
    git diff --cached --name-only | grep -q "^CONTEXT.md$" || (echo "ERROR: CONTEXT.md must be updated and staged in every commit." && exit 1)
+   git diff --cached --name-only | grep -q "^REQUIREMENTS_TRACKER.md$" || (echo "ERROR: REQUIREMENTS_TRACKER.md must be updated and staged in every commit." && exit 1)
    ```
-   *Threshold:* `CONTEXT.md` must be modified and staged in the commit.
+   *Threshold:* Both `CONTEXT.md` and `REQUIREMENTS_TRACKER.md` must be modified and staged in the commit.
+6. **Mandatory Manual Verification Drill:**
+   Live manual testing executed across all affected subsystems (database migration rollback drill, backend HTTP endpoint probes with real requests, mobile 56dp/bilingual visual inspection) with evidence logged under `Manual-Tests:` footer per [`docs/quality/MANUAL_TESTING_PROTOCOL.md`](./MANUAL_TESTING_PROTOCOL.md).
 
 ---
 

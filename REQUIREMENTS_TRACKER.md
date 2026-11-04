@@ -35,7 +35,7 @@ Quality Gates:        100% Passing (Backend Suite, Mobile 72/72, Spectral OpenAP
    - `IN_PROGRESS` (🔄): Feature branch `feature/<partition-id>` created, active implementation or test work underway.
    - `COMPLETED` (✅): 100% test pass rate across all targeted subsystems, OpenAPI bundled, quality gates passed (`G0`-`G2`), and rebase-merged into `main`.
 2. **Atomic Tracker Synchronization:**
-   - Any commit introducing code, tests, or state transitions for a requirement partition **MUST co-stage both `CONTEXT.md` and `REQUIREMENTS_TRACKER.md`**.
+   - Any commit introducing code, tests, or state transitions for a requirement partition **MUST co-stage both `CONTEXT.md` and `REQUIREMENTS_TRACKER.md` and document verified manual test scenarios under the `Manual-Tests:` footer per `docs/quality/MANUAL_TESTING_PROTOCOL.md`**.
    - Commit messages must record the updated partition status and reference the ticket in the header (e.g., `[RENT-01-BE]`).
 3. **Subsystem Verification Standard:**
    A partition cannot be marked `COMPLETED` unless all applicable subsystems are implemented and verified:

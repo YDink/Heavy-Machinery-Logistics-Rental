@@ -13,12 +13,22 @@ Tool Portability: Tool-agnostic specification. Root and component wrappers (`CLA
 - **Determinism:** Tests must be strictly isolated. Flaky tests (dependent on wall-clock time, unseeded pseudo-randomness, network calls, or shared mutable state) are quarantined within 24 hours.
 - **Time Freezing:** Any time-sensitive domain logic (booking timeouts, grace periods, payment verification windows) must inject an abstracted time provider.
 
+### Mandatory Pre-Commit Verification Triad
+Every code contribution requires completion of the three-pillar verification before staging or committing:
+1. **Automated Unit Testing:** Pure business invariants, state machine transitions, financial math, and BLoC state streams ($\ge 80\%$ line coverage overall; $\ge 95\%$ on financial/auth paths).
+2. **Automated Integration Testing:** Repository persistence, SQL execution, database migrations, and HTTP transport handlers.
+3. **Mandatory Manual Verification (Interactive Testing):** Every newly added or modified capability must be manually executed and validated live before commit:
+   - **Backend APIs:** Live execution of endpoints via real HTTP requests (e.g., `curl` or interactive probe harnesses) verifying 2xx success envelopes, 4xx/5xx RFC 9457 error details, and database mutation side effects.
+   - **Database Migrations:** Manual execution and verification of both `up` and `down` migration scripts (rollback drill) to guarantee zero SQL syntax errors or relational constraint collisions.
+   - **Mobile UI & BLoC:** Manual execution and visual inspection of widgets, forms, 56dp touch targets, input validation error feedback, and bilingual language toggling (English ↔ Amharic).
+   - **Manual Evidence Requirement:** Commits must include an itemized `Manual-Tests:` section documenting the exact manual test scenarios executed and verified.
+
 ### Coverage Ratchet
 - **Target:** Minimum 80% line coverage on changed code; 95% branch coverage required for financial calculations, ledger operations, auth paths, and payout workflows.
 - **Ratchet Rule:** Code coverage metrics are non-decreasing. PRs reducing overall test coverage will fail CI.
 
 ### Quality Gate Hierarchy (G0 to G4)
-- **G0 (Pre-Commit / Local):** Linter execution, static analysis, unit test suite, and atomic doc-commit verification (`lefthook.yml`).
+- **G0 (Pre-Commit / Local):** Linter execution, static analysis, unit test suite, integration test suite, mandatory manual verification drill, and atomic doc-commit verification (`CONTEXT.md` and `REQUIREMENTS_TRACKER.md` staged via `lefthook.yml`).
 - **G1 (Pull Request):** Full automated test suite, coverage ratchet checks, contract validation tests, security static analysis, and documentation drift checks (`ci-docs.yml` in Phase 0; component CI in Phase 2).
 - **G2 (Pre-Merge):** Rebase verification against `main`, semantic commit checks, bidirectional decision link audits, and clean security scans.
 - **G3 (Pre-Release):** Full End-to-End (E2E) regression, synthetic load/soak performance profiles, accessibility validation (axe-core zero-critical rule), and database migration rollback drills.
@@ -149,20 +159,21 @@ Commits must conform to the extended Conventional Commits specification. Every c
 <detailed description of change, rationale, and consequences>
 
 Tests: <test files or suites executed/added>
+Manual-Tests: <itemized manual test steps and verification evidence>
 Docs: <list of documentation files updated, e.g., CONTEXT.md, decisions/partitions/05-05.md>
 Refs: #<issue-or-task-number>
 ```
 
 ### The Atomic Doc-Commit Rule
 - Code and tests must never be committed without staging their operational documentation simultaneously.
-- **Mandatory in every commit:** Code changes + Tests + `CONTEXT.md` + `REQUIREMENTS_TRACKER.md`.
+- **Mandatory in every commit:** Code changes + Automated Tests + Manual Test Verification Evidence + `CONTEXT.md` + `REQUIREMENTS_TRACKER.md`.
 - **Conditional:** If a design decision meets any qualification test, the relevant partition decision doc or ADR must be updated and staged within the exact same commit.
 
 ### Pre-Commit Gate Enforcement (`lefthook.yml`)
 Local git hooks block commits failing the following:
-1. `G0` linter, code style, and test runs.
+1. `G0` linter, code style, unit, and integration test runs.
 2. Verification that `CONTEXT.md` and `REQUIREMENTS_TRACKER.md` are present in the staged index.
-3. Verification that commit messages include the `Docs:` footer.
+3. Verification that commit messages include the `Docs:` and `Manual-Tests:` footers.
 4. Validation that any decision mentioned in commit bodies exists in `docs/decisions/`.
 5. Bypassing checks via `--no-verify` is strictly prohibited on all development branches.
 

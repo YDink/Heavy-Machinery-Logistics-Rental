@@ -2,8 +2,8 @@
 
 **Project Phase:** Phase 2 (Partition Feature Development)  
 **Active Requirement Partition:** `05-07-rental-completion-return-damage` (Rental Completion, Off-Hire Return Inspection, Damage & Penalty Adjudication Architecture)  
-**Active Branch:** `main` (Partition 05-06 merged into main; preparing `feature/05-07-rental-completion-return-damage`)  
-**Current Stop Point:** Partition 05-06 Merged into Main. Master Requirements Tracker established (`REQUIREMENTS_TRACKER.md`). Ready to begin Partition 05-07.
+**Active Branch:** `feature/05-07-rental-completion-return-damage` (Active development underway)  
+**Current Stop Point:** Feature branch checked out. Partition 05-07 active: starting PostgreSQL schema migration 000009 for return inspection, damage claims, settlements, and double-blind reviews.
 
 ---
 
@@ -205,6 +205,14 @@
 
 ## 2. Next Immediate Tasks (Partition 05-07: Rental Completion, Return Inspection, Damage & Penalty Adjudication Architecture)
 
+### Mandatory Pre-Commit Quality Requirements
+Per `AGENTS.md § 1` and `docs/quality/MANUAL_TESTING_PROTOCOL.md`, all partition tasks require:
+1. **Automated Unit Tests:** 100% pass on pure domain invariants ($\ge 80\%$ line coverage overall; $\ge 95\%$ on financial/auth).
+2. **Automated Integration Tests:** 100% pass on repository transactions and HTTP transport handlers.
+3. **Mandatory Live Manual Testing:** Every new endpoint, migration, and UI widget must be manually verified live before commit, with execution proof recorded under `Manual-Tests:` in the commit body.
+
+### Implementation Tasks
+
 1. **Database Schema & Migrations (`migrations/`):**
    - Create `migrations/000009_create_rental_completion_tables.up.sql` and `.down.sql`:
      - `return_inspections`: Off-hire return inspection with 5 mandatory return photo angles, final engine hour meter, site GPS location, signed off-hire acceptance.
@@ -234,11 +242,13 @@
 ## 3. Active Decisions & Open Blockers
 
 ### Active Architectural Decisions
-- `ADR-006`: Event-driven state machine and transactional outbox for booking and rental lifecycle events.
-- `ADR-012`: Double-entry minor unit financial ledger and non-custodial payment processing.
-- `D-05-06-001`: Real-time incident reporting with offline Isar outbox queuing.
-- `D-05-06-002`: Daily operating log tracking with monotonic engine hour validation.
+- `ADR-004`: State machine and optimistic concurrency control for booking and settlement lifecycles.
+- `ADR-010`: Double-entry minor unit financial ledger and non-custodial escrow settlements.
+- `D-05-07-001`: Dual-party photographic handover vs. return image diffing (6 mandatory angles).
+- `D-05-07-002`: 72-hour statutory administrative dispute resolution SLA engine.
 
 ### Open Questions & Blockers
-- No active blockers for Partition 05-06 completion.
-- Ready for rebase-merge into `main`.
+- No active blockers for Partition 05-07.
+- Working branch: `feature/05-07-rental-completion-return-damage`.
+- Pre-commit rule active: Automated unit/integration tests + mandatory manual testing verification per `docs/quality/MANUAL_TESTING_PROTOCOL.md`.
+

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dink_mobile/features/active_rental/domain/entities/active_rental_hud.dart';
 import 'package:dink_mobile/features/active_rental/domain/entities/handover_challenge.dart';
 import 'package:dink_mobile/features/active_rental/domain/entities/handover_inspection.dart';
+import 'package:dink_mobile/features/active_rental/domain/entities/handover_photo_item.dart';
 import 'package:dink_mobile/features/active_rental/domain/entities/mechanical_breakdown.dart';
 import 'package:dink_mobile/features/active_rental/domain/entities/rental_extension.dart';
 import 'package:dink_mobile/features/active_rental/domain/repositories/active_rental_repository.dart';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:dink_mobile/features/attachment/domain/entities/attachment.dart';
+import 'package:dink_mobile/features/attachment/domain/entities/attachment_photo.dart';
+import 'package:dink_mobile/features/attachment/domain/entities/attachment_photo_angle.dart';
 import 'package:dink_mobile/l10n/app_localizations.dart';
 
 class AttachmentPhotoReticle extends StatelessWidget {

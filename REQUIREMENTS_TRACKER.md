@@ -2,8 +2,8 @@
 
 **Classification:** Canonical Project Requirement & Partition Implementation Status Matrix  
 **System:** Heavy Machinery & Logistics Rental Marketplace  
-**Last Updated:** 2026-11-03T16:30:00+03:00  
-**Latest Baseline Commit:** `3010010` (`[RENT-01-BE] feat(rental): implement active rental hud shift telemetry and breakdown engine`)  
+**Last Updated:** 2026-11-04T15:30:00+03:00  
+**Latest Baseline Commit:** `384eaee` (`[GOV-RULES] docs(testing): mandate multi-machine test fixtures and db parity`)  
 **Active Phase:** Phase 2 (Partition Feature Development)  
 **Active Partition:** `05-07-rental-completion-return-damage` (Rental Completion, Off-Hire Return Inspection, Damage & Penalty Adjudication)
 

@@ -201,6 +201,21 @@
   - `scripts/validate-decision-links.sh`: All 19 ADRs and 80 L2 partition decisions have valid bidirectional links.
   - Spectral OpenAPI contract validation: 0 errors on bundled contract.
 
+### Completed (System-Wide Architecture Remediation & Multi-Machine Parity)
+- **Multi-Machine SQL Fixtures (`scripts/fixtures/`):**
+  - Created idempotent SQL fixtures (`00_base_system_fixtures.sql`, `05_01_auth_fixtures.sql`, `05_02_fleet_fixtures.sql`, `05_03_attachment_fixtures.sql`, `05_04_discovery_fixtures.sql`, `05_05_booking_fixtures.sql`, `05_06_active_rental_fixtures.sql`) using deterministic static UUIDs for dual-machine parity (Windows at office ↔ Mac at home).
+  - Created fixture runner scripts (`apply-fixtures.sh` and `apply-fixtures.ps1`).
+- **Backend Decomposition (Single-Concept File Separation):**
+  - Purged all monolithic `entity.go`, `repository.go`, `invariants.go`, `postgres_repository.go`, `memory_repository.go` across `auth`, `booking`, `machinery`, and `rental` domain modules.
+  - Decomposed into 1:1 dedicated entity, value object, invariant, repository interface, and repository adapter files.
+  - Purged monolithic `rental_handler.go` (648 lines); decomposed into dedicated single-concept HTTP action handlers (`handover_inspect_handler.go`, `generate_handover_challenge_handler.go`, `confirm_handover_handler.go`, `get_active_rental_hud_handler.go`, `request_rental_extension_handler.go`, `report_mechanical_breakdown_handler.go`, `resolve_mechanical_breakdown_handler.go`, `authenticate_user.go`).
+  - 100% backend unit and integration test pass rate maintained.
+- **Mobile Architecture & Layer Isolation:**
+  - Resolved root `.gitignore` tracking bug (`/data/` vs `data/`), restoring full tracking of Flutter models, data sources, and repository implementations.
+  - Decoupled Flutter data sources (`attachment`, `active_rental`) completely from domain entities; strictly accept/return data models/DTOs.
+  - Decomposed lumped entity files (`booking.dart`, `fleet_asset.dart`, `spec_field_group.dart`, `fleet_compare_matrix.dart`, `fleet_search_filter.dart`, `fleet_search_result.dart`, `fleet_availability.dart`, `attachment.dart`) into dedicated single-concept entity files with clean exports.
+  - 100% mobile test pass rate (72 / 72 tests passed).
+
 ---
 
 ## 2. Next Immediate Tasks (Partition 05-07: Rental Completion, Return Inspection, Damage & Penalty Adjudication Architecture)

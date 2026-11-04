@@ -1,6 +1,7 @@
-import 'package:dink_mobile/features/attachment/domain/entities/attachment.dart';
-import 'package:dink_mobile/features/attachment/domain/entities/attachment_inventory_item.dart';
-import 'package:dink_mobile/features/attachment/domain/entities/bundled_attachment_link.dart';
+import '../entities/attachment.dart';
+import '../entities/attachment_inventory_item.dart';
+import '../entities/attachment_registration_request.dart';
+import '../entities/bundled_attachment_link.dart';
 
 abstract class AttachmentRepository {
   Future<Attachment> registerAttachment(AttachmentRegistrationRequest request);

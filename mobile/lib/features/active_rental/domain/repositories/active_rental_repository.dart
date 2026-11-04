@@ -1,6 +1,7 @@
 import '../entities/active_rental_hud.dart';
 import '../entities/handover_challenge.dart';
 import '../entities/handover_inspection.dart';
+import '../entities/handover_photo_item.dart';
 import '../entities/mechanical_breakdown.dart';
 import '../entities/rental_extension.dart';
 

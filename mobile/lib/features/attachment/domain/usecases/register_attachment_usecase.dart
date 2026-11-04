@@ -1,5 +1,6 @@
-import 'package:dink_mobile/features/attachment/domain/entities/attachment.dart';
-import 'package:dink_mobile/features/attachment/domain/repositories/attachment_repository.dart';
+import '../entities/attachment.dart';
+import '../entities/attachment_registration_request.dart';
+import '../repositories/attachment_repository.dart';
 
 class RegisterAttachmentUseCase {
   final AttachmentRepository repository;

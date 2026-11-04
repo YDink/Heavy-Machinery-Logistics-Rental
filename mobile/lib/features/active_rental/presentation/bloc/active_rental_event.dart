@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/handover_inspection.dart';
+import '../../domain/entities/handover_photo_item.dart';
 
 abstract class ActiveRentalEvent extends Equatable {
   const ActiveRentalEvent();

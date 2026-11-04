@@ -1,4 +1,5 @@
 import '../entities/handover_inspection.dart';
+import '../entities/handover_photo_item.dart';
 import '../repositories/active_rental_repository.dart';
 
 class InspectHandoverUseCase {

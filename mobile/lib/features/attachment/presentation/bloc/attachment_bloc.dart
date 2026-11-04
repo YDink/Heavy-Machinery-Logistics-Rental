@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dink_mobile/features/attachment/domain/entities/attachment.dart';
+import 'package:dink_mobile/features/attachment/domain/entities/attachment_photo.dart';
+import 'package:dink_mobile/features/attachment/domain/entities/attachment_photo_angle.dart';
 import 'package:dink_mobile/features/attachment/domain/usecases/get_attachment_inventory_usecase.dart';
 import 'package:dink_mobile/features/attachment/domain/usecases/link_attachment_usecase.dart';
 import 'package:dink_mobile/features/attachment/domain/usecases/register_attachment_usecase.dart';

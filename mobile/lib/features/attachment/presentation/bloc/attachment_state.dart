@@ -1,5 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:dink_mobile/features/attachment/domain/entities/attachment.dart';
+import 'package:dink_mobile/features/attachment/domain/entities/attachment_photo.dart';
+import 'package:dink_mobile/features/attachment/domain/entities/attachment_photo_angle.dart';
+import 'package:dink_mobile/features/attachment/domain/entities/attachment_registration_request.dart';
 import 'package:dink_mobile/features/attachment/domain/entities/attachment_inventory_item.dart';
 import 'package:dink_mobile/features/attachment/domain/entities/bundled_attachment_link.dart';
 

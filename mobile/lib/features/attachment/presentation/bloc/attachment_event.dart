@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:dink_mobile/features/attachment/domain/entities/attachment.dart';
+import 'package:dink_mobile/features/attachment/domain/entities/attachment_photo_angle.dart';
+import 'package:dink_mobile/features/attachment/domain/entities/attachment_registration_request.dart';
 
 abstract class AttachmentEvent extends Equatable {
   const AttachmentEvent();

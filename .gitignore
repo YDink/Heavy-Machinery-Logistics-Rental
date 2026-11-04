@@ -18,7 +18,7 @@ Thumbs.db
 *.p12
 
 # Local Infrastructure Volume Data
-data/
+/data/
 minio-data/
 postgres-data/
 valkey-data/

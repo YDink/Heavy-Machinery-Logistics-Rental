@@ -1,54 +1,12 @@
 import 'package:equatable/equatable.dart';
+import 'fleet_availability_status.dart';
+import 'fleet_search_key_specs.dart';
+import 'fleet_search_owner_summary.dart';
 
-enum FleetAvailabilityStatus {
-  availableNow,
-  heldPendingWire,
-  unavailable,
-}
-
-class FleetSearchOwnerSummary extends Equatable {
-  final String ownerId;
-  final String tradingName;
-  final double averageRating;
-  final int totalCompletedRentals;
-  final bool isVerified;
-
-  const FleetSearchOwnerSummary({
-    required this.ownerId,
-    required this.tradingName,
-    required this.averageRating,
-    required this.totalCompletedRentals,
-    required this.isVerified,
-  });
-
-  @override
-  List<Object?> get props => [
-        ownerId,
-        tradingName,
-        averageRating,
-        totalCompletedRentals,
-        isVerified,
-      ];
-}
-
-class FleetSearchKeySpecs extends Equatable {
-  final double? operatingWeightKg;
-  final double? payloadCapacityKg;
-  final double? grossPowerHp;
-
-  const FleetSearchKeySpecs({
-    this.operatingWeightKg,
-    this.payloadCapacityKg,
-    this.grossPowerHp,
-  });
-
-  @override
-  List<Object?> get props => [
-        operatingWeightKg,
-        payloadCapacityKg,
-        grossPowerHp,
-      ];
-}
+export 'fleet_availability_status.dart';
+export 'fleet_search_data.dart';
+export 'fleet_search_key_specs.dart';
+export 'fleet_search_owner_summary.dart';
 
 class FleetSearchResult extends Equatable {
   final String fleetId;
@@ -109,23 +67,4 @@ class FleetSearchResult extends Equatable {
         owner,
         keySpecs,
       ];
-}
-
-class FleetSearchData extends Equatable {
-  final int totalMatches;
-  final double latitude;
-  final double longitude;
-  final double radiusKm;
-  final List<FleetSearchResult> results;
-
-  const FleetSearchData({
-    required this.totalMatches,
-    required this.latitude,
-    required this.longitude,
-    required this.radiusKm,
-    required this.results,
-  });
-
-  @override
-  List<Object?> get props => [totalMatches, latitude, longitude, radiusKm, results];
 }

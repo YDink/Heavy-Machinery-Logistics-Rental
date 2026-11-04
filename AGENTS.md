@@ -123,8 +123,9 @@ All client-facing errors (4xx and 5xx) must serve `application/problem+json` sem
   - Every single entity, value object, invariant rule, model, repository interface, repository implementation, use case/service command, HTTP route handler, UI widget, and test MUST reside in its own dedicated, specifically named file in the appropriate directory.
   - "When we say everything, we mean everything." Zero exceptions across Backend, Mobile, Admin, Contracts, and Tests.
 - **UI Design-First with Stitch MCP:**
-  - Before writing or modifying any user interface code (Flutter mobile screens/widgets or Next.js admin pages/components), Stitch MCP MUST be used to create the project/screen designs adhering to the feature requirements and user flows.
-  - UI code must be built directly against and faithfully mirror the generated Stitch designs, adhering to the high-contrast outdoor palette (`#111827`) and $\ge 56\text{dp}$ touch targets.
+  - **Just-In-Time Generation per Requirement:** Designs must be created individually via Stitch MCP at the exact moment when the development of that specific requirement/feature is initiated, rather than generating all partition screens at once in bulk.
+  - **Design System & Flow Continuity:** Every generated screen must adhere to the core design requirements (high-contrast outdoor palette `#111827`, $\ge 7:1$ contrast ratio, $\ge 56\text{dp}$ touch targets) and maintain seamless visual and ergonomic flow from the preceding screen in the user journey (referencing canonical user flows in `docs/shared/flows/` and preceding Stitch screens).
+  - **Implementation Target:** Frontend UI code (Flutter widgets/screens and Next.js admin components) must be built directly against and faithfully mirror the generated Stitch designs.
 - **No Unapproved Paradigms:** Do not introduce architectural patterns, global state solutions, or external dependencies without an explicit L1 (ADR) or L2 (Partition) decision doc.
 - **DTO Isolation:** Database models and persistence entities must never be exposed directly to the controller layer or client responses. DTOs and view models are mandatory.
 - **Layered Validation:** Validate format, presence, and boundary constraints at the edge/controller layer. Validate business invariants and relational constraints in the domain/service layer.
@@ -148,7 +149,7 @@ All client-facing errors (4xx and 5xx) must serve `application/problem+json` sem
 ### Flutter Mobile (FVM)
 - Subsystem SDK and toolchain are managed strictly via FVM (.fvmrc). All Flutter commands execute via `fvm flutter ...`.
 - State management relies strictly on the BLoC pattern (`flutter_bloc`). UI widgets emit events; state changes are received via typed states.
-- **UI Design via Stitch MCP:** All screens and interactive sheets must be designed using Stitch MCP prior to Flutter widget coding, using Stitch designs as the direct implementation target.
+- **UI Design via Stitch MCP:** Each screen and interactive sheet must be designed just-in-time via Stitch MCP when active requirement work begins, maintaining visual and flow continuity from the preceding screen.
 - Clean separation & granular file layout:
   - `domain/entities/<entity_name>.dart`: One entity per file.
   - `domain/repositories/<repository_name>.dart`: One repository interface per file.

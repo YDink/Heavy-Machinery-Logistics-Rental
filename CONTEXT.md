@@ -210,7 +210,7 @@ Per `AGENTS.md § 1` and `docs/quality/MANUAL_TESTING_PROTOCOL.md`, all partitio
 1. **Automated Unit Tests:** 100% pass on pure domain invariants ($\ge 80\%$ line coverage overall; $\ge 95\%$ on financial/auth).
 2. **Automated Integration Tests:** 100% pass on repository transactions and HTTP transport handlers.
 3. **Mandatory Live Manual Testing:** Every new endpoint, migration, and UI widget must be manually verified live before commit, with execution proof recorded under `Manual-Tests:` in the commit body.
-4. **UI Design-First with Stitch MCP:** Every mobile screen/modal and admin dashboard must be designed using Stitch MCP prior to frontend implementation, using generated Stitch designs as the direct implementation target.
+4. **UI Design-First with Stitch MCP:** Every mobile screen/modal and admin dashboard must be designed using Stitch MCP just-in-time at the start of active requirement development (strictly adhering to design standards and maintaining flow continuity from preceding screens in the user journey), using generated Stitch designs as the direct implementation target.
 5. **Strict Granular File Separation ("Single Concept Per File"):** Zero shared or catch-all files (`entity.go`, `models.go`, `invariants.go`, `repository.go`, multi-handlers). Every single entity, value object, invariant, repository interface/impl, use case, route handler, widget, and test must be isolated in its own specifically named file.
 
 ### Implementation Tasks

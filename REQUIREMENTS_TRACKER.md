@@ -42,7 +42,7 @@ Quality Gates:        100% Passing (Backend Suite, Mobile 72/72, Spectral OpenAP
    - **`DB` (Database):** Up/down SQL migrations and generated `sqlc` queries.
    - **`OAS` (Contract):** OpenAPI 3.1.0 schemas and endpoints validated via Spectral (0 errors).
    - **`BE` (Backend):** Pure Go standard library (`net/http.ServeMux` + `log/slog`) domain, service, and HTTP handlers with 100% unit/integration pass rate.
-   - **`MOB` (Mobile):** UI designs generated via Stitch MCP prior to implementation; Flutter Clean Architecture + BLoC with bilingual localization (EN/AM), 56dp touch targets, granular 1-concept-per-file separation, and passing widget tests.
+   - **`MOB` (Mobile):** UI designs generated just-in-time via Stitch MCP per requirement at development start (maintaining flow continuity from preceding screens); Flutter Clean Architecture + BLoC with bilingual localization (EN/AM), 56dp touch targets, granular 1-concept-per-file separation, and passing widget tests.
    - **`ADM` (Admin Console):** Next.js App Router dynamic metadata tables / Server Actions (where in scope).
 
 ---

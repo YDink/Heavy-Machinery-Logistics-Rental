@@ -51,12 +51,13 @@ Every subsystem must strictly enforce these foundational rules. Pull requests vi
 - **Log Static Checks:** CI checks fail on any unmasked logging statements matching sensitive field names.
 
 ### 1.8. UI Design-First Architecture (Stitch MCP)
-- **Mandatory Pre-Implementation Design:** Every user interface capability across Flutter Mobile and Next.js Admin must be designed using **Stitch MCP** before writing frontend implementation code.
+- **Just-In-Time Generation per Requirement:** Every user interface capability across Flutter Mobile and Next.js Admin must be designed using **Stitch MCP** at the exact time development on that specific requirement is started. Generating all partition screens in bulk upfront is prohibited.
+- **Visual & User Flow Continuity:** Every generated screen must inherit and conform to the project's design system standards (high-contrast `#111827` palette, $\ge 7:1$ contrast ratio, $\ge 56\text{dp}$ touch targets) and must maintain seamless visual and ergonomic continuity from the preceding screen in the canonical user flow (`docs/shared/flows/`).
 - **Workflow:**
-  1. Translate partition requirements and user flows into design briefs.
+  1. Translate the specific active requirement and preceding screen context into a targeted Stitch design prompt.
   2. Use Stitch MCP (`create_project`, `generate_screen_from_text`, `create_design_system`, `apply_design_system`) to generate the screen designs and components.
   3. Inspect and download the generated screens/variants (`get_screen`, `download_file`).
-  4. Implement widgets and React components directly adhering to the Stitch design hierarchy, colors, typography, and spacing.
+  4. Implement Flutter widgets and React components directly adhering to the Stitch design hierarchy, colors, typography, and spacing.
 - **Outdoor Sunlight Palettes & Contrast:** Field mobile screens must use the `#111827` dark high-contrast foundation with $\ge 7:1$ contrast ratios (WCAG 2.2 AAA).
 
 ### 1.9. Strict Single-Concept File Separation ("No Shared/Lumped Files")

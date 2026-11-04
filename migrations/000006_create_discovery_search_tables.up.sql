@@ -61,7 +61,7 @@ CREATE INDEX IF NOT EXISTS idx_fleet_avail_gist ON fleet_availability USING gist
 CREATE INDEX IF NOT EXISTS idx_fleet_avail_state ON fleet_availability(state);
 
 -- 7. Dynamic RBAC Permissions for Discovery & Comparison
-INSERT INTO permissions (code, module, action, description) VALUES
+INSERT INTO permissions (code, resource, action, description) VALUES
 ('fleets:search', 'fleets', 'search', 'Execute spatial radius and multi-variable fleet discovery queries'),
 ('fleets:compare', 'fleets', 'compare', 'Execute dynamic side-by-side EAV spec comparison')
 ON CONFLICT (code) DO NOTHING;

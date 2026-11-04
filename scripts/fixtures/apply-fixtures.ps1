@@ -7,7 +7,7 @@ param (
     [string]$DbHost = $(if ($env:DB_HOST) { $env:DB_HOST } else { "localhost" }),
     [string]$DbPort = $(if ($env:DB_PORT) { $env:DB_PORT } else { "5432" }),
     [string]$DbUser = $(if ($env:DB_USER) { $env:DB_USER } else { "postgres" }),
-    [string]$DbName = $(if ($env:DB_NAME) { $env:DB_NAME } else { "dink_machinery" }),
+    [string]$DbName = $(if ($env:DB_NAME) { $env:DB_NAME } else { "dink_machinery_dev" }),
     [string]$DbPassword = $(if ($env:DB_PASSWORD) { $env:DB_PASSWORD } else { "postgres" })
 )
 

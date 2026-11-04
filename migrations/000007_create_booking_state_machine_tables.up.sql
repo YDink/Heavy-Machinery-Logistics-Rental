@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS booking_audit_logs (
 CREATE INDEX IF NOT EXISTS idx_booking_audit_logs_booking_id ON booking_audit_logs(booking_id, created_at DESC);
 
 -- 5. Dynamic RBAC Permissions for Bookings (ADR-018)
-INSERT INTO permissions (code, module, action, description) VALUES
+INSERT INTO permissions (code, resource, action, description) VALUES
 ('bookings:create', 'bookings', 'create', 'Create rental requisition and hold lease'),
 ('bookings:read', 'bookings', 'read', 'View booking details and history'),
 ('bookings:update', 'bookings', 'update', 'Upload payment evidence, update site logistics or meter status'),

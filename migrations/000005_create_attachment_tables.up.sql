@@ -107,7 +107,7 @@ CREATE INDEX idx_attachment_reservations_gist ON attachment_reservations USING g
 CREATE INDEX idx_attachment_reservations_status ON attachment_reservations(status);
 
 -- 6. Dynamic RBAC Seeds for Attachments (ADR-018)
-INSERT INTO permissions (code, module, action, description) VALUES
+INSERT INTO permissions (code, resource, action, description) VALUES
 ('attachments:create', 'attachments', 'create', 'Register new standalone attachments'),
 ('attachments:read', 'attachments', 'read', 'List and view attachment details and inventory'),
 ('attachments:update', 'attachments', 'update', 'Update attachment technical details, pricing and status'),

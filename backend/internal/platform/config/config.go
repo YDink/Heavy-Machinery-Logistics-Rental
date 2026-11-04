@@ -44,7 +44,7 @@ func Load() (*Config, error) {
 	cfg := &Config{
 		Env:           env,
 		Port:          getEnv("PORT", "8080"),
-		DatabaseURL:   getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/dink_machinery?sslmode=disable"),
+		DatabaseURL:   getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/dink_machinery_dev?sslmode=disable"),
 		ValkeyURL:     getEnv("VALKEY_URL", "localhost:6379"),
 		SeaweedFSURL:  getEnv("SEAWEEDFS_URL", "http://localhost:8333"),
 		ClamAVAddress: getEnv("CLAMAV_ADDR", "localhost:3310"),

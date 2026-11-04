@@ -43,14 +43,14 @@ INSERT INTO handover_challenges (
 
 -- 3. Completed Past Shift Telemetry (Day 1)
 INSERT INTO rental_shifts (
-    id, booking_id, operator_id, shift_date, shift_start_time, shift_end_time,
-    accumulated_engine_hours, excess_hours, start_meter_hours, end_meter_hours,
+    id, booking_id, operator_id, shift_date, start_time, end_time,
+    accumulated_hours, excess_hours, start_meter_hours, end_meter_hours,
     is_paused, created_at, updated_at
 ) VALUES (
     '66666666-6666-4666-8666-000000000003',
     '55555555-5555-4555-8555-555555555555',
     '33333333-3333-4333-8333-333333333333',
-    CURRENT_DATE - INTERVAL '1 day',
+    (CURRENT_DATE - INTERVAL '1 day')::date,
     NOW() - INTERVAL '26 hours',
     NOW() - INTERVAL '16 hours',
     9.50,
@@ -64,8 +64,8 @@ INSERT INTO rental_shifts (
 
 -- 4. Active Shift Telemetry (Current Shift In Progress)
 INSERT INTO rental_shifts (
-    id, booking_id, operator_id, shift_date, shift_start_time, shift_end_time,
-    accumulated_engine_hours, excess_hours, start_meter_hours, end_meter_hours,
+    id, booking_id, operator_id, shift_date, start_time, end_time,
+    accumulated_hours, excess_hours, start_meter_hours, end_meter_hours,
     is_paused, created_at, updated_at
 ) VALUES (
     '66666666-6666-4666-8666-000000000004',
@@ -82,4 +82,4 @@ INSERT INTO rental_shifts (
     NOW() - INTERVAL '4 hours',
     NOW()
 ) ON CONFLICT (id) DO UPDATE SET
-    accumulated_engine_hours = 3.75;
+    accumulated_hours = 3.75;

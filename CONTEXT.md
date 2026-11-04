@@ -9,7 +9,26 @@
 
 ## 1. Current Progress Snapshot
 
-### Completed (Partition 05-03: Attachment Registration & Inventory Architecture)
+### Completed (System Manual Live Verification & SQL Fixture Alignment Drill)
+- **Database Schema & Migrations (`migrations/`):**
+  - Aligned RBAC column references in `000005`, `000006`, `000007`, and `000008`: normalized to canonical `resource` column on `permissions` table.
+  - Aligned rollback script `000008_create_active_rental_telemetry_tables.down.sql` to reference `code` column.
+  - Executed migration rollback drill on migration 000008 (`migrate down 1` -> `migrate up 1`) passing cleanly with zero relational collisions.
+- **Multi-Machine Test Data Parity (`scripts/fixtures/`):**
+  - Repaired column mapping in `scripts/fixtures/05_03_attachment_fixtures.sql` (`is_active`).
+  - Repaired PostgreSQL date range type casting in `scripts/fixtures/05_05_booking_fixtures.sql` (`(CURRENT_DATE - INTERVAL '...')::date`).
+  - Repaired telemetry columns in `scripts/fixtures/05_06_active_rental_fixtures.sql` (`start_time`, `end_time`, `accumulated_hours`).
+  - Configured default database name to `dink_machinery_dev` across `apply-fixtures.ps1` and `apply-fixtures.sh`.
+  - Applied all 7 SQL fixture scripts with 100% idempotency into `dink_machinery_dev`.
+- **Mandatory Manual Live API Probing (Interactive Verification):**
+  - Executed direct one-by-one live HTTP requests against Go API server connected to PostgreSQL `dink_machinery_dev`:
+    - 2xx Success probes: Healthz, OTP Request, OTP Verify, JWT Authenticated Profile, Bilingual Category Localization (English & Amharic), Fleet Lookup (CAT 320D), Attachment Inventory (Soosan SB81N), 50km Spatial Radius Search, Bookings List, and Active Rental HUD Telemetry (1250.50 check-in meter, 3.75h accumulated hours).
+    - RFC 9457 Problem Details probes: 400 Bad Request (malformed JSON), 404 Not Found (non-existent fleet UUID), 401 Unauthorized (missing Bearer token).
+    - Result: 100% of tested endpoints passed with standardized response envelopes.
+- **Client & Subsystem Verification:**
+  - Mobile: Full Flutter test suite passing (72 / 72 tests passed).
+  - Backend: Full Go unit and integration suite passing (100% across all modules).
+  - Admin: ESLint passing with zero warnings/errors.
 - **Database Schema & Migrations (`migrations/`):**
   - Created `migrations/000005_create_attachment_tables.up.sql` and `.down.sql`:
     - Enabled `btree_gist` extension for composite GiST exclusion constraints.

@@ -155,32 +155,37 @@ CREATE TABLE IF NOT EXISTS mechanical_breakdowns (
 CREATE INDEX IF NOT EXISTS idx_mechanical_breakdowns_booking ON mechanical_breakdowns(booking_id, created_at DESC);
 
 -- 7. Seed Dynamic RBAC Permissions
-INSERT INTO permissions (name, description) VALUES
-    ('rentals:inspect', 'Submit physical handover reticle inspection and hour meter reading'),
-    ('rentals:confirm', 'Confirm dual challenge PIN and sign handover agreement'),
-    ('rentals:hud', 'View active rental HUD telemetry and shift progression'),
-    ('rentals:extend', 'Request or approve rental duration extensions'),
-    ('rentals:breakdown', 'Report mechanical breakdowns and pause shift timers'),
-    ('rentals:resolve', 'Certify mechanical repairs and resume rental shifts')
-ON CONFLICT (name) DO NOTHING;
+INSERT INTO permissions (code, resource, action, description) VALUES
+    ('rentals:inspect', 'rentals', 'inspect', 'Submit physical handover reticle inspection and hour meter reading'),
+    ('rentals:confirm', 'rentals', 'confirm', 'Confirm dual challenge PIN and sign handover agreement'),
+    ('rentals:hud', 'rentals', 'hud', 'View active rental HUD telemetry and shift progression'),
+    ('rentals:extend', 'rentals', 'extend', 'Request or approve rental duration extensions'),
+    ('rentals:breakdown', 'rentals', 'breakdown', 'Report mechanical breakdowns and pause shift timers'),
+    ('rentals:resolve', 'rentals', 'resolve', 'Certify mechanical repairs and resume rental shifts')
+ON CONFLICT (code) DO NOTHING;
 
 -- Map permissions to roles
-INSERT INTO role_permissions (role, permission_id)
-SELECT 'renter', id FROM permissions WHERE name IN ('rentals:confirm', 'rentals:hud', 'rentals:extend', 'rentals:breakdown')
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r, permissions p
+WHERE r.code = 'renter' AND p.code IN ('rentals:confirm', 'rentals:hud', 'rentals:extend', 'rentals:breakdown')
 ON CONFLICT DO NOTHING;
 
-INSERT INTO role_permissions (role, permission_id)
-SELECT 'owner', id FROM permissions WHERE name IN ('rentals:inspect', 'rentals:hud', 'rentals:extend', 'rentals:breakdown', 'rentals:resolve')
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r, permissions p
+WHERE r.code = 'owner' AND p.code IN ('rentals:inspect', 'rentals:hud', 'rentals:extend', 'rentals:breakdown', 'rentals:resolve')
 ON CONFLICT DO NOTHING;
 
-INSERT INTO role_permissions (role, permission_id)
-SELECT 'operator', id FROM permissions WHERE name IN ('rentals:inspect', 'rentals:hud', 'rentals:breakdown')
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r, permissions p
+WHERE r.code = 'operator' AND p.code IN ('rentals:inspect', 'rentals:hud', 'rentals:breakdown')
 ON CONFLICT DO NOTHING;
 
-INSERT INTO role_permissions (role, permission_id)
-SELECT 'admin', id FROM permissions WHERE name LIKE 'rentals:%'
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r, permissions p
+WHERE r.code = 'admin' AND p.code LIKE 'rentals:%'
 ON CONFLICT DO NOTHING;
 
-INSERT INTO role_permissions (role, permission_id)
-SELECT 'super_admin', id FROM permissions WHERE name LIKE 'rentals:%'
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r, permissions p
+WHERE r.code = 'super_admin' AND p.code LIKE 'rentals:%'
 ON CONFLICT DO NOTHING;

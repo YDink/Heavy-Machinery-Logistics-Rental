@@ -50,7 +50,7 @@ VALUES (
 
 -- 3. Bundled Fleet Link (CAT 320D + Soosan SB81N Breaker)
 INSERT INTO fleet_bundled_attachments (
-    id, fleet_id, attachment_id, bundled_daily_rate_minor, is_pre_installed, created_at, updated_at
+    id, fleet_id, attachment_id, bundled_daily_rate_minor, is_active, created_at, updated_at
 ) VALUES (
     '44444444-dddd-4444-8444-000000000001',
     '33333333-3333-4333-8333-333333333333',

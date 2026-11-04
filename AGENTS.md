@@ -118,6 +118,13 @@ All client-facing errors (4xx and 5xx) must serve `application/problem+json` sem
 
 ### Cross-Stack Invariants
 - **Consult `CODE_STANDARDS.md`:** All implementations must conform to the project standards defined in `docs/CODE_STANDARDS.md`.
+- **Strict Single-Concept File Separation ("No Shared/Lumped Files"):**
+  - Shared, catch-all, or monolithic files are strictly forbidden across every tier (`entity.go`, `models.go`, `types.go`, `helpers.go`, `utils.go`, `invariants.go`, `repository.go`, `memory_repository.go`, `postgres_repository.go`, monolithic `*_handler.go`).
+  - Every single entity, value object, invariant rule, model, repository interface, repository implementation, use case/service command, HTTP route handler, UI widget, and test MUST reside in its own dedicated, specifically named file in the appropriate directory.
+  - "When we say everything, we mean everything." Zero exceptions across Backend, Mobile, Admin, Contracts, and Tests.
+- **UI Design-First with Stitch MCP:**
+  - Before writing or modifying any user interface code (Flutter mobile screens/widgets or Next.js admin pages/components), Stitch MCP MUST be used to create the project/screen designs adhering to the feature requirements and user flows.
+  - UI code must be built directly against and faithfully mirror the generated Stitch designs, adhering to the high-contrast outdoor palette (`#111827`) and $\ge 56\text{dp}$ touch targets.
 - **No Unapproved Paradigms:** Do not introduce architectural patterns, global state solutions, or external dependencies without an explicit L1 (ADR) or L2 (Partition) decision doc.
 - **DTO Isolation:** Database models and persistence entities must never be exposed directly to the controller layer or client responses. DTOs and view models are mandatory.
 - **Layered Validation:** Validate format, presence, and boundary constraints at the edge/controller layer. Validate business invariants and relational constraints in the domain/service layer.
@@ -127,15 +134,39 @@ All client-facing errors (4xx and 5xx) must serve `application/problem+json` sem
 - The domain layer contains pure business entities, value objects, and repository interfaces. No SQL queries or external driver imports within domain packages.
 - Mutations use command handlers returning `Result[T, E]` or error types. Queries use specialized query handlers returning read-optimized DTOs.
 - `sqlc` is the standard for SQL generation. Raw SQL strings within application logic are prohibited.
+- HTTP routing relies strictly on pure Go standard library `net/http.ServeMux` and `log/slog` (zero third-party web frameworks).
+- **Strict Granular File Layout:**
+  - `domain/entities/<entity_name>.go`: Strictly one entity per file.
+  - `domain/invariants/<invariant_name>.go`: Strictly one business invariant rule per file.
+  - `domain/repositories/<repository_name>.go`: Strictly one repository interface per file.
+  - `infrastructure/persistence/postgres/<entity_name>_postgres_repository.go`: Strictly one postgres repository adapter per file.
+  - `infrastructure/persistence/memory/<entity_name>_memory_repository.go`: Strictly one in-memory repository adapter per file.
+  - `application/usecases/<command_or_query_name>.go`: Strictly one command/query use case per file.
+  - `transport/http/handlers/<endpoint_action>_handler.go`: Strictly one route/action handler per file.
+  - Tests mirror implementation files 1:1 (`<name>_test.go`). No monolithic test files.
 
 ### Flutter Mobile (FVM)
 - Subsystem SDK and toolchain are managed strictly via FVM (.fvmrc). All Flutter commands execute via `fvm flutter ...`.
 - State management relies strictly on the BLoC pattern (`flutter_bloc`). UI widgets emit events; state changes are received via typed states.
-- Clean separation: Presentation (Widgets/BLoC) → Domain (Use Cases/Entities) → Data (Data Sources/Repositories).
+- **UI Design via Stitch MCP:** All screens and interactive sheets must be designed using Stitch MCP prior to Flutter widget coding, using Stitch designs as the direct implementation target.
+- Clean separation & granular file layout:
+  - `domain/entities/<entity_name>.dart`: One entity per file.
+  - `domain/repositories/<repository_name>.dart`: One repository interface per file.
+  - `domain/usecases/<usecase_name>.dart`: One use case per file.
+  - `data/models/<model_name>.dart`: One model/DTO per file.
+  - `data/datasources/<datasource_name>.dart`: One remote/local data source per file.
+  - `data/repositories/<repository_impl_name>.dart`: One repository implementation per file.
+  - `presentation/bloc/<feature>_bloc.dart`, `<feature>_event.dart`, `<feature>_state.dart`.
+  - `presentation/views/<screen_name>_view.dart`: One view per file.
+  - `presentation/views/widgets/<widget_name>.dart`: One component/widget per file.
+  - Tests mirror files 1:1 (`<name>_test.dart`).
+- All interactive touch targets must be $\ge 56\text{dp}$.
 - Network calls are routed through a configured `Dio` client with logging, auth refresh, and error-to-problem-details interceptors.
 
 ### Next.js Admin Panel (pnpm)
 - Package management relies strictly on `pnpm` (pnpm-lock.yaml). Use of `npm` or `yarn` is prohibited.
+- **UI Design via Stitch MCP:** Administrative dashboards, tables, and modal workflows must be designed via Stitch MCP before frontend implementation.
+- Granular file separation applies: strictly one component/server-action/schema/hook/test per file. No multi-component or catch-all files.
 - Next.js App Router architecture utilizing React Server Components (RSC) for reads and Server Actions for mutations.
 - Dynamic administrative panels are server-rendered from metadata schemas; no client-side hardcoded tables or dynamic form structures.
 - Forms utilize `react-hook-form` paired with strict `zod` schemas matching OpenAPI contracts.

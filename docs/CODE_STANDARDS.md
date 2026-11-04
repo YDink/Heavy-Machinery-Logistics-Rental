@@ -50,6 +50,20 @@ Every subsystem must strictly enforce these foundational rules. Pull requests vi
 - **Log Masking:** Phone numbers, National ID / Kebele card numbers, Tax Identification Numbers (TIN), bank account numbers, and cryptographic tokens must be masked in all log pipelines (e.g., `+251911****44`, `TIN: *****1234`).
 - **Log Static Checks:** CI checks fail on any unmasked logging statements matching sensitive field names.
 
+### 1.8. UI Design-First Architecture (Stitch MCP)
+- **Mandatory Pre-Implementation Design:** Every user interface capability across Flutter Mobile and Next.js Admin must be designed using **Stitch MCP** before writing frontend implementation code.
+- **Workflow:**
+  1. Translate partition requirements and user flows into design briefs.
+  2. Use Stitch MCP (`create_project`, `generate_screen_from_text`, `create_design_system`, `apply_design_system`) to generate the screen designs and components.
+  3. Inspect and download the generated screens/variants (`get_screen`, `download_file`).
+  4. Implement widgets and React components directly adhering to the Stitch design hierarchy, colors, typography, and spacing.
+- **Outdoor Sunlight Palettes & Contrast:** Field mobile screens must use the `#111827` dark high-contrast foundation with $\ge 7:1$ contrast ratios (WCAG 2.2 AAA).
+
+### 1.9. Strict Single-Concept File Separation ("No Shared/Lumped Files")
+- **One Concept per File:** Shared, multi-entity, or catch-all files (`entity.go`, `models.go`, `types.go`, `helpers.go`, `utils.go`, `invariants.go`, `repository.go`, `memory_repository.go`, `postgres_repository.go`, multi-handler `*_handler.go`) are strictly forbidden across every tier.
+- **Universal Scope:** "When we say everything, we mean everything." Every entity, model, value object, invariant rule, repository interface, repository implementation, use case/command, HTTP route handler, UI widget, and test MUST reside in its own dedicated, specifically named file in the appropriate directory.
+- **1:1 Test Symmetry:** Every code file has its own individual `<name>_test.go` or `<name>_test.dart`. Monolithic test suites containing multiple concepts are banned.
+
 ---
 
 ## 2. Go Backend Standards (Go 1.27.3)
@@ -62,7 +76,7 @@ backend/
 ├── cmd/api/                  # Dependency injection and server bootstrap (main.go)
 └── internal/
     ├── platform/             # Shared foundational components (telemetry, crypto, db, env)
-    ├── transport/http/       # Chi router, HTTP handlers, middleware, RFC 9457 encoders
+    ├── transport/http/       # net/http.ServeMux, HTTP handlers, middleware, RFC 9457 encoders
     └── modules/              # Bounded context modules
         ├── auth/
         ├── booking/
@@ -159,7 +173,7 @@ mobile/lib/
 - **Sensitive Storage:** Authentication tokens and cryptographic keys must be stored in `FlutterSecureStorage` (iOS Keychain / Android KeyStore EncryptedSharedPreferences).
 
 ### 3.5. Mobile UI & Accessibility Standards
-- **Touch Targets:** Interactive elements must have a minimum touch target size of $48 \times 48\text{ dp}$.
+- **Touch Targets:** Interactive elements must have a minimum touch target size of $56 \times 56\text{ dp}$ (56dp touch ergonomics for rugged job site conditions).
 - **Text Scaling:** Interfaces must gracefully adapt to system font scaling up to $200\%$ without clipping text.
 - **Dynamic Fonts:** Non-Latin script typography (`Noto Sans Ethiopic` for Amharic, `Noto Sans Arabic`) must be loaded via the dynamic OTA font pipeline (`ADR-013`).
 

@@ -21,7 +21,8 @@ Every code contribution requires completion of the three-pillar verification bef
    - **Backend APIs:** Live execution of endpoints via real HTTP requests (e.g., `curl` or interactive probe harnesses) verifying 2xx success envelopes, 4xx/5xx RFC 9457 error details, and database mutation side effects.
    - **Database Migrations:** Manual execution and verification of both `up` and `down` migration scripts (rollback drill) to guarantee zero SQL syntax errors or relational constraint collisions.
    - **Mobile UI & BLoC:** Manual execution and visual inspection of widgets, forms, 56dp touch targets, input validation error feedback, and bilingual language toggling (English ↔ Amharic).
-   - **Manual Evidence Requirement:** Commits must include an itemized `Manual-Tests:` section documenting the exact manual test scenarios executed and verified.
+   - **Multi-Machine Test Data Parity (Idempotent SQL Fixtures):** Any test data, seed records, or manual DB inserts required to verify features across machines (Windows at office ↔ Mac at home) MUST be committed into version-controlled, idempotent SQL fixture files in `scripts/fixtures/` (`INSERT ... ON CONFLICT DO NOTHING / UPDATE`) using deterministic static UUIDs. Ad-hoc, uncommitted database rows that exist only on one local workstation are strictly prohibited.
+   - **Manual Evidence Requirement:** Commits must include an itemized `Manual-Tests:` section documenting the exact manual test scenarios executed, verified, and corresponding fixture scripts updated.
 
 ### Coverage Ratchet
 - **Target:** Minimum 80% line coverage on changed code; 95% branch coverage required for financial calculations, ledger operations, auth paths, and payout workflows.

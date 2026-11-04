@@ -39,7 +39,7 @@ Quality Gates:        100% Passing (Backend Suite, Mobile 72/72, Spectral OpenAP
    - Commit messages must record the updated partition status and reference the ticket in the header (e.g., `[RENT-01-BE]`).
 3. **Subsystem Verification Standard:**
    A partition cannot be marked `COMPLETED` unless all applicable subsystems are implemented and verified:
-   - **`DB` (Database):** Up/down SQL migrations and generated `sqlc` queries.
+   - **`DB` (Database):** Up/down SQL migrations, generated `sqlc` queries, and idempotent test fixtures in `scripts/fixtures/` ensuring multi-machine parity.
    - **`OAS` (Contract):** OpenAPI 3.1.0 schemas and endpoints validated via Spectral (0 errors).
    - **`BE` (Backend):** Pure Go standard library (`net/http.ServeMux` + `log/slog`), strict type & layer isolation (Entities vs DTOs vs DB models), 1-concept-per-file, with 100% unit/integration pass rate.
    - **`MOB` (Mobile):** UI designs generated just-in-time via Stitch MCP per requirement at development start (maintaining flow continuity from preceding screens); Flutter Clean Architecture + BLoC with strict layer segregation (zero entities in data sources), bilingual localization (EN/AM), 56dp touch targets, granular 1-concept-per-file separation, and passing widget tests.

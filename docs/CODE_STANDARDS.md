@@ -128,6 +128,12 @@ To avoid architectural erosion and mixed responsibilities across tiers, the code
 [Client Response Envelope]
 ```
 
+### 1.11. Multi-Machine Database Test Fixtures (Office Windows ↔ Home macOS Parity)
+- **Zero Local-Only State:** Developers work across different environments (Windows workstation at office, macOS laptop at home). Ad-hoc database mutations or manual inserts that exist on only one machine are strictly prohibited.
+- **Idempotent Fixture Scripts:** Every manual test scenario, mock entity, or seed record must be committed into `scripts/fixtures/<partition-id>_fixtures.sql`. All inserts must use `ON CONFLICT (id) DO NOTHING` or `DO UPDATE SET ...`.
+- **Deterministic Static UUIDs:** All test fixtures must use fixed, predictable UUIDs (never `gen_random_uuid()`) to guarantee cross-machine parity and reproducible API assertions.
+- **Session Startup Synchronization:** At session start or environment switch, engineers run `scripts/fixtures/apply-fixtures.sh` (macOS/Linux) or `.\scripts\fixtures\apply-fixtures.ps1` (Windows) to populate missing test fixtures into local PostgreSQL without modifying migrations.
+
 ---
 
 ## 2. Go Backend Standards (Go 1.27.3)

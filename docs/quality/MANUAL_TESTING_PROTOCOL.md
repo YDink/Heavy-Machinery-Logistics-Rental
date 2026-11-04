@@ -113,6 +113,22 @@ Every newly added or modified administrative view or server action must be manua
 
 ---
 
+### 2.5. Multi-Machine Database Fixtures & State Parity Protocol (Windows ↔ macOS)
+Because development and manual testing occur across multiple workstations (e.g. Windows at the office, macOS at home), **uncommitted, local-only database mutations are strictly prohibited**.
+
+1. **Version-Controlled Fixtures:**
+   - Every database record inserted or required for manual verification (test users, fleet machinery, geofences, active bookings, telemetry shifts, damage claims) must be scripted in `scripts/fixtures/<partition-id>_fixtures.sql`.
+   - Ad-hoc database inserts that exist only in a single workstation's PostgreSQL instance violate Gate G0.
+2. **Strict Idempotency:**
+   - All fixture SQL statements must use `INSERT INTO ... ON CONFLICT (id) DO NOTHING` (or `DO UPDATE SET ...`).
+   - All primary keys must use static, deterministic UUIDs (e.g. `11111111-1111-4111-8111-111111111111`). Dynamic `gen_random_uuid()` is prohibited in test fixtures to ensure exact ID parity across machines.
+3. **Session Start Synchronization:**
+   - At session start on any machine, running `scripts/fixtures/apply-fixtures.sh` (macOS/Linux) or `.\scripts\fixtures\apply-fixtures.ps1` (Windows) guarantees all test records are present in the local PostgreSQL instance without duplicate key collisions.
+4. **Pre-Commit Verification:**
+   - The corresponding `scripts/fixtures/<partition-id>_fixtures.sql` file must be staged and committed alongside code and documentation.
+
+---
+
 ## 3. Commit Format & Evidence Requirements
 
 ### 3.1. Commit Message Standard
@@ -152,3 +168,4 @@ Before executing `git commit`, verify every checkbox:
 - [ ] **6. Mobile Ergonomics & Localization:** 56dp touch targets confirmed; English and Amharic screens inspected without untranslated strings.
 - [ ] **7. Documentation Synchronization:** `CONTEXT.md` and `REQUIREMENTS_TRACKER.md` staged in the same commit.
 - [ ] **8. Commit Message Compliance:** Commit message includes `Tests:`, `Manual-Tests:`, and `Docs:` footers.
+- [ ] **9. Multi-Machine Database Fixtures:** Any test seed data or database inserts used during manual testing are committed in idempotent SQL scripts under `scripts/fixtures/` with static UUIDs.

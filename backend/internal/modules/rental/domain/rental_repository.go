@@ -40,4 +40,32 @@ type RentalRepository interface {
 	// Machine & Booking Baseline Queries
 	GetFleetBaselineMeter(ctx context.Context, fleetID uuid.UUID) (float64, error)
 	CheckForwardBookingConflict(ctx context.Context, fleetID uuid.UUID, excludeBookingID uuid.UUID, currentEndDate, newEndDate time.Time) (bool, error)
+
+	// Return Inspection & Demobilization (Partition 05-07)
+	CreateReturnInspection(ctx context.Context, inspection *ReturnInspection) error
+	GetReturnInspection(ctx context.Context, bookingID uuid.UUID) (*ReturnInspection, error)
+
+	// Damage Claims & Arbitration (Partition 05-07)
+	CreateDamageClaimDocket(ctx context.Context, claim *DamageClaimDocket) error
+	GetDamageClaimDocket(ctx context.Context, claimID uuid.UUID) (*DamageClaimDocket, error)
+	GetDamageClaimDocketByBooking(ctx context.Context, bookingID uuid.UUID) (*DamageClaimDocket, error)
+	ListDamageClaimDockets(ctx context.Context, bookingID uuid.UUID) ([]DamageClaimDocket, error)
+	RespondToDamageClaim(ctx context.Context, claimID uuid.UUID, status string, acceptedMinor int64, disputeReason string) error
+	ArbitrateDamageClaim(ctx context.Context, claimID uuid.UUID, status string, acceptedMinor int64, arbitrationNotes string, arbitratedBy uuid.UUID) error
+	WaiveDamageClaim(ctx context.Context, claimID uuid.UUID) error
+
+	// Rental Settlement Reconciliation (Partition 05-07)
+	UpsertRentalSettlement(ctx context.Context, settlement *RentalSettlement) error
+	GetRentalSettlement(ctx context.Context, bookingID uuid.UUID) (*RentalSettlement, error)
+	UpdateRentalSettlementPaymentEvidence(ctx context.Context, bookingID uuid.UUID, slipURI, slipHash string) error
+	ConfirmRentalSettlement(ctx context.Context, bookingID uuid.UUID) error
+
+	// Double-Blind Reputation Reviews (Partition 05-07)
+	CreateBookingReview(ctx context.Context, review *BookingReview) error
+	GetBookingReviews(ctx context.Context, bookingID uuid.UUID) ([]BookingReview, error)
+	PublishBookingReviews(ctx context.Context, bookingID uuid.UUID) error
+	ListPublishedReviewsForTarget(ctx context.Context, targetID uuid.UUID) ([]BookingReview, error)
+
+	// Booking Lifecycle Completion Updates
+	UpdateBookingCompletionSummary(ctx context.Context, bookingID uuid.UUID, status string, checkOutMeter float64, damageClaimSubmitted, damageClaimWaived bool, acceptedDamageMinor, excessSurchargeMinor, finalNetBalanceMinor int64, expectedVersion int) error
 }

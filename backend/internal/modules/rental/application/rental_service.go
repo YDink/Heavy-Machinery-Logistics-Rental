@@ -504,3 +504,325 @@ func (s *RentalService) ResolveMechanicalBreakdown(ctx context.Context, cmd Brea
 
 	return breakdown, nil
 }
+
+
+// Return Inspection & Completion (Partition 05-07)
+
+// InitiateReturn halts shift telemetry and transitions booking to RETURN_INITIATED.
+func (s *RentalService) InitiateReturn(ctx context.Context, bookingID uuid.UUID, actorID uuid.UUID) (*bookingDomain.Booking, error) {
+	booking, err := s.bookingRepo.GetBookingByID(ctx, bookingID)
+	if err != nil {
+		return nil, fmt.Errorf("booking retrieval failed: %w", err)
+	}
+
+	if booking.Status != bookingDomain.StatusActive && booking.Status != bookingDomain.StatusActiveBreakdownPaused {
+		return nil, fmt.Errorf("cannot initiate return on booking in state %s (must be ACTIVE)", booking.Status)
+	}
+
+	// End active shift if running
+	activeShift, err := s.rentalRepo.GetActiveRentalShift(ctx, booking.ID)
+	if err == nil && activeShift != nil {
+		_ = s.rentalRepo.EndRentalShift(ctx, activeShift.ID, activeShift.StartMeterHours+activeShift.AccumulatedHours, activeShift.AccumulatedHours, activeShift.ExcessHours)
+	}
+
+	booking.Status = bookingDomain.StatusReturnInitiated
+	if err := s.bookingRepo.UpdateBookingStatusOCC(ctx, booking, booking.Version); err != nil {
+		return nil, fmt.Errorf("failed to update booking to RETURN_INITIATED: %w", err)
+	}
+
+	return booking, nil
+}
+
+// ReturnInspectCommand carries inputs for conducting 6-angle off-hire inspection.
+type ReturnInspectCommand struct {
+	BookingID           uuid.UUID
+	InspectorID         uuid.UUID
+	CheckOutMeterHours  float64
+	FluidLevelsOk       bool
+	SafetyGlassIntact   bool
+	AccelerometerSteady bool
+	Notes               string
+	Photos              []domain.InspectionPhoto
+}
+
+// InspectReturn records the 6-angle return inspection and checks non-regressive monotonic meter floor.
+func (s *RentalService) InspectReturn(ctx context.Context, cmd ReturnInspectCommand) (*domain.ReturnInspection, error) {
+	booking, err := s.bookingRepo.GetBookingByID(ctx, cmd.BookingID)
+	if err != nil {
+		return nil, fmt.Errorf("booking retrieval failed: %w", err)
+	}
+
+	if booking.Status != bookingDomain.StatusReturnInitiated {
+		return nil, fmt.Errorf("cannot inspect return on booking in state %s (must be RETURN_INITIATED)", booking.Status)
+	}
+
+	if err := domain.ValidateReturnPhotos(cmd.Photos); err != nil {
+		return nil, err
+	}
+
+	checkInMeter := 0.0
+	if booking.CheckInMeterHours != nil {
+		checkInMeter = *booking.CheckInMeterHours
+	}
+
+	if err := domain.ValidateReturnMeterMonotonicity(checkInMeter, cmd.CheckOutMeterHours); err != nil {
+		return nil, err
+	}
+
+	inspection := &domain.ReturnInspection{
+		ID:                  uuid.New(),
+		BookingID:           cmd.BookingID,
+		InspectorID:         cmd.InspectorID,
+		CheckOutMeterHours:  cmd.CheckOutMeterHours,
+		FluidLevelsOK:       cmd.FluidLevelsOk,
+		SafetyGlassIntact:   cmd.SafetyGlassIntact,
+		AccelerometerSteady: cmd.AccelerometerSteady,
+		Notes:               cmd.Notes,
+		Photos:              cmd.Photos,
+		CreatedAt:           time.Now().UTC(),
+	}
+
+	if err := s.rentalRepo.CreateReturnInspection(ctx, inspection); err != nil {
+		return nil, fmt.Errorf("failed to persist return inspection: %w", err)
+	}
+
+	booking.Status = bookingDomain.StatusDamagePendingReview
+	booking.CheckOutMeterHours = &cmd.CheckOutMeterHours
+	_ = s.bookingRepo.UpdateBookingStatusOCC(ctx, booking, booking.Version)
+
+	return inspection, nil
+}
+
+// DamageClaimCommand carries inputs for lodging post-rental structural damage dockets.
+type DamageClaimCommand struct {
+	BookingID          uuid.UUID
+	ClaimantID         uuid.UUID
+	ComponentCategory  string
+	IncidentNarrative  string
+	RepairQuoteURI     string
+	ClaimedAmountMinor int64
+	Currency           string
+	DamagePhotos       []string
+}
+
+// LodgeDamageClaim files an itemized damage compensation claim docket.
+func (s *RentalService) LodgeDamageClaim(ctx context.Context, cmd DamageClaimCommand) (*domain.DamageClaimDocket, error) {
+	booking, err := s.bookingRepo.GetBookingByID(ctx, cmd.BookingID)
+	if err != nil {
+		return nil, fmt.Errorf("booking retrieval failed: %w", err)
+	}
+
+	if booking.OwnerID != cmd.ClaimantID {
+		return nil, bookingDomain.ErrUnauthorizedAction
+	}
+
+	docket := &domain.DamageClaimDocket{
+		ID:                  uuid.New(),
+		BookingID:           cmd.BookingID,
+		ClaimantID:          cmd.ClaimantID,
+		ComponentCategory:   cmd.ComponentCategory,
+		IncidentNarrative:   cmd.IncidentNarrative,
+		RepairQuoteURI:      cmd.RepairQuoteURI,
+		ClaimedAmountMinor:  cmd.ClaimedAmountMinor,
+		AcceptedAmountMinor: 0,
+		Currency:            cmd.Currency,
+		DamagePhotos:        cmd.DamagePhotos,
+		Status:              "PENDING_REVIEW",
+		CreatedAt:           time.Now().UTC(),
+		UpdatedAt:           time.Now().UTC(),
+	}
+
+	if err := s.rentalRepo.CreateDamageClaimDocket(ctx, docket); err != nil {
+		return nil, fmt.Errorf("failed to lodge damage claim: %w", err)
+	}
+
+	booking.DamageClaimSubmitted = true
+	_ = s.bookingRepo.UpdateBookingStatusOCC(ctx, booking, booking.Version)
+
+	return docket, nil
+}
+
+// RespondDamageClaimCommand carries contractor action on lodged damage claim.
+type RespondDamageClaimCommand struct {
+	BookingID           uuid.UUID
+	ClaimID             uuid.UUID
+	ActorID             uuid.UUID
+	Action              string
+	AcceptedAmountMinor int64
+	DisputeReason       string
+}
+
+// RespondToDamageClaim records contractor acceptance or dispute of filed damages.
+func (s *RentalService) RespondToDamageClaim(ctx context.Context, cmd RespondDamageClaimCommand) (*domain.DamageClaimDocket, error) {
+	docket, err := s.rentalRepo.GetDamageClaimDocket(ctx, cmd.ClaimID)
+	if err != nil {
+		return nil, err
+	}
+
+	booking, err := s.bookingRepo.GetBookingByID(ctx, cmd.BookingID)
+	if err != nil {
+		return nil, fmt.Errorf("booking retrieval failed: %w", err)
+	}
+
+	if booking.RenterID != cmd.ActorID {
+		return nil, bookingDomain.ErrUnauthorizedAction
+	}
+
+	if cmd.Action == "ACCEPT" {
+		if err := s.rentalRepo.RespondToDamageClaim(ctx, cmd.ClaimID, "ACCEPTED", cmd.AcceptedAmountMinor, ""); err != nil {
+			return nil, err
+		}
+		booking.AcceptedDamageMinor = cmd.AcceptedAmountMinor
+		_ = s.bookingRepo.UpdateBookingStatusOCC(ctx, booking, booking.Version)
+		docket.Status = "ACCEPTED"
+		docket.AcceptedAmountMinor = cmd.AcceptedAmountMinor
+	} else {
+		if err := s.rentalRepo.RespondToDamageClaim(ctx, cmd.ClaimID, "DISPUTED", 0, cmd.DisputeReason); err != nil {
+			return nil, err
+		}
+		booking.Status = bookingDomain.StatusDamageDisputed
+		_ = s.bookingRepo.UpdateBookingStatusOCC(ctx, booking, booking.Version)
+		docket.Status = "DISPUTED"
+		docket.DisputeReason = cmd.DisputeReason
+	}
+
+	return docket, nil
+}
+
+// ReconcileFinalSettlement compiles the deterministic reconciliation statement per RC-05.
+func (s *RentalService) ReconcileFinalSettlement(ctx context.Context, bookingID uuid.UUID) (*domain.RentalSettlement, error) {
+	booking, err := s.bookingRepo.GetBookingByID(ctx, bookingID)
+	if err != nil {
+		return nil, fmt.Errorf("booking retrieval failed: %w", err)
+	}
+
+	checkIn := 0.0
+	if booking.CheckInMeterHours != nil {
+		checkIn = *booking.CheckInMeterHours
+	}
+	checkOut := checkIn
+	if booking.CheckOutMeterHours != nil {
+		checkOut = *booking.CheckOutMeterHours
+	}
+
+	// Calculate credited breakdown hours
+	breakdownCreditHours := 0.0
+	breakdowns, _ := s.rentalRepo.ListMechanicalBreakdowns(ctx, bookingID)
+	for _, b := range breakdowns {
+		if b.Status == "RESOLVED" && b.ResolvedAt != nil {
+			duration := b.ResolvedAt.Sub(b.CreatedAt).Hours()
+			if duration > 0 {
+				breakdownCreditHours += duration
+			}
+		}
+	}
+
+	hourlyRateMinor := booking.DailyRateAppliedMinor / 8
+	excessQuote := domain.CalculateExcessHours(booking.DurationDays, checkIn, checkOut, breakdownCreditHours, hourlyRateMinor)
+	reconStmt := domain.ReconcileFinalSettlement(
+		booking.BaseHireFeeMinor,
+		booking.AttachmentsFeeMinor,
+		excessQuote.SurchargeAmountMinor,
+		booking.AcceptedDamageMinor,
+		booking.PrepaymentAmountMinor,
+	)
+
+	settlement := &domain.RentalSettlement{
+		ID:                         uuid.New(),
+		BookingID:                  bookingID,
+		BaseMachineFeeMinor:        booking.BaseHireFeeMinor,
+		BundledAttachmentsFeeMinor: booking.AttachmentsFeeMinor,
+		ContractualAllowedHours:    excessQuote.AllowedHours,
+		ActualOperatingHours:       excessQuote.ActualGrossHours,
+		CreditedBreakdownHours:     excessQuote.CreditedBreakdownHours,
+		BillableExcessHours:        excessQuote.BillableExcessHours,
+		ExcessHourlyRateMinor:      hourlyRateMinor,
+		ExcessHoursSurchargeMinor:  excessQuote.SurchargeAmountMinor,
+		AcceptedDamageMinor:        booking.AcceptedDamageMinor,
+		GrossLiabilitiesMinor:      reconStmt.GrossLiabilitiesMinor,
+		PrepaymentSettledMinor:     booking.PrepaymentAmountMinor,
+		NetBalanceMinor:            reconStmt.NetBalanceMinor,
+		Currency:                   booking.Currency,
+		Status:                     reconStmt.SettlementStatus,
+		CreatedAt:                  time.Now().UTC(),
+		UpdatedAt:                  time.Now().UTC(),
+	}
+
+	if err := s.rentalRepo.UpsertRentalSettlement(ctx, settlement); err != nil {
+		return nil, fmt.Errorf("failed to persist settlement statement: %w", err)
+	}
+
+	if reconStmt.NetBalanceMinor > 0 {
+		booking.Status = bookingDomain.StatusPendingFinalPayment
+	} else if reconStmt.NetBalanceMinor == 0 {
+		booking.Status = bookingDomain.StatusCompleted
+	}
+	booking.ExcessHoursSurchargeMinor = excessQuote.SurchargeAmountMinor
+	booking.FinalNetBalanceMinor = reconStmt.NetBalanceMinor
+	_ = s.bookingRepo.UpdateBookingStatusOCC(ctx, booking, booking.Version)
+
+	return settlement, nil
+}
+
+// SubmitReviewCommand carries inputs for submitting double-blind mutual scorecard.
+type SubmitReviewCommand struct {
+	BookingID        uuid.UUID
+	AuthorID         uuid.UUID
+	TargetID         uuid.UUID
+	Role             string
+	Rating           float64
+	Feedback         string
+	DimensionRatings map[string]float64
+}
+
+// SubmitBookingReview records an isolated double-blind review, unblinding upon bilateral submission.
+func (s *RentalService) SubmitBookingReview(ctx context.Context, cmd SubmitReviewCommand) (*domain.BookingReview, error) {
+	booking, err := s.bookingRepo.GetBookingByID(ctx, cmd.BookingID)
+	if err != nil {
+		return nil, fmt.Errorf("booking retrieval failed: %w", err)
+	}
+
+	if cmd.TargetID == uuid.Nil {
+		if cmd.AuthorID == booking.RenterID {
+			cmd.TargetID = booking.OwnerID
+			cmd.Role = "RENTER"
+		} else if cmd.AuthorID == booking.OwnerID {
+			cmd.TargetID = booking.RenterID
+			cmd.Role = "OWNER"
+		} else {
+			return nil, bookingDomain.ErrUnauthorizedAction
+		}
+	}
+
+	if err := domain.ValidateBookingReview(cmd.AuthorID, cmd.TargetID, cmd.Rating, cmd.Role); err != nil {
+		return nil, err
+	}
+
+	review := &domain.BookingReview{
+		ID:               uuid.New(),
+		BookingID:        cmd.BookingID,
+		AuthorID:         cmd.AuthorID,
+		TargetID:         cmd.TargetID,
+		Role:             cmd.Role,
+		Rating:           cmd.Rating,
+		Feedback:         cmd.Feedback,
+		DimensionRatings: cmd.DimensionRatings,
+		IsPublished:      false,
+		CreatedAt:        time.Now().UTC(),
+	}
+
+	if err := s.rentalRepo.CreateBookingReview(ctx, review); err != nil {
+		return nil, fmt.Errorf("failed to persist booking review: %w", err)
+	}
+
+	// Check if counterparty has also reviewed
+	existingReviews, err := s.rentalRepo.GetBookingReviews(ctx, cmd.BookingID)
+	if err == nil && len(existingReviews) >= 2 {
+		_ = s.rentalRepo.PublishBookingReviews(ctx, cmd.BookingID)
+		booking.Status = bookingDomain.StatusRated
+		_ = s.bookingRepo.UpdateBookingStatusOCC(ctx, booking, booking.Version)
+		review.IsPublished = true
+	}
+
+	return review, nil
+}

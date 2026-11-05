@@ -3,11 +3,45 @@
 **Project Phase:** Phase 2 (Partition Feature Development)  
 **Active Requirement Partition:** `05-07-rental-completion-return-damage` (Rental Completion, Off-Hire Return Inspection, Damage & Penalty Adjudication Architecture)  
 **Active Branch:** `feature/05-07-rental-completion-return-damage` (Active development underway)  
-**Current Stop Point:** Database schema & migration 000009 (`return_inspections`, `damage_claim_dockets`, `rental_settlements`, `booking_reviews`), sqlc generated queries, multi-machine SQL fixtures, and OpenAPI 3.1.0 contracts (Redocly bundled, Spectral 0 errors, TypeScript & Go types generated) complete for Partition 05-07. Next immediate action: implement Go backend domain entities, invariants, use cases, and HTTP handlers.
+**Current Stop Point:** Go backend core complete for Partition 05-07 (domain entities, 5 pure invariant rules, memory & postgres repository adapters, application completion use cases, 6 standard library HTTP handlers, and full integration test suite passing 100%). Next immediate action: Proceed to Flutter mobile client (Stitch MCP design generation, BLoC state management, views & localization).
 
 ---
 
 ## 1. Current Progress Snapshot
+
+### Completed (Partition 05-07: Go Backend Core & Pure HTTP Handlers)
+- **Domain Layer (`backend/internal/modules/rental/domain/`):**
+  - Granular single-concept files without JSON or DB serialization tags:
+    - `return_inspection.go`: Domain entity for 6-angle off-hire inspection and meter readings.
+    - `damage_claim_docket.go`: Domain entity for compensable structural damage claims.
+    - `rental_settlement.go`: Domain entity for mathematical balance reconciliation statements.
+    - `booking_review.go`: Domain entity for double-blind bilateral scorecards.
+    - `return_photo_validation.go` + `test`: Enforces 6 mandatory angles (`FRONT_IMPLEMENT`, `REAR_COUNTERWEIGHT_ENGINE`, `LEFT_SIDE_TRACKS`, `RIGHT_SIDE_TRACKS`, `HOUR_METER`, `CABIN_INTERIOR`).
+    - `return_meter_monotonicity.go` + `test`: Enforces non-regressive monotonic meter floor (`checkOut >= checkIn`).
+    - `excess_hours_calculation.go` + `test`: Calculates excess shift overtime surcharges with credited breakdown hours.
+    - `settlement_reconciliation.go` + `test`: Universal reconciliation statement formula per `RC-05`.
+    - `booking_review_validation.go` + `test`: Enforces 1.0-5.0 rating bounds and forbids self-reviews.
+    - `rental_repository.go`: Extended domain repository port with 18 completion methods.
+- **Booking Module Updates (`backend/internal/modules/booking/domain/`):**
+  - `booking_status.go`: Added `StatusDamagePendingReview` and `StatusDamageDisputed`.
+  - `booking.go`: Added completion fields (`DamageClaimSubmitted`, `DamageClaimWaived`, `AcceptedDamageMinor`, `ExcessHoursSurchargeMinor`, `FinalNetBalanceMinor`).
+  - `fsm.go`: Configured valid transitions for return initiation, damage review, disputes, and completion.
+- **Infrastructure Adapters (`backend/internal/modules/rental/infrastructure/`):**
+  - `rental_memory_repository.go`: Implemented all 18 completion methods with thread-safe mutex maps.
+  - `rental_postgres_repository.go`: Implemented all 18 completion methods using `sqlc` queries.
+- **Application Service (`backend/internal/modules/rental/application/`):**
+  - `rental_service.go`: Implemented `InitiateReturn`, `InspectReturn`, `LodgeDamageClaim`, `RespondToDamageClaim`, `ReconcileFinalSettlement`, `SubmitBookingReview`.
+  - `completion_service_test.go`: 100% unit test pass rate across all return and damage lifecycle scenarios.
+- **HTTP Transport Handlers (`backend/internal/transport/http/`):**
+  - Pure Go standard library handlers (`net/http.ServeMux` + `log/slog`):
+    - `initiate_return_handler.go`: Handles `POST /api/v1/bookings/{id}/return-initiate`.
+    - `inspect_return_handler.go`: Handles `POST /api/v1/bookings/{id}/return-inspect`.
+    - `lodge_damage_claim_handler.go`: Handles `POST /api/v1/bookings/{id}/damage-claims`.
+    - `respond_damage_claim_handler.go`: Handles `POST /api/v1/bookings/{id}/damage-claims/{claimId}/respond`.
+    - `final_reconcile_handler.go`: Handles `POST /api/v1/bookings/{id}/final-reconcile`.
+    - `submit_review_handler.go`: Handles `POST /api/v1/bookings/{id}/reviews`.
+    - `server.go`: Registered all 6 endpoints on router.
+    - `completion_test.go`: Full integration test suite with `httptest.ResponseRecorder` covering all 6 endpoints (100% pass rate).
 
 ### Completed (Partition 05-07: DB Migrations, sqlc Queries & OpenAPI 3.1.0 Canonical Contracts)
 - **Database Schema & Migrations (`migrations/`):**

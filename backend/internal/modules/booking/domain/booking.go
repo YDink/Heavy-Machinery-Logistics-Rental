@@ -38,8 +38,13 @@ type Booking struct {
 	AssignedOperatorID     *uuid.UUID
 	CheckInMeterHours      *float64
 	CheckOutMeterHours     *float64
-	Attachments            []BookingAttachment
-	Version                int
+	Attachments               []BookingAttachment
+	DamageClaimSubmitted      bool
+	DamageClaimWaived         bool
+	AcceptedDamageMinor       int64
+	ExcessHoursSurchargeMinor int64
+	FinalNetBalanceMinor      int64
+	Version                   int
 	CreatedAt              time.Time
 	UpdatedAt              time.Time
 }

@@ -110,4 +110,12 @@ func (s *Server) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/bookings/{id}/extend", s.RequestRentalExtension)
 	mux.HandleFunc("POST /api/v1/bookings/{id}/breakdown", s.ReportMechanicalBreakdown)
 	mux.HandleFunc("POST /api/v1/bookings/{id}/breakdown/resolve", s.ResolveMechanicalBreakdown)
+
+	// Rental Completion, Return Inspection, Damage & Penalty Adjudication (Partition 05-07)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/return-initiate", s.InitiateReturn)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/return-inspect", s.InspectReturn)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/damage-claims", s.LodgeDamageClaim)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/damage-claims/{claimId}/respond", s.RespondDamageClaim)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/final-reconcile", s.FinalReconcile)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/reviews", s.SubmitBookingReview)
 }

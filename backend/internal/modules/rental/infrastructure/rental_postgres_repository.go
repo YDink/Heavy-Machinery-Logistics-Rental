@@ -620,3 +620,427 @@ func (r *PostgresRentalRepository) CheckForwardBookingConflict(ctx context.Conte
 	}
 	return exists, nil
 }
+
+
+// Return Inspection (Partition 05-07)
+func (r *PostgresRentalRepository) CreateReturnInspection(ctx context.Context, inspection *domain.ReturnInspection) error {
+	photosBytes, err := json.Marshal(inspection.Photos)
+	if err != nil {
+		return fmt.Errorf("failed to marshal return inspection photos: %w", err)
+	}
+
+	var notes *string
+	if inspection.Notes != "" {
+		notes = &inspection.Notes
+	}
+
+	row, err := r.queries.CreateReturnInspection(ctx, db.CreateReturnInspectionParams{
+		BookingID:           pgtype.UUID{Bytes: inspection.BookingID, Valid: true},
+		InspectorID:         pgtype.UUID{Bytes: inspection.InspectorID, Valid: true},
+		CheckOutMeterHours:  floatToNumeric(inspection.CheckOutMeterHours),
+		FluidLevelsOk:       inspection.FluidLevelsOK,
+		SafetyGlassIntact:   inspection.SafetyGlassIntact,
+		AccelerometerSteady: inspection.AccelerometerSteady,
+		Notes:               notes,
+		PhotosJson:          photosBytes,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to insert return inspection: %w", err)
+	}
+
+	inspection.ID = row.ID.Bytes
+	inspection.CreatedAt = row.CreatedAt.Time
+	return nil
+}
+
+func (r *PostgresRentalRepository) GetReturnInspection(ctx context.Context, bookingID uuid.UUID) (*domain.ReturnInspection, error) {
+	row, err := r.queries.GetReturnInspectionByBookingID(ctx, pgtype.UUID{Bytes: bookingID, Valid: true})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get return inspection: %w", err)
+	}
+
+	var photos []domain.InspectionPhoto
+	if len(row.PhotosJson) > 0 {
+		_ = json.Unmarshal(row.PhotosJson, &photos)
+	}
+
+	var notes string
+	if row.Notes != nil {
+		notes = *row.Notes
+	}
+
+	return &domain.ReturnInspection{
+		ID:                  row.ID.Bytes,
+		BookingID:           row.BookingID.Bytes,
+		InspectorID:         row.InspectorID.Bytes,
+		CheckOutMeterHours:  numericToFloat(row.CheckOutMeterHours),
+		FluidLevelsOK:       row.FluidLevelsOk,
+		SafetyGlassIntact:   row.SafetyGlassIntact,
+		AccelerometerSteady: row.AccelerometerSteady,
+		Notes:               notes,
+		Photos:              photos,
+		CreatedAt:           row.CreatedAt.Time,
+	}, nil
+}
+
+// Damage Claims (Partition 05-07)
+func (r *PostgresRentalRepository) CreateDamageClaimDocket(ctx context.Context, claim *domain.DamageClaimDocket) error {
+	photosBytes, err := json.Marshal(claim.DamagePhotos)
+	if err != nil {
+		return fmt.Errorf("failed to marshal damage photos: %w", err)
+	}
+
+	var quoteURI *string
+	if claim.RepairQuoteURI != "" {
+		quoteURI = &claim.RepairQuoteURI
+	}
+
+	row, err := r.queries.CreateDamageClaimDocket(ctx, db.CreateDamageClaimDocketParams{
+		BookingID:           pgtype.UUID{Bytes: claim.BookingID, Valid: true},
+		ClaimantID:          pgtype.UUID{Bytes: claim.ClaimantID, Valid: true},
+		ComponentCategory:   claim.ComponentCategory,
+		IncidentNarrative:   claim.IncidentNarrative,
+		RepairQuoteUri:      quoteURI,
+		ClaimedAmountMinor:  claim.ClaimedAmountMinor,
+		AcceptedAmountMinor: claim.AcceptedAmountMinor,
+		Currency:            claim.Currency,
+		DamagePhotosJson:    photosBytes,
+		Status:              claim.Status,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to insert damage claim docket: %w", err)
+	}
+
+	claim.ID = row.ID.Bytes
+	claim.CreatedAt = row.CreatedAt.Time
+	claim.UpdatedAt = row.UpdatedAt.Time
+	return nil
+}
+
+func (r *PostgresRentalRepository) GetDamageClaimDocket(ctx context.Context, claimID uuid.UUID) (*domain.DamageClaimDocket, error) {
+	row, err := r.queries.GetDamageClaimDocketByID(ctx, pgtype.UUID{Bytes: claimID, Valid: true})
+	if err != nil {
+		return nil, domain.ErrDamageClaimNotFound
+	}
+	return toDomainDamageClaim(&row), nil
+}
+
+func (r *PostgresRentalRepository) GetDamageClaimDocketByBooking(ctx context.Context, bookingID uuid.UUID) (*domain.DamageClaimDocket, error) {
+	row, err := r.queries.GetDamageClaimDocketByBookingID(ctx, pgtype.UUID{Bytes: bookingID, Valid: true})
+	if err != nil {
+		return nil, domain.ErrDamageClaimNotFound
+	}
+	return toDomainDamageClaim(&row), nil
+}
+
+func (r *PostgresRentalRepository) ListDamageClaimDockets(ctx context.Context, bookingID uuid.UUID) ([]domain.DamageClaimDocket, error) {
+	rows, err := r.queries.ListDamageClaimDocketsByBookingID(ctx, pgtype.UUID{Bytes: bookingID, Valid: true})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list damage claims: %w", err)
+	}
+	var result []domain.DamageClaimDocket
+	for _, row := range rows {
+		result = append(result, *toDomainDamageClaim(&row))
+	}
+	return result, nil
+}
+
+func toDomainDamageClaim(row *db.DamageClaimDocket) *domain.DamageClaimDocket {
+	var photos []string
+	if len(row.DamagePhotosJson) > 0 {
+		_ = json.Unmarshal(row.DamagePhotosJson, &photos)
+	}
+
+	var quoteURI, disputeReason, arbitrationNotes string
+	if row.RepairQuoteUri != nil {
+		quoteURI = *row.RepairQuoteUri
+	}
+	if row.DisputeReason != nil {
+		disputeReason = *row.DisputeReason
+	}
+	if row.ArbitrationNotes != nil {
+		arbitrationNotes = *row.ArbitrationNotes
+	}
+
+	var contractorRespondedAt, arbitratedAt *time.Time
+	if row.ContractorRespondedAt.Valid {
+		contractorRespondedAt = &row.ContractorRespondedAt.Time
+	}
+	if row.ArbitratedAt.Valid {
+		arbitratedAt = &row.ArbitratedAt.Time
+	}
+
+	var arbitratedBy *uuid.UUID
+	if row.ArbitratedBy.Valid {
+		u := uuid.UUID(row.ArbitratedBy.Bytes)
+		arbitratedBy = &u
+	}
+
+	return &domain.DamageClaimDocket{
+		ID:                    row.ID.Bytes,
+		BookingID:             row.BookingID.Bytes,
+		ClaimantID:            row.ClaimantID.Bytes,
+		ComponentCategory:     row.ComponentCategory,
+		IncidentNarrative:     row.IncidentNarrative,
+		RepairQuoteURI:        quoteURI,
+		ClaimedAmountMinor:    row.ClaimedAmountMinor,
+		AcceptedAmountMinor:   row.AcceptedAmountMinor,
+		Currency:              row.Currency,
+		DamagePhotos:          photos,
+		Status:                row.Status,
+		DisputeReason:         disputeReason,
+		ContractorRespondedAt: contractorRespondedAt,
+		ArbitrationNotes:      arbitrationNotes,
+		ArbitratedBy:          arbitratedBy,
+		ArbitratedAt:          arbitratedAt,
+		CreatedAt:             row.CreatedAt.Time,
+		UpdatedAt:             row.UpdatedAt.Time,
+	}
+}
+
+func (r *PostgresRentalRepository) RespondToDamageClaim(ctx context.Context, claimID uuid.UUID, status string, acceptedMinor int64, disputeReason string) error {
+	var reason *string
+	if disputeReason != "" {
+		reason = &disputeReason
+	}
+
+	_, err := r.queries.RespondToDamageClaim(ctx, db.RespondToDamageClaimParams{
+		ID:                  pgtype.UUID{Bytes: claimID, Valid: true},
+		Status:              status,
+		AcceptedAmountMinor: acceptedMinor,
+		DisputeReason:       reason,
+	})
+	return err
+}
+
+func (r *PostgresRentalRepository) ArbitrateDamageClaim(ctx context.Context, claimID uuid.UUID, status string, acceptedMinor int64, arbitrationNotes string, arbitratedBy uuid.UUID) error {
+	var notes *string
+	if arbitrationNotes != "" {
+		notes = &arbitrationNotes
+	}
+
+	_, err := r.queries.ArbitrateDamageClaim(ctx, db.ArbitrateDamageClaimParams{
+		ID:                  pgtype.UUID{Bytes: claimID, Valid: true},
+		Status:              status,
+		AcceptedAmountMinor: acceptedMinor,
+		ArbitrationNotes:    notes,
+		ArbitratedBy:        pgtype.UUID{Bytes: arbitratedBy, Valid: true},
+	})
+	return err
+}
+
+func (r *PostgresRentalRepository) WaiveDamageClaim(ctx context.Context, claimID uuid.UUID) error {
+	_, err := r.queries.WaiveDamageClaim(ctx, pgtype.UUID{Bytes: claimID, Valid: true})
+	return err
+}
+
+// Rental Settlement (Partition 05-07)
+func (r *PostgresRentalRepository) UpsertRentalSettlement(ctx context.Context, settlement *domain.RentalSettlement) error {
+	row, err := r.queries.UpsertRentalSettlement(ctx, db.UpsertRentalSettlementParams{
+		BookingID:                  pgtype.UUID{Bytes: settlement.BookingID, Valid: true},
+		BaseMachineFeeMinor:        settlement.BaseMachineFeeMinor,
+		BundledAttachmentsFeeMinor: settlement.BundledAttachmentsFeeMinor,
+		ContractualAllowedHours:    floatToNumeric(settlement.ContractualAllowedHours),
+		ActualOperatingHours:       floatToNumeric(settlement.ActualOperatingHours),
+		CreditedBreakdownHours:     floatToNumeric(settlement.CreditedBreakdownHours),
+		BillableExcessHours:        floatToNumeric(settlement.BillableExcessHours),
+		ExcessHourlyRateMinor:      settlement.ExcessHourlyRateMinor,
+		ExcessHoursSurchargeMinor:  settlement.ExcessHoursSurchargeMinor,
+		AcceptedDamageMinor:        settlement.AcceptedDamageMinor,
+		GrossLiabilitiesMinor:      settlement.GrossLiabilitiesMinor,
+		PrepaymentSettledMinor:     settlement.PrepaymentSettledMinor,
+		NetBalanceMinor:            settlement.NetBalanceMinor,
+		Currency:                   settlement.Currency,
+		Status:                     settlement.Status,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to upsert rental settlement: %w", err)
+	}
+
+	settlement.ID = row.ID.Bytes
+	settlement.CreatedAt = row.CreatedAt.Time
+	settlement.UpdatedAt = row.UpdatedAt.Time
+	return nil
+}
+
+func (r *PostgresRentalRepository) GetRentalSettlement(ctx context.Context, bookingID uuid.UUID) (*domain.RentalSettlement, error) {
+	row, err := r.queries.GetRentalSettlementByBookingID(ctx, pgtype.UUID{Bytes: bookingID, Valid: true})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get rental settlement: %w", err)
+	}
+
+	var slipURI, slipHash string
+	if row.FinalSlipStorageUri != nil {
+		slipURI = *row.FinalSlipStorageUri
+	}
+	if row.FinalSlipFileHash != nil {
+		slipHash = *row.FinalSlipFileHash
+	}
+
+	var settledAt *time.Time
+	if row.SettledAt.Valid {
+		settledAt = &row.SettledAt.Time
+	}
+
+	return &domain.RentalSettlement{
+		ID:                         row.ID.Bytes,
+		BookingID:                  row.BookingID.Bytes,
+		BaseMachineFeeMinor:        row.BaseMachineFeeMinor,
+		BundledAttachmentsFeeMinor: row.BundledAttachmentsFeeMinor,
+		ContractualAllowedHours:    numericToFloat(row.ContractualAllowedHours),
+		ActualOperatingHours:       numericToFloat(row.ActualOperatingHours),
+		CreditedBreakdownHours:     numericToFloat(row.CreditedBreakdownHours),
+		BillableExcessHours:        numericToFloat(row.BillableExcessHours),
+		ExcessHourlyRateMinor:      row.ExcessHourlyRateMinor,
+		ExcessHoursSurchargeMinor:  row.ExcessHoursSurchargeMinor,
+		AcceptedDamageMinor:        row.AcceptedDamageMinor,
+		GrossLiabilitiesMinor:      row.GrossLiabilitiesMinor,
+		PrepaymentSettledMinor:     row.PrepaymentSettledMinor,
+		NetBalanceMinor:            row.NetBalanceMinor,
+		Currency:                   row.Currency,
+		Status:                     row.Status,
+		FinalSlipStorageURI:        slipURI,
+		FinalSlipFileHash:          slipHash,
+		SettledAt:                  settledAt,
+		CreatedAt:                  row.CreatedAt.Time,
+		UpdatedAt:                  row.UpdatedAt.Time,
+	}, nil
+}
+
+func (r *PostgresRentalRepository) UpdateRentalSettlementPaymentEvidence(ctx context.Context, bookingID uuid.UUID, slipURI, slipHash string) error {
+	_, err := r.queries.UpdateRentalSettlementFinalPaymentEvidence(ctx, db.UpdateRentalSettlementFinalPaymentEvidenceParams{
+		BookingID:           pgtype.UUID{Bytes: bookingID, Valid: true},
+		FinalSlipStorageUri: &slipURI,
+		FinalSlipFileHash:   &slipHash,
+	})
+	return err
+}
+
+func (r *PostgresRentalRepository) ConfirmRentalSettlement(ctx context.Context, bookingID uuid.UUID) error {
+	_, err := r.queries.ConfirmRentalSettlement(ctx, pgtype.UUID{Bytes: bookingID, Valid: true})
+	return err
+}
+
+// Booking Reviews (Partition 05-07)
+func (r *PostgresRentalRepository) CreateBookingReview(ctx context.Context, review *domain.BookingReview) error {
+	dimBytes, err := json.Marshal(review.DimensionRatings)
+	if err != nil {
+		return fmt.Errorf("failed to marshal dimension ratings: %w", err)
+	}
+
+	var feedback *string
+	if review.Feedback != "" {
+		feedback = &review.Feedback
+	}
+
+	var publishedAt pgtype.Timestamptz
+	if review.PublishedAt != nil {
+		publishedAt = pgtype.Timestamptz{Time: *review.PublishedAt, Valid: true}
+	}
+
+	row, err := r.queries.CreateBookingReview(ctx, db.CreateBookingReviewParams{
+		BookingID:            pgtype.UUID{Bytes: review.BookingID, Valid: true},
+		AuthorID:             pgtype.UUID{Bytes: review.AuthorID, Valid: true},
+		TargetID:             pgtype.UUID{Bytes: review.TargetID, Valid: true},
+		Role:                 review.Role,
+		Rating:               floatToNumeric(review.Rating),
+		Feedback:             feedback,
+		DimensionRatingsJson: dimBytes,
+		IsPublished:          review.IsPublished,
+		PublishedAt:          publishedAt,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to insert booking review: %w", err)
+	}
+
+	review.ID = row.ID.Bytes
+	review.CreatedAt = row.CreatedAt.Time
+	return nil
+}
+
+func (r *PostgresRentalRepository) GetBookingReviews(ctx context.Context, bookingID uuid.UUID) ([]domain.BookingReview, error) {
+	rows, err := r.queries.GetBookingReviewsByBookingID(ctx, pgtype.UUID{Bytes: bookingID, Valid: true})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get booking reviews: %w", err)
+	}
+
+	var result []domain.BookingReview
+	for _, row := range rows {
+		result = append(result, *toDomainReview(&row))
+	}
+	return result, nil
+}
+
+func (r *PostgresRentalRepository) PublishBookingReviews(ctx context.Context, bookingID uuid.UUID) error {
+	return r.queries.PublishBookingReviews(ctx, pgtype.UUID{Bytes: bookingID, Valid: true})
+}
+
+func (r *PostgresRentalRepository) ListPublishedReviewsForTarget(ctx context.Context, targetID uuid.UUID) ([]domain.BookingReview, error) {
+	rows, err := r.queries.ListPublishedReviewsForTarget(ctx, pgtype.UUID{Bytes: targetID, Valid: true})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list published reviews: %w", err)
+	}
+
+	var result []domain.BookingReview
+	for _, row := range rows {
+		result = append(result, *toDomainReview(&row))
+	}
+	return result, nil
+}
+
+func toDomainReview(row *db.BookingReview) *domain.BookingReview {
+	var dimensions map[string]float64
+	if len(row.DimensionRatingsJson) > 0 {
+		_ = json.Unmarshal(row.DimensionRatingsJson, &dimensions)
+	}
+
+	var feedback string
+	if row.Feedback != nil {
+		feedback = *row.Feedback
+	}
+
+	var publishedAt *time.Time
+	if row.PublishedAt.Valid {
+		publishedAt = &row.PublishedAt.Time
+	}
+
+	return &domain.BookingReview{
+		ID:               row.ID.Bytes,
+		BookingID:        row.BookingID.Bytes,
+		AuthorID:         row.AuthorID.Bytes,
+		TargetID:         row.TargetID.Bytes,
+		Role:             row.Role,
+		Rating:           numericToFloat(row.Rating),
+		Feedback:         feedback,
+		DimensionRatings: dimensions,
+		IsPublished:      row.IsPublished,
+		PublishedAt:      publishedAt,
+		CreatedAt:        row.CreatedAt.Time,
+	}
+}
+
+func (r *PostgresRentalRepository) UpdateBookingCompletionSummary(
+	ctx context.Context,
+	bookingID uuid.UUID,
+	status string,
+	checkOutMeter float64,
+	damageClaimSubmitted, damageClaimWaived bool,
+	acceptedDamageMinor, excessSurchargeMinor, finalNetBalanceMinor int64,
+	expectedVersion int,
+) error {
+	_, err := r.queries.UpdateBookingCompletionSummary(ctx, db.UpdateBookingCompletionSummaryParams{
+		ID:                        pgtype.UUID{Bytes: bookingID, Valid: true},
+		Status:                    status,
+		CheckOutMeterHours:        floatToNumeric(checkOutMeter),
+		DamageClaimSubmitted:      damageClaimSubmitted,
+		DamageClaimWaived:         damageClaimWaived,
+		AcceptedDamageMinor:       acceptedDamageMinor,
+		ExcessHoursSurchargeMinor: excessSurchargeMinor,
+		FinalNetBalanceMinor:      finalNetBalanceMinor,
+		Version:                   int32(expectedVersion),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to update booking completion summary: %w", err)
+	}
+	return nil
+}

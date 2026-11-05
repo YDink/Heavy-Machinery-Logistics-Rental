@@ -18,6 +18,8 @@ const (
 	StatusActiveBreakdownPaused    BookingStatus = "ACTIVE_BREAKDOWN_PAUSED"
 	StatusActiveExtensionHold      BookingStatus = "ACTIVE_EXTENSION_HOLD"
 	StatusReturnInitiated          BookingStatus = "RETURN_INITIATED"
+	StatusDamagePendingReview      BookingStatus = "DAMAGE_PENDING_REVIEW"
+	StatusDamageDisputed           BookingStatus = "DAMAGE_DISPUTED"
 	StatusPendingFinalPayment      BookingStatus = "PENDING_FINAL_PAYMENT"
 	StatusCompleted                BookingStatus = "COMPLETED"
 	StatusRated                    BookingStatus = "RATED"

@@ -486,4 +486,40 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get confirmResolutionButton => 'የፈረቃ ቆጣሪውን ቀጥል';
+
+  @override
+  String get returnInspectionTitle => 'የማሽነሪ መመለሻ ምርመራ እና የሰዓት ቆጣሪ ንባብ';
+
+  @override
+  String get checkoutMeterLabel => 'የማሽነሪ መመለሻ የሞተር ሰዓት ቆጣሪ';
+
+  @override
+  String get monotonicVerificationPassed => 'የሰዓት ቆጣሪ ቅደም ተከተል ተረጋግጧል';
+
+  @override
+  String get mandatoryAnglesLabel => 'ግዴታ የሆኑ 6 የማሽን አቅጣጫ ፎቶዎች';
+
+  @override
+  String get submitReturnInspection => 'የመመለሻ ምርመራውን መዝግብ';
+
+  @override
+  String get settlementStatementTitle => 'የመጨረሻ ሂሳብ ማጠቃለያ መግለጫ';
+
+  @override
+  String get netBalanceDueLabel => 'የሚከፈል የተጣራ ቀሪ ሂሳብ';
+
+  @override
+  String get damageDocketTitle => 'የማሽን ብልሽት ካሳ ጥያቄ ማህደር';
+
+  @override
+  String get acceptDamageLiability => 'የብልሽት ካሳ ተቀበል';
+
+  @override
+  String get disputeDamageClaim => 'የካሳ ጥያቄውን ተቃወም እና ለሽምግልና አስተላልፍ';
+
+  @override
+  String get doubleBlindReviewTitle => 'የሁለትዮሽ ሚስጥራዊ አስተያየት መስጫ';
+
+  @override
+  String get submitConfidentialReview => 'ሚስጥራዊ ግምገማ አስገባ';
 }

@@ -709,10 +709,10 @@ SET status = $2,
     cancelled_by = COALESCE($6, cancelled_by),
     penalty_amount_minor = COALESCE($7, penalty_amount_minor),
     refund_amount_minor = COALESCE($8, refund_amount_minor),
-    confirmed_at = CASE WHEN $2 = 'CONFIRMED' THEN NOW() ELSE confirmed_at END,
-    activated_at = CASE WHEN $2 = 'ACTIVE' THEN NOW() ELSE activated_at END,
-    completed_at = CASE WHEN $2 = 'COMPLETED' THEN NOW() ELSE completed_at END,
-    cancelled_at = CASE WHEN $2 = 'CANCELLED' THEN NOW() ELSE cancelled_at END,
+    confirmed_at = CASE WHEN $2::varchar = 'CONFIRMED' THEN NOW() ELSE confirmed_at END,
+    activated_at = CASE WHEN $2::varchar = 'ACTIVE' THEN NOW() ELSE activated_at END,
+    completed_at = CASE WHEN $2::varchar = 'COMPLETED' THEN NOW() ELSE completed_at END,
+    cancelled_at = CASE WHEN $2::varchar = 'CANCELLED' THEN NOW() ELSE cancelled_at END,
     expires_at = COALESCE($9, expires_at),
     updated_at = NOW()
 WHERE id = $1 AND version = $10 AND deleted_at IS NULL
@@ -732,7 +732,7 @@ RETURNING *;
 UPDATE bookings
 SET status = $2,
     check_out_meter_hours = $3,
-    completed_at = CASE WHEN $2 = 'COMPLETED' THEN NOW() ELSE completed_at END,
+    completed_at = CASE WHEN $2::varchar = 'COMPLETED' THEN NOW() ELSE completed_at END,
     version = version + 1,
     updated_at = NOW()
 WHERE id = $1 AND version = $4 AND deleted_at IS NULL
@@ -933,7 +933,7 @@ SET status = $2,
     owner_decision_notes = COALESCE($4, owner_decision_notes),
     slip_storage_uri = COALESCE($5, slip_storage_uri),
     slip_file_hash = COALESCE($6, slip_file_hash),
-    confirmed_at = CASE WHEN $2 = 'CONFIRMED' THEN NOW() ELSE confirmed_at END,
+    confirmed_at = CASE WHEN $2::varchar = 'CONFIRMED' THEN NOW() ELSE confirmed_at END,
     updated_at = NOW()
 WHERE id = $1
 RETURNING *;

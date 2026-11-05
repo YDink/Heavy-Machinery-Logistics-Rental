@@ -490,4 +490,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirmResolutionButton => 'Resume Shift Telemetry';
+
+  @override
+  String get returnInspectionTitle => 'Return Inspection & Meter Reading';
+
+  @override
+  String get checkoutMeterLabel => 'Return Check-Out Meter Reading';
+
+  @override
+  String get monotonicVerificationPassed => 'Monotonic verification passed';
+
+  @override
+  String get mandatoryAnglesLabel => 'Mandatory 6-Angle Reticle Inspection';
+
+  @override
+  String get submitReturnInspection => 'Submit Return Inspection';
+
+  @override
+  String get settlementStatementTitle => 'Final Settlement Statement';
+
+  @override
+  String get netBalanceDueLabel => 'Net Balance Settlement Due';
+
+  @override
+  String get damageDocketTitle => 'Damage Claim Docket';
+
+  @override
+  String get acceptDamageLiability => 'Accept Liability';
+
+  @override
+  String get disputeDamageClaim => 'Dispute Claim & Escalate';
+
+  @override
+  String get doubleBlindReviewTitle => 'Mutual Double-Blind Review';
+
+  @override
+  String get submitConfidentialReview => 'Submit Confidential Review';
 }

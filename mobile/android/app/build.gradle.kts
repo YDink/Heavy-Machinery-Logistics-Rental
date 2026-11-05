@@ -40,6 +40,10 @@ android {
         }
     }
 
+    buildFeatures {
+        resValues = true
+    }
+
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("debug")

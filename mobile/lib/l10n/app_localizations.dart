@@ -1021,6 +1021,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Resume Shift Telemetry'**
   String get confirmResolutionButton;
+
+  /// Title for off-hire return inspection
+  ///
+  /// In en, this message translates to:
+  /// **'Return Inspection & Meter Reading'**
+  String get returnInspectionTitle;
+
+  /// Label for checkout engine hour meter reading
+  ///
+  /// In en, this message translates to:
+  /// **'Return Check-Out Meter Reading'**
+  String get checkoutMeterLabel;
+
+  /// Notice for valid non-regressive meter floor
+  ///
+  /// In en, this message translates to:
+  /// **'Monotonic verification passed'**
+  String get monotonicVerificationPassed;
+
+  /// Label for 6 mandatory photo angles
+  ///
+  /// In en, this message translates to:
+  /// **'Mandatory 6-Angle Reticle Inspection'**
+  String get mandatoryAnglesLabel;
+
+  /// Button to submit return inspection
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Return Inspection'**
+  String get submitReturnInspection;
+
+  /// Title for final balance settlement statement
+  ///
+  /// In en, this message translates to:
+  /// **'Final Settlement Statement'**
+  String get settlementStatementTitle;
+
+  /// Label for final net balance due
+  ///
+  /// In en, this message translates to:
+  /// **'Net Balance Settlement Due'**
+  String get netBalanceDueLabel;
+
+  /// Title for post-rental damage docket
+  ///
+  /// In en, this message translates to:
+  /// **'Damage Claim Docket'**
+  String get damageDocketTitle;
+
+  /// Button to accept damage claim
+  ///
+  /// In en, this message translates to:
+  /// **'Accept Liability'**
+  String get acceptDamageLiability;
+
+  /// Button to dispute damage claim
+  ///
+  /// In en, this message translates to:
+  /// **'Dispute Claim & Escalate'**
+  String get disputeDamageClaim;
+
+  /// Title for double-blind reputation review
+  ///
+  /// In en, this message translates to:
+  /// **'Mutual Double-Blind Review'**
+  String get doubleBlindReviewTitle;
+
+  /// Button to submit confidential review
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Confidential Review'**
+  String get submitConfidentialReview;
 }
 
 class _AppLocalizationsDelegate

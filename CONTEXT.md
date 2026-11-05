@@ -1,9 +1,9 @@
 # CONTEXT.md — Dink Machinery Active Session State
 
 **Project Phase:** Phase 2 (Partition Feature Development)  
-**Active Requirement Partition:** `05-07-rental-completion-return-damage` (Rental Completion, Off-Hire Return Inspection, Damage & Penalty Adjudication Architecture)  
-**Active Branch:** `feature/05-07-rental-completion-return-damage` (Ready for rebase-merge to main)  
-**Current Stop Point:** Partition 05-07 is 100% completed across all subsystems (DB schema & migration 000009, sqlc queries, OpenAPI 3.1.0 contracts, Go backend domain & pure Go HTTP handlers, Flutter mobile with Stitch MCP UI, and 100% passing tests). Next immediate action: Rebase-merge into main.
+**Active Requirement Partition:** `05-08-logistics-transport-integration` (Ready for Kickoff)  
+**Active Branch:** `main`  
+**Current Stop Point:** Partitions 05-01 through 05-07 are completed and merged to `main`. All applications (`Backend`, `Admin`, `Mobile`) were verified live with 100% test pass rates and live interactive HTTP probes. Ready for Partition 05-08 kickoff.
 
 ---
 

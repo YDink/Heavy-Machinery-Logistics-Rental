@@ -59,42 +59,47 @@ type AttachmentReservation struct {
 }
 
 type Booking struct {
-	ID                     pgtype.UUID               `json:"id"`
-	BookingReference       string                    `json:"booking_reference"`
-	RenterID               pgtype.UUID               `json:"renter_id"`
-	OwnerID                pgtype.UUID               `json:"owner_id"`
-	FleetID                pgtype.UUID               `json:"fleet_id"`
-	StartDate              pgtype.Date               `json:"start_date"`
-	EndDate                pgtype.Date               `json:"end_date"`
-	HirePeriod             pgtype.Range[pgtype.Date] `json:"hire_period"`
-	DurationDays           int32                     `json:"duration_days"`
-	DailyRateAppliedMinor  int64                     `json:"daily_rate_applied_minor"`
-	BaseHireFeeMinor       int64                     `json:"base_hire_fee_minor"`
-	AttachmentsFeeMinor    int64                     `json:"attachments_fee_minor"`
-	GrossRentalAmountMinor int64                     `json:"gross_rental_amount_minor"`
-	PrepaymentAmountMinor  int64                     `json:"prepayment_amount_minor"`
-	Currency               string                    `json:"currency"`
-	SiteLocationAddress    string                    `json:"site_location_address"`
-	Status                 string                    `json:"status"`
-	RejectionReasonCode    *string                   `json:"rejection_reason_code"`
-	RejectionNotes         *string                   `json:"rejection_notes"`
-	CancellationReason     *string                   `json:"cancellation_reason"`
-	CancelledBy            pgtype.UUID               `json:"cancelled_by"`
-	PenaltyAmountMinor     int64                     `json:"penalty_amount_minor"`
-	RefundAmountMinor      int64                     `json:"refund_amount_minor"`
-	ExpiresAt              pgtype.Timestamptz        `json:"expires_at"`
-	ConfirmedAt            pgtype.Timestamptz        `json:"confirmed_at"`
-	ActivatedAt            pgtype.Timestamptz        `json:"activated_at"`
-	CompletedAt            pgtype.Timestamptz        `json:"completed_at"`
-	CancelledAt            pgtype.Timestamptz        `json:"cancelled_at"`
-	HandoverPin            *string                   `json:"handover_pin"`
-	CheckInMeterHours      pgtype.Numeric            `json:"check_in_meter_hours"`
-	CheckOutMeterHours     pgtype.Numeric            `json:"check_out_meter_hours"`
-	Version                int32                     `json:"version"`
-	CreatedAt              pgtype.Timestamptz        `json:"created_at"`
-	UpdatedAt              pgtype.Timestamptz        `json:"updated_at"`
-	DeletedAt              pgtype.Timestamptz        `json:"deleted_at"`
-	AssignedOperatorID     pgtype.UUID               `json:"assigned_operator_id"`
+	ID                        pgtype.UUID               `json:"id"`
+	BookingReference          string                    `json:"booking_reference"`
+	RenterID                  pgtype.UUID               `json:"renter_id"`
+	OwnerID                   pgtype.UUID               `json:"owner_id"`
+	FleetID                   pgtype.UUID               `json:"fleet_id"`
+	StartDate                 pgtype.Date               `json:"start_date"`
+	EndDate                   pgtype.Date               `json:"end_date"`
+	HirePeriod                pgtype.Range[pgtype.Date] `json:"hire_period"`
+	DurationDays              int32                     `json:"duration_days"`
+	DailyRateAppliedMinor     int64                     `json:"daily_rate_applied_minor"`
+	BaseHireFeeMinor          int64                     `json:"base_hire_fee_minor"`
+	AttachmentsFeeMinor       int64                     `json:"attachments_fee_minor"`
+	GrossRentalAmountMinor    int64                     `json:"gross_rental_amount_minor"`
+	PrepaymentAmountMinor     int64                     `json:"prepayment_amount_minor"`
+	Currency                  string                    `json:"currency"`
+	SiteLocationAddress       string                    `json:"site_location_address"`
+	Status                    string                    `json:"status"`
+	RejectionReasonCode       *string                   `json:"rejection_reason_code"`
+	RejectionNotes            *string                   `json:"rejection_notes"`
+	CancellationReason        *string                   `json:"cancellation_reason"`
+	CancelledBy               pgtype.UUID               `json:"cancelled_by"`
+	PenaltyAmountMinor        int64                     `json:"penalty_amount_minor"`
+	RefundAmountMinor         int64                     `json:"refund_amount_minor"`
+	ExpiresAt                 pgtype.Timestamptz        `json:"expires_at"`
+	ConfirmedAt               pgtype.Timestamptz        `json:"confirmed_at"`
+	ActivatedAt               pgtype.Timestamptz        `json:"activated_at"`
+	CompletedAt               pgtype.Timestamptz        `json:"completed_at"`
+	CancelledAt               pgtype.Timestamptz        `json:"cancelled_at"`
+	HandoverPin               *string                   `json:"handover_pin"`
+	CheckInMeterHours         pgtype.Numeric            `json:"check_in_meter_hours"`
+	CheckOutMeterHours        pgtype.Numeric            `json:"check_out_meter_hours"`
+	Version                   int32                     `json:"version"`
+	CreatedAt                 pgtype.Timestamptz        `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz        `json:"updated_at"`
+	DeletedAt                 pgtype.Timestamptz        `json:"deleted_at"`
+	AssignedOperatorID        pgtype.UUID               `json:"assigned_operator_id"`
+	DamageClaimSubmitted      bool                      `json:"damage_claim_submitted"`
+	DamageClaimWaived         bool                      `json:"damage_claim_waived"`
+	AcceptedDamageMinor       int64                     `json:"accepted_damage_minor"`
+	ExcessHoursSurchargeMinor int64                     `json:"excess_hours_surcharge_minor"`
+	FinalNetBalanceMinor      int64                     `json:"final_net_balance_minor"`
 }
 
 type BookingAttachment struct {
@@ -133,6 +138,20 @@ type BookingBankSlip struct {
 	AuditedAt            pgtype.Timestamptz `json:"audited_at"`
 }
 
+type BookingReview struct {
+	ID                   pgtype.UUID        `json:"id"`
+	BookingID            pgtype.UUID        `json:"booking_id"`
+	AuthorID             pgtype.UUID        `json:"author_id"`
+	TargetID             pgtype.UUID        `json:"target_id"`
+	Role                 string             `json:"role"`
+	Rating               pgtype.Numeric     `json:"rating"`
+	Feedback             *string            `json:"feedback"`
+	DimensionRatingsJson []byte             `json:"dimension_ratings_json"`
+	IsPublished          bool               `json:"is_published"`
+	PublishedAt          pgtype.Timestamptz `json:"published_at"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+}
+
 type Category struct {
 	ID           pgtype.UUID        `json:"id"`
 	ParentID     pgtype.UUID        `json:"parent_id"`
@@ -161,6 +180,27 @@ type CountryConfig struct {
 	IsEnabled                 bool               `json:"is_enabled"`
 	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+type DamageClaimDocket struct {
+	ID                    pgtype.UUID        `json:"id"`
+	BookingID             pgtype.UUID        `json:"booking_id"`
+	ClaimantID            pgtype.UUID        `json:"claimant_id"`
+	ComponentCategory     string             `json:"component_category"`
+	IncidentNarrative     string             `json:"incident_narrative"`
+	RepairQuoteUri        *string            `json:"repair_quote_uri"`
+	ClaimedAmountMinor    int64              `json:"claimed_amount_minor"`
+	AcceptedAmountMinor   int64              `json:"accepted_amount_minor"`
+	Currency              string             `json:"currency"`
+	DamagePhotosJson      []byte             `json:"damage_photos_json"`
+	Status                string             `json:"status"`
+	DisputeReason         *string            `json:"dispute_reason"`
+	ContractorRespondedAt pgtype.Timestamptz `json:"contractor_responded_at"`
+	ArbitrationNotes      *string            `json:"arbitration_notes"`
+	ArbitratedBy          pgtype.UUID        `json:"arbitrated_by"`
+	ArbitratedAt          pgtype.Timestamptz `json:"arbitrated_at"`
+	CreatedAt             pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt             pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Fleet struct {
@@ -390,6 +430,30 @@ type RentalExtension struct {
 	UpdatedAt                  pgtype.Timestamptz `json:"updated_at"`
 }
 
+type RentalSettlement struct {
+	ID                         pgtype.UUID        `json:"id"`
+	BookingID                  pgtype.UUID        `json:"booking_id"`
+	BaseMachineFeeMinor        int64              `json:"base_machine_fee_minor"`
+	BundledAttachmentsFeeMinor int64              `json:"bundled_attachments_fee_minor"`
+	ContractualAllowedHours    pgtype.Numeric     `json:"contractual_allowed_hours"`
+	ActualOperatingHours       pgtype.Numeric     `json:"actual_operating_hours"`
+	CreditedBreakdownHours     pgtype.Numeric     `json:"credited_breakdown_hours"`
+	BillableExcessHours        pgtype.Numeric     `json:"billable_excess_hours"`
+	ExcessHourlyRateMinor      int64              `json:"excess_hourly_rate_minor"`
+	ExcessHoursSurchargeMinor  int64              `json:"excess_hours_surcharge_minor"`
+	AcceptedDamageMinor        int64              `json:"accepted_damage_minor"`
+	GrossLiabilitiesMinor      int64              `json:"gross_liabilities_minor"`
+	PrepaymentSettledMinor     int64              `json:"prepayment_settled_minor"`
+	NetBalanceMinor            int64              `json:"net_balance_minor"`
+	Currency                   string             `json:"currency"`
+	Status                     string             `json:"status"`
+	FinalSlipStorageUri        *string            `json:"final_slip_storage_uri"`
+	FinalSlipFileHash          *string            `json:"final_slip_file_hash"`
+	SettledAt                  pgtype.Timestamptz `json:"settled_at"`
+	CreatedAt                  pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                  pgtype.Timestamptz `json:"updated_at"`
+}
+
 type RentalShift struct {
 	ID               pgtype.UUID        `json:"id"`
 	BookingID        pgtype.UUID        `json:"booking_id"`
@@ -405,6 +469,19 @@ type RentalShift struct {
 	IsPaused         bool               `json:"is_paused"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+}
+
+type ReturnInspection struct {
+	ID                  pgtype.UUID        `json:"id"`
+	BookingID           pgtype.UUID        `json:"booking_id"`
+	InspectorID         pgtype.UUID        `json:"inspector_id"`
+	CheckOutMeterHours  pgtype.Numeric     `json:"check_out_meter_hours"`
+	FluidLevelsOk       bool               `json:"fluid_levels_ok"`
+	SafetyGlassIntact   bool               `json:"safety_glass_intact"`
+	AccelerometerSteady bool               `json:"accelerometer_steady"`
+	Notes               *string            `json:"notes"`
+	PhotosJson          []byte             `json:"photos_json"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
 }
 
 type Role struct {

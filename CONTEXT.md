@@ -3,11 +3,38 @@
 **Project Phase:** Phase 2 (Partition Feature Development)  
 **Active Requirement Partition:** `05-07-rental-completion-return-damage` (Rental Completion, Off-Hire Return Inspection, Damage & Penalty Adjudication Architecture)  
 **Active Branch:** `feature/05-07-rental-completion-return-damage` (Active development underway)  
-**Current Stop Point:** Enabled Swagger UI (`/swagger/`, `/swagger/index.html`, `/swagger/openapi.yaml`) in the Go backend modular monolith with pure standard library HTTP handlers, runtime disk hot-reload, embedded fallback bundle, and environment toggle (`SWAGGER_ENABLED`). Full test suite passing. Next immediate action: implement Partition 05-07 database schema and migration (`migrations/000009_create_rental_completion_tables.up.sql`).
+**Current Stop Point:** Database schema & migration 000009 (`return_inspections`, `damage_claim_dockets`, `rental_settlements`, `booking_reviews`), sqlc generated queries, multi-machine SQL fixtures, and OpenAPI 3.1.0 contracts (Redocly bundled, Spectral 0 errors, TypeScript & Go types generated) complete for Partition 05-07. Next immediate action: implement Go backend domain entities, invariants, use cases, and HTTP handlers.
 
 ---
 
 ## 1. Current Progress Snapshot
+
+### Completed (Partition 05-07: DB Migrations, sqlc Queries & OpenAPI 3.1.0 Canonical Contracts)
+- **Database Schema & Migrations (`migrations/`):**
+  - Created `migrations/000009_create_rental_completion_tables.up.sql` and `.down.sql`:
+    - Updated `bookings.status` check constraint with `DAMAGE_PENDING_REVIEW` and `DAMAGE_DISPUTED`.
+    - Added completion columns to `bookings` (`damage_claim_submitted`, `damage_claim_waived`, `accepted_damage_minor`, `excess_hours_surcharge_minor`, `final_net_balance_minor`).
+    - `return_inspections`: Off-hire return inspection with 6-angle condition reticle photos (`FRONT_IMPLEMENT`, `REAR_COUNTERWEIGHT_ENGINE`, `LEFT_SIDE_TRACKS`, `RIGHT_SIDE_TRACKS`, `HOUR_METER`, `CABIN_INTERIOR`), check-out hour meter, fluid/safety glass checks, accelerometer steady-state control (`RC-02`, `D-05-07-001`).
+    - `damage_claim_dockets`: Structural damage claim dockets, component categories, incident narrative, dealer quote URI, claimed vs. accepted minor units, status lifecycle (`PENDING_REVIEW`, `ACCEPTED`, `DISPUTED`, `RESOLVED_FULL`, `RESOLVED_ADJUSTED`, `DISMISSED`, `WAIVED`), arbitration notes and timestamps (`RC-04`, `D-05-07-002`).
+    - `rental_settlements`: Mathematical reconciliation statements with integer minor units, base hire, bundled attachments, contractual allowed hours (8.0 hr/day), actual hours, credited breakdown downtime, billable excess hours, excess surcharge, accepted damage, prepayment settled, net balance due, and final slip hash (`RC-05`, `RC-06`).
+    - `booking_reviews`: Mutual double-blind reputation ledger, 1.0-5.0 star ratings, role-specific dimensional scorecards, and `is_published` visibility guard (`RC-07`).
+    - Seeded dynamic RBAC permissions with canonical `resource` column (`rentals:return_initiate`, `rentals:return_inspect`, `rentals:damage_claim`, `rentals:damage_respond`, `rentals:arbitrate`, `rentals:settle`, `rentals:review`) mapped to standard roles.
+  - Added 18 queries to `backend/internal/platform/database/queries.sql`, compiled cleanly via `sqlc generate` into `backend/internal/platform/database/db/` (`models.go`, `queries.sql.go`).
+- **Multi-Machine Test Data Parity (`scripts/fixtures/`):**
+  - Created idempotent SQL fixture `scripts/fixtures/05_07_rental_completion_fixtures.sql` with static deterministic UUIDs (`77777777-7777-...`) covering return inspections, accepted damage dockets, settlement statements, and bilateral double-blind reviews.
+- **OpenAPI 3.1.0 Canonical Contracts & Codegen (`contracts/`):**
+  - Created schema models in `contracts/components/schemas/completion.yaml` with standardized response envelopes.
+  - Added 6 endpoint contracts under `contracts/endpoints/rentals/`:
+    - `POST /api/v1/bookings/{id}/return-initiate`
+    - `POST /api/v1/bookings/{id}/return-inspect`
+    - `POST /api/v1/bookings/{id}/damage-claims`
+    - `POST /api/v1/bookings/{id}/damage-claims/{claimId}/respond`
+    - `POST /api/v1/bookings/{id}/final-reconcile`
+    - `POST /api/v1/bookings/{id}/reviews`
+  - Bundled with Redocly into `contracts/openapi.bundled.yaml` and synchronized with `backend/internal/transport/http/openapi.bundled.yaml`.
+  - Generated Next.js TypeScript DTOs in `admin/src/types/api.generated.ts` (`openapi-typescript`).
+  - Generated pure Go transport DTOs in `backend/internal/transport/http/generated/api.gen.go` (`oapi-codegen`).
+  - Validated via Spectral CLI: **0 errors**.
 
 ### Completed (Swagger UI & Interactive OpenAPI Documentation Delivery)
 - **Configuration & Toggling (`backend/internal/platform/config/`):**

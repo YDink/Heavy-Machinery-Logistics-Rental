@@ -1,0 +1,32 @@
+post:
+  tags: [booking]
+  summary: Compute deterministic final balance reconciliation statement
+  description: Calculates gross contract liabilities, excess shift overtime surcharge, accepted damages, and net balance due.
+  operationId: finalReconcile
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  responses:
+    '200':
+      description: Final reconciliation statement compiled successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/completion.yaml#/FinalReconciliationSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

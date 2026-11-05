@@ -171,6 +171,21 @@ func (e BookingListSuccessResponseSuccess) Valid() bool {
 	}
 }
 
+// Defines values for BookingReviewSuccessResponseSuccess.
+const (
+	BookingReviewSuccessResponseSuccessTrue BookingReviewSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the BookingReviewSuccessResponseSuccess enum.
+func (e BookingReviewSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case BookingReviewSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for BookingStatus.
 const (
 	BookingStatusACTIVE                   BookingStatus = "ACTIVE"
@@ -342,6 +357,87 @@ func (e CreateAttachmentRequestAttachmentType) Valid() bool {
 	}
 }
 
+// Defines values for DamageClaimRequestComponentCategory.
+const (
+	DamageClaimRequestComponentCategoryENGINEPOWERTRAIN         DamageClaimRequestComponentCategory = "ENGINE_POWERTRAIN"
+	DamageClaimRequestComponentCategoryGETIMPLEMENTTIPS         DamageClaimRequestComponentCategory = "GET_IMPLEMENT_TIPS"
+	DamageClaimRequestComponentCategoryHYDRAULICCIRCUIT         DamageClaimRequestComponentCategory = "HYDRAULIC_CIRCUIT"
+	DamageClaimRequestComponentCategoryOPERATORCABIN            DamageClaimRequestComponentCategory = "OPERATOR_CABIN"
+	DamageClaimRequestComponentCategoryOTHER                    DamageClaimRequestComponentCategory = "OTHER"
+	DamageClaimRequestComponentCategorySTRUCTURALBOOMARMCHASSIS DamageClaimRequestComponentCategory = "STRUCTURAL_BOOM_ARM_CHASSIS"
+	DamageClaimRequestComponentCategoryUNDERCARRIAGETRACKS      DamageClaimRequestComponentCategory = "UNDERCARRIAGE_TRACKS"
+)
+
+// Valid indicates whether the value is a known member of the DamageClaimRequestComponentCategory enum.
+func (e DamageClaimRequestComponentCategory) Valid() bool {
+	switch e {
+	case DamageClaimRequestComponentCategoryENGINEPOWERTRAIN:
+		return true
+	case DamageClaimRequestComponentCategoryGETIMPLEMENTTIPS:
+		return true
+	case DamageClaimRequestComponentCategoryHYDRAULICCIRCUIT:
+		return true
+	case DamageClaimRequestComponentCategoryOPERATORCABIN:
+		return true
+	case DamageClaimRequestComponentCategoryOTHER:
+		return true
+	case DamageClaimRequestComponentCategorySTRUCTURALBOOMARMCHASSIS:
+		return true
+	case DamageClaimRequestComponentCategoryUNDERCARRIAGETRACKS:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DamageClaimResponseRequestAction.
+const (
+	ACCEPT  DamageClaimResponseRequestAction = "ACCEPT"
+	DISPUTE DamageClaimResponseRequestAction = "DISPUTE"
+)
+
+// Valid indicates whether the value is a known member of the DamageClaimResponseRequestAction enum.
+func (e DamageClaimResponseRequestAction) Valid() bool {
+	switch e {
+	case ACCEPT:
+		return true
+	case DISPUTE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DamageClaimResponseSuccessResponseSuccess.
+const (
+	DamageClaimResponseSuccessResponseSuccessTrue DamageClaimResponseSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the DamageClaimResponseSuccessResponseSuccess enum.
+func (e DamageClaimResponseSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case DamageClaimResponseSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DamageClaimSuccessResponseSuccess.
+const (
+	DamageClaimSuccessResponseSuccessTrue DamageClaimSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the DamageClaimSuccessResponseSuccess enum.
+func (e DamageClaimSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case DamageClaimSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for DeclinePaymentRequestReasonCode.
 const (
 	FUNDSNOTRECEIVEDINACCOUNT  DeclinePaymentRequestReasonCode = "FUNDS_NOT_RECEIVED_IN_ACCOUNT"
@@ -375,6 +471,21 @@ const (
 func (e ErrorEnvelopeSuccess) Valid() bool {
 	switch e {
 	case False:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for FinalReconciliationSuccessResponseSuccess.
+const (
+	FinalReconciliationSuccessResponseSuccessTrue FinalReconciliationSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the FinalReconciliationSuccessResponseSuccess enum.
+func (e FinalReconciliationSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case FinalReconciliationSuccessResponseSuccessTrue:
 		return true
 	default:
 		return false
@@ -563,28 +674,28 @@ func (e InspectionDetailSuccessResponseSuccess) Valid() bool {
 
 // Defines values for InspectionPhotoAngle.
 const (
-	CABININTERIOR  InspectionPhotoAngle = "CABIN_INTERIOR"
-	FRONTELEVATION InspectionPhotoAngle = "FRONT_ELEVATION"
-	LEFTTRACK      InspectionPhotoAngle = "LEFT_TRACK"
-	METERCLOSEUP   InspectionPhotoAngle = "METER_CLOSEUP"
-	REARELEVATION  InspectionPhotoAngle = "REAR_ELEVATION"
-	RIGHTTRACK     InspectionPhotoAngle = "RIGHT_TRACK"
+	InspectionPhotoAngleCABININTERIOR  InspectionPhotoAngle = "CABIN_INTERIOR"
+	InspectionPhotoAngleFRONTELEVATION InspectionPhotoAngle = "FRONT_ELEVATION"
+	InspectionPhotoAngleLEFTTRACK      InspectionPhotoAngle = "LEFT_TRACK"
+	InspectionPhotoAngleMETERCLOSEUP   InspectionPhotoAngle = "METER_CLOSEUP"
+	InspectionPhotoAngleREARELEVATION  InspectionPhotoAngle = "REAR_ELEVATION"
+	InspectionPhotoAngleRIGHTTRACK     InspectionPhotoAngle = "RIGHT_TRACK"
 )
 
 // Valid indicates whether the value is a known member of the InspectionPhotoAngle enum.
 func (e InspectionPhotoAngle) Valid() bool {
 	switch e {
-	case CABININTERIOR:
+	case InspectionPhotoAngleCABININTERIOR:
 		return true
-	case FRONTELEVATION:
+	case InspectionPhotoAngleFRONTELEVATION:
 		return true
-	case LEFTTRACK:
+	case InspectionPhotoAngleLEFTTRACK:
 		return true
-	case METERCLOSEUP:
+	case InspectionPhotoAngleMETERCLOSEUP:
 		return true
-	case REARELEVATION:
+	case InspectionPhotoAngleREARELEVATION:
 		return true
-	case RIGHTTRACK:
+	case InspectionPhotoAngleRIGHTTRACK:
 		return true
 	default:
 		return false
@@ -626,31 +737,31 @@ func (e LinkFleetAttachmentSuccessResponseSuccess) Valid() bool {
 
 // Defines values for MechanicalBreakdownRequestFaultCategory.
 const (
-	BOOMBUCKET       MechanicalBreakdownRequestFaultCategory = "BOOM_BUCKET"
-	ELECTRICAL       MechanicalBreakdownRequestFaultCategory = "ELECTRICAL"
-	ENGINE           MechanicalBreakdownRequestFaultCategory = "ENGINE"
-	HYDRAULICCIRCUIT MechanicalBreakdownRequestFaultCategory = "HYDRAULIC_CIRCUIT"
-	OTHER            MechanicalBreakdownRequestFaultCategory = "OTHER"
-	STRUCTURAL       MechanicalBreakdownRequestFaultCategory = "STRUCTURAL"
-	UNDERCARRIAGE    MechanicalBreakdownRequestFaultCategory = "UNDERCARRIAGE"
+	MechanicalBreakdownRequestFaultCategoryBOOMBUCKET       MechanicalBreakdownRequestFaultCategory = "BOOM_BUCKET"
+	MechanicalBreakdownRequestFaultCategoryELECTRICAL       MechanicalBreakdownRequestFaultCategory = "ELECTRICAL"
+	MechanicalBreakdownRequestFaultCategoryENGINE           MechanicalBreakdownRequestFaultCategory = "ENGINE"
+	MechanicalBreakdownRequestFaultCategoryHYDRAULICCIRCUIT MechanicalBreakdownRequestFaultCategory = "HYDRAULIC_CIRCUIT"
+	MechanicalBreakdownRequestFaultCategoryOTHER            MechanicalBreakdownRequestFaultCategory = "OTHER"
+	MechanicalBreakdownRequestFaultCategorySTRUCTURAL       MechanicalBreakdownRequestFaultCategory = "STRUCTURAL"
+	MechanicalBreakdownRequestFaultCategoryUNDERCARRIAGE    MechanicalBreakdownRequestFaultCategory = "UNDERCARRIAGE"
 )
 
 // Valid indicates whether the value is a known member of the MechanicalBreakdownRequestFaultCategory enum.
 func (e MechanicalBreakdownRequestFaultCategory) Valid() bool {
 	switch e {
-	case BOOMBUCKET:
+	case MechanicalBreakdownRequestFaultCategoryBOOMBUCKET:
 		return true
-	case ELECTRICAL:
+	case MechanicalBreakdownRequestFaultCategoryELECTRICAL:
 		return true
-	case ENGINE:
+	case MechanicalBreakdownRequestFaultCategoryENGINE:
 		return true
-	case HYDRAULICCIRCUIT:
+	case MechanicalBreakdownRequestFaultCategoryHYDRAULICCIRCUIT:
 		return true
-	case OTHER:
+	case MechanicalBreakdownRequestFaultCategoryOTHER:
 		return true
-	case STRUCTURAL:
+	case MechanicalBreakdownRequestFaultCategorySTRUCTURAL:
 		return true
-	case UNDERCARRIAGE:
+	case MechanicalBreakdownRequestFaultCategoryUNDERCARRIAGE:
 		return true
 	default:
 		return false
@@ -747,6 +858,66 @@ const (
 func (e RentalExtensionSuccessResponseSuccess) Valid() bool {
 	switch e {
 	case RentalExtensionSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReturnInitiateSuccessResponseSuccess.
+const (
+	ReturnInitiateSuccessResponseSuccessTrue ReturnInitiateSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the ReturnInitiateSuccessResponseSuccess enum.
+func (e ReturnInitiateSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case ReturnInitiateSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReturnInspectionPhotoAngle.
+const (
+	ReturnInspectionPhotoAngleCABININTERIOR           ReturnInspectionPhotoAngle = "CABIN_INTERIOR"
+	ReturnInspectionPhotoAngleFRONTIMPLEMENT          ReturnInspectionPhotoAngle = "FRONT_IMPLEMENT"
+	ReturnInspectionPhotoAngleHOURMETER               ReturnInspectionPhotoAngle = "HOUR_METER"
+	ReturnInspectionPhotoAngleLEFTSIDETRACKS          ReturnInspectionPhotoAngle = "LEFT_SIDE_TRACKS"
+	ReturnInspectionPhotoAngleREARCOUNTERWEIGHTENGINE ReturnInspectionPhotoAngle = "REAR_COUNTERWEIGHT_ENGINE"
+	ReturnInspectionPhotoAngleRIGHTSIDETRACKS         ReturnInspectionPhotoAngle = "RIGHT_SIDE_TRACKS"
+)
+
+// Valid indicates whether the value is a known member of the ReturnInspectionPhotoAngle enum.
+func (e ReturnInspectionPhotoAngle) Valid() bool {
+	switch e {
+	case ReturnInspectionPhotoAngleCABININTERIOR:
+		return true
+	case ReturnInspectionPhotoAngleFRONTIMPLEMENT:
+		return true
+	case ReturnInspectionPhotoAngleHOURMETER:
+		return true
+	case ReturnInspectionPhotoAngleLEFTSIDETRACKS:
+		return true
+	case ReturnInspectionPhotoAngleREARCOUNTERWEIGHTENGINE:
+		return true
+	case ReturnInspectionPhotoAngleRIGHTSIDETRACKS:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReturnInspectionSuccessResponseSuccess.
+const (
+	ReturnInspectionSuccessResponseSuccessTrue ReturnInspectionSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the ReturnInspectionSuccessResponseSuccess enum.
+func (e ReturnInspectionSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case ReturnInspectionSuccessResponseSuccessTrue:
 		return true
 	default:
 		return false
@@ -1284,6 +1455,44 @@ type BookingListSuccessResponse struct {
 // BookingListSuccessResponseSuccess defines model for BookingListSuccessResponse.Success.
 type BookingListSuccessResponseSuccess bool
 
+// BookingReviewRequest defines model for BookingReviewRequest.
+type BookingReviewRequest struct {
+	// DimensionRatings Multi-factor scorecard dimensions matching participant role
+	DimensionRatings *map[string]float64 `json:"dimensionRatings,omitempty"`
+
+	// Feedback Qualitative operational and professional performance feedback
+	Feedback *string `json:"feedback,omitempty"`
+
+	// Rating Overall rating from 1.0 to 5.0 stars
+	Rating float64 `json:"rating"`
+}
+
+// BookingReviewResponseData defines model for BookingReviewResponseData.
+type BookingReviewResponseData struct {
+	AuthorId  openapi_types.UUID `json:"authorId"`
+	BookingId openapi_types.UUID `json:"bookingId"`
+	CreatedAt time.Time          `json:"createdAt"`
+	Feedback  *string            `json:"feedback,omitempty"`
+
+	// IsPublished Whether review has been unblinded and published to target profile
+	IsPublished bool               `json:"isPublished"`
+	Rating      float64            `json:"rating"`
+	ReviewId    openapi_types.UUID `json:"reviewId"`
+	Role        string             `json:"role"`
+	TargetId    openapi_types.UUID `json:"targetId"`
+}
+
+// BookingReviewSuccessResponse defines model for BookingReviewSuccessResponse.
+type BookingReviewSuccessResponse struct {
+	Data    BookingReviewResponseData           `json:"data"`
+	Error   map[string]interface{}              `json:"error"`
+	Meta    ResponseMeta                        `json:"meta"`
+	Success BookingReviewSuccessResponseSuccess `json:"success"`
+}
+
+// BookingReviewSuccessResponseSuccess defines model for BookingReviewSuccessResponse.Success.
+type BookingReviewSuccessResponseSuccess bool
+
 // BookingStatus defines model for BookingStatus.
 type BookingStatus string
 
@@ -1450,6 +1659,86 @@ type CreateFleetRequest struct {
 	RegistrationNumber string `json:"registrationNumber"`
 }
 
+// DamageClaimRequest defines model for DamageClaimRequest.
+type DamageClaimRequest struct {
+	// ClaimedAmountMinor Itemized repair compensation claimed in integer minor currency units
+	ClaimedAmountMinor int64 `json:"claimedAmountMinor"`
+
+	// ComponentCategory Physical component category for compensable damage classification
+	ComponentCategory DamageClaimRequestComponentCategory `json:"componentCategory"`
+	Currency          string                              `json:"currency"`
+
+	// DamagePhotos High-resolution photographic evidence documenting structural damage
+	DamagePhotos *[]string `json:"damagePhotos,omitempty"`
+
+	// IncidentNarrative Detailed factual narrative of operational abuse or collision damage
+	IncidentNarrative string `json:"incidentNarrative"`
+
+	// RepairQuoteUri URI of certified repair estimate PDF from authorized equipment dealer
+	RepairQuoteUri *string `json:"repairQuoteUri,omitempty"`
+}
+
+// DamageClaimRequestComponentCategory Physical component category for compensable damage classification
+type DamageClaimRequestComponentCategory string
+
+// DamageClaimResponseData defines model for DamageClaimResponseData.
+type DamageClaimResponseData struct {
+	AcceptedAmountMinor *int64             `json:"acceptedAmountMinor,omitempty"`
+	BookingId           openapi_types.UUID `json:"bookingId"`
+	ClaimId             openapi_types.UUID `json:"claimId"`
+	ClaimedAmountMinor  int64              `json:"claimedAmountMinor"`
+	ComponentCategory   string             `json:"componentCategory"`
+	CreatedAt           time.Time          `json:"createdAt"`
+	Currency            string             `json:"currency"`
+	Status              string             `json:"status"`
+}
+
+// DamageClaimResponseRequest defines model for DamageClaimResponseRequest.
+type DamageClaimResponseRequest struct {
+	// AcceptedAmountMinor Amount accepted if action is ACCEPT
+	AcceptedAmountMinor *int64 `json:"acceptedAmountMinor,omitempty"`
+
+	// Action Contractor response modality to filed damage claim
+	Action DamageClaimResponseRequestAction `json:"action"`
+
+	// DisputeReason Factual rebuttal and baseline handover reference if action is DISPUTE
+	DisputeReason *string `json:"disputeReason,omitempty"`
+}
+
+// DamageClaimResponseRequestAction Contractor response modality to filed damage claim
+type DamageClaimResponseRequestAction string
+
+// DamageClaimResponseResultData defines model for DamageClaimResponseResultData.
+type DamageClaimResponseResultData struct {
+	AcceptedAmountMinor int64              `json:"acceptedAmountMinor"`
+	BookingId           openapi_types.UUID `json:"bookingId"`
+	ClaimId             openapi_types.UUID `json:"claimId"`
+	Status              string             `json:"status"`
+	UpdatedAt           time.Time          `json:"updatedAt"`
+}
+
+// DamageClaimResponseSuccessResponse defines model for DamageClaimResponseSuccessResponse.
+type DamageClaimResponseSuccessResponse struct {
+	Data    DamageClaimResponseResultData             `json:"data"`
+	Error   map[string]interface{}                    `json:"error"`
+	Meta    ResponseMeta                              `json:"meta"`
+	Success DamageClaimResponseSuccessResponseSuccess `json:"success"`
+}
+
+// DamageClaimResponseSuccessResponseSuccess defines model for DamageClaimResponseSuccessResponse.Success.
+type DamageClaimResponseSuccessResponseSuccess bool
+
+// DamageClaimSuccessResponse defines model for DamageClaimSuccessResponse.
+type DamageClaimSuccessResponse struct {
+	Data    DamageClaimResponseData           `json:"data"`
+	Error   map[string]interface{}            `json:"error"`
+	Meta    ResponseMeta                      `json:"meta"`
+	Success DamageClaimSuccessResponseSuccess `json:"success"`
+}
+
+// DamageClaimSuccessResponseSuccess defines model for DamageClaimSuccessResponse.Success.
+type DamageClaimSuccessResponseSuccess bool
+
 // DeclinePaymentRequest defines model for DeclinePaymentRequest.
 type DeclinePaymentRequest struct {
 	ExpectedVersion int                             `json:"expectedVersion"`
@@ -1477,6 +1766,37 @@ type ErrorEnvelope struct {
 
 // ErrorEnvelopeSuccess defines model for ErrorEnvelope.Success.
 type ErrorEnvelopeSuccess bool
+
+// FinalReconciliationResponseData defines model for FinalReconciliationResponseData.
+type FinalReconciliationResponseData struct {
+	AcceptedDamageMinor        int64              `json:"acceptedDamageMinor"`
+	ActualOperatingHours       float64            `json:"actualOperatingHours"`
+	BaseMachineFeeMinor        int64              `json:"baseMachineFeeMinor"`
+	BillableExcessHours        float64            `json:"billableExcessHours"`
+	BookingId                  openapi_types.UUID `json:"bookingId"`
+	BundledAttachmentsFeeMinor int64              `json:"bundledAttachmentsFeeMinor"`
+	ContractualAllowedHours    float64            `json:"contractualAllowedHours"`
+	CreditedBreakdownHours     float64            `json:"creditedBreakdownHours"`
+	Currency                   string             `json:"currency"`
+	ExcessHourlyRateMinor      int64              `json:"excessHourlyRateMinor"`
+	ExcessHoursSurchargeMinor  int64              `json:"excessHoursSurchargeMinor"`
+	GrossLiabilitiesMinor      int64              `json:"grossLiabilitiesMinor"`
+	NetBalanceMinor            int64              `json:"netBalanceMinor"`
+	PrepaymentSettledMinor     int64              `json:"prepaymentSettledMinor"`
+	ReconciledAt               time.Time          `json:"reconciledAt"`
+	Status                     string             `json:"status"`
+}
+
+// FinalReconciliationSuccessResponse defines model for FinalReconciliationSuccessResponse.
+type FinalReconciliationSuccessResponse struct {
+	Data    FinalReconciliationResponseData           `json:"data"`
+	Error   map[string]interface{}                    `json:"error"`
+	Meta    ResponseMeta                              `json:"meta"`
+	Success FinalReconciliationSuccessResponseSuccess `json:"success"`
+}
+
+// FinalReconciliationSuccessResponseSuccess defines model for FinalReconciliationSuccessResponse.Success.
+type FinalReconciliationSuccessResponseSuccess bool
 
 // FleetAsset defines model for FleetAsset.
 type FleetAsset struct {
@@ -2015,6 +2335,80 @@ type ReturnCheckOutRequest struct {
 	PhotoUris           *[]string `json:"photoUris,omitempty"`
 }
 
+// ReturnInitiateResponseData defines model for ReturnInitiateResponseData.
+type ReturnInitiateResponseData struct {
+	AllowedShiftHours float64            `json:"allowedShiftHours"`
+	BookingId         openapi_types.UUID `json:"bookingId"`
+	CheckInMeterHours float64            `json:"checkInMeterHours"`
+	InitiatedAt       time.Time          `json:"initiatedAt"`
+	Status            string             `json:"status"`
+}
+
+// ReturnInitiateSuccessResponse defines model for ReturnInitiateSuccessResponse.
+type ReturnInitiateSuccessResponse struct {
+	Data    ReturnInitiateResponseData           `json:"data"`
+	Error   map[string]interface{}               `json:"error"`
+	Meta    ResponseMeta                         `json:"meta"`
+	Success ReturnInitiateSuccessResponseSuccess `json:"success"`
+}
+
+// ReturnInitiateSuccessResponseSuccess defines model for ReturnInitiateSuccessResponse.Success.
+type ReturnInitiateSuccessResponseSuccess bool
+
+// ReturnInspectionPhoto defines model for ReturnInspectionPhoto.
+type ReturnInspectionPhoto struct {
+	// Angle Mandatory 6-angle perspective for return reticle inspection
+	Angle ReturnInspectionPhotoAngle `json:"angle"`
+
+	// StorageUri ClamAV-scanned object storage URI
+	StorageUri string `json:"storageUri"`
+}
+
+// ReturnInspectionPhotoAngle Mandatory 6-angle perspective for return reticle inspection
+type ReturnInspectionPhotoAngle string
+
+// ReturnInspectionRequest defines model for ReturnInspectionRequest.
+type ReturnInspectionRequest struct {
+	// AccelerometerSteady Hardware sensor verification (< 0.05g variance) during photo shutter capture
+	AccelerometerSteady *bool `json:"accelerometerSteady,omitempty"`
+
+	// CheckOutMeterHours Final mechanical cabin hour meter reading at return inspection
+	CheckOutMeterHours float64 `json:"checkOutMeterHours"`
+
+	// FluidLevelsOk Attestation that oil and hydraulic fluid levels are within operational limits
+	FluidLevelsOk    *bool                   `json:"fluidLevelsOk,omitempty"`
+	InspectionPhotos []ReturnInspectionPhoto `json:"inspectionPhotos"`
+
+	// Notes Field observations, wear notes, or off-hire comments
+	Notes *string `json:"notes,omitempty"`
+
+	// SafetyGlassIntact Attestation that cabin safety glass and mirrors remain unbroken
+	SafetyGlassIntact *bool `json:"safetyGlassIntact,omitempty"`
+}
+
+// ReturnInspectionResponseData defines model for ReturnInspectionResponseData.
+type ReturnInspectionResponseData struct {
+	BookingId          openapi_types.UUID `json:"bookingId"`
+	CheckOutMeterHours float64            `json:"checkOutMeterHours"`
+
+	// DamageAuditWindowExpiresAt Timestamp exactly 24 hours after return inspection when damage claims are waived
+	DamageAuditWindowExpiresAt time.Time `json:"damageAuditWindowExpiresAt"`
+	InspectedAt                time.Time `json:"inspectedAt"`
+	PhotosIngestedCount        int       `json:"photosIngestedCount"`
+	Status                     string    `json:"status"`
+}
+
+// ReturnInspectionSuccessResponse defines model for ReturnInspectionSuccessResponse.
+type ReturnInspectionSuccessResponse struct {
+	Data    ReturnInspectionResponseData           `json:"data"`
+	Error   map[string]interface{}                 `json:"error"`
+	Meta    ResponseMeta                           `json:"meta"`
+	Success ReturnInspectionSuccessResponseSuccess `json:"success"`
+}
+
+// ReturnInspectionSuccessResponseSuccess defines model for ReturnInspectionSuccessResponse.Success.
+type ReturnInspectionSuccessResponseSuccess bool
+
 // SubmitInspectionRequest defines model for SubmitInspectionRequest.
 type SubmitInspectionRequest struct {
 	ConditionReport     string                       `json:"conditionReport"`
@@ -2237,8 +2631,26 @@ type ResolveMechanicalBreakdownParams struct {
 	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
 }
 
+// LodgeDamageClaimParams defines parameters for LodgeDamageClaim.
+type LodgeDamageClaimParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// RespondToDamageClaimParams defines parameters for RespondToDamageClaim.
+type RespondToDamageClaimParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
 // RequestRentalExtensionParams defines parameters for RequestRentalExtension.
 type RequestRentalExtensionParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// FinalReconcileParams defines parameters for FinalReconcile.
+type FinalReconcileParams struct {
 	// IdempotencyKey Unique mutation request key preventing duplicate execution.
 	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
 }
@@ -2269,6 +2681,24 @@ type SubmitBookingInspectionParams struct {
 
 // SubmitBookingPaymentEvidenceParams defines parameters for SubmitBookingPaymentEvidence.
 type SubmitBookingPaymentEvidenceParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// ReturnInitiateParams defines parameters for ReturnInitiate.
+type ReturnInitiateParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// ReturnInspectParams defines parameters for ReturnInspect.
+type ReturnInspectParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// SubmitBookingReviewParams defines parameters for SubmitBookingReview.
+type SubmitBookingReviewParams struct {
 	// IdempotencyKey Unique mutation request key preventing duplicate execution.
 	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
 }
@@ -2445,6 +2875,12 @@ type ReportMechanicalBreakdownJSONRequestBody = MechanicalBreakdownRequest
 // ResolveMechanicalBreakdownJSONRequestBody defines body for ResolveMechanicalBreakdown for application/json ContentType.
 type ResolveMechanicalBreakdownJSONRequestBody = BreakdownResolutionRequest
 
+// LodgeDamageClaimJSONRequestBody defines body for LodgeDamageClaim for application/json ContentType.
+type LodgeDamageClaimJSONRequestBody = DamageClaimRequest
+
+// RespondToDamageClaimJSONRequestBody defines body for RespondToDamageClaim for application/json ContentType.
+type RespondToDamageClaimJSONRequestBody = DamageClaimResponseRequest
+
 // RequestRentalExtensionJSONRequestBody defines body for RequestRentalExtension for application/json ContentType.
 type RequestRentalExtensionJSONRequestBody = RentalExtensionRequest
 
@@ -2459,6 +2895,12 @@ type SubmitBookingInspectionJSONRequestBody = SubmitInspectionRequest
 
 // SubmitBookingPaymentEvidenceJSONRequestBody defines body for SubmitBookingPaymentEvidence for application/json ContentType.
 type SubmitBookingPaymentEvidenceJSONRequestBody = SubmitPaymentSlipRequest
+
+// ReturnInspectJSONRequestBody defines body for ReturnInspect for application/json ContentType.
+type ReturnInspectJSONRequestBody = ReturnInspectionRequest
+
+// SubmitBookingReviewJSONRequestBody defines body for SubmitBookingReview for application/json ContentType.
+type SubmitBookingReviewJSONRequestBody = BookingReviewRequest
 
 // CancelBookingJSONRequestBody defines body for CancelBooking for application/json ContentType.
 type CancelBookingJSONRequestBody CancelBookingJSONBody

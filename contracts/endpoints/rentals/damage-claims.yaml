@@ -1,0 +1,40 @@
+post:
+  tags: [booking]
+  summary: Lodge post-rental structural damage claim docket
+  description: Submits itemized structural damage compensation claim within the statutory 24-hour post-inspection audit window.
+  operationId: lodgeDamageClaim
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/completion.yaml#/DamageClaimRequest'
+  responses:
+    '201':
+      description: Damage claim docket successfully filed and escalated for contractor review.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/completion.yaml#/DamageClaimSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '422':
+      $ref: '../../components/responses/unprocessable-entity.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

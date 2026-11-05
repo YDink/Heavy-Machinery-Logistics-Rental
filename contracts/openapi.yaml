@@ -97,6 +97,18 @@ paths:
     $ref: './endpoints/rentals/breakdown.yaml'
   /bookings/{id}/breakdown/resolve:
     $ref: './endpoints/rentals/resolve-breakdown.yaml'
+  /bookings/{id}/return-initiate:
+    $ref: './endpoints/rentals/return-initiate.yaml'
+  /bookings/{id}/return-inspect:
+    $ref: './endpoints/rentals/return-inspect.yaml'
+  /bookings/{id}/damage-claims:
+    $ref: './endpoints/rentals/damage-claims.yaml'
+  /bookings/{id}/damage-claims/{claimId}/respond:
+    $ref: './endpoints/rentals/damage-claim-respond.yaml'
+  /bookings/{id}/final-reconcile:
+    $ref: './endpoints/rentals/final-reconcile.yaml'
+  /bookings/{id}/reviews:
+    $ref: './endpoints/rentals/booking-reviews.yaml'
   /payments/initiate:
     $ref: './endpoints/payments/initiate-payment.yaml'
   /wallets/me:
@@ -231,3 +243,23 @@ components:
       $ref: './components/schemas/rental.yaml#/MechanicalBreakdownRequest'
     BreakdownResolutionRequest:
       $ref: './components/schemas/rental.yaml#/BreakdownResolutionRequest'
+    ReturnInitiateResponseData:
+      $ref: './components/schemas/completion.yaml#/ReturnInitiateResponseData'
+    ReturnInspectionRequest:
+      $ref: './components/schemas/completion.yaml#/ReturnInspectionRequest'
+    ReturnInspectionResponseData:
+      $ref: './components/schemas/completion.yaml#/ReturnInspectionResponseData'
+    DamageClaimRequest:
+      $ref: './components/schemas/completion.yaml#/DamageClaimRequest'
+    DamageClaimResponseData:
+      $ref: './components/schemas/completion.yaml#/DamageClaimResponseData'
+    DamageClaimResponseRequest:
+      $ref: './components/schemas/completion.yaml#/DamageClaimResponseRequest'
+    DamageClaimResponseResultData:
+      $ref: './components/schemas/completion.yaml#/DamageClaimResponseResultData'
+    FinalReconciliationResponseData:
+      $ref: './components/schemas/completion.yaml#/FinalReconciliationResponseData'
+    BookingReviewRequest:
+      $ref: './components/schemas/completion.yaml#/BookingReviewRequest'
+    BookingReviewResponseData:
+      $ref: './components/schemas/completion.yaml#/BookingReviewResponseData'

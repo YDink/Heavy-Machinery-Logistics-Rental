@@ -652,6 +652,126 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/bookings/{id}/return-initiate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Initiate rental demobilization and stop shift telemetry
+         * @description Halts the operating shift clock, transitions booking status to RETURN_INITIATED, and unlocks return inspection reticle capture.
+         */
+        post: operations["returnInitiate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/return-inspect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit off-hire 6-angle photographic reticle inspection and checkout meter reading
+         * @description Validates 6 mandatory return angles, asserts non-regressive monotonic engine meter floor, and opens the 24-hour statutory damage claim audit window.
+         */
+        post: operations["returnInspect"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/damage-claims": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Lodge post-rental structural damage claim docket
+         * @description Submits itemized structural damage compensation claim within the statutory 24-hour post-inspection audit window.
+         */
+        post: operations["lodgeDamageClaim"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/damage-claims/{claimId}/respond": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Contractor response to lodged structural damage claim
+         * @description Accepts damage liability into final settlement statement or disputes docket for platform compliance arbitration.
+         */
+        post: operations["respondToDamageClaim"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/final-reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Compute deterministic final balance reconciliation statement
+         * @description Calculates gross contract liabilities, excess shift overtime surcharge, accepted damages, and net balance due.
+         */
+        post: operations["finalReconcile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit mutual double-blind performance and trust scorecard
+         * @description Persists isolated 1.0-5.0 star review and multi-factor dimensions; unblinds upon bilateral submission or 14-day timeout.
+         */
+        post: operations["submitBookingReview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/payments/initiate": {
         parameters: {
             query?: never;
@@ -1401,6 +1521,255 @@ export interface components {
             /** @example Replaced high-pressure boom hose assembly and replenished 40L ISO VG 46 hydraulic fluid. */
             resolutionNotes: string;
         };
+        ReturnInitiateResponseData: {
+            /** Format: uuid */
+            bookingId: string;
+            /** @example RETURN_INITIATED */
+            status: string;
+            /**
+             * Format: double
+             * @example 1250.5
+             */
+            checkInMeterHours: number;
+            /**
+             * Format: double
+             * @example 56
+             */
+            allowedShiftHours: number;
+            /** Format: date-time */
+            initiatedAt: string;
+        };
+        ReturnInspectionRequest: {
+            /**
+             * Format: double
+             * @description Final mechanical cabin hour meter reading at return inspection
+             */
+            checkOutMeterHours: number;
+            inspectionPhotos: components["schemas"]["ReturnInspectionPhoto"][];
+            /**
+             * @description Attestation that oil and hydraulic fluid levels are within operational limits
+             * @default true
+             */
+            fluidLevelsOk: boolean;
+            /**
+             * @description Attestation that cabin safety glass and mirrors remain unbroken
+             * @default true
+             */
+            safetyGlassIntact: boolean;
+            /**
+             * @description Hardware sensor verification (< 0.05g variance) during photo shutter capture
+             * @default true
+             */
+            accelerometerSteady: boolean;
+            /** @description Field observations, wear notes, or off-hire comments */
+            notes?: string;
+        };
+        ReturnInspectionResponseData: {
+            /** Format: uuid */
+            bookingId: string;
+            /** @example DAMAGE_PENDING_REVIEW */
+            status: string;
+            /**
+             * Format: double
+             * @example 1312.2
+             */
+            checkOutMeterHours: number;
+            /**
+             * Format: date-time
+             * @description Timestamp exactly 24 hours after return inspection when damage claims are waived
+             */
+            damageAuditWindowExpiresAt: string;
+            /** @example 6 */
+            photosIngestedCount: number;
+            /** Format: date-time */
+            inspectedAt: string;
+        };
+        DamageClaimRequest: {
+            /**
+             * @description Physical component category for compensable damage classification
+             * @enum {string}
+             */
+            componentCategory: "GET_IMPLEMENT_TIPS" | "UNDERCARRIAGE_TRACKS" | "HYDRAULIC_CIRCUIT" | "STRUCTURAL_BOOM_ARM_CHASSIS" | "OPERATOR_CABIN" | "ENGINE_POWERTRAIN" | "OTHER";
+            /** @description Detailed factual narrative of operational abuse or collision damage */
+            incidentNarrative: string;
+            /**
+             * Format: uri
+             * @description URI of certified repair estimate PDF from authorized equipment dealer
+             */
+            repairQuoteUri?: string;
+            /**
+             * Format: int64
+             * @description Itemized repair compensation claimed in integer minor currency units
+             */
+            claimedAmountMinor: number;
+            /** @example ETB */
+            currency: string;
+            /** @description High-resolution photographic evidence documenting structural damage */
+            damagePhotos?: string[];
+        };
+        DamageClaimResponseData: {
+            /** Format: uuid */
+            claimId: string;
+            /** Format: uuid */
+            bookingId: string;
+            /** @example PENDING_REVIEW */
+            status: string;
+            /** @example OPERATOR_CABIN */
+            componentCategory: string;
+            /**
+             * Format: int64
+             * @example 850000
+             */
+            claimedAmountMinor: number;
+            /**
+             * Format: int64
+             * @example 0
+             */
+            acceptedAmountMinor?: number;
+            /** @example ETB */
+            currency: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        DamageClaimResponseRequest: {
+            /**
+             * @description Contractor response modality to filed damage claim
+             * @enum {string}
+             */
+            action: "ACCEPT" | "DISPUTE";
+            /**
+             * Format: int64
+             * @description Amount accepted if action is ACCEPT
+             */
+            acceptedAmountMinor?: number;
+            /** @description Factual rebuttal and baseline handover reference if action is DISPUTE */
+            disputeReason?: string;
+        };
+        DamageClaimResponseResultData: {
+            /** Format: uuid */
+            claimId: string;
+            /** Format: uuid */
+            bookingId: string;
+            /** @example ACCEPTED */
+            status: string;
+            /**
+             * Format: int64
+             * @example 850000
+             */
+            acceptedAmountMinor: number;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        FinalReconciliationResponseData: {
+            /** Format: uuid */
+            bookingId: string;
+            /** @example PENDING_FINAL_PAYMENT */
+            status: string;
+            /**
+             * Format: int64
+             * @example 15750000
+             */
+            baseMachineFeeMinor: number;
+            /**
+             * Format: int64
+             * @example 5600000
+             */
+            bundledAttachmentsFeeMinor: number;
+            /**
+             * Format: double
+             * @example 56
+             */
+            contractualAllowedHours: number;
+            /**
+             * Format: double
+             * @example 61.7
+             */
+            actualOperatingHours: number;
+            /**
+             * Format: double
+             * @example 0
+             */
+            creditedBreakdownHours: number;
+            /**
+             * Format: double
+             * @example 5.7
+             */
+            billableExcessHours: number;
+            /**
+             * Format: int64
+             * @example 280000
+             */
+            excessHourlyRateMinor: number;
+            /**
+             * Format: int64
+             * @example 1596000
+             */
+            excessHoursSurchargeMinor: number;
+            /**
+             * Format: int64
+             * @example 850000
+             */
+            acceptedDamageMinor: number;
+            /**
+             * Format: int64
+             * @example 23796000
+             */
+            grossLiabilitiesMinor: number;
+            /**
+             * Format: int64
+             * @example 10675000
+             */
+            prepaymentSettledMinor: number;
+            /**
+             * Format: int64
+             * @example 13121000
+             */
+            netBalanceMinor: number;
+            /** @example ETB */
+            currency: string;
+            /** Format: date-time */
+            reconciledAt: string;
+        };
+        BookingReviewRequest: {
+            /**
+             * Format: double
+             * @description Overall rating from 1.0 to 5.0 stars
+             * @example 4.8
+             */
+            rating: number;
+            /** @description Qualitative operational and professional performance feedback */
+            feedback?: string;
+            /** @description Multi-factor scorecard dimensions matching participant role */
+            dimensionRatings?: {
+                [key: string]: number;
+            };
+        };
+        BookingReviewResponseData: {
+            /** Format: uuid */
+            reviewId: string;
+            /** Format: uuid */
+            bookingId: string;
+            /** Format: uuid */
+            authorId: string;
+            /** Format: uuid */
+            targetId: string;
+            /** @example RENTER */
+            role: string;
+            /**
+             * Format: double
+             * @example 4.8
+             */
+            rating: number;
+            /** @example Responsive hydraulic power, clean handover, and professional support. */
+            feedback?: string;
+            /**
+             * @description Whether review has been unblinded and published to target profile
+             * @example false
+             */
+            isPublished: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
         FleetSearchCenter: {
             /**
              * Format: double
@@ -2008,6 +2377,66 @@ export interface components {
             /** @enum {boolean} */
             success: true;
             data: components["schemas"]["BreakdownResolutionResponseData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        ReturnInitiateSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["ReturnInitiateResponseData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        ReturnInspectionPhoto: {
+            /**
+             * @description Mandatory 6-angle perspective for return reticle inspection
+             * @enum {string}
+             */
+            angle: "FRONT_IMPLEMENT" | "REAR_COUNTERWEIGHT_ENGINE" | "LEFT_SIDE_TRACKS" | "RIGHT_SIDE_TRACKS" | "HOUR_METER" | "CABIN_INTERIOR";
+            /**
+             * Format: uri
+             * @description ClamAV-scanned object storage URI
+             */
+            storageUri: string;
+        };
+        ReturnInspectionSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["ReturnInspectionResponseData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        DamageClaimSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["DamageClaimResponseData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        DamageClaimResponseSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["DamageClaimResponseResultData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        FinalReconciliationSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["FinalReconciliationResponseData"];
+            /** @default null */
+            error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        BookingReviewSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["BookingReviewResponseData"];
             /** @default null */
             error: Record<string, never> | null;
             meta: components["schemas"]["ResponseMeta"];
@@ -3218,6 +3647,207 @@ export interface operations {
             403: components["responses"]["forbidden"];
             404: components["responses"]["not-found"];
             409: components["responses"]["conflict"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    returnInitiate: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rental demobilization successfully initiated. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReturnInitiateSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    returnInspect: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReturnInspectionRequest"];
+            };
+        };
+        responses: {
+            /** @description Return inspection successfully submitted and attested. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReturnInspectionSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            422: components["responses"]["unprocessable-entity"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    lodgeDamageClaim: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DamageClaimRequest"];
+            };
+        };
+        responses: {
+            /** @description Damage claim docket successfully filed and escalated for contractor review. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DamageClaimSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            422: components["responses"]["unprocessable-entity"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    respondToDamageClaim: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+                claimId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DamageClaimResponseRequest"];
+            };
+        };
+        responses: {
+            /** @description Damage claim response recorded successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DamageClaimResponseSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            422: components["responses"]["unprocessable-entity"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    finalReconcile: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Final reconciliation statement compiled successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinalReconciliationSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    submitBookingReview: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookingReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Review successfully submitted and queued in double-blind isolation. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingReviewSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            422: components["responses"]["unprocessable-entity"];
             500: components["responses"]["internal-server-error"];
         };
     };

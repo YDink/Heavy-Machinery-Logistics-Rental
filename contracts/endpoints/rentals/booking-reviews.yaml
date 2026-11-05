@@ -1,0 +1,40 @@
+post:
+  tags: [booking]
+  summary: Submit mutual double-blind performance and trust scorecard
+  description: Persists isolated 1.0-5.0 star review and multi-factor dimensions; unblinds upon bilateral submission or 14-day timeout.
+  operationId: submitBookingReview
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/completion.yaml#/BookingReviewRequest'
+  responses:
+    '201':
+      description: Review successfully submitted and queued in double-blind isolation.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/completion.yaml#/BookingReviewSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '422':
+      $ref: '../../components/responses/unprocessable-entity.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

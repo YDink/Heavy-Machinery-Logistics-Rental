@@ -1004,3 +1004,188 @@ SELECT EXISTS (
       AND status IN ('HOLD_PENDING', 'PAYMENT_EVIDENCE_UPLOADED', 'CONFIRMED', 'ACTIVE', 'RETURN_INITIATED', 'ACTIVE_BREAKDOWN_PAUSED', 'ACTIVE_EXTENSION_HOLD')
       AND deleted_at IS NULL
 );
+
+
+-- Rental Completion, Return Inspection & Settlement Reconciliation (Partition 05-07)
+-- name: CreateReturnInspection :one
+INSERT INTO return_inspections (
+    booking_id,
+    inspector_id,
+    check_out_meter_hours,
+    fluid_levels_ok,
+    safety_glass_intact,
+    accelerometer_steady,
+    notes,
+    photos_json
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8
+) RETURNING *;
+
+-- name: GetReturnInspectionByBookingID :one
+SELECT * FROM return_inspections
+WHERE booking_id = $1
+ORDER BY created_at DESC
+LIMIT 1;
+
+-- name: CreateDamageClaimDocket :one
+INSERT INTO damage_claim_dockets (
+    booking_id,
+    claimant_id,
+    component_category,
+    incident_narrative,
+    repair_quote_uri,
+    claimed_amount_minor,
+    accepted_amount_minor,
+    currency,
+    damage_photos_json,
+    status
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+) RETURNING *;
+
+-- name: GetDamageClaimDocketByID :one
+SELECT * FROM damage_claim_dockets
+WHERE id = $1;
+
+-- name: GetDamageClaimDocketByBookingID :one
+SELECT * FROM damage_claim_dockets
+WHERE booking_id = $1
+ORDER BY created_at DESC
+LIMIT 1;
+
+-- name: ListDamageClaimDocketsByBookingID :many
+SELECT * FROM damage_claim_dockets
+WHERE booking_id = $1
+ORDER BY created_at DESC;
+
+-- name: RespondToDamageClaim :one
+UPDATE damage_claim_dockets
+SET status = $2,
+    accepted_amount_minor = $3,
+    dispute_reason = $4,
+    contractor_responded_at = NOW(),
+    updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: ArbitrateDamageClaim :one
+UPDATE damage_claim_dockets
+SET status = $2,
+    accepted_amount_minor = $3,
+    arbitration_notes = $4,
+    arbitrated_by = $5,
+    arbitrated_at = NOW(),
+    updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: WaiveDamageClaim :one
+UPDATE damage_claim_dockets
+SET status = 'WAIVED',
+    accepted_amount_minor = 0,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: UpsertRentalSettlement :one
+INSERT INTO rental_settlements (
+    booking_id,
+    base_machine_fee_minor,
+    bundled_attachments_fee_minor,
+    contractual_allowed_hours,
+    actual_operating_hours,
+    credited_breakdown_hours,
+    billable_excess_hours,
+    excess_hourly_rate_minor,
+    excess_hours_surcharge_minor,
+    accepted_damage_minor,
+    gross_liabilities_minor,
+    prepayment_settled_minor,
+    net_balance_minor,
+    currency,
+    status
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
+)
+ON CONFLICT (booking_id) DO UPDATE
+SET base_machine_fee_minor = EXCLUDED.base_machine_fee_minor,
+    bundled_attachments_fee_minor = EXCLUDED.bundled_attachments_fee_minor,
+    contractual_allowed_hours = EXCLUDED.contractual_allowed_hours,
+    actual_operating_hours = EXCLUDED.actual_operating_hours,
+    credited_breakdown_hours = EXCLUDED.credited_breakdown_hours,
+    billable_excess_hours = EXCLUDED.billable_excess_hours,
+    excess_hourly_rate_minor = EXCLUDED.excess_hourly_rate_minor,
+    excess_hours_surcharge_minor = EXCLUDED.excess_hours_surcharge_minor,
+    accepted_damage_minor = EXCLUDED.accepted_damage_minor,
+    gross_liabilities_minor = EXCLUDED.gross_liabilities_minor,
+    prepayment_settled_minor = EXCLUDED.prepayment_settled_minor,
+    net_balance_minor = EXCLUDED.net_balance_minor,
+    status = EXCLUDED.status,
+    updated_at = NOW()
+RETURNING *;
+
+-- name: GetRentalSettlementByBookingID :one
+SELECT * FROM rental_settlements
+WHERE booking_id = $1;
+
+-- name: UpdateRentalSettlementFinalPaymentEvidence :one
+UPDATE rental_settlements
+SET final_slip_storage_uri = $2,
+    final_slip_file_hash = $3,
+    status = 'PAYMENT_EVIDENCE_UPLOADED',
+    updated_at = NOW()
+WHERE booking_id = $1
+RETURNING *;
+
+-- name: ConfirmRentalSettlement :one
+UPDATE rental_settlements
+SET status = 'SETTLED',
+    settled_at = NOW(),
+    updated_at = NOW()
+WHERE booking_id = $1
+RETURNING *;
+
+-- name: CreateBookingReview :one
+INSERT INTO booking_reviews (
+    booking_id,
+    author_id,
+    target_id,
+    role,
+    rating,
+    feedback,
+    dimension_ratings_json,
+    is_published,
+    published_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
+) RETURNING *;
+
+-- name: GetBookingReviewsByBookingID :many
+SELECT * FROM booking_reviews
+WHERE booking_id = $1
+ORDER BY created_at ASC;
+
+-- name: PublishBookingReviews :exec
+UPDATE booking_reviews
+SET is_published = true,
+    published_at = NOW()
+WHERE booking_id = $1;
+
+-- name: ListPublishedReviewsForTarget :many
+SELECT * FROM booking_reviews
+WHERE target_id = $1 AND is_published = true
+ORDER BY created_at DESC;
+
+-- name: UpdateBookingCompletionSummary :one
+UPDATE bookings
+SET status = $2,
+    check_out_meter_hours = $3,
+    damage_claim_submitted = $4,
+    damage_claim_waived = $5,
+    accepted_damage_minor = $6,
+    excess_hours_surcharge_minor = $7,
+    final_net_balance_minor = $8,
+    version = version + 1,
+    updated_at = NOW()
+WHERE id = $1 AND version = $9 AND deleted_at IS NULL
+RETURNING *;

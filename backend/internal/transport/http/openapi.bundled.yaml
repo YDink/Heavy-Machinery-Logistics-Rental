@@ -1344,6 +1344,248 @@ paths:
           $ref: '#/components/responses/conflict'
         '500':
           $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/return-initiate:
+    post:
+      tags:
+        - booking
+      summary: Initiate rental demobilization and stop shift telemetry
+      description: Halts the operating shift clock, transitions booking status to RETURN_INITIATED, and unlocks return inspection reticle capture.
+      operationId: returnInitiate
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      responses:
+        '200':
+          description: Rental demobilization successfully initiated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnInitiateSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/return-inspect:
+    post:
+      tags:
+        - booking
+      summary: Submit off-hire 6-angle photographic reticle inspection and checkout meter reading
+      description: Validates 6 mandatory return angles, asserts non-regressive monotonic engine meter floor, and opens the 24-hour statutory damage claim audit window.
+      operationId: returnInspect
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnInspectionRequest'
+      responses:
+        '200':
+          description: Return inspection successfully submitted and attested.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnInspectionSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '422':
+          $ref: '#/components/responses/unprocessable-entity'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/damage-claims:
+    post:
+      tags:
+        - booking
+      summary: Lodge post-rental structural damage claim docket
+      description: Submits itemized structural damage compensation claim within the statutory 24-hour post-inspection audit window.
+      operationId: lodgeDamageClaim
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DamageClaimRequest'
+      responses:
+        '201':
+          description: Damage claim docket successfully filed and escalated for contractor review.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DamageClaimSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '422':
+          $ref: '#/components/responses/unprocessable-entity'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/damage-claims/{claimId}/respond:
+    post:
+      tags:
+        - booking
+      summary: Contractor response to lodged structural damage claim
+      description: Accepts damage liability into final settlement statement or disputes docket for platform compliance arbitration.
+      operationId: respondToDamageClaim
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: claimId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DamageClaimResponseRequest'
+      responses:
+        '200':
+          description: Damage claim response recorded successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DamageClaimResponseSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '422':
+          $ref: '#/components/responses/unprocessable-entity'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/final-reconcile:
+    post:
+      tags:
+        - booking
+      summary: Compute deterministic final balance reconciliation statement
+      description: Calculates gross contract liabilities, excess shift overtime surcharge, accepted damages, and net balance due.
+      operationId: finalReconcile
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      responses:
+        '200':
+          description: Final reconciliation statement compiled successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinalReconciliationSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/reviews:
+    post:
+      tags:
+        - booking
+      summary: Submit mutual double-blind performance and trust scorecard
+      description: Persists isolated 1.0-5.0 star review and multi-factor dimensions; unblinds upon bilateral submission or 14-day timeout.
+      operationId: submitBookingReview
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingReviewRequest'
+      responses:
+        '201':
+          description: Review successfully submitted and queued in double-blind isolation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingReviewSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '422':
+          $ref: '#/components/responses/unprocessable-entity'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
   /payments/initiate:
     post:
       tags:
@@ -2916,6 +3158,361 @@ components:
           type: string
           minLength: 10
           example: Replaced high-pressure boom hose assembly and replenished 40L ISO VG 46 hydraulic fluid.
+    ReturnInitiateResponseData:
+      type: object
+      required:
+        - bookingId
+        - status
+        - checkInMeterHours
+        - allowedShiftHours
+        - initiatedAt
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: RETURN_INITIATED
+        checkInMeterHours:
+          type: number
+          format: double
+          example: 1250.5
+        allowedShiftHours:
+          type: number
+          format: double
+          example: 56
+        initiatedAt:
+          type: string
+          format: date-time
+    ReturnInspectionRequest:
+      type: object
+      required:
+        - checkOutMeterHours
+        - inspectionPhotos
+      properties:
+        checkOutMeterHours:
+          type: number
+          format: double
+          minimum: 0
+          description: Final mechanical cabin hour meter reading at return inspection
+        inspectionPhotos:
+          type: array
+          minItems: 6
+          items:
+            $ref: '#/components/schemas/ReturnInspectionPhoto'
+        fluidLevelsOk:
+          type: boolean
+          default: true
+          description: Attestation that oil and hydraulic fluid levels are within operational limits
+        safetyGlassIntact:
+          type: boolean
+          default: true
+          description: Attestation that cabin safety glass and mirrors remain unbroken
+        accelerometerSteady:
+          type: boolean
+          default: true
+          description: Hardware sensor verification (< 0.05g variance) during photo shutter capture
+        notes:
+          type: string
+          maxLength: 1000
+          description: Field observations, wear notes, or off-hire comments
+    ReturnInspectionResponseData:
+      type: object
+      required:
+        - bookingId
+        - status
+        - checkOutMeterHours
+        - damageAuditWindowExpiresAt
+        - photosIngestedCount
+        - inspectedAt
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: DAMAGE_PENDING_REVIEW
+        checkOutMeterHours:
+          type: number
+          format: double
+          example: 1312.2
+        damageAuditWindowExpiresAt:
+          type: string
+          format: date-time
+          description: Timestamp exactly 24 hours after return inspection when damage claims are waived
+        photosIngestedCount:
+          type: integer
+          example: 6
+        inspectedAt:
+          type: string
+          format: date-time
+    DamageClaimRequest:
+      type: object
+      required:
+        - componentCategory
+        - incidentNarrative
+        - claimedAmountMinor
+        - currency
+      properties:
+        componentCategory:
+          type: string
+          enum:
+            - GET_IMPLEMENT_TIPS
+            - UNDERCARRIAGE_TRACKS
+            - HYDRAULIC_CIRCUIT
+            - STRUCTURAL_BOOM_ARM_CHASSIS
+            - OPERATOR_CABIN
+            - ENGINE_POWERTRAIN
+            - OTHER
+          description: Physical component category for compensable damage classification
+        incidentNarrative:
+          type: string
+          minLength: 10
+          maxLength: 2000
+          description: Detailed factual narrative of operational abuse or collision damage
+        repairQuoteUri:
+          type: string
+          format: uri
+          description: URI of certified repair estimate PDF from authorized equipment dealer
+        claimedAmountMinor:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Itemized repair compensation claimed in integer minor currency units
+        currency:
+          type: string
+          example: ETB
+        damagePhotos:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: High-resolution photographic evidence documenting structural damage
+    DamageClaimResponseData:
+      type: object
+      required:
+        - claimId
+        - bookingId
+        - status
+        - componentCategory
+        - claimedAmountMinor
+        - currency
+        - createdAt
+      properties:
+        claimId:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: PENDING_REVIEW
+        componentCategory:
+          type: string
+          example: OPERATOR_CABIN
+        claimedAmountMinor:
+          type: integer
+          format: int64
+          example: 850000
+        acceptedAmountMinor:
+          type: integer
+          format: int64
+          example: 0
+        currency:
+          type: string
+          example: ETB
+        createdAt:
+          type: string
+          format: date-time
+    DamageClaimResponseRequest:
+      type: object
+      required:
+        - action
+      properties:
+        action:
+          type: string
+          enum:
+            - ACCEPT
+            - DISPUTE
+          description: Contractor response modality to filed damage claim
+        acceptedAmountMinor:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Amount accepted if action is ACCEPT
+        disputeReason:
+          type: string
+          maxLength: 2000
+          description: Factual rebuttal and baseline handover reference if action is DISPUTE
+    DamageClaimResponseResultData:
+      type: object
+      required:
+        - claimId
+        - bookingId
+        - status
+        - acceptedAmountMinor
+        - updatedAt
+      properties:
+        claimId:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: ACCEPTED
+        acceptedAmountMinor:
+          type: integer
+          format: int64
+          example: 850000
+        updatedAt:
+          type: string
+          format: date-time
+    FinalReconciliationResponseData:
+      type: object
+      required:
+        - bookingId
+        - status
+        - baseMachineFeeMinor
+        - bundledAttachmentsFeeMinor
+        - contractualAllowedHours
+        - actualOperatingHours
+        - creditedBreakdownHours
+        - billableExcessHours
+        - excessHourlyRateMinor
+        - excessHoursSurchargeMinor
+        - acceptedDamageMinor
+        - grossLiabilitiesMinor
+        - prepaymentSettledMinor
+        - netBalanceMinor
+        - currency
+        - reconciledAt
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: PENDING_FINAL_PAYMENT
+        baseMachineFeeMinor:
+          type: integer
+          format: int64
+          example: 15750000
+        bundledAttachmentsFeeMinor:
+          type: integer
+          format: int64
+          example: 5600000
+        contractualAllowedHours:
+          type: number
+          format: double
+          example: 56
+        actualOperatingHours:
+          type: number
+          format: double
+          example: 61.7
+        creditedBreakdownHours:
+          type: number
+          format: double
+          example: 0
+        billableExcessHours:
+          type: number
+          format: double
+          example: 5.7
+        excessHourlyRateMinor:
+          type: integer
+          format: int64
+          example: 280000
+        excessHoursSurchargeMinor:
+          type: integer
+          format: int64
+          example: 1596000
+        acceptedDamageMinor:
+          type: integer
+          format: int64
+          example: 850000
+        grossLiabilitiesMinor:
+          type: integer
+          format: int64
+          example: 23796000
+        prepaymentSettledMinor:
+          type: integer
+          format: int64
+          example: 10675000
+        netBalanceMinor:
+          type: integer
+          format: int64
+          example: 13121000
+        currency:
+          type: string
+          example: ETB
+        reconciledAt:
+          type: string
+          format: date-time
+    BookingReviewRequest:
+      type: object
+      required:
+        - rating
+      properties:
+        rating:
+          type: number
+          format: double
+          minimum: 1
+          maximum: 5
+          example: 4.8
+          description: Overall rating from 1.0 to 5.0 stars
+        feedback:
+          type: string
+          maxLength: 2000
+          description: Qualitative operational and professional performance feedback
+        dimensionRatings:
+          type: object
+          additionalProperties:
+            type: number
+            format: double
+          description: Multi-factor scorecard dimensions matching participant role
+    BookingReviewResponseData:
+      type: object
+      required:
+        - reviewId
+        - bookingId
+        - authorId
+        - targetId
+        - role
+        - rating
+        - isPublished
+        - createdAt
+      properties:
+        reviewId:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        authorId:
+          type: string
+          format: uuid
+        targetId:
+          type: string
+          format: uuid
+        role:
+          type: string
+          example: RENTER
+        rating:
+          type: number
+          format: double
+          example: 4.8
+        feedback:
+          type: string
+          example: Responsive hydraulic power, clean handover, and professional support.
+        isPublished:
+          type: boolean
+          example: false
+          description: Whether review has been unblinded and published to target profile
+        createdAt:
+          type: string
+          format: date-time
     FleetSearchCenter:
       type: object
       required:
@@ -4135,6 +4732,146 @@ components:
             - true
         data:
           $ref: '#/components/schemas/BreakdownResolutionResponseData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ReturnInitiateSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/ReturnInitiateResponseData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ReturnInspectionPhoto:
+      type: object
+      required:
+        - angle
+        - storageUri
+      properties:
+        angle:
+          type: string
+          enum:
+            - FRONT_IMPLEMENT
+            - REAR_COUNTERWEIGHT_ENGINE
+            - LEFT_SIDE_TRACKS
+            - RIGHT_SIDE_TRACKS
+            - HOUR_METER
+            - CABIN_INTERIOR
+          description: Mandatory 6-angle perspective for return reticle inspection
+        storageUri:
+          type: string
+          format: uri
+          description: ClamAV-scanned object storage URI
+    ReturnInspectionSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/ReturnInspectionResponseData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    DamageClaimSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/DamageClaimResponseData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    DamageClaimResponseSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/DamageClaimResponseResultData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    FinalReconciliationSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/FinalReconciliationResponseData'
+        error:
+          type: object
+          nullable: true
+          default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    BookingReviewSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/BookingReviewResponseData'
         error:
           type: object
           nullable: true

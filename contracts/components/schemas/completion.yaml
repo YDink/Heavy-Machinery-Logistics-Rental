@@ -1,0 +1,484 @@
+# Rental Completion, Return Inspection, Damage Adjudication & Settlement Schemas (Partition 05-07)
+
+ReturnInitiateResponseData:
+  type: object
+  required:
+    - bookingId
+    - status
+    - checkInMeterHours
+    - allowedShiftHours
+    - initiatedAt
+  properties:
+    bookingId:
+      type: string
+      format: uuid
+    status:
+      type: string
+      example: RETURN_INITIATED
+    checkInMeterHours:
+      type: number
+      format: double
+      example: 1250.50
+    allowedShiftHours:
+      type: number
+      format: double
+      example: 56.00
+    initiatedAt:
+      type: string
+      format: date-time
+
+ReturnInspectionPhoto:
+  type: object
+  required:
+    - angle
+    - storageUri
+  properties:
+    angle:
+      type: string
+      enum:
+        - FRONT_IMPLEMENT
+        - REAR_COUNTERWEIGHT_ENGINE
+        - LEFT_SIDE_TRACKS
+        - RIGHT_SIDE_TRACKS
+        - HOUR_METER
+        - CABIN_INTERIOR
+      description: Mandatory 6-angle perspective for return reticle inspection
+    storageUri:
+      type: string
+      format: uri
+      description: ClamAV-scanned object storage URI
+
+ReturnInspectionRequest:
+  type: object
+  required:
+    - checkOutMeterHours
+    - inspectionPhotos
+  properties:
+    checkOutMeterHours:
+      type: number
+      format: double
+      minimum: 0
+      description: Final mechanical cabin hour meter reading at return inspection
+    inspectionPhotos:
+      type: array
+      minItems: 6
+      items:
+        $ref: '#/ReturnInspectionPhoto'
+    fluidLevelsOk:
+      type: boolean
+      default: true
+      description: Attestation that oil and hydraulic fluid levels are within operational limits
+    safetyGlassIntact:
+      type: boolean
+      default: true
+      description: Attestation that cabin safety glass and mirrors remain unbroken
+    accelerometerSteady:
+      type: boolean
+      default: true
+      description: Hardware sensor verification (< 0.05g variance) during photo shutter capture
+    notes:
+      type: string
+      maxLength: 1000
+      description: Field observations, wear notes, or off-hire comments
+
+ReturnInspectionResponseData:
+  type: object
+  required:
+    - bookingId
+    - status
+    - checkOutMeterHours
+    - damageAuditWindowExpiresAt
+    - photosIngestedCount
+    - inspectedAt
+  properties:
+    bookingId:
+      type: string
+      format: uuid
+    status:
+      type: string
+      example: DAMAGE_PENDING_REVIEW
+    checkOutMeterHours:
+      type: number
+      format: double
+      example: 1312.20
+    damageAuditWindowExpiresAt:
+      type: string
+      format: date-time
+      description: Timestamp exactly 24 hours after return inspection when damage claims are waived
+    photosIngestedCount:
+      type: integer
+      example: 6
+    inspectedAt:
+      type: string
+      format: date-time
+
+DamageClaimRequest:
+  type: object
+  required:
+    - componentCategory
+    - incidentNarrative
+    - claimedAmountMinor
+    - currency
+  properties:
+    componentCategory:
+      type: string
+      enum:
+        - GET_IMPLEMENT_TIPS
+        - UNDERCARRIAGE_TRACKS
+        - HYDRAULIC_CIRCUIT
+        - STRUCTURAL_BOOM_ARM_CHASSIS
+        - OPERATOR_CABIN
+        - ENGINE_POWERTRAIN
+        - OTHER
+      description: Physical component category for compensable damage classification
+    incidentNarrative:
+      type: string
+      minLength: 10
+      maxLength: 2000
+      description: Detailed factual narrative of operational abuse or collision damage
+    repairQuoteUri:
+      type: string
+      format: uri
+      description: URI of certified repair estimate PDF from authorized equipment dealer
+    claimedAmountMinor:
+      type: integer
+      format: int64
+      minimum: 0
+      description: Itemized repair compensation claimed in integer minor currency units
+    currency:
+      type: string
+      example: ETB
+    damagePhotos:
+      type: array
+      items:
+        type: string
+        format: uri
+      description: High-resolution photographic evidence documenting structural damage
+
+DamageClaimResponseData:
+  type: object
+  required:
+    - claimId
+    - bookingId
+    - status
+    - componentCategory
+    - claimedAmountMinor
+    - currency
+    - createdAt
+  properties:
+    claimId:
+      type: string
+      format: uuid
+    bookingId:
+      type: string
+      format: uuid
+    status:
+      type: string
+      example: PENDING_REVIEW
+    componentCategory:
+      type: string
+      example: OPERATOR_CABIN
+    claimedAmountMinor:
+      type: integer
+      format: int64
+      example: 850000
+    acceptedAmountMinor:
+      type: integer
+      format: int64
+      example: 0
+    currency:
+      type: string
+      example: ETB
+    createdAt:
+      type: string
+      format: date-time
+
+DamageClaimResponseRequest:
+  type: object
+  required:
+    - action
+  properties:
+    action:
+      type: string
+      enum:
+        - ACCEPT
+        - DISPUTE
+      description: Contractor response modality to filed damage claim
+    acceptedAmountMinor:
+      type: integer
+      format: int64
+      minimum: 0
+      description: Amount accepted if action is ACCEPT
+    disputeReason:
+      type: string
+      maxLength: 2000
+      description: Factual rebuttal and baseline handover reference if action is DISPUTE
+
+DamageClaimResponseResultData:
+  type: object
+  required:
+    - claimId
+    - bookingId
+    - status
+    - acceptedAmountMinor
+    - updatedAt
+  properties:
+    claimId:
+      type: string
+      format: uuid
+    bookingId:
+      type: string
+      format: uuid
+    status:
+      type: string
+      example: ACCEPTED
+    acceptedAmountMinor:
+      type: integer
+      format: int64
+      example: 850000
+    updatedAt:
+      type: string
+      format: date-time
+
+FinalReconciliationResponseData:
+  type: object
+  required:
+    - bookingId
+    - status
+    - baseMachineFeeMinor
+    - bundledAttachmentsFeeMinor
+    - contractualAllowedHours
+    - actualOperatingHours
+    - creditedBreakdownHours
+    - billableExcessHours
+    - excessHourlyRateMinor
+    - excessHoursSurchargeMinor
+    - acceptedDamageMinor
+    - grossLiabilitiesMinor
+    - prepaymentSettledMinor
+    - netBalanceMinor
+    - currency
+    - reconciledAt
+  properties:
+    bookingId:
+      type: string
+      format: uuid
+    status:
+      type: string
+      example: PENDING_FINAL_PAYMENT
+    baseMachineFeeMinor:
+      type: integer
+      format: int64
+      example: 15750000
+    bundledAttachmentsFeeMinor:
+      type: integer
+      format: int64
+      example: 5600000
+    contractualAllowedHours:
+      type: number
+      format: double
+      example: 56.00
+    actualOperatingHours:
+      type: number
+      format: double
+      example: 61.70
+    creditedBreakdownHours:
+      type: number
+      format: double
+      example: 0.00
+    billableExcessHours:
+      type: number
+      format: double
+      example: 5.70
+    excessHourlyRateMinor:
+      type: integer
+      format: int64
+      example: 280000
+    excessHoursSurchargeMinor:
+      type: integer
+      format: int64
+      example: 1596000
+    acceptedDamageMinor:
+      type: integer
+      format: int64
+      example: 850000
+    grossLiabilitiesMinor:
+      type: integer
+      format: int64
+      example: 23796000
+    prepaymentSettledMinor:
+      type: integer
+      format: int64
+      example: 10675000
+    netBalanceMinor:
+      type: integer
+      format: int64
+      example: 13121000
+    currency:
+      type: string
+      example: ETB
+    reconciledAt:
+      type: string
+      format: date-time
+
+BookingReviewRequest:
+  type: object
+  required:
+    - rating
+  properties:
+    rating:
+      type: number
+      format: double
+      minimum: 1.0
+      maximum: 5.0
+      example: 4.8
+      description: Overall rating from 1.0 to 5.0 stars
+    feedback:
+      type: string
+      maxLength: 2000
+      description: Qualitative operational and professional performance feedback
+    dimensionRatings:
+      type: object
+      additionalProperties:
+        type: number
+        format: double
+      description: Multi-factor scorecard dimensions matching participant role
+
+BookingReviewResponseData:
+  type: object
+  required:
+    - reviewId
+    - bookingId
+    - authorId
+    - targetId
+    - role
+    - rating
+    - isPublished
+    - createdAt
+  properties:
+    reviewId:
+      type: string
+      format: uuid
+    bookingId:
+      type: string
+      format: uuid
+    authorId:
+      type: string
+      format: uuid
+    targetId:
+      type: string
+      format: uuid
+    role:
+      type: string
+      example: RENTER
+    rating:
+      type: number
+      format: double
+      example: 4.8
+    feedback:
+      type: string
+      example: Responsive hydraulic power, clean handover, and professional support.
+    isPublished:
+      type: boolean
+      example: false
+      description: Whether review has been unblinded and published to target profile
+    createdAt:
+      type: string
+      format: date-time
+
+
+ReturnInitiateSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/ReturnInitiateResponseData'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+ReturnInspectionSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/ReturnInspectionResponseData'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+DamageClaimSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/DamageClaimResponseData'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+DamageClaimResponseSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/DamageClaimResponseResultData'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+FinalReconciliationSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/FinalReconciliationResponseData'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'
+
+BookingReviewSuccessResponse:
+  type: object
+  required: [success, data, error, meta]
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    data:
+      $ref: '#/BookingReviewResponseData'
+    error:
+      type: object
+      nullable: true
+      default: null
+    meta:
+      $ref: './common.yaml#/ResponseMeta'

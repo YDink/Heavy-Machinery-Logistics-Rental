@@ -1,0 +1,40 @@
+post:
+  tags: [booking]
+  summary: Submit off-hire 6-angle photographic reticle inspection and checkout meter reading
+  description: Validates 6 mandatory return angles, asserts non-regressive monotonic engine meter floor, and opens the 24-hour statutory damage claim audit window.
+  operationId: returnInspect
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/completion.yaml#/ReturnInspectionRequest'
+  responses:
+    '200':
+      description: Return inspection successfully submitted and attested.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/completion.yaml#/ReturnInspectionSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '422':
+      $ref: '../../components/responses/unprocessable-entity.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

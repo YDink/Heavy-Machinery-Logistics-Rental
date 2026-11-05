@@ -1,0 +1,32 @@
+post:
+  tags: [booking]
+  summary: Initiate rental demobilization and stop shift telemetry
+  description: Halts the operating shift clock, transitions booking status to RETURN_INITIATED, and unlocks return inspection reticle capture.
+  operationId: returnInitiate
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  responses:
+    '200':
+      description: Rental demobilization successfully initiated.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/completion.yaml#/ReturnInitiateSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

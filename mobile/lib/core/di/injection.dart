@@ -53,6 +53,16 @@ import 'package:dink_mobile/features/active_rental/domain/usecases/request_exten
 import 'package:dink_mobile/features/active_rental/domain/usecases/report_breakdown_usecase.dart';
 import 'package:dink_mobile/features/active_rental/domain/usecases/resolve_breakdown_usecase.dart';
 import 'package:dink_mobile/features/active_rental/presentation/bloc/active_rental_bloc.dart';
+import 'package:dink_mobile/features/rental_completion/data/datasources/rental_completion_remote_data_source.dart';
+import 'package:dink_mobile/features/rental_completion/data/repositories/rental_completion_repository_impl.dart';
+import 'package:dink_mobile/features/rental_completion/domain/repositories/rental_completion_repository.dart';
+import 'package:dink_mobile/features/rental_completion/domain/usecases/final_reconcile_usecase.dart';
+import 'package:dink_mobile/features/rental_completion/domain/usecases/initiate_return_usecase.dart';
+import 'package:dink_mobile/features/rental_completion/domain/usecases/inspect_return_usecase.dart';
+import 'package:dink_mobile/features/rental_completion/domain/usecases/lodge_damage_claim_usecase.dart';
+import 'package:dink_mobile/features/rental_completion/domain/usecases/respond_damage_claim_usecase.dart';
+import 'package:dink_mobile/features/rental_completion/domain/usecases/submit_review_usecase.dart';
+import 'package:dink_mobile/features/rental_completion/presentation/bloc/rental_completion_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -365,6 +375,68 @@ Future<void> initDependencies() async {
   if (!sl.isRegistered<ActiveRentalBloc>()) {
     sl.registerFactory<ActiveRentalBloc>(
       () => ActiveRentalBloc(repository: sl<ActiveRentalRepository>()),
+    );
+  }
+
+  // Rental Completion, Return & Damage (Partition 05-07)
+  if (!sl.isRegistered<RentalCompletionRemoteDataSource>()) {
+    sl.registerLazySingleton<RentalCompletionRemoteDataSource>(
+      () => RentalCompletionRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
+    );
+  }
+
+  if (!sl.isRegistered<RentalCompletionRepository>()) {
+    sl.registerLazySingleton<RentalCompletionRepository>(
+      () => RentalCompletionRepositoryImpl(remoteDataSource: sl<RentalCompletionRemoteDataSource>()),
+    );
+  }
+
+  if (!sl.isRegistered<InitiateReturnUseCase>()) {
+    sl.registerLazySingleton<InitiateReturnUseCase>(
+      () => InitiateReturnUseCase(sl<RentalCompletionRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<InspectReturnUseCase>()) {
+    sl.registerLazySingleton<InspectReturnUseCase>(
+      () => InspectReturnUseCase(sl<RentalCompletionRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<LodgeDamageClaimUseCase>()) {
+    sl.registerLazySingleton<LodgeDamageClaimUseCase>(
+      () => LodgeDamageClaimUseCase(sl<RentalCompletionRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<RespondDamageClaimUseCase>()) {
+    sl.registerLazySingleton<RespondDamageClaimUseCase>(
+      () => RespondDamageClaimUseCase(sl<RentalCompletionRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<FinalReconcileUseCase>()) {
+    sl.registerLazySingleton<FinalReconcileUseCase>(
+      () => FinalReconcileUseCase(sl<RentalCompletionRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<SubmitReviewUseCase>()) {
+    sl.registerLazySingleton<SubmitReviewUseCase>(
+      () => SubmitReviewUseCase(sl<RentalCompletionRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<RentalCompletionBloc>()) {
+    sl.registerFactory<RentalCompletionBloc>(
+      () => RentalCompletionBloc(
+        initiateReturnUseCase: sl<InitiateReturnUseCase>(),
+        inspectReturnUseCase: sl<InspectReturnUseCase>(),
+        lodgeDamageClaimUseCase: sl<LodgeDamageClaimUseCase>(),
+        respondDamageClaimUseCase: sl<RespondDamageClaimUseCase>(),
+        finalReconcileUseCase: sl<FinalReconcileUseCase>(),
+        submitReviewUseCase: sl<SubmitReviewUseCase>(),
+      ),
     );
   }
 }

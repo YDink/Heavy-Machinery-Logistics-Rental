@@ -153,5 +153,17 @@
   "mechanicNameLabel": "የመካኒኩ ስም",
   "mechanicPhoneLabel": "የመካኒኩ ስልክ ቁጥር",
   "resolutionNotesLabel": "የተከናወኑ ጥገናዎች እና የተተኩ እቃዎች",
-  "confirmResolutionButton": "የፈረቃ ቆጣሪውን ቀጥል"
+  "confirmResolutionButton": "የፈረቃ ቆጣሪውን ቀጥል",
+  "returnInspectionTitle": "የማሽነሪ መመለሻ ምርመራ እና የሰዓት ቆጣሪ ንባብ",
+  "checkoutMeterLabel": "የማሽነሪ መመለሻ የሞተር ሰዓት ቆጣሪ",
+  "monotonicVerificationPassed": "የሰዓት ቆጣሪ ቅደም ተከተል ተረጋግጧል",
+  "mandatoryAnglesLabel": "ግዴታ የሆኑ 6 የማሽን አቅጣጫ ፎቶዎች",
+  "submitReturnInspection": "የመመለሻ ምርመራውን መዝግብ",
+  "settlementStatementTitle": "የመጨረሻ ሂሳብ ማጠቃለያ መግለጫ",
+  "netBalanceDueLabel": "የሚከፈል የተጣራ ቀሪ ሂሳብ",
+  "damageDocketTitle": "የማሽን ብልሽት ካሳ ጥያቄ ማህደር",
+  "acceptDamageLiability": "የብልሽት ካሳ ተቀበል",
+  "disputeDamageClaim": "የካሳ ጥያቄውን ተቃወም እና ለሽምግልና አስተላልፍ",
+  "doubleBlindReviewTitle": "የሁለትዮሽ ሚስጥራዊ አስተያየት መስጫ",
+  "submitConfidentialReview": "ሚስጥራዊ ግምገማ አስገባ"
 }

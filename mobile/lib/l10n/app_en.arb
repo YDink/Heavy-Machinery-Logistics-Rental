@@ -645,5 +645,53 @@
   "confirmResolutionButton": "Resume Shift Telemetry",
   "@confirmResolutionButton": {
     "description": "Button to confirm resolution and resume shift"
+  },
+  "returnInspectionTitle": "Return Inspection & Meter Reading",
+  "@returnInspectionTitle": {
+    "description": "Title for off-hire return inspection"
+  },
+  "checkoutMeterLabel": "Return Check-Out Meter Reading",
+  "@checkoutMeterLabel": {
+    "description": "Label for checkout engine hour meter reading"
+  },
+  "monotonicVerificationPassed": "Monotonic verification passed",
+  "@monotonicVerificationPassed": {
+    "description": "Notice for valid non-regressive meter floor"
+  },
+  "mandatoryAnglesLabel": "Mandatory 6-Angle Reticle Inspection",
+  "@mandatoryAnglesLabel": {
+    "description": "Label for 6 mandatory photo angles"
+  },
+  "submitReturnInspection": "Submit Return Inspection",
+  "@submitReturnInspection": {
+    "description": "Button to submit return inspection"
+  },
+  "settlementStatementTitle": "Final Settlement Statement",
+  "@settlementStatementTitle": {
+    "description": "Title for final balance settlement statement"
+  },
+  "netBalanceDueLabel": "Net Balance Settlement Due",
+  "@netBalanceDueLabel": {
+    "description": "Label for final net balance due"
+  },
+  "damageDocketTitle": "Damage Claim Docket",
+  "@damageDocketTitle": {
+    "description": "Title for post-rental damage docket"
+  },
+  "acceptDamageLiability": "Accept Liability",
+  "@acceptDamageLiability": {
+    "description": "Button to accept damage claim"
+  },
+  "disputeDamageClaim": "Dispute Claim & Escalate",
+  "@disputeDamageClaim": {
+    "description": "Button to dispute damage claim"
+  },
+  "doubleBlindReviewTitle": "Mutual Double-Blind Review",
+  "@doubleBlindReviewTitle": {
+    "description": "Title for double-blind reputation review"
+  },
+  "submitConfidentialReview": "Submit Confidential Review",
+  "@submitConfidentialReview": {
+    "description": "Button to submit confidential review"
   }
 }

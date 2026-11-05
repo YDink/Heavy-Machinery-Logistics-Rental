@@ -121,6 +121,7 @@ func main() {
 	rentalService := rentalApp.NewRentalService(rentalRepo, bookingRepo)
 
 	server := transport.NewServer(authService, tokenService, machineryService, attachmentService, discoveryService, bookingService, rentalService)
+	server.SetSwaggerEnabled(cfg.SwaggerEnabled)
 
 	// Standard Library net/http.ServeMux Router
 	mux := http.NewServeMux()

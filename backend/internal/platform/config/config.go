@@ -26,6 +26,7 @@ type Config struct {
 	LogLevel       string
 	MockOTP        bool
 	AllowedOrigins []string
+	SwaggerEnabled bool
 }
 
 // Load loads configuration from environment variables with deterministic defaults.
@@ -49,7 +50,8 @@ func Load() (*Config, error) {
 		SeaweedFSURL:  getEnv("SEAWEEDFS_URL", "http://localhost:8333"),
 		ClamAVAddress: getEnv("CLAMAV_ADDR", "localhost:3310"),
 		LogLevel:      getEnv("LOG_LEVEL", "info"),
-		MockOTP:       getEnvBool("MOCK_OTP", env == EnvDevelopment),
+		MockOTP:        getEnvBool("MOCK_OTP", env == EnvDevelopment),
+		SwaggerEnabled: getEnvBool("SWAGGER_ENABLED", env != EnvProduction),
 	}
 
 	if origins := os.Getenv("ALLOWED_ORIGINS"); origins != "" {

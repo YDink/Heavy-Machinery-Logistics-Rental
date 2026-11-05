@@ -17,6 +17,7 @@ type Server struct {
 	discoveryService  *machineryApp.DiscoveryService
 	bookingService    *bookingApp.BookingService
 	rentalService     *rentalApp.RentalService
+	swaggerEnabled    bool
 }
 
 func NewServer(
@@ -36,11 +37,24 @@ func NewServer(
 		discoveryService:  discoveryService,
 		bookingService:    bookingService,
 		rentalService:     rentalService,
+		swaggerEnabled:    true,
 	}
+}
+
+// SetSwaggerEnabled explicitly configures whether Swagger UI and OpenAPI documentation routes are active.
+func (s *Server) SetSwaggerEnabled(enabled bool) {
+	s.swaggerEnabled = enabled
 }
 
 // RegisterRoutes registers all API endpoints directly onto the Go standard library http.ServeMux.
 func (s *Server) RegisterRoutes(mux *http.ServeMux) {
+	// Swagger UI & Interactive Documentation
+	if s.swaggerEnabled {
+		mux.HandleFunc("GET /swagger/", s.SwaggerUI)
+		mux.HandleFunc("GET /swagger/index.html", s.SwaggerUI)
+		mux.HandleFunc("GET /swagger/openapi.yaml", s.SwaggerSpec)
+		mux.HandleFunc("GET /swagger", s.SwaggerRedirect)
+	}
 	// Authentication (Partition 05-01)
 	mux.HandleFunc("POST /api/v1/auth/otp/request", s.RequestOtp)
 	mux.HandleFunc("POST /api/v1/auth/otp/verify", s.VerifyOtp)

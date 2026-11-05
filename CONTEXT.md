@@ -3,11 +3,24 @@
 **Project Phase:** Phase 2 (Partition Feature Development)  
 **Active Requirement Partition:** `05-07-rental-completion-return-damage` (Rental Completion, Off-Hire Return Inspection, Damage & Penalty Adjudication Architecture)  
 **Active Branch:** `feature/05-07-rental-completion-return-damage` (Active development underway)  
-**Current Stop Point:** Pre-commit verification triad and one-by-one live HTTP endpoint manual verification complete with 100% pass rate. Committed in `13346ad`. Next immediate action: enable Swagger UI (`/swagger/`, `/swagger/openapi.yaml`) in the backend modular monolith before proceeding with Partition 05-07 development.
+**Current Stop Point:** Enabled Swagger UI (`/swagger/`, `/swagger/index.html`, `/swagger/openapi.yaml`) in the Go backend modular monolith with pure standard library HTTP handlers, runtime disk hot-reload, embedded fallback bundle, and environment toggle (`SWAGGER_ENABLED`). Full test suite passing. Next immediate action: implement Partition 05-07 database schema and migration (`migrations/000009_create_rental_completion_tables.up.sql`).
 
 ---
 
 ## 1. Current Progress Snapshot
+
+### Completed (Swagger UI & Interactive OpenAPI Documentation Delivery)
+- **Configuration & Toggling (`backend/internal/platform/config/`):**
+  - Added `SwaggerEnabled bool` to `Config` with `SWAGGER_ENABLED` environment parsing (defaults to `true` in development/staging, `false` in production).
+  - 100% unit test coverage in `config_test.go` covering defaults, explicit toggles, and production enforcement.
+- **Go Backend Transport Handlers (`backend/internal/transport/http/`):**
+  - Strictly adhering to single-concept file separation:
+    - `swagger_ui_handler.go`: Serves interactive Swagger UI HTML dashboard (`GET /swagger/`, `GET /swagger/index.html`).
+    - `swagger_redirect_handler.go`: Redirects bare `/swagger` to `/swagger/`.
+    - `swagger_spec_handler.go`: Serves canonical OpenAPI 3.1.0 contract (`GET /swagger/openapi.yaml`) with runtime filesystem discovery for dev hot-reload and `//go:embed openapi.bundled.yaml` fallback.
+    - `server.go`: Added `swaggerEnabled` state with `SetSwaggerEnabled(bool)` and dynamic route mounting on native `net/http.ServeMux`.
+    - `cmd/api/main.go`: Wired `server.SetSwaggerEnabled(cfg.SwaggerEnabled)`.
+  - Comprehensive unit and integration test suite in `swagger_handler_test.go` verifying 200 OK HTML payload, YAML spec headers, 301 redirect, and 404 when disabled (100% pass rate).
 
 ### Completed (System Manual Live Verification & SQL Fixture Alignment Drill)
 - **Database Schema & Migrations (`migrations/`):**

@@ -22,21 +22,31 @@ func NewPostgresBookingRepository(queries *db.Queries) *PostgresBookingRepositor
 }
 
 func toDomainBooking(b db.Booking) *domain.Booking {
+	var parentID *uuid.UUID
+	if b.ParentBookingID.Valid {
+		id := uuid.UUID(b.ParentBookingID.Bytes)
+		parentID = &id
+	}
 	res := &domain.Booking{
-		ID:                     uuid.UUID(b.ID.Bytes),
-		BookingReference:       b.BookingReference,
-		RenterID:               uuid.UUID(b.RenterID.Bytes),
-		OwnerID:                uuid.UUID(b.OwnerID.Bytes),
-		FleetID:                uuid.UUID(b.FleetID.Bytes),
-		StartDate:              b.StartDate.Time,
-		EndDate:                b.EndDate.Time,
-		DurationDays:           int(b.DurationDays),
-		DailyRateAppliedMinor:  b.DailyRateAppliedMinor,
-		BaseHireFeeMinor:       b.BaseHireFeeMinor,
-		AttachmentsFeeMinor:    b.AttachmentsFeeMinor,
-		GrossRentalAmountMinor: b.GrossRentalAmountMinor,
-		PrepaymentAmountMinor:  b.PrepaymentAmountMinor,
-		Currency:               b.Currency,
+		ID:                         uuid.UUID(b.ID.Bytes),
+		BookingReference:           b.BookingReference,
+		RenterID:                   uuid.UUID(b.RenterID.Bytes),
+		OwnerID:                    uuid.UUID(b.OwnerID.Bytes),
+		FleetID:                    uuid.UUID(b.FleetID.Bytes),
+		ParentBookingID:            parentID,
+		BookingKind:                b.BookingKind,
+		StartDate:                  b.StartDate.Time,
+		EndDate:                    b.EndDate.Time,
+		DurationDays:               int(b.DurationDays),
+		DailyRateAppliedMinor:      b.DailyRateAppliedMinor,
+		BaseHireFeeMinor:           b.BaseHireFeeMinor,
+		AttachmentsFeeMinor:        b.AttachmentsFeeMinor,
+		GrossRentalAmountMinor:     b.GrossRentalAmountMinor,
+		PrepaymentAmountMinor:      b.PrepaymentAmountMinor,
+		PlatformCommissionRateBps:  int(b.PlatformCommissionRateBps),
+		PlatformCommissionMinor:    b.PlatformCommissionMinor,
+		AbnormalLoadEscortRequired: b.AbnormalLoadEscortRequired,
+		Currency:                   b.Currency,
 		SiteLocationAddress:    b.SiteLocationAddress,
 		Status:                 domain.BookingStatus(b.Status),
 		RejectionReasonCode:    b.RejectionReasonCode,

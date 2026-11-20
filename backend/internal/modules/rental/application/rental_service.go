@@ -17,9 +17,15 @@ type BookingProvider interface {
 	UpdateBookingHandover(ctx context.Context, bookingID uuid.UUID, checkInMeter float64, expectedVersion int) error
 }
 
+// LogisticsDeliveryChecker enforces D-05-08-001: parent machinery cannot enter ACTIVE until linked transport finishes delivery.
+type LogisticsDeliveryChecker interface {
+	EnsureParentReadyForActivation(ctx context.Context, parentBookingID uuid.UUID) error
+}
+
 type RentalService struct {
-	rentalRepo  domain.RentalRepository
-	bookingRepo BookingProvider
+	rentalRepo       domain.RentalRepository
+	bookingRepo      BookingProvider
+	logisticsChecker LogisticsDeliveryChecker
 }
 
 func NewRentalService(rentalRepo domain.RentalRepository, bookingRepo BookingProvider) *RentalService {
@@ -27,6 +33,11 @@ func NewRentalService(rentalRepo domain.RentalRepository, bookingRepo BookingPro
 		rentalRepo:  rentalRepo,
 		bookingRepo: bookingRepo,
 	}
+}
+
+// SetLogisticsChecker attaches an optional logistics delivery verification guard.
+func (s *RentalService) SetLogisticsChecker(checker LogisticsDeliveryChecker) {
+	s.logisticsChecker = checker
 }
 
 // HandoverInspectCommand carries inputs for conducting pre-dispatch physical inspection.
@@ -151,6 +162,12 @@ func (s *RentalService) ConfirmHandover(ctx context.Context, cmd HandoverConfirm
 
 	if booking.Status != bookingDomain.StatusConfirmed && booking.Status != bookingDomain.StatusReadyForPickup {
 		return nil, fmt.Errorf("cannot activate booking from status %s", booking.Status)
+	}
+
+	if s.logisticsChecker != nil {
+		if err := s.logisticsChecker.EnsureParentReadyForActivation(ctx, booking.ID); err != nil {
+			return nil, err
+		}
 	}
 
 	challenge, err := s.rentalRepo.GetActiveHandoverChallenge(ctx, cmd.BookingID)

@@ -35,10 +35,28 @@ var permittedTransitions = map[BookingStatus][]BookingStatus{
 		StatusCancelled,
 	},
 	StatusConfirmed: {
+		StatusDispatched,
 		StatusAwaitingFleetReadiness,
 		StatusReadyForPickup,
 		StatusActive, // Direct site activation if already mobilized
 		StatusCancelled,
+		StatusCancelledCarrierDefault,
+	},
+	StatusDispatched: {
+		StatusLoadingInspection,
+		StatusCancelledCarrierDefault,
+	},
+	StatusLoadingInspection: {
+		StatusInTransit,
+		StatusCancelledCarrierDefault,
+	},
+	StatusInTransit: {
+		StatusReadyForPickup,
+		StatusTransshipmentRequired,
+	},
+	StatusTransshipmentRequired: {
+		StatusInTransit,
+		StatusCancelledCarrierDefault,
 	},
 	StatusAwaitingFleetReadiness: {
 		StatusPendingAdditionalPayment,
@@ -88,8 +106,9 @@ var permittedTransitions = map[BookingStatus][]BookingStatus{
 	StatusCompleted: {
 		StatusRated,
 	},
-	StatusRated:     {},
-	StatusCancelled: {},
+	StatusRated:                   {},
+	StatusCancelled:               {},
+	StatusCancelledCarrierDefault: {},
 }
 
 // ValidateTransition asserts whether a state transition from `from` to `to` is legally permitted.

@@ -16,6 +16,9 @@ import (
 	bookingApp "github.com/dinkmachinery/dink-core/internal/modules/booking/application"
 	bookingDomain "github.com/dinkmachinery/dink-core/internal/modules/booking/domain"
 	bookingInfra "github.com/dinkmachinery/dink-core/internal/modules/booking/infrastructure"
+	logisticsApp "github.com/dinkmachinery/dink-core/internal/modules/logistics/application"
+	logisticsDomain "github.com/dinkmachinery/dink-core/internal/modules/logistics/domain"
+	logisticsInfra "github.com/dinkmachinery/dink-core/internal/modules/logistics/infrastructure"
 	rentalApp "github.com/dinkmachinery/dink-core/internal/modules/rental/application"
 	rentalDomain "github.com/dinkmachinery/dink-core/internal/modules/rental/domain"
 	rentalInfra "github.com/dinkmachinery/dink-core/internal/modules/rental/infrastructure"
@@ -74,6 +77,7 @@ func main() {
 	var discoveryRepo machineryDomain.DiscoveryRepository
 	var bookingRepo bookingDomain.BookingRepository
 	var rentalRepo rentalDomain.RentalRepository
+	var logisticsRepo logisticsDomain.LogisticsRepository
 
 	dbPool, err := pgxpool.New(ctx, cfg.DatabaseURL)
 	if err == nil && dbPool.Ping(ctx) == nil {
@@ -89,6 +93,7 @@ func main() {
 		discoveryRepo = pgMachineryRepo
 		bookingRepo = bookingInfra.NewPostgresBookingRepository(queries)
 		rentalRepo = rentalInfra.NewPostgresRentalRepository(queries)
+		logisticsRepo = logisticsInfra.NewPostgresLogisticsRepository(queries)
 		logger.Info("Connected to PostgreSQL database for repositories")
 	} else {
 		logger.Warn("PostgreSQL connection unavailable; using in-memory caches for bootstrapping")
@@ -101,8 +106,10 @@ func main() {
 		specRepo = memMachineryRepo
 		attachmentRepo = memMachineryRepo
 		discoveryRepo = memMachineryRepo
-		bookingRepo = bookingInfra.NewMemoryBookingRepository()
+		memBookingRepo := bookingInfra.NewMemoryBookingRepository()
+		bookingRepo = memBookingRepo
 		rentalRepo = rentalInfra.NewMemoryRentalRepository()
+		logisticsRepo = logisticsInfra.NewMemoryLogisticsRepository(memBookingRepo)
 	}
 
 	authService := application.NewAuthService(userRepo, otpService, tokenService)
@@ -118,9 +125,12 @@ func main() {
 
 	holdLeaseManager := bookingInfra.NewMemoryHoldLeaseManager()
 	bookingService := bookingApp.NewBookingService(bookingRepo, holdLeaseManager, machineryService, nil)
+	logisticsService := logisticsApp.NewLogisticsService(logisticsRepo, bookingRepo)
 	rentalService := rentalApp.NewRentalService(rentalRepo, bookingRepo)
+	rentalService.SetLogisticsChecker(logisticsService)
 
 	server := transport.NewServer(authService, tokenService, machineryService, attachmentService, discoveryService, bookingService, rentalService)
+	server.SetLogisticsService(logisticsService)
 	server.SetSwaggerEnabled(cfg.SwaggerEnabled)
 
 	// Standard Library net/http.ServeMux Router

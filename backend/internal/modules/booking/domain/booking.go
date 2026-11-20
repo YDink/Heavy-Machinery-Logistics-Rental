@@ -8,19 +8,24 @@ import (
 
 type Booking struct {
 	ID                     uuid.UUID
-	BookingReference       string
-	RenterID               uuid.UUID
-	OwnerID                uuid.UUID
-	FleetID                uuid.UUID
-	StartDate              time.Time
-	EndDate                time.Time
-	DurationDays           int
-	DailyRateAppliedMinor  int64
-	BaseHireFeeMinor       int64
-	AttachmentsFeeMinor    int64
-	GrossRentalAmountMinor int64
-	PrepaymentAmountMinor  int64
-	Currency               string
+	BookingReference           string
+	RenterID                   uuid.UUID
+	OwnerID                    uuid.UUID
+	FleetID                    uuid.UUID
+	ParentBookingID            *uuid.UUID
+	BookingKind                string
+	StartDate                  time.Time
+	EndDate                    time.Time
+	DurationDays               int
+	DailyRateAppliedMinor      int64
+	BaseHireFeeMinor           int64
+	AttachmentsFeeMinor        int64
+	GrossRentalAmountMinor     int64
+	PrepaymentAmountMinor      int64
+	PlatformCommissionRateBps  int
+	PlatformCommissionMinor    int64
+	AbnormalLoadEscortRequired bool
+	Currency                   string
 	SiteLocationAddress    string
 	Status                 BookingStatus
 	RejectionReasonCode    *string

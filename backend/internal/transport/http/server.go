@@ -5,6 +5,7 @@ import (
 
 	"github.com/dinkmachinery/dink-core/internal/modules/auth/application"
 	bookingApp "github.com/dinkmachinery/dink-core/internal/modules/booking/application"
+	logisticsApp "github.com/dinkmachinery/dink-core/internal/modules/logistics/application"
 	machineryApp "github.com/dinkmachinery/dink-core/internal/modules/machinery/application"
 	rentalApp "github.com/dinkmachinery/dink-core/internal/modules/rental/application"
 )
@@ -17,6 +18,7 @@ type Server struct {
 	discoveryService  *machineryApp.DiscoveryService
 	bookingService    *bookingApp.BookingService
 	rentalService     *rentalApp.RentalService
+	logisticsService  *logisticsApp.LogisticsService
 	swaggerEnabled    bool
 }
 
@@ -44,6 +46,11 @@ func NewServer(
 // SetSwaggerEnabled explicitly configures whether Swagger UI and OpenAPI documentation routes are active.
 func (s *Server) SetSwaggerEnabled(enabled bool) {
 	s.swaggerEnabled = enabled
+}
+
+// SetLogisticsService wires the Partition 05-08 logistics transport service into the HTTP server.
+func (s *Server) SetLogisticsService(svc *logisticsApp.LogisticsService) {
+	s.logisticsService = svc
 }
 
 // RegisterRoutes registers all API endpoints directly onto the Go standard library http.ServeMux.
@@ -118,4 +125,14 @@ func (s *Server) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/bookings/{id}/damage-claims/{claimId}/respond", s.RespondDamageClaim)
 	mux.HandleFunc("POST /api/v1/bookings/{id}/final-reconcile", s.FinalReconcile)
 	mux.HandleFunc("POST /api/v1/bookings/{id}/reviews", s.SubmitBookingReview)
+
+	// Logistics Transport Integration, Sub-Bookings & Reverse Cascades (Partition 05-08)
+	mux.HandleFunc("GET /api/v1/bookings/{id}/logistics", s.GetBookingLogisticsOverview)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/logistics/match", s.MatchLogisticsFleets)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/logistics/sub-booking", s.CreateLogisticsSubBooking)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/logistics/external-transport", s.RegisterExternalTransport)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/logistics/dispatch", s.UpdateLogisticsDispatchStage)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/logistics/transshipment-alert", s.ReportLogisticsTransshipmentAlert)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/logistics/transshipment-accept", s.AcceptLogisticsTransshipment)
+	mux.HandleFunc("POST /api/v1/bookings/{id}/logistics/reverse-cascade", s.TriggerLogisticsReverseCascade)
 }

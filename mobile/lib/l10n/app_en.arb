@@ -693,5 +693,73 @@
   "submitConfidentialReview": "Submit Confidential Review",
   "@submitConfidentialReview": {
     "description": "Button to submit confidential review"
+  },
+  "logisticsMobilizationTitle": "Lowboy Mobilization",
+  "@logisticsMobilizationTitle": {
+    "description": "Title for lowboy transport matching and mobilization screen"
+  },
+  "platformLowboyTab": "Platform Lowboy (2.5% Fee)",
+  "@platformLowboyTab": {
+    "description": "Tab for booking an in-platform lowboy carrier with 2.5% fee"
+  },
+  "externalTruckTab": "Own Private Truck",
+  "@externalTruckTab": {
+    "description": "Tab for declaring external private transport"
+  },
+  "bookLowboyCarrier": "Book Lowboy Carrier",
+  "@bookLowboyCarrier": {
+    "description": "Primary CTA to create a linked logistics sub-booking"
+  },
+  "declareExternalDriver": "Declare External Driver",
+  "@declareExternalDriver": {
+    "description": "CTA to register external driver and prime mover details"
+  },
+  "carrierDispatchTitle": "Carrier Dispatch & Winching",
+  "@carrierDispatchTitle": {
+    "description": "Title for carrier dispatch workbench and winching reticle"
+  },
+  "winchingReticleHeader": "Mandatory 4-Angle Winching Reticle",
+  "@winchingReticleHeader": {
+    "description": "Header for 4 mandatory winching and lashing inspection angles"
+  },
+  "confirmLoadStartTransit": "Confirm Load & Start Transit",
+  "@confirmLoadStartTransit": {
+    "description": "Primary CTA to submit winching photos and start highway transit"
+  },
+  "reportRoadsideBreakdown": "Report Roadside Breakdown",
+  "@reportRoadsideBreakdown": {
+    "description": "Emergency CTA to open a 60-minute roadside transshipment alert"
+  },
+  "transshipmentSlaTitle": "Transshipment Required • Hot-Swap SLA",
+  "@transshipmentSlaTitle": {
+    "description": "Emergency banner title for roadside breakdown transshipment"
+  },
+  "acceptHotSwapTransfer": "Accept Hot-Swap Transfer",
+  "@acceptHotSwapTransfer": {
+    "description": "Primary CTA for alternate carrier to accept transshipment"
+  },
+  "executeReverseCascade": "Execute Reverse Cascade",
+  "@executeReverseCascade": {
+    "description": "CTA to execute Force Majeure reverse failure cascade"
+  },
+  "parentBookingFrozenNotice": "Parent Booking Frozen: 0.0 hrs billable",
+  "@parentBookingFrozenNotice": {
+    "description": "Notice indicating parent machinery rental clock is frozen"
+  },
+  "driverFullNameLabel": "Driver Full Name",
+  "@driverFullNameLabel": {
+    "description": "Label for external transport driver full name"
+  },
+  "driverPhoneLabel": "Driver Phone (E.164)",
+  "@driverPhoneLabel": {
+    "description": "Label for external transport driver phone number"
+  },
+  "primeMoverPlateLabel": "Prime Mover Plate Number",
+  "@primeMoverPlateLabel": {
+    "description": "Label for prime mover registration plate number"
+  },
+  "carrierCompanyLabel": "Carrier / Fleet Name",
+  "@carrierCompanyLabel": {
+    "description": "Label for external carrier name"
   }
 }

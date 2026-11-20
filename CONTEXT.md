@@ -1,9 +1,9 @@
 # CONTEXT.md — Dink Machinery Active Session State
 
 **Project Phase:** Phase 2 (Partition Feature Development)  
-**Active Requirement Partition:** `05-08-logistics-transport-integration` (Backend Verified; Mobile Ready)  
-**Active Branch:** `feature/05-08-logistics-transport-integration`  
-**Current Stop Point:** Partition `05-08-logistics-transport-integration` is fully implemented across `DB`, `OAS`, `BE`, Stitch MCP UI, and `MOB`, with 100% automated tests and live PostgreSQL + HTTP probe verification passing. Ready for commit and rebase-merge to `main`, then Partition `05-09`.
+**Active Requirement Partition:** `05-09-commission-revenue-owner-payouts` (Ready for Kickoff)  
+**Active Branch:** `main`  
+**Current Stop Point:** Partitions 05-01 through 05-08 are completed and merged to `main`. All applications (`Backend`, `Mobile` 92/92, `Admin` lint) and live PostgreSQL HTTP probes passed. Ready for Partition `05-09` kickoff.
 
 ---
 

@@ -522,4 +522,55 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get submitConfidentialReview => 'ሚስጥራዊ ግምገማ አስገባ';
+
+  @override
+  String get logisticsMobilizationTitle => 'የሎውቦይ ማጓጓዣ ዝግጅት';
+
+  @override
+  String get platformLowboyTab => 'የመድረክ ሎውቦይ (2.5% ክፍያ)';
+
+  @override
+  String get externalTruckTab => 'የራስ የግል መኪና';
+
+  @override
+  String get bookLowboyCarrier => 'ሎውቦይ አጓጓዥ ይዘዙ';
+
+  @override
+  String get declareExternalDriver => 'የውጭ ሹፌር መረጃ ያስገቡ';
+
+  @override
+  String get carrierDispatchTitle => 'የአጓጓዥ ጉዞ እና የመጫኛ ፍተሻ';
+
+  @override
+  String get winchingReticleHeader => 'ግዴታ የሆኑ 4 የመጫኛ ማረጋገጫ ፎቶዎች';
+
+  @override
+  String get confirmLoadStartTransit => 'መጫኑን አረጋግጥ እና ጉዞ ጀምር';
+
+  @override
+  String get reportRoadsideBreakdown => 'የመንገድ ላይ ብልሽት አመልክት';
+
+  @override
+  String get transshipmentSlaTitle => 'የአስቸኳይ ቅብብሎሽ ጊዜ (60 ደቂቃ)';
+
+  @override
+  String get acceptHotSwapTransfer => 'አስቸኳይ ቅብብሎሹን ተቀበል';
+
+  @override
+  String get executeReverseCascade => 'የፎርስ ማዥር ስረዛን አስፈጽም';
+
+  @override
+  String get parentBookingFrozenNotice => 'ዋናው ኪራይ ታግዷል፡ 0.0 ሰዓት ክፍያ';
+
+  @override
+  String get driverFullNameLabel => 'የሹፌር ሙሉ ስም';
+
+  @override
+  String get driverPhoneLabel => 'የሹፌር ስልክ ቁጥር';
+
+  @override
+  String get primeMoverPlateLabel => 'የመኪናው ታርጋ ቁጥር';
+
+  @override
+  String get carrierCompanyLabel => 'የአጓጓዥ ድርጅት ስም';
 }

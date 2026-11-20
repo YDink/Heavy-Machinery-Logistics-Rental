@@ -63,6 +63,17 @@ import 'package:dink_mobile/features/rental_completion/domain/usecases/lodge_dam
 import 'package:dink_mobile/features/rental_completion/domain/usecases/respond_damage_claim_usecase.dart';
 import 'package:dink_mobile/features/rental_completion/domain/usecases/submit_review_usecase.dart';
 import 'package:dink_mobile/features/rental_completion/presentation/bloc/rental_completion_bloc.dart';
+import 'package:dink_mobile/features/logistics/data/datasources/logistics_remote_data_source.dart';
+import 'package:dink_mobile/features/logistics/data/repositories/logistics_repository_impl.dart';
+import 'package:dink_mobile/features/logistics/domain/repositories/logistics_repository.dart';
+import 'package:dink_mobile/features/logistics/domain/usecases/accept_transshipment_usecase.dart';
+import 'package:dink_mobile/features/logistics/domain/usecases/advance_logistics_dispatch_usecase.dart';
+import 'package:dink_mobile/features/logistics/domain/usecases/create_logistics_sub_booking_usecase.dart';
+import 'package:dink_mobile/features/logistics/domain/usecases/match_logistics_carriers_usecase.dart';
+import 'package:dink_mobile/features/logistics/domain/usecases/register_external_transport_usecase.dart';
+import 'package:dink_mobile/features/logistics/domain/usecases/report_transshipment_alert_usecase.dart';
+import 'package:dink_mobile/features/logistics/domain/usecases/trigger_reverse_cascade_usecase.dart';
+import 'package:dink_mobile/features/logistics/presentation/bloc/logistics_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -436,6 +447,77 @@ Future<void> initDependencies() async {
         respondDamageClaimUseCase: sl<RespondDamageClaimUseCase>(),
         finalReconcileUseCase: sl<FinalReconcileUseCase>(),
         submitReviewUseCase: sl<SubmitReviewUseCase>(),
+      ),
+    );
+  }
+
+  // Logistics Transport Integration & Reverse Cascades (Partition 05-08)
+  if (!sl.isRegistered<LogisticsRemoteDataSource>()) {
+    sl.registerLazySingleton<LogisticsRemoteDataSource>(
+      () => LogisticsRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
+    );
+  }
+
+  if (!sl.isRegistered<LogisticsRepository>()) {
+    sl.registerLazySingleton<LogisticsRepository>(
+      () => LogisticsRepositoryImpl(
+          remoteDataSource: sl<LogisticsRemoteDataSource>()),
+    );
+  }
+
+  if (!sl.isRegistered<MatchLogisticsCarriersUseCase>()) {
+    sl.registerLazySingleton<MatchLogisticsCarriersUseCase>(
+      () => MatchLogisticsCarriersUseCase(sl<LogisticsRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<CreateLogisticsSubBookingUseCase>()) {
+    sl.registerLazySingleton<CreateLogisticsSubBookingUseCase>(
+      () => CreateLogisticsSubBookingUseCase(sl<LogisticsRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<RegisterExternalTransportUseCase>()) {
+    sl.registerLazySingleton<RegisterExternalTransportUseCase>(
+      () => RegisterExternalTransportUseCase(sl<LogisticsRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<AdvanceLogisticsDispatchUseCase>()) {
+    sl.registerLazySingleton<AdvanceLogisticsDispatchUseCase>(
+      () => AdvanceLogisticsDispatchUseCase(sl<LogisticsRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<ReportTransshipmentAlertUseCase>()) {
+    sl.registerLazySingleton<ReportTransshipmentAlertUseCase>(
+      () => ReportTransshipmentAlertUseCase(sl<LogisticsRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<AcceptTransshipmentUseCase>()) {
+    sl.registerLazySingleton<AcceptTransshipmentUseCase>(
+      () => AcceptTransshipmentUseCase(sl<LogisticsRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<TriggerReverseCascadeUseCase>()) {
+    sl.registerLazySingleton<TriggerReverseCascadeUseCase>(
+      () => TriggerReverseCascadeUseCase(sl<LogisticsRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<LogisticsBloc>()) {
+    sl.registerFactory<LogisticsBloc>(
+      () => LogisticsBloc(
+        matchCarriersUseCase: sl<MatchLogisticsCarriersUseCase>(),
+        createSubBookingUseCase: sl<CreateLogisticsSubBookingUseCase>(),
+        registerExternalTransportUseCase:
+            sl<RegisterExternalTransportUseCase>(),
+        advanceDispatchUseCase: sl<AdvanceLogisticsDispatchUseCase>(),
+        reportTransshipmentAlertUseCase: sl<ReportTransshipmentAlertUseCase>(),
+        acceptTransshipmentUseCase: sl<AcceptTransshipmentUseCase>(),
+        triggerReverseCascadeUseCase: sl<TriggerReverseCascadeUseCase>(),
       ),
     );
   }

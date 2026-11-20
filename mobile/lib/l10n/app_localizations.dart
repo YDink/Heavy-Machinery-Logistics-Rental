@@ -1093,6 +1093,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Submit Confidential Review'**
   String get submitConfidentialReview;
+
+  /// Title for lowboy transport matching and mobilization screen
+  ///
+  /// In en, this message translates to:
+  /// **'Lowboy Mobilization'**
+  String get logisticsMobilizationTitle;
+
+  /// Tab for booking an in-platform lowboy carrier with 2.5% fee
+  ///
+  /// In en, this message translates to:
+  /// **'Platform Lowboy (2.5% Fee)'**
+  String get platformLowboyTab;
+
+  /// Tab for declaring external private transport
+  ///
+  /// In en, this message translates to:
+  /// **'Own Private Truck'**
+  String get externalTruckTab;
+
+  /// Primary CTA to create a linked logistics sub-booking
+  ///
+  /// In en, this message translates to:
+  /// **'Book Lowboy Carrier'**
+  String get bookLowboyCarrier;
+
+  /// CTA to register external driver and prime mover details
+  ///
+  /// In en, this message translates to:
+  /// **'Declare External Driver'**
+  String get declareExternalDriver;
+
+  /// Title for carrier dispatch workbench and winching reticle
+  ///
+  /// In en, this message translates to:
+  /// **'Carrier Dispatch & Winching'**
+  String get carrierDispatchTitle;
+
+  /// Header for 4 mandatory winching and lashing inspection angles
+  ///
+  /// In en, this message translates to:
+  /// **'Mandatory 4-Angle Winching Reticle'**
+  String get winchingReticleHeader;
+
+  /// Primary CTA to submit winching photos and start highway transit
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Load & Start Transit'**
+  String get confirmLoadStartTransit;
+
+  /// Emergency CTA to open a 60-minute roadside transshipment alert
+  ///
+  /// In en, this message translates to:
+  /// **'Report Roadside Breakdown'**
+  String get reportRoadsideBreakdown;
+
+  /// Emergency banner title for roadside breakdown transshipment
+  ///
+  /// In en, this message translates to:
+  /// **'Transshipment Required • Hot-Swap SLA'**
+  String get transshipmentSlaTitle;
+
+  /// Primary CTA for alternate carrier to accept transshipment
+  ///
+  /// In en, this message translates to:
+  /// **'Accept Hot-Swap Transfer'**
+  String get acceptHotSwapTransfer;
+
+  /// CTA to execute Force Majeure reverse failure cascade
+  ///
+  /// In en, this message translates to:
+  /// **'Execute Reverse Cascade'**
+  String get executeReverseCascade;
+
+  /// Notice indicating parent machinery rental clock is frozen
+  ///
+  /// In en, this message translates to:
+  /// **'Parent Booking Frozen: 0.0 hrs billable'**
+  String get parentBookingFrozenNotice;
+
+  /// Label for external transport driver full name
+  ///
+  /// In en, this message translates to:
+  /// **'Driver Full Name'**
+  String get driverFullNameLabel;
+
+  /// Label for external transport driver phone number
+  ///
+  /// In en, this message translates to:
+  /// **'Driver Phone (E.164)'**
+  String get driverPhoneLabel;
+
+  /// Label for prime mover registration plate number
+  ///
+  /// In en, this message translates to:
+  /// **'Prime Mover Plate Number'**
+  String get primeMoverPlateLabel;
+
+  /// Label for external carrier name
+  ///
+  /// In en, this message translates to:
+  /// **'Carrier / Fleet Name'**
+  String get carrierCompanyLabel;
 }
 
 class _AppLocalizationsDelegate

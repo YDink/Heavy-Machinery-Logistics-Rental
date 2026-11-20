@@ -526,4 +526,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get submitConfidentialReview => 'Submit Confidential Review';
+
+  @override
+  String get logisticsMobilizationTitle => 'Lowboy Mobilization';
+
+  @override
+  String get platformLowboyTab => 'Platform Lowboy (2.5% Fee)';
+
+  @override
+  String get externalTruckTab => 'Own Private Truck';
+
+  @override
+  String get bookLowboyCarrier => 'Book Lowboy Carrier';
+
+  @override
+  String get declareExternalDriver => 'Declare External Driver';
+
+  @override
+  String get carrierDispatchTitle => 'Carrier Dispatch & Winching';
+
+  @override
+  String get winchingReticleHeader => 'Mandatory 4-Angle Winching Reticle';
+
+  @override
+  String get confirmLoadStartTransit => 'Confirm Load & Start Transit';
+
+  @override
+  String get reportRoadsideBreakdown => 'Report Roadside Breakdown';
+
+  @override
+  String get transshipmentSlaTitle => 'Transshipment Required • Hot-Swap SLA';
+
+  @override
+  String get acceptHotSwapTransfer => 'Accept Hot-Swap Transfer';
+
+  @override
+  String get executeReverseCascade => 'Execute Reverse Cascade';
+
+  @override
+  String get parentBookingFrozenNotice =>
+      'Parent Booking Frozen: 0.0 hrs billable';
+
+  @override
+  String get driverFullNameLabel => 'Driver Full Name';
+
+  @override
+  String get driverPhoneLabel => 'Driver Phone (E.164)';
+
+  @override
+  String get primeMoverPlateLabel => 'Prime Mover Plate Number';
+
+  @override
+  String get carrierCompanyLabel => 'Carrier / Fleet Name';
 }

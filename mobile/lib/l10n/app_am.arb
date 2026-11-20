@@ -165,5 +165,22 @@
   "acceptDamageLiability": "የብልሽት ካሳ ተቀበል",
   "disputeDamageClaim": "የካሳ ጥያቄውን ተቃወም እና ለሽምግልና አስተላልፍ",
   "doubleBlindReviewTitle": "የሁለትዮሽ ሚስጥራዊ አስተያየት መስጫ",
-  "submitConfidentialReview": "ሚስጥራዊ ግምገማ አስገባ"
+  "submitConfidentialReview": "ሚስጥራዊ ግምገማ አስገባ",
+  "logisticsMobilizationTitle": "የሎውቦይ ማጓጓዣ ዝግጅት",
+  "platformLowboyTab": "የመድረክ ሎውቦይ (2.5% ክፍያ)",
+  "externalTruckTab": "የራስ የግል መኪና",
+  "bookLowboyCarrier": "ሎውቦይ አጓጓዥ ይዘዙ",
+  "declareExternalDriver": "የውጭ ሹፌር መረጃ ያስገቡ",
+  "carrierDispatchTitle": "የአጓጓዥ ጉዞ እና የመጫኛ ፍተሻ",
+  "winchingReticleHeader": "ግዴታ የሆኑ 4 የመጫኛ ማረጋገጫ ፎቶዎች",
+  "confirmLoadStartTransit": "መጫኑን አረጋግጥ እና ጉዞ ጀምር",
+  "reportRoadsideBreakdown": "የመንገድ ላይ ብልሽት አመልክት",
+  "transshipmentSlaTitle": "የአስቸኳይ ቅብብሎሽ ጊዜ (60 ደቂቃ)",
+  "acceptHotSwapTransfer": "አስቸኳይ ቅብብሎሹን ተቀበል",
+  "executeReverseCascade": "የፎርስ ማዥር ስረዛን አስፈጽም",
+  "parentBookingFrozenNotice": "ዋናው ኪራይ ታግዷል፡ 0.0 ሰዓት ክፍያ",
+  "driverFullNameLabel": "የሹፌር ሙሉ ስም",
+  "driverPhoneLabel": "የሹፌር ስልክ ቁጥር",
+  "primeMoverPlateLabel": "የመኪናው ታርጋ ቁጥር",
+  "carrierCompanyLabel": "የአጓጓዥ ድርጅት ስም"
 }

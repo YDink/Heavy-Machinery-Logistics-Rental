@@ -11,6 +11,49 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const acceptLogisticsTransshipment = `-- name: AcceptLogisticsTransshipment :one
+UPDATE logistics_transshipments
+SET replacement_fleet_id = $2,
+    replacement_carrier_id = $3,
+    status = 'ACCEPTED',
+    accepted_at = NOW(),
+    updated_at = NOW()
+WHERE id = $1
+RETURNING id, sub_booking_id, parent_booking_id, reported_by, breakdown_latitude, breakdown_longitude, failure_category, failure_description, photos_json, hot_swap_sla_deadline, transshipment_bounty_minor, replacement_fleet_id, replacement_carrier_id, status, accepted_at, completed_at, created_at, updated_at
+`
+
+type AcceptLogisticsTransshipmentParams struct {
+	ID                   pgtype.UUID `json:"id"`
+	ReplacementFleetID   pgtype.UUID `json:"replacement_fleet_id"`
+	ReplacementCarrierID pgtype.UUID `json:"replacement_carrier_id"`
+}
+
+func (q *Queries) AcceptLogisticsTransshipment(ctx context.Context, arg AcceptLogisticsTransshipmentParams) (LogisticsTransshipment, error) {
+	row := q.db.QueryRow(ctx, acceptLogisticsTransshipment, arg.ID, arg.ReplacementFleetID, arg.ReplacementCarrierID)
+	var i LogisticsTransshipment
+	err := row.Scan(
+		&i.ID,
+		&i.SubBookingID,
+		&i.ParentBookingID,
+		&i.ReportedBy,
+		&i.BreakdownLatitude,
+		&i.BreakdownLongitude,
+		&i.FailureCategory,
+		&i.FailureDescription,
+		&i.PhotosJson,
+		&i.HotSwapSlaDeadline,
+		&i.TransshipmentBountyMinor,
+		&i.ReplacementFleetID,
+		&i.ReplacementCarrierID,
+		&i.Status,
+		&i.AcceptedAt,
+		&i.CompletedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const addBookingAttachment = `-- name: AddBookingAttachment :one
 INSERT INTO booking_attachments (
     booking_id,
@@ -171,6 +214,41 @@ func (q *Queries) CheckFleetAvailabilityConflict(ctx context.Context, arg CheckF
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
+}
+
+const completeLogisticsTransshipment = `-- name: CompleteLogisticsTransshipment :one
+UPDATE logistics_transshipments
+SET status = 'COMPLETED',
+    completed_at = NOW(),
+    updated_at = NOW()
+WHERE id = $1
+RETURNING id, sub_booking_id, parent_booking_id, reported_by, breakdown_latitude, breakdown_longitude, failure_category, failure_description, photos_json, hot_swap_sla_deadline, transshipment_bounty_minor, replacement_fleet_id, replacement_carrier_id, status, accepted_at, completed_at, created_at, updated_at
+`
+
+func (q *Queries) CompleteLogisticsTransshipment(ctx context.Context, id pgtype.UUID) (LogisticsTransshipment, error) {
+	row := q.db.QueryRow(ctx, completeLogisticsTransshipment, id)
+	var i LogisticsTransshipment
+	err := row.Scan(
+		&i.ID,
+		&i.SubBookingID,
+		&i.ParentBookingID,
+		&i.ReportedBy,
+		&i.BreakdownLatitude,
+		&i.BreakdownLongitude,
+		&i.FailureCategory,
+		&i.FailureDescription,
+		&i.PhotosJson,
+		&i.HotSwapSlaDeadline,
+		&i.TransshipmentBountyMinor,
+		&i.ReplacementFleetID,
+		&i.ReplacementCarrierID,
+		&i.Status,
+		&i.AcceptedAt,
+		&i.CompletedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const confirmRentalSettlement = `-- name: ConfirmRentalSettlement :one
@@ -433,7 +511,7 @@ INSERT INTO bookings (
     version
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, 1
-) RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor
+) RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor, parent_booking_id, booking_kind, platform_commission_rate_bps, platform_commission_minor, abnormal_load_escort_required
 `
 
 type CreateBookingParams struct {
@@ -522,6 +600,11 @@ func (q *Queries) CreateBooking(ctx context.Context, arg CreateBookingParams) (B
 		&i.AcceptedDamageMinor,
 		&i.ExcessHoursSurchargeMinor,
 		&i.FinalNetBalanceMinor,
+		&i.ParentBookingID,
+		&i.BookingKind,
+		&i.PlatformCommissionRateBps,
+		&i.PlatformCommissionMinor,
+		&i.AbnormalLoadEscortRequired,
 	)
 	return i, err
 }
@@ -1062,6 +1145,355 @@ func (q *Queries) CreateHandoverInspection(ctx context.Context, arg CreateHandov
 	return i, err
 }
 
+const createLogisticsDispatch = `-- name: CreateLogisticsDispatch :one
+INSERT INTO logistics_dispatches (
+    sub_booking_id,
+    parent_booking_id,
+    logistics_fleet_id,
+    carrier_owner_id,
+    pickup_datetime,
+    origin_latitude,
+    origin_longitude,
+    origin_depot_name,
+    destination_latitude,
+    destination_longitude,
+    destination_site_name,
+    freight_hire_fee_minor,
+    platform_commission_bps,
+    commission_owed_minor,
+    abnormal_load_escort_required,
+    escort_fee_minor
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+) RETURNING id, sub_booking_id, parent_booking_id, logistics_fleet_id, carrier_owner_id, pickup_datetime, origin_latitude, origin_longitude, origin_depot_name, destination_latitude, destination_longitude, destination_site_name, freight_hire_fee_minor, platform_commission_bps, commission_owed_minor, abnormal_load_escort_required, escort_fee_minor, winching_photos_json, dispatched_at, loaded_at, in_transit_at, arrived_at, version, created_at, updated_at
+`
+
+type CreateLogisticsDispatchParams struct {
+	SubBookingID               pgtype.UUID        `json:"sub_booking_id"`
+	ParentBookingID            pgtype.UUID        `json:"parent_booking_id"`
+	LogisticsFleetID           pgtype.UUID        `json:"logistics_fleet_id"`
+	CarrierOwnerID             pgtype.UUID        `json:"carrier_owner_id"`
+	PickupDatetime             pgtype.Timestamptz `json:"pickup_datetime"`
+	OriginLatitude             float64            `json:"origin_latitude"`
+	OriginLongitude            float64            `json:"origin_longitude"`
+	OriginDepotName            string             `json:"origin_depot_name"`
+	DestinationLatitude        float64            `json:"destination_latitude"`
+	DestinationLongitude       float64            `json:"destination_longitude"`
+	DestinationSiteName        string             `json:"destination_site_name"`
+	FreightHireFeeMinor        int64              `json:"freight_hire_fee_minor"`
+	PlatformCommissionBps      int32              `json:"platform_commission_bps"`
+	CommissionOwedMinor        int64              `json:"commission_owed_minor"`
+	AbnormalLoadEscortRequired bool               `json:"abnormal_load_escort_required"`
+	EscortFeeMinor             int64              `json:"escort_fee_minor"`
+}
+
+func (q *Queries) CreateLogisticsDispatch(ctx context.Context, arg CreateLogisticsDispatchParams) (LogisticsDispatch, error) {
+	row := q.db.QueryRow(ctx, createLogisticsDispatch,
+		arg.SubBookingID,
+		arg.ParentBookingID,
+		arg.LogisticsFleetID,
+		arg.CarrierOwnerID,
+		arg.PickupDatetime,
+		arg.OriginLatitude,
+		arg.OriginLongitude,
+		arg.OriginDepotName,
+		arg.DestinationLatitude,
+		arg.DestinationLongitude,
+		arg.DestinationSiteName,
+		arg.FreightHireFeeMinor,
+		arg.PlatformCommissionBps,
+		arg.CommissionOwedMinor,
+		arg.AbnormalLoadEscortRequired,
+		arg.EscortFeeMinor,
+	)
+	var i LogisticsDispatch
+	err := row.Scan(
+		&i.ID,
+		&i.SubBookingID,
+		&i.ParentBookingID,
+		&i.LogisticsFleetID,
+		&i.CarrierOwnerID,
+		&i.PickupDatetime,
+		&i.OriginLatitude,
+		&i.OriginLongitude,
+		&i.OriginDepotName,
+		&i.DestinationLatitude,
+		&i.DestinationLongitude,
+		&i.DestinationSiteName,
+		&i.FreightHireFeeMinor,
+		&i.PlatformCommissionBps,
+		&i.CommissionOwedMinor,
+		&i.AbnormalLoadEscortRequired,
+		&i.EscortFeeMinor,
+		&i.WinchingPhotosJson,
+		&i.DispatchedAt,
+		&i.LoadedAt,
+		&i.InTransitAt,
+		&i.ArrivedAt,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createLogisticsReverseCascade = `-- name: CreateLogisticsReverseCascade :one
+INSERT INTO logistics_reverse_cascades (
+    parent_booking_id,
+    sub_booking_id,
+    triggered_by,
+    resolution,
+    reason,
+    renter_refund_due_minor,
+    owner_penalty_levied_minor,
+    owner_commission_restitution_minor,
+    carrier_default_penalty_minor,
+    carrier_rating_deduction
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+) RETURNING id, parent_booking_id, sub_booking_id, triggered_by, resolution, reason, renter_refund_due_minor, owner_penalty_levied_minor, owner_commission_restitution_minor, carrier_default_penalty_minor, carrier_rating_deduction, created_at
+`
+
+type CreateLogisticsReverseCascadeParams struct {
+	ParentBookingID                 pgtype.UUID    `json:"parent_booking_id"`
+	SubBookingID                    pgtype.UUID    `json:"sub_booking_id"`
+	TriggeredBy                     pgtype.UUID    `json:"triggered_by"`
+	Resolution                      string         `json:"resolution"`
+	Reason                          string         `json:"reason"`
+	RenterRefundDueMinor            int64          `json:"renter_refund_due_minor"`
+	OwnerPenaltyLeviedMinor         int64          `json:"owner_penalty_levied_minor"`
+	OwnerCommissionRestitutionMinor int64          `json:"owner_commission_restitution_minor"`
+	CarrierDefaultPenaltyMinor      int64          `json:"carrier_default_penalty_minor"`
+	CarrierRatingDeduction          pgtype.Numeric `json:"carrier_rating_deduction"`
+}
+
+func (q *Queries) CreateLogisticsReverseCascade(ctx context.Context, arg CreateLogisticsReverseCascadeParams) (LogisticsReverseCascade, error) {
+	row := q.db.QueryRow(ctx, createLogisticsReverseCascade,
+		arg.ParentBookingID,
+		arg.SubBookingID,
+		arg.TriggeredBy,
+		arg.Resolution,
+		arg.Reason,
+		arg.RenterRefundDueMinor,
+		arg.OwnerPenaltyLeviedMinor,
+		arg.OwnerCommissionRestitutionMinor,
+		arg.CarrierDefaultPenaltyMinor,
+		arg.CarrierRatingDeduction,
+	)
+	var i LogisticsReverseCascade
+	err := row.Scan(
+		&i.ID,
+		&i.ParentBookingID,
+		&i.SubBookingID,
+		&i.TriggeredBy,
+		&i.Resolution,
+		&i.Reason,
+		&i.RenterRefundDueMinor,
+		&i.OwnerPenaltyLeviedMinor,
+		&i.OwnerCommissionRestitutionMinor,
+		&i.CarrierDefaultPenaltyMinor,
+		&i.CarrierRatingDeduction,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const createLogisticsSubBooking = `-- name: CreateLogisticsSubBooking :one
+INSERT INTO bookings (
+    booking_reference,
+    renter_id,
+    owner_id,
+    fleet_id,
+    parent_booking_id,
+    booking_kind,
+    start_date,
+    end_date,
+    hire_period,
+    duration_days,
+    daily_rate_applied_minor,
+    base_hire_fee_minor,
+    attachments_fee_minor,
+    gross_rental_amount_minor,
+    prepayment_amount_minor,
+    platform_commission_rate_bps,
+    platform_commission_minor,
+    abnormal_load_escort_required,
+    currency,
+    site_location_address,
+    status,
+    confirmed_at,
+    version
+) VALUES (
+    $1, $2, $3, $4, $5, 'LOGISTICS_SUB', $6, $7, $8, $9, $10, $11, 0, $12, $13, $14, $15, $16, $17, $18, $19, NOW(), 1
+) RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor, parent_booking_id, booking_kind, platform_commission_rate_bps, platform_commission_minor, abnormal_load_escort_required
+`
+
+type CreateLogisticsSubBookingParams struct {
+	BookingReference           string                    `json:"booking_reference"`
+	RenterID                   pgtype.UUID               `json:"renter_id"`
+	OwnerID                    pgtype.UUID               `json:"owner_id"`
+	FleetID                    pgtype.UUID               `json:"fleet_id"`
+	ParentBookingID            pgtype.UUID               `json:"parent_booking_id"`
+	StartDate                  pgtype.Date               `json:"start_date"`
+	EndDate                    pgtype.Date               `json:"end_date"`
+	HirePeriod                 pgtype.Range[pgtype.Date] `json:"hire_period"`
+	DurationDays               int32                     `json:"duration_days"`
+	DailyRateAppliedMinor      int64                     `json:"daily_rate_applied_minor"`
+	BaseHireFeeMinor           int64                     `json:"base_hire_fee_minor"`
+	GrossRentalAmountMinor     int64                     `json:"gross_rental_amount_minor"`
+	PrepaymentAmountMinor      int64                     `json:"prepayment_amount_minor"`
+	PlatformCommissionRateBps  int32                     `json:"platform_commission_rate_bps"`
+	PlatformCommissionMinor    int64                     `json:"platform_commission_minor"`
+	AbnormalLoadEscortRequired bool                      `json:"abnormal_load_escort_required"`
+	Currency                   string                    `json:"currency"`
+	SiteLocationAddress        string                    `json:"site_location_address"`
+	Status                     string                    `json:"status"`
+}
+
+func (q *Queries) CreateLogisticsSubBooking(ctx context.Context, arg CreateLogisticsSubBookingParams) (Booking, error) {
+	row := q.db.QueryRow(ctx, createLogisticsSubBooking,
+		arg.BookingReference,
+		arg.RenterID,
+		arg.OwnerID,
+		arg.FleetID,
+		arg.ParentBookingID,
+		arg.StartDate,
+		arg.EndDate,
+		arg.HirePeriod,
+		arg.DurationDays,
+		arg.DailyRateAppliedMinor,
+		arg.BaseHireFeeMinor,
+		arg.GrossRentalAmountMinor,
+		arg.PrepaymentAmountMinor,
+		arg.PlatformCommissionRateBps,
+		arg.PlatformCommissionMinor,
+		arg.AbnormalLoadEscortRequired,
+		arg.Currency,
+		arg.SiteLocationAddress,
+		arg.Status,
+	)
+	var i Booking
+	err := row.Scan(
+		&i.ID,
+		&i.BookingReference,
+		&i.RenterID,
+		&i.OwnerID,
+		&i.FleetID,
+		&i.StartDate,
+		&i.EndDate,
+		&i.HirePeriod,
+		&i.DurationDays,
+		&i.DailyRateAppliedMinor,
+		&i.BaseHireFeeMinor,
+		&i.AttachmentsFeeMinor,
+		&i.GrossRentalAmountMinor,
+		&i.PrepaymentAmountMinor,
+		&i.Currency,
+		&i.SiteLocationAddress,
+		&i.Status,
+		&i.RejectionReasonCode,
+		&i.RejectionNotes,
+		&i.CancellationReason,
+		&i.CancelledBy,
+		&i.PenaltyAmountMinor,
+		&i.RefundAmountMinor,
+		&i.ExpiresAt,
+		&i.ConfirmedAt,
+		&i.ActivatedAt,
+		&i.CompletedAt,
+		&i.CancelledAt,
+		&i.HandoverPin,
+		&i.CheckInMeterHours,
+		&i.CheckOutMeterHours,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.AssignedOperatorID,
+		&i.DamageClaimSubmitted,
+		&i.DamageClaimWaived,
+		&i.AcceptedDamageMinor,
+		&i.ExcessHoursSurchargeMinor,
+		&i.FinalNetBalanceMinor,
+		&i.ParentBookingID,
+		&i.BookingKind,
+		&i.PlatformCommissionRateBps,
+		&i.PlatformCommissionMinor,
+		&i.AbnormalLoadEscortRequired,
+	)
+	return i, err
+}
+
+const createLogisticsTransshipment = `-- name: CreateLogisticsTransshipment :one
+INSERT INTO logistics_transshipments (
+    sub_booking_id,
+    parent_booking_id,
+    reported_by,
+    breakdown_latitude,
+    breakdown_longitude,
+    failure_category,
+    failure_description,
+    photos_json,
+    hot_swap_sla_deadline,
+    transshipment_bounty_minor,
+    status
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+) RETURNING id, sub_booking_id, parent_booking_id, reported_by, breakdown_latitude, breakdown_longitude, failure_category, failure_description, photos_json, hot_swap_sla_deadline, transshipment_bounty_minor, replacement_fleet_id, replacement_carrier_id, status, accepted_at, completed_at, created_at, updated_at
+`
+
+type CreateLogisticsTransshipmentParams struct {
+	SubBookingID             pgtype.UUID        `json:"sub_booking_id"`
+	ParentBookingID          pgtype.UUID        `json:"parent_booking_id"`
+	ReportedBy               pgtype.UUID        `json:"reported_by"`
+	BreakdownLatitude        float64            `json:"breakdown_latitude"`
+	BreakdownLongitude       float64            `json:"breakdown_longitude"`
+	FailureCategory          string             `json:"failure_category"`
+	FailureDescription       string             `json:"failure_description"`
+	PhotosJson               []byte             `json:"photos_json"`
+	HotSwapSlaDeadline       pgtype.Timestamptz `json:"hot_swap_sla_deadline"`
+	TransshipmentBountyMinor int64              `json:"transshipment_bounty_minor"`
+	Status                   string             `json:"status"`
+}
+
+func (q *Queries) CreateLogisticsTransshipment(ctx context.Context, arg CreateLogisticsTransshipmentParams) (LogisticsTransshipment, error) {
+	row := q.db.QueryRow(ctx, createLogisticsTransshipment,
+		arg.SubBookingID,
+		arg.ParentBookingID,
+		arg.ReportedBy,
+		arg.BreakdownLatitude,
+		arg.BreakdownLongitude,
+		arg.FailureCategory,
+		arg.FailureDescription,
+		arg.PhotosJson,
+		arg.HotSwapSlaDeadline,
+		arg.TransshipmentBountyMinor,
+		arg.Status,
+	)
+	var i LogisticsTransshipment
+	err := row.Scan(
+		&i.ID,
+		&i.SubBookingID,
+		&i.ParentBookingID,
+		&i.ReportedBy,
+		&i.BreakdownLatitude,
+		&i.BreakdownLongitude,
+		&i.FailureCategory,
+		&i.FailureDescription,
+		&i.PhotosJson,
+		&i.HotSwapSlaDeadline,
+		&i.TransshipmentBountyMinor,
+		&i.ReplacementFleetID,
+		&i.ReplacementCarrierID,
+		&i.Status,
+		&i.AcceptedAt,
+		&i.CompletedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createMechanicalBreakdown = `-- name: CreateMechanicalBreakdown :one
 INSERT INTO mechanical_breakdowns (
     booking_id,
@@ -1354,6 +1786,23 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
+const deductOwnerAggregateRating = `-- name: DeductOwnerAggregateRating :exec
+UPDATE owner_aggregates
+SET average_rating = GREATEST(1.00, average_rating - $2::numeric(3,2)),
+    updated_at = NOW()
+WHERE owner_id = $1
+`
+
+type DeductOwnerAggregateRatingParams struct {
+	OwnerID pgtype.UUID    `json:"owner_id"`
+	Column2 pgtype.Numeric `json:"column_2"`
+}
+
+func (q *Queries) DeductOwnerAggregateRating(ctx context.Context, arg DeductOwnerAggregateRatingParams) error {
+	_, err := q.db.Exec(ctx, deductOwnerAggregateRating, arg.OwnerID, arg.Column2)
+	return err
+}
+
 const endRentalShift = `-- name: EndRentalShift :one
 UPDATE rental_shifts
 SET end_time = NOW(),
@@ -1409,7 +1858,7 @@ SET end_date = $2,
     version = version + 1,
     updated_at = NOW()
 WHERE id = $1 AND version = $6 AND deleted_at IS NULL
-RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor
+RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor, parent_booking_id, booking_kind, platform_commission_rate_bps, platform_commission_minor, abnormal_load_escort_required
 `
 
 type ExpandBookingHirePeriodParams struct {
@@ -1473,6 +1922,45 @@ func (q *Queries) ExpandBookingHirePeriod(ctx context.Context, arg ExpandBooking
 		&i.AcceptedDamageMinor,
 		&i.ExcessHoursSurchargeMinor,
 		&i.FinalNetBalanceMinor,
+		&i.ParentBookingID,
+		&i.BookingKind,
+		&i.PlatformCommissionRateBps,
+		&i.PlatformCommissionMinor,
+		&i.AbnormalLoadEscortRequired,
+	)
+	return i, err
+}
+
+const expireLogisticsTransshipment = `-- name: ExpireLogisticsTransshipment :one
+UPDATE logistics_transshipments
+SET status = 'EXPIRED',
+    updated_at = NOW()
+WHERE id = $1
+RETURNING id, sub_booking_id, parent_booking_id, reported_by, breakdown_latitude, breakdown_longitude, failure_category, failure_description, photos_json, hot_swap_sla_deadline, transshipment_bounty_minor, replacement_fleet_id, replacement_carrier_id, status, accepted_at, completed_at, created_at, updated_at
+`
+
+func (q *Queries) ExpireLogisticsTransshipment(ctx context.Context, id pgtype.UUID) (LogisticsTransshipment, error) {
+	row := q.db.QueryRow(ctx, expireLogisticsTransshipment, id)
+	var i LogisticsTransshipment
+	err := row.Scan(
+		&i.ID,
+		&i.SubBookingID,
+		&i.ParentBookingID,
+		&i.ReportedBy,
+		&i.BreakdownLatitude,
+		&i.BreakdownLongitude,
+		&i.FailureCategory,
+		&i.FailureDescription,
+		&i.PhotosJson,
+		&i.HotSwapSlaDeadline,
+		&i.TransshipmentBountyMinor,
+		&i.ReplacementFleetID,
+		&i.ReplacementCarrierID,
+		&i.Status,
+		&i.AcceptedAt,
+		&i.CompletedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -1600,7 +2088,7 @@ func (q *Queries) GetAttachmentByID(ctx context.Context, id pgtype.UUID) (Attach
 }
 
 const getBookingByID = `-- name: GetBookingByID :one
-SELECT id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor FROM bookings
+SELECT id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor, parent_booking_id, booking_kind, platform_commission_rate_bps, platform_commission_minor, abnormal_load_escort_required FROM bookings
 WHERE id = $1 AND deleted_at IS NULL
 `
 
@@ -1649,12 +2137,78 @@ func (q *Queries) GetBookingByID(ctx context.Context, id pgtype.UUID) (Booking, 
 		&i.AcceptedDamageMinor,
 		&i.ExcessHoursSurchargeMinor,
 		&i.FinalNetBalanceMinor,
+		&i.ParentBookingID,
+		&i.BookingKind,
+		&i.PlatformCommissionRateBps,
+		&i.PlatformCommissionMinor,
+		&i.AbnormalLoadEscortRequired,
+	)
+	return i, err
+}
+
+const getBookingByParentID = `-- name: GetBookingByParentID :one
+SELECT id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor, parent_booking_id, booking_kind, platform_commission_rate_bps, platform_commission_minor, abnormal_load_escort_required FROM bookings
+WHERE parent_booking_id = $1 AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT 1
+`
+
+func (q *Queries) GetBookingByParentID(ctx context.Context, parentBookingID pgtype.UUID) (Booking, error) {
+	row := q.db.QueryRow(ctx, getBookingByParentID, parentBookingID)
+	var i Booking
+	err := row.Scan(
+		&i.ID,
+		&i.BookingReference,
+		&i.RenterID,
+		&i.OwnerID,
+		&i.FleetID,
+		&i.StartDate,
+		&i.EndDate,
+		&i.HirePeriod,
+		&i.DurationDays,
+		&i.DailyRateAppliedMinor,
+		&i.BaseHireFeeMinor,
+		&i.AttachmentsFeeMinor,
+		&i.GrossRentalAmountMinor,
+		&i.PrepaymentAmountMinor,
+		&i.Currency,
+		&i.SiteLocationAddress,
+		&i.Status,
+		&i.RejectionReasonCode,
+		&i.RejectionNotes,
+		&i.CancellationReason,
+		&i.CancelledBy,
+		&i.PenaltyAmountMinor,
+		&i.RefundAmountMinor,
+		&i.ExpiresAt,
+		&i.ConfirmedAt,
+		&i.ActivatedAt,
+		&i.CompletedAt,
+		&i.CancelledAt,
+		&i.HandoverPin,
+		&i.CheckInMeterHours,
+		&i.CheckOutMeterHours,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.AssignedOperatorID,
+		&i.DamageClaimSubmitted,
+		&i.DamageClaimWaived,
+		&i.AcceptedDamageMinor,
+		&i.ExcessHoursSurchargeMinor,
+		&i.FinalNetBalanceMinor,
+		&i.ParentBookingID,
+		&i.BookingKind,
+		&i.PlatformCommissionRateBps,
+		&i.PlatformCommissionMinor,
+		&i.AbnormalLoadEscortRequired,
 	)
 	return i, err
 }
 
 const getBookingByReference = `-- name: GetBookingByReference :one
-SELECT id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor FROM bookings
+SELECT id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor, parent_booking_id, booking_kind, platform_commission_rate_bps, platform_commission_minor, abnormal_load_escort_required FROM bookings
 WHERE booking_reference = $1 AND deleted_at IS NULL
 `
 
@@ -1703,6 +2257,11 @@ func (q *Queries) GetBookingByReference(ctx context.Context, bookingReference st
 		&i.AcceptedDamageMinor,
 		&i.ExcessHoursSurchargeMinor,
 		&i.FinalNetBalanceMinor,
+		&i.ParentBookingID,
+		&i.BookingKind,
+		&i.PlatformCommissionRateBps,
+		&i.PlatformCommissionMinor,
+		&i.AbnormalLoadEscortRequired,
 	)
 	return i, err
 }
@@ -1918,7 +2477,7 @@ func (q *Queries) GetComparableSpecsForFleets(ctx context.Context, fleetIds []pg
 }
 
 const getCountryConfig = `-- name: GetCountryConfig :one
-SELECT country_code, country_name, dialing_prefix, default_currency, currency_minor_unit_exponent, default_timezone, tax_label, standard_tax_rate_bps, withholding_tax_bps, min_age_default, payment_hold_timeout_mins, is_enabled, created_at, updated_at FROM country_configs
+SELECT country_code, country_name, dialing_prefix, default_currency, currency_minor_unit_exponent, default_timezone, tax_label, standard_tax_rate_bps, withholding_tax_bps, min_age_default, payment_hold_timeout_mins, is_enabled, created_at, updated_at, max_gvm_kg, max_corridor_height_mm, wide_load_width_mm FROM country_configs
 WHERE country_code = $1 AND is_enabled = true
 `
 
@@ -1941,6 +2500,41 @@ func (q *Queries) GetCountryConfig(ctx context.Context, countryCode string) (Cou
 		&i.IsEnabled,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.MaxGvmKg,
+		&i.MaxCorridorHeightMm,
+		&i.WideLoadWidthMm,
+	)
+	return i, err
+}
+
+const getCountryLogisticsLimits = `-- name: GetCountryLogisticsLimits :one
+SELECT
+    country_code,
+    default_currency,
+    max_gvm_kg,
+    max_corridor_height_mm,
+    wide_load_width_mm
+FROM country_configs
+WHERE country_code = $1
+`
+
+type GetCountryLogisticsLimitsRow struct {
+	CountryCode         string         `json:"country_code"`
+	DefaultCurrency     string         `json:"default_currency"`
+	MaxGvmKg            pgtype.Numeric `json:"max_gvm_kg"`
+	MaxCorridorHeightMm int32          `json:"max_corridor_height_mm"`
+	WideLoadWidthMm     int32          `json:"wide_load_width_mm"`
+}
+
+func (q *Queries) GetCountryLogisticsLimits(ctx context.Context, countryCode string) (GetCountryLogisticsLimitsRow, error) {
+	row := q.db.QueryRow(ctx, getCountryLogisticsLimits, countryCode)
+	var i GetCountryLogisticsLimitsRow
+	err := row.Scan(
+		&i.CountryCode,
+		&i.DefaultCurrency,
+		&i.MaxGvmKg,
+		&i.MaxCorridorHeightMm,
+		&i.WideLoadWidthMm,
 	)
 	return i, err
 }
@@ -2003,6 +2597,29 @@ func (q *Queries) GetDamageClaimDocketByID(ctx context.Context, id pgtype.UUID) 
 		&i.ArbitrationNotes,
 		&i.ArbitratedBy,
 		&i.ArbitratedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getExternalTransportByParentBookingID = `-- name: GetExternalTransportByParentBookingID :one
+SELECT id, parent_booking_id, registered_by, carrier_name, driver_full_name, driver_phone_number, prime_mover_plate_number, estimated_arrival_at, created_at, updated_at FROM external_transports
+WHERE parent_booking_id = $1
+`
+
+func (q *Queries) GetExternalTransportByParentBookingID(ctx context.Context, parentBookingID pgtype.UUID) (ExternalTransport, error) {
+	row := q.db.QueryRow(ctx, getExternalTransportByParentBookingID, parentBookingID)
+	var i ExternalTransport
+	err := row.Scan(
+		&i.ID,
+		&i.ParentBookingID,
+		&i.RegisteredBy,
+		&i.CarrierName,
+		&i.DriverFullName,
+		&i.DriverPhoneNumber,
+		&i.PrimeMoverPlateNumber,
+		&i.EstimatedArrivalAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -2127,8 +2744,109 @@ func (q *Queries) GetFleetInsuranceByFleetID(ctx context.Context, fleetID pgtype
 	return i, err
 }
 
+const getFleetLogisticsContext = `-- name: GetFleetLogisticsContext :one
+
+SELECT
+    f.id,
+    f.owner_id,
+    f.subcategory_id,
+    f.make,
+    f.model,
+    f.self_move_capable,
+    f.daily_rate_minor,
+    f.status,
+    f.country_code,
+    f.address_text,
+    ST_Y(f.location::geometry)::float8 AS latitude,
+    ST_X(f.location::geometry)::float8 AS longitude,
+    COALESCE(root_cat.code, c.code) AS root_category_code,
+    fsi.operating_weight_kg,
+    fsi.transport_length_mm,
+    fsi.transport_width_mm,
+    fsi.transport_height_mm,
+    fsi.payload_capacity_kg,
+    fsi.deck_well_length_mm,
+    fsi.deck_width_mm,
+    COALESCE(fsi.outriggers_extension_mm, 0)::numeric(10,2) AS outriggers_extension_mm,
+    fsi.deck_height_ground_mm,
+    fsi.tare_weight_kg,
+    fsi.axle_count,
+    u.full_name AS owner_full_name,
+    u.phone_number AS owner_phone_number
+FROM fleets f
+JOIN categories c ON c.id = f.subcategory_id
+LEFT JOIN categories root_cat ON root_cat.id = c.parent_id
+LEFT JOIN fleet_spec_indexed fsi ON fsi.fleet_id = f.id
+JOIN users u ON u.id = f.owner_id
+WHERE f.id = $1
+`
+
+type GetFleetLogisticsContextRow struct {
+	ID                    pgtype.UUID    `json:"id"`
+	OwnerID               pgtype.UUID    `json:"owner_id"`
+	SubcategoryID         pgtype.UUID    `json:"subcategory_id"`
+	Make                  string         `json:"make"`
+	Model                 string         `json:"model"`
+	SelfMoveCapable       bool           `json:"self_move_capable"`
+	DailyRateMinor        int64          `json:"daily_rate_minor"`
+	Status                string         `json:"status"`
+	CountryCode           string         `json:"country_code"`
+	AddressText           string         `json:"address_text"`
+	Latitude              float64        `json:"latitude"`
+	Longitude             float64        `json:"longitude"`
+	RootCategoryCode      string         `json:"root_category_code"`
+	OperatingWeightKg     pgtype.Numeric `json:"operating_weight_kg"`
+	TransportLengthMm     pgtype.Numeric `json:"transport_length_mm"`
+	TransportWidthMm      pgtype.Numeric `json:"transport_width_mm"`
+	TransportHeightMm     pgtype.Numeric `json:"transport_height_mm"`
+	PayloadCapacityKg     pgtype.Numeric `json:"payload_capacity_kg"`
+	DeckWellLengthMm      pgtype.Numeric `json:"deck_well_length_mm"`
+	DeckWidthMm           pgtype.Numeric `json:"deck_width_mm"`
+	OutriggersExtensionMm pgtype.Numeric `json:"outriggers_extension_mm"`
+	DeckHeightGroundMm    pgtype.Numeric `json:"deck_height_ground_mm"`
+	TareWeightKg          pgtype.Numeric `json:"tare_weight_kg"`
+	AxleCount             *int32         `json:"axle_count"`
+	OwnerFullName         string         `json:"owner_full_name"`
+	OwnerPhoneNumber      string         `json:"owner_phone_number"`
+}
+
+// ==================== Logistics Transport Integration, Sub-Bookings & Reverse Cascades (Partition 05-08) ====================
+func (q *Queries) GetFleetLogisticsContext(ctx context.Context, id pgtype.UUID) (GetFleetLogisticsContextRow, error) {
+	row := q.db.QueryRow(ctx, getFleetLogisticsContext, id)
+	var i GetFleetLogisticsContextRow
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.SubcategoryID,
+		&i.Make,
+		&i.Model,
+		&i.SelfMoveCapable,
+		&i.DailyRateMinor,
+		&i.Status,
+		&i.CountryCode,
+		&i.AddressText,
+		&i.Latitude,
+		&i.Longitude,
+		&i.RootCategoryCode,
+		&i.OperatingWeightKg,
+		&i.TransportLengthMm,
+		&i.TransportWidthMm,
+		&i.TransportHeightMm,
+		&i.PayloadCapacityKg,
+		&i.DeckWellLengthMm,
+		&i.DeckWidthMm,
+		&i.OutriggersExtensionMm,
+		&i.DeckHeightGroundMm,
+		&i.TareWeightKg,
+		&i.AxleCount,
+		&i.OwnerFullName,
+		&i.OwnerPhoneNumber,
+	)
+	return i, err
+}
+
 const getFleetSpecIndexed = `-- name: GetFleetSpecIndexed :one
-SELECT fleet_id, operating_weight_kg, transport_length_mm, transport_width_mm, transport_height_mm, payload_capacity_kg, gross_engine_power_hp, updated_at, specs_json FROM fleet_spec_indexed
+SELECT fleet_id, operating_weight_kg, transport_length_mm, transport_width_mm, transport_height_mm, payload_capacity_kg, gross_engine_power_hp, updated_at, specs_json, deck_well_length_mm, deck_width_mm, outriggers_extension_mm, deck_height_ground_mm, tare_weight_kg, axle_count FROM fleet_spec_indexed
 WHERE fleet_id = $1
 `
 
@@ -2145,6 +2863,12 @@ func (q *Queries) GetFleetSpecIndexed(ctx context.Context, fleetID pgtype.UUID) 
 		&i.GrossEnginePowerHp,
 		&i.UpdatedAt,
 		&i.SpecsJson,
+		&i.DeckWellLengthMm,
+		&i.DeckWidthMm,
+		&i.OutriggersExtensionMm,
+		&i.DeckHeightGroundMm,
+		&i.TareWeightKg,
+		&i.AxleCount,
 	)
 	return i, err
 }
@@ -2271,6 +2995,109 @@ func (q *Queries) GetLatestBankSlipForBooking(ctx context.Context, bookingID pgt
 	return i, err
 }
 
+const getLogisticsDispatchByParentBookingID = `-- name: GetLogisticsDispatchByParentBookingID :one
+SELECT id, sub_booking_id, parent_booking_id, logistics_fleet_id, carrier_owner_id, pickup_datetime, origin_latitude, origin_longitude, origin_depot_name, destination_latitude, destination_longitude, destination_site_name, freight_hire_fee_minor, platform_commission_bps, commission_owed_minor, abnormal_load_escort_required, escort_fee_minor, winching_photos_json, dispatched_at, loaded_at, in_transit_at, arrived_at, version, created_at, updated_at FROM logistics_dispatches
+WHERE parent_booking_id = $1
+ORDER BY created_at DESC
+LIMIT 1
+`
+
+func (q *Queries) GetLogisticsDispatchByParentBookingID(ctx context.Context, parentBookingID pgtype.UUID) (LogisticsDispatch, error) {
+	row := q.db.QueryRow(ctx, getLogisticsDispatchByParentBookingID, parentBookingID)
+	var i LogisticsDispatch
+	err := row.Scan(
+		&i.ID,
+		&i.SubBookingID,
+		&i.ParentBookingID,
+		&i.LogisticsFleetID,
+		&i.CarrierOwnerID,
+		&i.PickupDatetime,
+		&i.OriginLatitude,
+		&i.OriginLongitude,
+		&i.OriginDepotName,
+		&i.DestinationLatitude,
+		&i.DestinationLongitude,
+		&i.DestinationSiteName,
+		&i.FreightHireFeeMinor,
+		&i.PlatformCommissionBps,
+		&i.CommissionOwedMinor,
+		&i.AbnormalLoadEscortRequired,
+		&i.EscortFeeMinor,
+		&i.WinchingPhotosJson,
+		&i.DispatchedAt,
+		&i.LoadedAt,
+		&i.InTransitAt,
+		&i.ArrivedAt,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getLogisticsDispatchBySubBookingID = `-- name: GetLogisticsDispatchBySubBookingID :one
+SELECT id, sub_booking_id, parent_booking_id, logistics_fleet_id, carrier_owner_id, pickup_datetime, origin_latitude, origin_longitude, origin_depot_name, destination_latitude, destination_longitude, destination_site_name, freight_hire_fee_minor, platform_commission_bps, commission_owed_minor, abnormal_load_escort_required, escort_fee_minor, winching_photos_json, dispatched_at, loaded_at, in_transit_at, arrived_at, version, created_at, updated_at FROM logistics_dispatches
+WHERE sub_booking_id = $1
+`
+
+func (q *Queries) GetLogisticsDispatchBySubBookingID(ctx context.Context, subBookingID pgtype.UUID) (LogisticsDispatch, error) {
+	row := q.db.QueryRow(ctx, getLogisticsDispatchBySubBookingID, subBookingID)
+	var i LogisticsDispatch
+	err := row.Scan(
+		&i.ID,
+		&i.SubBookingID,
+		&i.ParentBookingID,
+		&i.LogisticsFleetID,
+		&i.CarrierOwnerID,
+		&i.PickupDatetime,
+		&i.OriginLatitude,
+		&i.OriginLongitude,
+		&i.OriginDepotName,
+		&i.DestinationLatitude,
+		&i.DestinationLongitude,
+		&i.DestinationSiteName,
+		&i.FreightHireFeeMinor,
+		&i.PlatformCommissionBps,
+		&i.CommissionOwedMinor,
+		&i.AbnormalLoadEscortRequired,
+		&i.EscortFeeMinor,
+		&i.WinchingPhotosJson,
+		&i.DispatchedAt,
+		&i.LoadedAt,
+		&i.InTransitAt,
+		&i.ArrivedAt,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getLogisticsReverseCascadeByParentBookingID = `-- name: GetLogisticsReverseCascadeByParentBookingID :one
+SELECT id, parent_booking_id, sub_booking_id, triggered_by, resolution, reason, renter_refund_due_minor, owner_penalty_levied_minor, owner_commission_restitution_minor, carrier_default_penalty_minor, carrier_rating_deduction, created_at FROM logistics_reverse_cascades
+WHERE parent_booking_id = $1
+`
+
+func (q *Queries) GetLogisticsReverseCascadeByParentBookingID(ctx context.Context, parentBookingID pgtype.UUID) (LogisticsReverseCascade, error) {
+	row := q.db.QueryRow(ctx, getLogisticsReverseCascadeByParentBookingID, parentBookingID)
+	var i LogisticsReverseCascade
+	err := row.Scan(
+		&i.ID,
+		&i.ParentBookingID,
+		&i.SubBookingID,
+		&i.TriggeredBy,
+		&i.Resolution,
+		&i.Reason,
+		&i.RenterRefundDueMinor,
+		&i.OwnerPenaltyLeviedMinor,
+		&i.OwnerCommissionRestitutionMinor,
+		&i.CarrierDefaultPenaltyMinor,
+		&i.CarrierRatingDeduction,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getMechanicalBreakdownByID = `-- name: GetMechanicalBreakdownByID :one
 SELECT id, booking_id, reported_by_id, fault_category, fault_description, diagnostic_trouble_codes, current_hour_meter, incident_photos_json, status, sla_deadline, mechanic_name, mechanic_phone, resolution_notes, resolved_at, created_at, updated_at FROM mechanical_breakdowns
 WHERE id = $1
@@ -2294,6 +3121,39 @@ func (q *Queries) GetMechanicalBreakdownByID(ctx context.Context, id pgtype.UUID
 		&i.MechanicPhone,
 		&i.ResolutionNotes,
 		&i.ResolvedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getOpenTransshipmentBySubBookingID = `-- name: GetOpenTransshipmentBySubBookingID :one
+SELECT id, sub_booking_id, parent_booking_id, reported_by, breakdown_latitude, breakdown_longitude, failure_category, failure_description, photos_json, hot_swap_sla_deadline, transshipment_bounty_minor, replacement_fleet_id, replacement_carrier_id, status, accepted_at, completed_at, created_at, updated_at FROM logistics_transshipments
+WHERE sub_booking_id = $1 AND status IN ('OPEN', 'ACCEPTED')
+ORDER BY created_at DESC
+LIMIT 1
+`
+
+func (q *Queries) GetOpenTransshipmentBySubBookingID(ctx context.Context, subBookingID pgtype.UUID) (LogisticsTransshipment, error) {
+	row := q.db.QueryRow(ctx, getOpenTransshipmentBySubBookingID, subBookingID)
+	var i LogisticsTransshipment
+	err := row.Scan(
+		&i.ID,
+		&i.SubBookingID,
+		&i.ParentBookingID,
+		&i.ReportedBy,
+		&i.BreakdownLatitude,
+		&i.BreakdownLongitude,
+		&i.FailureCategory,
+		&i.FailureDescription,
+		&i.PhotosJson,
+		&i.HotSwapSlaDeadline,
+		&i.TransshipmentBountyMinor,
+		&i.ReplacementFleetID,
+		&i.ReplacementCarrierID,
+		&i.Status,
+		&i.AcceptedAt,
+		&i.CompletedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -2956,7 +3816,7 @@ func (q *Queries) ListBookingAuditLogs(ctx context.Context, bookingID pgtype.UUI
 }
 
 const listBookingsByOwner = `-- name: ListBookingsByOwner :many
-SELECT id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor FROM bookings
+SELECT id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor, parent_booking_id, booking_kind, platform_commission_rate_bps, platform_commission_minor, abnormal_load_escort_required FROM bookings
 WHERE owner_id = $1 
   AND ($2::text = '' OR status = $2)
   AND deleted_at IS NULL
@@ -3021,6 +3881,11 @@ func (q *Queries) ListBookingsByOwner(ctx context.Context, arg ListBookingsByOwn
 			&i.AcceptedDamageMinor,
 			&i.ExcessHoursSurchargeMinor,
 			&i.FinalNetBalanceMinor,
+			&i.ParentBookingID,
+			&i.BookingKind,
+			&i.PlatformCommissionRateBps,
+			&i.PlatformCommissionMinor,
+			&i.AbnormalLoadEscortRequired,
 		); err != nil {
 			return nil, err
 		}
@@ -3033,7 +3898,7 @@ func (q *Queries) ListBookingsByOwner(ctx context.Context, arg ListBookingsByOwn
 }
 
 const listBookingsByRenter = `-- name: ListBookingsByRenter :many
-SELECT id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor FROM bookings
+SELECT id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor, parent_booking_id, booking_kind, platform_commission_rate_bps, platform_commission_minor, abnormal_load_escort_required FROM bookings
 WHERE renter_id = $1 
   AND ($2::text = '' OR status = $2)
   AND deleted_at IS NULL
@@ -3098,6 +3963,11 @@ func (q *Queries) ListBookingsByRenter(ctx context.Context, arg ListBookingsByRe
 			&i.AcceptedDamageMinor,
 			&i.ExcessHoursSurchargeMinor,
 			&i.FinalNetBalanceMinor,
+			&i.ParentBookingID,
+			&i.BookingKind,
+			&i.PlatformCommissionRateBps,
+			&i.PlatformCommissionMinor,
+			&i.AbnormalLoadEscortRequired,
 		); err != nil {
 			return nil, err
 		}
@@ -3176,6 +4046,79 @@ func (q *Queries) ListBundledAttachmentsByFleet(ctx context.Context, fleetID pgt
 	return items, nil
 }
 
+const listChildSubBookingsByParentID = `-- name: ListChildSubBookingsByParentID :many
+SELECT id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor, parent_booking_id, booking_kind, platform_commission_rate_bps, platform_commission_minor, abnormal_load_escort_required FROM bookings
+WHERE parent_booking_id = $1 AND deleted_at IS NULL
+ORDER BY created_at DESC
+`
+
+func (q *Queries) ListChildSubBookingsByParentID(ctx context.Context, parentBookingID pgtype.UUID) ([]Booking, error) {
+	rows, err := q.db.Query(ctx, listChildSubBookingsByParentID, parentBookingID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Booking{}
+	for rows.Next() {
+		var i Booking
+		if err := rows.Scan(
+			&i.ID,
+			&i.BookingReference,
+			&i.RenterID,
+			&i.OwnerID,
+			&i.FleetID,
+			&i.StartDate,
+			&i.EndDate,
+			&i.HirePeriod,
+			&i.DurationDays,
+			&i.DailyRateAppliedMinor,
+			&i.BaseHireFeeMinor,
+			&i.AttachmentsFeeMinor,
+			&i.GrossRentalAmountMinor,
+			&i.PrepaymentAmountMinor,
+			&i.Currency,
+			&i.SiteLocationAddress,
+			&i.Status,
+			&i.RejectionReasonCode,
+			&i.RejectionNotes,
+			&i.CancellationReason,
+			&i.CancelledBy,
+			&i.PenaltyAmountMinor,
+			&i.RefundAmountMinor,
+			&i.ExpiresAt,
+			&i.ConfirmedAt,
+			&i.ActivatedAt,
+			&i.CompletedAt,
+			&i.CancelledAt,
+			&i.HandoverPin,
+			&i.CheckInMeterHours,
+			&i.CheckOutMeterHours,
+			&i.Version,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.AssignedOperatorID,
+			&i.DamageClaimSubmitted,
+			&i.DamageClaimWaived,
+			&i.AcceptedDamageMinor,
+			&i.ExcessHoursSurchargeMinor,
+			&i.FinalNetBalanceMinor,
+			&i.ParentBookingID,
+			&i.BookingKind,
+			&i.PlatformCommissionRateBps,
+			&i.PlatformCommissionMinor,
+			&i.AbnormalLoadEscortRequired,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listDamageClaimDocketsByBookingID = `-- name: ListDamageClaimDocketsByBookingID :many
 SELECT id, booking_id, claimant_id, component_category, incident_narrative, repair_quote_uri, claimed_amount_minor, accepted_amount_minor, currency, damage_photos_json, status, dispute_reason, contractor_responded_at, arbitration_notes, arbitrated_by, arbitrated_at, created_at, updated_at FROM damage_claim_dockets
 WHERE booking_id = $1
@@ -3222,7 +4165,7 @@ func (q *Queries) ListDamageClaimDocketsByBookingID(ctx context.Context, booking
 }
 
 const listEnabledCountryConfigs = `-- name: ListEnabledCountryConfigs :many
-SELECT country_code, country_name, dialing_prefix, default_currency, currency_minor_unit_exponent, default_timezone, tax_label, standard_tax_rate_bps, withholding_tax_bps, min_age_default, payment_hold_timeout_mins, is_enabled, created_at, updated_at FROM country_configs
+SELECT country_code, country_name, dialing_prefix, default_currency, currency_minor_unit_exponent, default_timezone, tax_label, standard_tax_rate_bps, withholding_tax_bps, min_age_default, payment_hold_timeout_mins, is_enabled, created_at, updated_at, max_gvm_kg, max_corridor_height_mm, wide_load_width_mm FROM country_configs
 WHERE is_enabled = true
 ORDER BY country_code ASC
 `
@@ -3251,6 +4194,9 @@ func (q *Queries) ListEnabledCountryConfigs(ctx context.Context) ([]CountryConfi
 			&i.IsEnabled,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.MaxGvmKg,
+			&i.MaxCorridorHeightMm,
+			&i.WideLoadWidthMm,
 		); err != nil {
 			return nil, err
 		}
@@ -3882,6 +4828,136 @@ func (q *Queries) ListUserLegalAgreements(ctx context.Context, userID pgtype.UUI
 	return items, nil
 }
 
+const matchCompatibleLogisticsFleets = `-- name: MatchCompatibleLogisticsFleets :many
+SELECT
+    f.id AS fleet_id,
+    f.owner_id,
+    f.make,
+    f.model,
+    u.full_name AS owner_trading_name,
+    u.phone_number AS owner_phone_number,
+    f.daily_rate_minor,
+    ST_Y(f.location::geometry)::float8 AS latitude,
+    ST_X(f.location::geometry)::float8 AS longitude,
+    ST_Distance(f.location, ST_SetSRID(ST_MakePoint($1::float8, $2::float8), 4326)::geography)::float8 AS distance_from_depot_meters,
+    COALESCE(oa.average_rating, 5.00) AS average_rating,
+    COALESCE(fsi.payload_capacity_kg, 0)::numeric(10,2) AS payload_capacity_kg,
+    COALESCE(fsi.deck_well_length_mm, fsi.transport_length_mm, 0)::numeric(10,2) AS deck_well_length_mm,
+    COALESCE(fsi.deck_width_mm, fsi.transport_width_mm, 0)::numeric(10,2) AS deck_width_mm,
+    COALESCE(fsi.outriggers_extension_mm, 0)::numeric(10,2) AS outriggers_extension_mm,
+    COALESCE(fsi.deck_height_ground_mm, 900)::numeric(10,2) AS deck_height_ground_mm,
+    COALESCE(fsi.tare_weight_kg, 0)::numeric(10,2) AS tare_weight_kg,
+    COALESCE(fsi.axle_count, 3)::int AS axle_count
+FROM fleets f
+JOIN categories c ON c.id = f.subcategory_id
+JOIN categories root_cat ON root_cat.id = c.parent_id
+JOIN users u ON u.id = f.owner_id
+LEFT JOIN owner_aggregates oa ON oa.owner_id = f.owner_id
+LEFT JOIN fleet_spec_indexed fsi ON fsi.fleet_id = f.id
+WHERE root_cat.code = 'LOGISTICS'
+  AND f.status = 'ACTIVE'
+  AND f.country_code = $3::varchar
+  AND f.owner_id != $4::uuid
+  AND ST_DWithin(f.location, ST_SetSRID(ST_MakePoint($1::float8, $2::float8), 4326)::geography, $5::float8)
+  AND COALESCE(fsi.payload_capacity_kg, 0) >= $6::numeric
+  AND COALESCE(fsi.deck_well_length_mm, fsi.transport_length_mm, 0) >= $7::numeric
+  AND (COALESCE(fsi.deck_width_mm, fsi.transport_width_mm, 0) + COALESCE(fsi.outriggers_extension_mm, 0)) >= $8::numeric
+  AND (COALESCE(fsi.deck_height_ground_mm, 900) + $9::numeric) <= $10::numeric
+  AND ($11::numeric + COALESCE(fsi.tare_weight_kg, 0)) <= $12::numeric
+ORDER BY distance_from_depot_meters ASC, f.daily_rate_minor ASC
+LIMIT $13::int
+`
+
+type MatchCompatibleLogisticsFleetsParams struct {
+	Longitude           float64        `json:"longitude"`
+	Latitude            float64        `json:"latitude"`
+	CountryCode         string         `json:"country_code"`
+	ExcludeOwnerID      pgtype.UUID    `json:"exclude_owner_id"`
+	RadiusMeters        float64        `json:"radius_meters"`
+	MinPayloadKg        pgtype.Numeric `json:"min_payload_kg"`
+	RequiredLengthMm    pgtype.Numeric `json:"required_length_mm"`
+	RequiredWidthMm     pgtype.Numeric `json:"required_width_mm"`
+	MachineHeightMm     pgtype.Numeric `json:"machine_height_mm"`
+	MaxCorridorHeightMm pgtype.Numeric `json:"max_corridor_height_mm"`
+	MachineWeightKg     pgtype.Numeric `json:"machine_weight_kg"`
+	MaxGvmKg            pgtype.Numeric `json:"max_gvm_kg"`
+	QueryLimit          int32          `json:"query_limit"`
+}
+
+type MatchCompatibleLogisticsFleetsRow struct {
+	FleetID                 pgtype.UUID    `json:"fleet_id"`
+	OwnerID                 pgtype.UUID    `json:"owner_id"`
+	Make                    string         `json:"make"`
+	Model                   string         `json:"model"`
+	OwnerTradingName        string         `json:"owner_trading_name"`
+	OwnerPhoneNumber        string         `json:"owner_phone_number"`
+	DailyRateMinor          int64          `json:"daily_rate_minor"`
+	Latitude                float64        `json:"latitude"`
+	Longitude               float64        `json:"longitude"`
+	DistanceFromDepotMeters float64        `json:"distance_from_depot_meters"`
+	AverageRating           pgtype.Numeric `json:"average_rating"`
+	PayloadCapacityKg       pgtype.Numeric `json:"payload_capacity_kg"`
+	DeckWellLengthMm        pgtype.Numeric `json:"deck_well_length_mm"`
+	DeckWidthMm             pgtype.Numeric `json:"deck_width_mm"`
+	OutriggersExtensionMm   pgtype.Numeric `json:"outriggers_extension_mm"`
+	DeckHeightGroundMm      pgtype.Numeric `json:"deck_height_ground_mm"`
+	TareWeightKg            pgtype.Numeric `json:"tare_weight_kg"`
+	AxleCount               int32          `json:"axle_count"`
+}
+
+func (q *Queries) MatchCompatibleLogisticsFleets(ctx context.Context, arg MatchCompatibleLogisticsFleetsParams) ([]MatchCompatibleLogisticsFleetsRow, error) {
+	rows, err := q.db.Query(ctx, matchCompatibleLogisticsFleets,
+		arg.Longitude,
+		arg.Latitude,
+		arg.CountryCode,
+		arg.ExcludeOwnerID,
+		arg.RadiusMeters,
+		arg.MinPayloadKg,
+		arg.RequiredLengthMm,
+		arg.RequiredWidthMm,
+		arg.MachineHeightMm,
+		arg.MaxCorridorHeightMm,
+		arg.MachineWeightKg,
+		arg.MaxGvmKg,
+		arg.QueryLimit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []MatchCompatibleLogisticsFleetsRow{}
+	for rows.Next() {
+		var i MatchCompatibleLogisticsFleetsRow
+		if err := rows.Scan(
+			&i.FleetID,
+			&i.OwnerID,
+			&i.Make,
+			&i.Model,
+			&i.OwnerTradingName,
+			&i.OwnerPhoneNumber,
+			&i.DailyRateMinor,
+			&i.Latitude,
+			&i.Longitude,
+			&i.DistanceFromDepotMeters,
+			&i.AverageRating,
+			&i.PayloadCapacityKg,
+			&i.DeckWellLengthMm,
+			&i.DeckWidthMm,
+			&i.OutriggersExtensionMm,
+			&i.DeckHeightGroundMm,
+			&i.TareWeightKg,
+			&i.AxleCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const publishBookingReviews = `-- name: PublishBookingReviews :exec
 UPDATE booking_reviews
 SET is_published = true,
@@ -3934,6 +5010,16 @@ func (q *Queries) RecordUserLegalAgreement(ctx context.Context, arg RecordUserLe
 		&i.ClientUserAgent,
 	)
 	return i, err
+}
+
+const releaseFleetAvailabilityByReference = `-- name: ReleaseFleetAvailabilityByReference :exec
+DELETE FROM fleet_availability
+WHERE reference_id = $1
+`
+
+func (q *Queries) ReleaseFleetAvailabilityByReference(ctx context.Context, referenceID pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, releaseFleetAvailabilityByReference, referenceID)
+	return err
 }
 
 const removeRoleFromUser = `-- name: RemoveRoleFromUser :exec
@@ -4328,7 +5414,7 @@ SET status = $2,
     version = version + 1,
     updated_at = NOW()
 WHERE id = $1 AND version = $9 AND deleted_at IS NULL
-RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor
+RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor, parent_booking_id, booking_kind, platform_commission_rate_bps, platform_commission_minor, abnormal_load_escort_required
 `
 
 type UpdateBookingCompletionSummaryParams struct {
@@ -4398,6 +5484,11 @@ func (q *Queries) UpdateBookingCompletionSummary(ctx context.Context, arg Update
 		&i.AcceptedDamageMinor,
 		&i.ExcessHoursSurchargeMinor,
 		&i.FinalNetBalanceMinor,
+		&i.ParentBookingID,
+		&i.BookingKind,
+		&i.PlatformCommissionRateBps,
+		&i.PlatformCommissionMinor,
+		&i.AbnormalLoadEscortRequired,
 	)
 	return i, err
 }
@@ -4410,7 +5501,7 @@ SET status = 'ACTIVE',
     version = version + 1,
     updated_at = NOW()
 WHERE id = $1 AND version = $3 AND deleted_at IS NULL
-RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor
+RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor, parent_booking_id, booking_kind, platform_commission_rate_bps, platform_commission_minor, abnormal_load_escort_required
 `
 
 type UpdateBookingHandoverParams struct {
@@ -4464,6 +5555,11 @@ func (q *Queries) UpdateBookingHandover(ctx context.Context, arg UpdateBookingHa
 		&i.AcceptedDamageMinor,
 		&i.ExcessHoursSurchargeMinor,
 		&i.FinalNetBalanceMinor,
+		&i.ParentBookingID,
+		&i.BookingKind,
+		&i.PlatformCommissionRateBps,
+		&i.PlatformCommissionMinor,
+		&i.AbnormalLoadEscortRequired,
 	)
 	return i, err
 }
@@ -4476,7 +5572,7 @@ SET status = $2,
     version = version + 1,
     updated_at = NOW()
 WHERE id = $1 AND version = $4 AND deleted_at IS NULL
-RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor
+RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor, parent_booking_id, booking_kind, platform_commission_rate_bps, platform_commission_minor, abnormal_load_escort_required
 `
 
 type UpdateBookingReturnParams struct {
@@ -4536,6 +5632,11 @@ func (q *Queries) UpdateBookingReturn(ctx context.Context, arg UpdateBookingRetu
 		&i.AcceptedDamageMinor,
 		&i.ExcessHoursSurchargeMinor,
 		&i.FinalNetBalanceMinor,
+		&i.ParentBookingID,
+		&i.BookingKind,
+		&i.PlatformCommissionRateBps,
+		&i.PlatformCommissionMinor,
+		&i.AbnormalLoadEscortRequired,
 	)
 	return i, err
 }
@@ -4553,11 +5654,11 @@ SET status = $2,
     confirmed_at = CASE WHEN $2::varchar = 'CONFIRMED' THEN NOW() ELSE confirmed_at END,
     activated_at = CASE WHEN $2::varchar = 'ACTIVE' THEN NOW() ELSE activated_at END,
     completed_at = CASE WHEN $2::varchar = 'COMPLETED' THEN NOW() ELSE completed_at END,
-    cancelled_at = CASE WHEN $2::varchar = 'CANCELLED' THEN NOW() ELSE cancelled_at END,
+    cancelled_at = CASE WHEN $2::varchar IN ('CANCELLED', 'CANCELLED_CARRIER_DEFAULT') THEN NOW() ELSE cancelled_at END,
     expires_at = COALESCE($9, expires_at),
     updated_at = NOW()
 WHERE id = $1 AND version = $10 AND deleted_at IS NULL
-RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor
+RETURNING id, booking_reference, renter_id, owner_id, fleet_id, start_date, end_date, hire_period, duration_days, daily_rate_applied_minor, base_hire_fee_minor, attachments_fee_minor, gross_rental_amount_minor, prepayment_amount_minor, currency, site_location_address, status, rejection_reason_code, rejection_notes, cancellation_reason, cancelled_by, penalty_amount_minor, refund_amount_minor, expires_at, confirmed_at, activated_at, completed_at, cancelled_at, handover_pin, check_in_meter_hours, check_out_meter_hours, version, created_at, updated_at, deleted_at, assigned_operator_id, damage_claim_submitted, damage_claim_waived, accepted_damage_minor, excess_hours_surcharge_minor, final_net_balance_minor, parent_booking_id, booking_kind, platform_commission_rate_bps, platform_commission_minor, abnormal_load_escort_required
 `
 
 type UpdateBookingStatusOCCParams struct {
@@ -4629,6 +5730,11 @@ func (q *Queries) UpdateBookingStatusOCC(ctx context.Context, arg UpdateBookingS
 		&i.AcceptedDamageMinor,
 		&i.ExcessHoursSurchargeMinor,
 		&i.FinalNetBalanceMinor,
+		&i.ParentBookingID,
+		&i.BookingKind,
+		&i.PlatformCommissionRateBps,
+		&i.PlatformCommissionMinor,
+		&i.AbnormalLoadEscortRequired,
 	)
 	return i, err
 }
@@ -4674,6 +5780,104 @@ func (q *Queries) UpdateFleetStatus(ctx context.Context, arg UpdateFleetStatusPa
 		&i.UpdatedAt,
 		&i.CountryCode,
 		&i.SearchVector,
+	)
+	return i, err
+}
+
+const updateLogisticsDispatchLoading = `-- name: UpdateLogisticsDispatchLoading :one
+UPDATE logistics_dispatches
+SET winching_photos_json = $2,
+    loaded_at = NOW(),
+    version = version + 1,
+    updated_at = NOW()
+WHERE sub_booking_id = $1
+RETURNING id, sub_booking_id, parent_booking_id, logistics_fleet_id, carrier_owner_id, pickup_datetime, origin_latitude, origin_longitude, origin_depot_name, destination_latitude, destination_longitude, destination_site_name, freight_hire_fee_minor, platform_commission_bps, commission_owed_minor, abnormal_load_escort_required, escort_fee_minor, winching_photos_json, dispatched_at, loaded_at, in_transit_at, arrived_at, version, created_at, updated_at
+`
+
+type UpdateLogisticsDispatchLoadingParams struct {
+	SubBookingID       pgtype.UUID `json:"sub_booking_id"`
+	WinchingPhotosJson []byte      `json:"winching_photos_json"`
+}
+
+func (q *Queries) UpdateLogisticsDispatchLoading(ctx context.Context, arg UpdateLogisticsDispatchLoadingParams) (LogisticsDispatch, error) {
+	row := q.db.QueryRow(ctx, updateLogisticsDispatchLoading, arg.SubBookingID, arg.WinchingPhotosJson)
+	var i LogisticsDispatch
+	err := row.Scan(
+		&i.ID,
+		&i.SubBookingID,
+		&i.ParentBookingID,
+		&i.LogisticsFleetID,
+		&i.CarrierOwnerID,
+		&i.PickupDatetime,
+		&i.OriginLatitude,
+		&i.OriginLongitude,
+		&i.OriginDepotName,
+		&i.DestinationLatitude,
+		&i.DestinationLongitude,
+		&i.DestinationSiteName,
+		&i.FreightHireFeeMinor,
+		&i.PlatformCommissionBps,
+		&i.CommissionOwedMinor,
+		&i.AbnormalLoadEscortRequired,
+		&i.EscortFeeMinor,
+		&i.WinchingPhotosJson,
+		&i.DispatchedAt,
+		&i.LoadedAt,
+		&i.InTransitAt,
+		&i.ArrivedAt,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateLogisticsDispatchMilestone = `-- name: UpdateLogisticsDispatchMilestone :one
+UPDATE logistics_dispatches
+SET dispatched_at = CASE WHEN $2::varchar = 'DISPATCHED' THEN NOW() ELSE dispatched_at END,
+    loaded_at = CASE WHEN $2::varchar = 'LOADING_INSPECTION' THEN NOW() ELSE loaded_at END,
+    in_transit_at = CASE WHEN $2::varchar = 'IN_TRANSIT' THEN NOW() ELSE in_transit_at END,
+    arrived_at = CASE WHEN $2::varchar = 'READY_FOR_PICKUP' THEN NOW() ELSE arrived_at END,
+    version = version + 1,
+    updated_at = NOW()
+WHERE sub_booking_id = $1
+RETURNING id, sub_booking_id, parent_booking_id, logistics_fleet_id, carrier_owner_id, pickup_datetime, origin_latitude, origin_longitude, origin_depot_name, destination_latitude, destination_longitude, destination_site_name, freight_hire_fee_minor, platform_commission_bps, commission_owed_minor, abnormal_load_escort_required, escort_fee_minor, winching_photos_json, dispatched_at, loaded_at, in_transit_at, arrived_at, version, created_at, updated_at
+`
+
+type UpdateLogisticsDispatchMilestoneParams struct {
+	SubBookingID pgtype.UUID `json:"sub_booking_id"`
+	Column2      string      `json:"column_2"`
+}
+
+func (q *Queries) UpdateLogisticsDispatchMilestone(ctx context.Context, arg UpdateLogisticsDispatchMilestoneParams) (LogisticsDispatch, error) {
+	row := q.db.QueryRow(ctx, updateLogisticsDispatchMilestone, arg.SubBookingID, arg.Column2)
+	var i LogisticsDispatch
+	err := row.Scan(
+		&i.ID,
+		&i.SubBookingID,
+		&i.ParentBookingID,
+		&i.LogisticsFleetID,
+		&i.CarrierOwnerID,
+		&i.PickupDatetime,
+		&i.OriginLatitude,
+		&i.OriginLongitude,
+		&i.OriginDepotName,
+		&i.DestinationLatitude,
+		&i.DestinationLongitude,
+		&i.DestinationSiteName,
+		&i.FreightHireFeeMinor,
+		&i.PlatformCommissionBps,
+		&i.CommissionOwedMinor,
+		&i.AbnormalLoadEscortRequired,
+		&i.EscortFeeMinor,
+		&i.WinchingPhotosJson,
+		&i.DispatchedAt,
+		&i.LoadedAt,
+		&i.InTransitAt,
+		&i.ArrivedAt,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -4953,6 +6157,64 @@ func (q *Queries) UpdateUserPreferredLanguage(ctx context.Context, arg UpdateUse
 	return i, err
 }
 
+const upsertExternalTransport = `-- name: UpsertExternalTransport :one
+INSERT INTO external_transports (
+    parent_booking_id,
+    registered_by,
+    carrier_name,
+    driver_full_name,
+    driver_phone_number,
+    prime_mover_plate_number,
+    estimated_arrival_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7
+) ON CONFLICT (parent_booking_id) DO UPDATE SET
+    registered_by = EXCLUDED.registered_by,
+    carrier_name = EXCLUDED.carrier_name,
+    driver_full_name = EXCLUDED.driver_full_name,
+    driver_phone_number = EXCLUDED.driver_phone_number,
+    prime_mover_plate_number = EXCLUDED.prime_mover_plate_number,
+    estimated_arrival_at = EXCLUDED.estimated_arrival_at,
+    updated_at = NOW()
+RETURNING id, parent_booking_id, registered_by, carrier_name, driver_full_name, driver_phone_number, prime_mover_plate_number, estimated_arrival_at, created_at, updated_at
+`
+
+type UpsertExternalTransportParams struct {
+	ParentBookingID       pgtype.UUID        `json:"parent_booking_id"`
+	RegisteredBy          pgtype.UUID        `json:"registered_by"`
+	CarrierName           string             `json:"carrier_name"`
+	DriverFullName        string             `json:"driver_full_name"`
+	DriverPhoneNumber     string             `json:"driver_phone_number"`
+	PrimeMoverPlateNumber string             `json:"prime_mover_plate_number"`
+	EstimatedArrivalAt    pgtype.Timestamptz `json:"estimated_arrival_at"`
+}
+
+func (q *Queries) UpsertExternalTransport(ctx context.Context, arg UpsertExternalTransportParams) (ExternalTransport, error) {
+	row := q.db.QueryRow(ctx, upsertExternalTransport,
+		arg.ParentBookingID,
+		arg.RegisteredBy,
+		arg.CarrierName,
+		arg.DriverFullName,
+		arg.DriverPhoneNumber,
+		arg.PrimeMoverPlateNumber,
+		arg.EstimatedArrivalAt,
+	)
+	var i ExternalTransport
+	err := row.Scan(
+		&i.ID,
+		&i.ParentBookingID,
+		&i.RegisteredBy,
+		&i.CarrierName,
+		&i.DriverFullName,
+		&i.DriverPhoneNumber,
+		&i.PrimeMoverPlateNumber,
+		&i.EstimatedArrivalAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const upsertFleetBundledAttachment = `-- name: UpsertFleetBundledAttachment :one
 INSERT INTO fleet_bundled_attachments (
     fleet_id,
@@ -5066,7 +6328,7 @@ INSERT INTO fleet_spec_indexed (
     payload_capacity_kg = EXCLUDED.payload_capacity_kg,
     gross_engine_power_hp = EXCLUDED.gross_engine_power_hp,
     updated_at = NOW()
-RETURNING fleet_id, operating_weight_kg, transport_length_mm, transport_width_mm, transport_height_mm, payload_capacity_kg, gross_engine_power_hp, updated_at, specs_json
+RETURNING fleet_id, operating_weight_kg, transport_length_mm, transport_width_mm, transport_height_mm, payload_capacity_kg, gross_engine_power_hp, updated_at, specs_json, deck_well_length_mm, deck_width_mm, outriggers_extension_mm, deck_height_ground_mm, tare_weight_kg, axle_count
 `
 
 type UpsertFleetSpecIndexedParams struct {
@@ -5100,6 +6362,12 @@ func (q *Queries) UpsertFleetSpecIndexed(ctx context.Context, arg UpsertFleetSpe
 		&i.GrossEnginePowerHp,
 		&i.UpdatedAt,
 		&i.SpecsJson,
+		&i.DeckWellLengthMm,
+		&i.DeckWidthMm,
+		&i.OutriggersExtensionMm,
+		&i.DeckHeightGroundMm,
+		&i.TareWeightKg,
+		&i.AxleCount,
 	)
 	return i, err
 }

@@ -1,13 +1,43 @@
 # CONTEXT.md — Dink Machinery Active Session State
 
 **Project Phase:** Phase 2 (Partition Feature Development)  
-**Active Requirement Partition:** `05-08-logistics-transport-integration` (Ready for Kickoff)  
-**Active Branch:** `main`  
-**Current Stop Point:** Partitions 05-01 through 05-07 are completed and merged to `main`. All applications (`Backend`, `Admin`, `Mobile`) were verified live with 100% test pass rates and live interactive HTTP probes. Ready for Partition 05-08 kickoff.
+**Active Requirement Partition:** `05-08-logistics-transport-integration` (Implemented & Verified; Ready for Rebase-Merge to `main`)  
+**Active Branch:** `feature/05-08-logistics-transport-integration`  
+**Current Stop Point:** Partition `05-08-logistics-transport-integration` is fully implemented across `DB`, `OAS`, `BE`, Stitch MCP UI, and `MOB`, with 100% automated tests and live PostgreSQL + HTTP probe verification passing. Ready for commit and rebase-merge to `main`, then Partition `05-09`.
 
 ---
 
 ## 1. Current Progress Snapshot
+
+### Completed (Partition 05-08: Logistics Transport Integration, Sub-Bookings & Reverse Cascades)
+- **Database Schema & Migrations (`migrations/`):**
+  - Created `migrations/000010_create_logistics_transport_tables.up.sql` and `.down.sql` (two-way rollback drill `10/u -> 10/d -> 10/u` passed cleanly):
+    - Extended `bookings.status` constraint with logistics sub-machine states (`DISPATCHED`, `LOADING_INSPECTION`, `IN_TRANSIT`, `TRANSSHIPMENT_REQUIRED`, `CANCELLED_CARRIER_DEFAULT`).
+    - Added parent-child hierarchy and freight commission columns to `bookings` (`parent_booking_id`, `booking_kind`, `platform_commission_rate_bps`, `platform_commission_minor`, `abnormal_load_escort_required`, plus `idx_bookings_parent_hierarchy`).
+    - Extended `fleet_spec_indexed` (`deck_well_length_mm`, `deck_width_mm`, `outriggers_extension_mm`, `deck_height_ground_mm`, `tare_weight_kg`, `axle_count`) and `country_configs` (`max_gvm_kg = 56000.00`, `max_corridor_height_mm = 4500`, `wide_load_width_mm = 3000`).
+    - Created `logistics_dispatches`, `external_transports`, `logistics_transshipments`, and `logistics_reverse_cascades` tables with dynamic RBAC permissions (`logistics:match`, `logistics:sub_booking`, `logistics:external_transport`, `logistics:dispatch`, `logistics:transshipment`, `logistics:reverse_cascade`).
+  - Added 22 queries to `backend/internal/platform/database/queries.sql` and compiled cleanly via `sqlc generate`.
+  - Created idempotent SQL fixture `scripts/fixtures/05_08_logistics_fixtures.sql` with static UUIDs (`88888888-8888-...`) for multi-machine parity.
+- **OpenAPI 3.1.0 Canonical Contracts & Type Generation (`contracts/`):**
+  - Created `contracts/components/schemas/logistics.yaml` and 8 endpoint contracts in `contracts/endpoints/logistics/` (`GET /bookings/{id}/logistics`, `POST .../match`, `sub-booking`, `external-transport`, `dispatch`, `transshipment-alert`, `transshipment-accept`, `reverse-cascade`).
+  - Updated `BookingStatus` in `contracts/components/schemas/booking.yaml` and registered paths/schemas in `contracts/openapi.yaml`.
+  - Bundled via Redocly (`contracts/openapi.bundled.yaml`), synced to `backend/internal/transport/http/openapi.bundled.yaml`, generated TypeScript DTOs (`admin/src/types/api.generated.ts`) and pure Go DTOs (`backend/internal/transport/http/generated/api.gen.go`).
+  - Validated via Spectral CLI: **0 errors**.
+- **Go Backend Core & Pure HTTP Handlers (`backend/`):**
+  - Updated `booking/domain/` (`booking_status.go`, `booking.go`, `fsm.go`) and `booking/infrastructure/booking_postgres_repository.go` for parent-child sub-bookings and logistics FSM transitions.
+  - Added `LogisticsDeliveryChecker` guard in `rental/application/rental_service.go` (`D-05-08-001`: blocks parent machinery `ACTIVE` transition while linked transport sub-booking is still in transit).
+  - Created granular single-concept `logistics` module (`backend/internal/modules/logistics/`):
+    - `domain/`: `errors.go`, `geo_point.go`, `machine_logistics_specs.go`, `matched_carrier.go`, `winching_photo.go`, `logistics_dispatch.go`, `external_transport.go`, `logistics_transshipment.go`, `logistics_reverse_cascade.go`, `dimensional_matching.go` + `_test.go` (1.10x lashing margin, 4500mm corridor clearance, 56t EAC GVM cap, >3000mm abnormal load flag), `winching_photo_validation.go` + `_test.go` (4 mandatory angles), `freight_commission_calculation.go` + `_test.go` (2.5% / 250 bps freight discount, +20% transshipment bounty, Force Majeure accounting), `logistics_repository.go`.
+    - `infrastructure/`: `logistics_postgres_repository.go` and `logistics_memory_repository.go`.
+    - `application/`: `logistics_service.go` and `logistics_coordination_test.go` (`TestLogistics_ParentBookingBlockedUntilTransportDelivery`, external transport, roadside transshipment + Force Majeure reverse cascade).
+  - Created 8 single-concept HTTP handlers + `logistics_error_helper.go` in `backend/internal/transport/http/`, registered in `server.go`, wired in `cmd/api/main.go`, and verified in `logistics_test.go`.
+  - Verified live via HTTP requests against Go API connected to PostgreSQL `dink_machinery_dev`: `401`, `200 /match`, `201 /sub-booking` (250 bps / 90,000 minor), `422` incomplete winching, `200 /dispatch` (`DISPATCHED -> LOADING_INSPECTION -> IN_TRANSIT`), `200 /transshipment-alert`, `200 GET /logistics`, `200 /reverse-cascade` (100% refund, 0 owner penalty, commission restitution, -0.50 carrier rating), and `200 /external-transport`.
+- **Stitch MCP UI Designs & Flutter Mobile Client (`mobile/lib/features/logistics/`):**
+  - Generated 3 Stitch MCP mobile screens (Project `4986996958139491587`, Design System `assets/20311415fb4d477397b9bd2e521b4d2c`):
+    - `a1a59f3facb44bf68af74110c96cf6ad`: *Lowboy Transport Matching & Mobilization*
+    - `eecebbb3fa5e4ebb86c20e2dc0345a7f`: *Carrier Dispatch Workbench & Winching Reticle*
+    - `dbce060de5044149a446fdcbabd0dc28`: *Roadside Transshipment Alert & Force Majeure Cascade*
+  - Implemented Clean Architecture layers (`domain/`, `data/`, `presentation/bloc/`, `presentation/views/`), registered in `injection.dart`, added EN/AM keys (`app_en.arb`, `app_am.arb`), and verified 92/92 Flutter tests passing (`logistics_bloc_test.dart`, `logistics_widgets_test.dart`).
 
 ### Completed (Partition 05-07: Flutter Mobile Subsystem & Stitch MCP UI)
 - **Stitch MCP UI Designs (Project `4986996958139491587`):**
@@ -346,56 +376,15 @@
 
 ---
 
-## 2. Next Immediate Tasks (Partition 05-07: Rental Completion, Return Inspection, Damage & Penalty Adjudication Architecture)
-
-### Mandatory Pre-Commit Quality Requirements
-Per `AGENTS.md § 1` and `docs/quality/MANUAL_TESTING_PROTOCOL.md`, all partition tasks require:
-1. **Automated Unit Tests:** 100% pass on pure domain invariants ($\ge 80\%$ line coverage overall; $\ge 95\%$ on financial/auth).
-2. **Automated Integration Tests:** 100% pass on repository transactions and HTTP transport handlers.
-3. **Mandatory Live Manual Testing:** Every new endpoint, migration, and UI widget must be manually verified live before commit, with execution proof recorded under `Manual-Tests:` in the commit body.
-4. **UI Design-First with Stitch MCP:** Every mobile screen/modal and admin dashboard must be designed using Stitch MCP just-in-time at the start of active requirement development (strictly adhering to design standards and maintaining flow continuity from preceding screens in the user journey), using generated Stitch designs as the direct implementation target.
-5. **Strict Granular File Separation ("Single Concept Per File"):** Zero shared or catch-all files (`entity.go`, `models.go`, `invariants.go`, `repository.go`, multi-handlers). Every single entity, value object, invariant, repository interface/impl, use case, route handler, widget, and test must be isolated in its own specifically named file.
-6. **Strict Layer & Type Segregation ("No Type/Layer Mix-Ups"):** Absolute isolation across Domain Entities (zero serialization/DB tags), DTOs (`transport/http/dto/`, `data/models/`), DB Models (`infrastructure/persistence/models/`), Repository Interfaces (domain ports accepting/returning entities only), and Repository Implementations (explicit bidirectional mapping). Data sources must never touch domain entities.
-7. **Multi-Machine Test Data Parity (Idempotent SQL Fixtures):** All manual test seed data, mock entities, and manual DB inserts must be committed in idempotent SQL scripts under `scripts/fixtures/` using deterministic static UUIDs, allowing instant synchronization at session start across Windows (office) and macOS (home).
-
-### Implementation Tasks
-
-1. **Database Schema & Migrations (`migrations/`):**
-   - Create `migrations/000009_create_rental_completion_tables.up.sql` and `.down.sql`:
-     - `return_inspections`: Off-hire return inspection with 5 mandatory return photo angles, final engine hour meter, site GPS location, signed off-hire acceptance.
-     - `damage_assessments`: Physical damage incident records, itemized repair cost estimation, severity tiering, photo evidence.
-     - `rental_settlements`: Final financial settlement ledger calculations (excess shift hours overtime surcharge, fuel deficit charges, security deposit release/deduction, owner payout balance).
-     - Dynamic RBAC permissions for rental return and damage adjudication (`rentals:return_inspect`, `rentals:damage_claim`, `rentals:settle`).
-   - Generate `sqlc` queries in `backend/internal/platform/database/db/`.
-2. **OpenAPI 3.1.0 Canonical Contracts:**
-   - Define contracts in `contracts/`:
-     - `POST /api/v1/bookings/{id}:return-inspect`
-     - `POST /api/v1/bookings/{id}:damage-claim`
-     - `POST /api/v1/bookings/{id}:dispute-damage`
-     - `POST /api/v1/bookings/{id}:settle`
-     - `GET /api/v1/bookings/{id}/settlement-summary`
-   - Bundle OpenAPI specs and generate TypeScript DTOs & Go types.
-3. **Backend Domain & Application Core (`backend/internal/modules/settlement/` or `rental/`):**
-   - Invariant validators: Final meter monotonic validation ($\ge$ check-in meter), overtime excess hour calculation ($> 8.0\text{ hrs/day}$ quota), deposit forfeiture calculation, settlement ledger balance.
-   - Comprehensive unit and integration test coverage.
-4. **Flutter Mobile Client:**
-   - Return inspection checklist with photo capture reticles.
-   - Damage reporting and dispute submission view.
-   - Final settlement ledger card and escrow release acknowledgment.
-   - 100% test coverage and zero analyzer issues.
-
----
-
-## 3. Active Decisions & Open Blockers
+## 2. Next Immediate Tasks (Partition 05-09: Commission Revenue & Owner Payouts)
 
 ### Active Architectural Decisions
-- `ADR-004`: State machine and optimistic concurrency control for booking and settlement lifecycles.
-- `ADR-010`: Double-entry minor unit financial ledger and non-custodial escrow settlements.
-- `D-05-07-001`: Dual-party photographic handover vs. return image diffing (6 mandatory angles).
-- `D-05-07-002`: 72-hour statutory administrative dispute resolution SLA engine.
+- `ADR-001`, `ADR-005`, `ADR-007`
+- `D-05-08-001`: Lowboy carrier linked sub-booking with dual-leg transition coordination.
+- `D-05-08-002`: Axle load and 56-tonne EAC Gross Vehicle Weight (GVM) safety enforcement.
 
 ### Open Questions & Blockers
-- No active blockers for Partition 05-07.
-- Working branch: `feature/05-07-rental-completion-return-damage`.
+- `OQ-006` (Fuel Tank Discrepancy Margin & Automatic Deduction Caps) remains open in `docs/OPEN_QUESTIONS.md`.
+- Working branch: `feature/05-08-logistics-transport-integration` (ready for commit & rebase-merge to `main`).
 - Pre-commit rule active: Automated unit/integration tests + mandatory manual testing verification per `docs/quality/MANUAL_TESTING_PROTOCOL.md`.
 

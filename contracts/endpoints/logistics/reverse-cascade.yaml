@@ -1,0 +1,40 @@
+post:
+  tags: [booking]
+  summary: Trigger Force Majeure reverse failure cascade
+  description: Cancels the failed sub-booking as CANCELLED_CARRIER_DEFAULT, cancels the parent booking under Force Majeure with 100% renter refund, 0% owner penalty, commission restitution, and carrier default sanctions.
+  operationId: triggerLogisticsReverseCascade
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: false
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/logistics.yaml#/ReverseCascadeRequest'
+  responses:
+    '200':
+      description: Reverse failure cascade executed under Force Majeure exoneration.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/logistics.yaml#/ReverseCascadeSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/forbidden.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

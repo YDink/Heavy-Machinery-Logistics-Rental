@@ -1,0 +1,40 @@
+post:
+  tags: [booking]
+  summary: Register external private transport declaration
+  description: Records private prime mover and driver details when owner handles logistics externally without an in-platform sub-booking.
+  operationId: registerExternalTransport
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/logistics.yaml#/ExternalTransportRequest'
+  responses:
+    '200':
+      description: External transport registered; parent booking transitioned to READY_FOR_PICKUP.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/logistics.yaml#/ExternalTransportSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/forbidden.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

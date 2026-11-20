@@ -1,0 +1,42 @@
+post:
+  tags: [booking]
+  summary: Create linked in-platform logistics sub-booking
+  description: Instantiates a child logistics sub-booking linked via parentBookingId with the 2.5% pass-through freight commission discount and dimensional safety verification.
+  operationId: createLogisticsSubBooking
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/logistics.yaml#/CreateLogisticsSubBookingRequest'
+  responses:
+    '201':
+      description: Logistics sub-booking created and confirmed.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/logistics.yaml#/LogisticsSubBookingSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/forbidden.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '422':
+      $ref: '../../components/responses/unprocessable-entity.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

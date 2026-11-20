@@ -1,0 +1,42 @@
+post:
+  tags: [booking]
+  summary: Advance carrier dispatch, winching inspection, or site arrival milestone
+  description: Transitions a logistics sub-booking through DISPATCHED, LOADING_INSPECTION (requiring 4 winching reticle photos), IN_TRANSIT, and READY_FOR_PICKUP site arrival.
+  operationId: updateLogisticsDispatchStage
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/logistics.yaml#/LogisticsDispatchRequest'
+  responses:
+    '200':
+      description: Dispatch milestone transitioned successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/logistics.yaml#/LogisticsDispatchSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/forbidden.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '422':
+      $ref: '../../components/responses/unprocessable-entity.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

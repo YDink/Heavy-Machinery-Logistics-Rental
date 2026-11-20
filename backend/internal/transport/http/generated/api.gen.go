@@ -9,6 +9,21 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for AcceptTransshipmentSuccessResponseSuccess.
+const (
+	AcceptTransshipmentSuccessResponseSuccessTrue AcceptTransshipmentSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the AcceptTransshipmentSuccessResponseSuccess enum.
+func (e AcceptTransshipmentSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case AcceptTransshipmentSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ActiveRentalHUDSuccessResponseSuccess.
 const (
 	ActiveRentalHUDSuccessResponseSuccessTrue ActiveRentalHUDSuccessResponseSuccess = true
@@ -189,14 +204,22 @@ func (e BookingReviewSuccessResponseSuccess) Valid() bool {
 // Defines values for BookingStatus.
 const (
 	BookingStatusACTIVE                   BookingStatus = "ACTIVE"
+	BookingStatusACTIVEBREAKDOWNPAUSED    BookingStatus = "ACTIVE_BREAKDOWN_PAUSED"
+	BookingStatusACTIVEEXTENSIONHOLD      BookingStatus = "ACTIVE_EXTENSION_HOLD"
 	BookingStatusAWAITINGFLEETREADINESS   BookingStatus = "AWAITING_FLEET_READINESS"
 	BookingStatusCANCELLED                BookingStatus = "CANCELLED"
+	BookingStatusCANCELLEDCARRIERDEFAULT  BookingStatus = "CANCELLED_CARRIER_DEFAULT"
 	BookingStatusCOMPLETED                BookingStatus = "COMPLETED"
 	BookingStatusCONFIRMED                BookingStatus = "CONFIRMED"
+	BookingStatusDAMAGEDISPUTED           BookingStatus = "DAMAGE_DISPUTED"
+	BookingStatusDAMAGEPENDINGREVIEW      BookingStatus = "DAMAGE_PENDING_REVIEW"
+	BookingStatusDISPATCHED               BookingStatus = "DISPATCHED"
 	BookingStatusDISPUTEOPENED            BookingStatus = "DISPUTE_OPENED"
 	BookingStatusDISPUTERESOLVEDOWNER     BookingStatus = "DISPUTE_RESOLVED_OWNER"
 	BookingStatusDISPUTERESOLVEDRENTER    BookingStatus = "DISPUTE_RESOLVED_RENTER"
 	BookingStatusDRAFT                    BookingStatus = "DRAFT"
+	BookingStatusINTRANSIT                BookingStatus = "IN_TRANSIT"
+	BookingStatusLOADINGINSPECTION        BookingStatus = "LOADING_INSPECTION"
 	BookingStatusPAYMENTDECLINED          BookingStatus = "PAYMENT_DECLINED"
 	BookingStatusPAYMENTEVIDENCEUPLOADED  BookingStatus = "PAYMENT_EVIDENCE_UPLOADED"
 	BookingStatusPENDINGADDITIONALPAYMENT BookingStatus = "PENDING_ADDITIONAL_PAYMENT"
@@ -205,6 +228,7 @@ const (
 	BookingStatusRATED                    BookingStatus = "RATED"
 	BookingStatusREADYFORPICKUP           BookingStatus = "READY_FOR_PICKUP"
 	BookingStatusRETURNINITIATED          BookingStatus = "RETURN_INITIATED"
+	BookingStatusTRANSSHIPMENTREQUIRED    BookingStatus = "TRANSSHIPMENT_REQUIRED"
 )
 
 // Valid indicates whether the value is a known member of the BookingStatus enum.
@@ -212,13 +236,25 @@ func (e BookingStatus) Valid() bool {
 	switch e {
 	case BookingStatusACTIVE:
 		return true
+	case BookingStatusACTIVEBREAKDOWNPAUSED:
+		return true
+	case BookingStatusACTIVEEXTENSIONHOLD:
+		return true
 	case BookingStatusAWAITINGFLEETREADINESS:
 		return true
 	case BookingStatusCANCELLED:
 		return true
+	case BookingStatusCANCELLEDCARRIERDEFAULT:
+		return true
 	case BookingStatusCOMPLETED:
 		return true
 	case BookingStatusCONFIRMED:
+		return true
+	case BookingStatusDAMAGEDISPUTED:
+		return true
+	case BookingStatusDAMAGEPENDINGREVIEW:
+		return true
+	case BookingStatusDISPATCHED:
 		return true
 	case BookingStatusDISPUTEOPENED:
 		return true
@@ -227,6 +263,10 @@ func (e BookingStatus) Valid() bool {
 	case BookingStatusDISPUTERESOLVEDRENTER:
 		return true
 	case BookingStatusDRAFT:
+		return true
+	case BookingStatusINTRANSIT:
+		return true
+	case BookingStatusLOADINGINSPECTION:
 		return true
 	case BookingStatusPAYMENTDECLINED:
 		return true
@@ -243,6 +283,8 @@ func (e BookingStatus) Valid() bool {
 	case BookingStatusREADYFORPICKUP:
 		return true
 	case BookingStatusRETURNINITIATED:
+		return true
+	case BookingStatusTRANSSHIPMENTREQUIRED:
 		return true
 	default:
 		return false
@@ -471,6 +513,21 @@ const (
 func (e ErrorEnvelopeSuccess) Valid() bool {
 	switch e {
 	case False:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ExternalTransportSuccessResponseSuccess.
+const (
+	ExternalTransportSuccessResponseSuccessTrue ExternalTransportSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the ExternalTransportSuccessResponseSuccess enum.
+func (e ExternalTransportSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case ExternalTransportSuccessResponseSuccessTrue:
 		return true
 	default:
 		return false
@@ -735,6 +792,114 @@ func (e LinkFleetAttachmentSuccessResponseSuccess) Valid() bool {
 	}
 }
 
+// Defines values for LogisticsDispatchRequestTargetStage.
+const (
+	LogisticsDispatchRequestTargetStageDISPATCHED        LogisticsDispatchRequestTargetStage = "DISPATCHED"
+	LogisticsDispatchRequestTargetStageINTRANSIT         LogisticsDispatchRequestTargetStage = "IN_TRANSIT"
+	LogisticsDispatchRequestTargetStageLOADINGINSPECTION LogisticsDispatchRequestTargetStage = "LOADING_INSPECTION"
+	LogisticsDispatchRequestTargetStageREADYFORPICKUP    LogisticsDispatchRequestTargetStage = "READY_FOR_PICKUP"
+)
+
+// Valid indicates whether the value is a known member of the LogisticsDispatchRequestTargetStage enum.
+func (e LogisticsDispatchRequestTargetStage) Valid() bool {
+	switch e {
+	case LogisticsDispatchRequestTargetStageDISPATCHED:
+		return true
+	case LogisticsDispatchRequestTargetStageINTRANSIT:
+		return true
+	case LogisticsDispatchRequestTargetStageLOADINGINSPECTION:
+		return true
+	case LogisticsDispatchRequestTargetStageREADYFORPICKUP:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for LogisticsDispatchSuccessResponseSuccess.
+const (
+	LogisticsDispatchSuccessResponseSuccessTrue LogisticsDispatchSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the LogisticsDispatchSuccessResponseSuccess enum.
+func (e LogisticsDispatchSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case LogisticsDispatchSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for LogisticsMatchSuccessResponseSuccess.
+const (
+	LogisticsMatchSuccessResponseSuccessTrue LogisticsMatchSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the LogisticsMatchSuccessResponseSuccess enum.
+func (e LogisticsMatchSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case LogisticsMatchSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for LogisticsOverviewResponseDataLogisticsMode.
+const (
+	EXTERNALTRANSPORT  LogisticsOverviewResponseDataLogisticsMode = "EXTERNAL_TRANSPORT"
+	PLATFORMSUBBOOKING LogisticsOverviewResponseDataLogisticsMode = "PLATFORM_SUB_BOOKING"
+	SELFMOVE           LogisticsOverviewResponseDataLogisticsMode = "SELF_MOVE"
+	UNASSIGNED         LogisticsOverviewResponseDataLogisticsMode = "UNASSIGNED"
+)
+
+// Valid indicates whether the value is a known member of the LogisticsOverviewResponseDataLogisticsMode enum.
+func (e LogisticsOverviewResponseDataLogisticsMode) Valid() bool {
+	switch e {
+	case EXTERNALTRANSPORT:
+		return true
+	case PLATFORMSUBBOOKING:
+		return true
+	case SELFMOVE:
+		return true
+	case UNASSIGNED:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for LogisticsOverviewSuccessResponseSuccess.
+const (
+	LogisticsOverviewSuccessResponseSuccessTrue LogisticsOverviewSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the LogisticsOverviewSuccessResponseSuccess enum.
+func (e LogisticsOverviewSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case LogisticsOverviewSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for LogisticsSubBookingSuccessResponseSuccess.
+const (
+	LogisticsSubBookingSuccessResponseSuccessTrue LogisticsSubBookingSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the LogisticsSubBookingSuccessResponseSuccess enum.
+func (e LogisticsSubBookingSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case LogisticsSubBookingSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for MechanicalBreakdownRequestFaultCategory.
 const (
 	MechanicalBreakdownRequestFaultCategoryBOOMBUCKET       MechanicalBreakdownRequestFaultCategory = "BOOM_BUCKET"
@@ -924,6 +1089,21 @@ func (e ReturnInspectionSuccessResponseSuccess) Valid() bool {
 	}
 }
 
+// Defines values for ReverseCascadeSuccessResponseSuccess.
+const (
+	ReverseCascadeSuccessResponseSuccessTrue ReverseCascadeSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the ReverseCascadeSuccessResponseSuccess enum.
+func (e ReverseCascadeSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case ReverseCascadeSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for SubmitInspectionRequestStage.
 const (
 	SubmitInspectionRequestStageCHECKIN  SubmitInspectionRequestStage = "CHECK_IN"
@@ -936,6 +1116,48 @@ func (e SubmitInspectionRequestStage) Valid() bool {
 	case SubmitInspectionRequestStageCHECKIN:
 		return true
 	case SubmitInspectionRequestStageCHECKOUT:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TransshipmentAlertRequestFailureCategory.
+const (
+	TransshipmentAlertRequestFailureCategoryCORRIDORBLOCKADE      TransshipmentAlertRequestFailureCategory = "CORRIDOR_BLOCKADE"
+	TransshipmentAlertRequestFailureCategoryHYDRAULICRAMPFAILURE  TransshipmentAlertRequestFailureCategory = "HYDRAULIC_RAMP_FAILURE"
+	TransshipmentAlertRequestFailureCategoryOTHER                 TransshipmentAlertRequestFailureCategory = "OTHER"
+	TransshipmentAlertRequestFailureCategoryPRIMEMOVERENGINEBLOWN TransshipmentAlertRequestFailureCategory = "PRIME_MOVER_ENGINE_BLOWN"
+	TransshipmentAlertRequestFailureCategoryTRAILERAXLEFAILURE    TransshipmentAlertRequestFailureCategory = "TRAILER_AXLE_FAILURE"
+)
+
+// Valid indicates whether the value is a known member of the TransshipmentAlertRequestFailureCategory enum.
+func (e TransshipmentAlertRequestFailureCategory) Valid() bool {
+	switch e {
+	case TransshipmentAlertRequestFailureCategoryCORRIDORBLOCKADE:
+		return true
+	case TransshipmentAlertRequestFailureCategoryHYDRAULICRAMPFAILURE:
+		return true
+	case TransshipmentAlertRequestFailureCategoryOTHER:
+		return true
+	case TransshipmentAlertRequestFailureCategoryPRIMEMOVERENGINEBLOWN:
+		return true
+	case TransshipmentAlertRequestFailureCategoryTRAILERAXLEFAILURE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TransshipmentAlertSuccessResponseSuccess.
+const (
+	TransshipmentAlertSuccessResponseSuccessTrue TransshipmentAlertSuccessResponseSuccess = true
+)
+
+// Valid indicates whether the value is a known member of the TransshipmentAlertSuccessResponseSuccess enum.
+func (e TransshipmentAlertSuccessResponseSuccess) Valid() bool {
+	switch e {
+	case TransshipmentAlertSuccessResponseSuccessTrue:
 		return true
 	default:
 		return false
@@ -1050,6 +1272,30 @@ const (
 func (e WalletTransactionListSuccessResponseSuccess) Valid() bool {
 	switch e {
 	case WalletTransactionListSuccessResponseSuccessTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WinchingInspectionPhotoAngle.
+const (
+	BOOMPINNED   WinchingInspectionPhotoAngle = "BOOM_PINNED"
+	CHAINBINDERS WinchingInspectionPhotoAngle = "CHAIN_BINDERS"
+	RAMPSLOCKED  WinchingInspectionPhotoAngle = "RAMPS_LOCKED"
+	RIGPROFILE   WinchingInspectionPhotoAngle = "RIG_PROFILE"
+)
+
+// Valid indicates whether the value is a known member of the WinchingInspectionPhotoAngle enum.
+func (e WinchingInspectionPhotoAngle) Valid() bool {
+	switch e {
+	case BOOMPINNED:
+		return true
+	case CHAINBINDERS:
+		return true
+	case RAMPSLOCKED:
+		return true
+	case RIGPROFILE:
 		return true
 	default:
 		return false
@@ -1208,6 +1454,33 @@ func (e InitiatePaymentJSONBodyPaymentMethod) Valid() bool {
 		return false
 	}
 }
+
+// AcceptTransshipmentRequest defines model for AcceptTransshipmentRequest.
+type AcceptTransshipmentRequest struct {
+	ReplacementFleetId openapi_types.UUID `json:"replacementFleetId"`
+}
+
+// AcceptTransshipmentResponseData defines model for AcceptTransshipmentResponseData.
+type AcceptTransshipmentResponseData struct {
+	AcceptedAt         time.Time          `json:"acceptedAt"`
+	ParentBookingId    openapi_types.UUID `json:"parentBookingId"`
+	ReplacementFleetId openapi_types.UUID `json:"replacementFleetId"`
+	Status             string             `json:"status"`
+	SubBookingId       openapi_types.UUID `json:"subBookingId"`
+	SubBookingStatus   string             `json:"subBookingStatus"`
+	TransshipmentId    openapi_types.UUID `json:"transshipmentId"`
+}
+
+// AcceptTransshipmentSuccessResponse defines model for AcceptTransshipmentSuccessResponse.
+type AcceptTransshipmentSuccessResponse struct {
+	Data    AcceptTransshipmentResponseData           `json:"data"`
+	Error   map[string]interface{}                    `json:"error"`
+	Meta    ResponseMeta                              `json:"meta"`
+	Success AcceptTransshipmentSuccessResponseSuccess `json:"success"`
+}
+
+// AcceptTransshipmentSuccessResponseSuccess defines model for AcceptTransshipmentSuccessResponse.Success.
+type AcceptTransshipmentSuccessResponseSuccess bool
 
 // ActiveRentalHUDResponseData defines model for ActiveRentalHUDResponseData.
 type ActiveRentalHUDResponseData struct {
@@ -1522,6 +1795,12 @@ type BreakdownResolutionSuccessResponse struct {
 // BreakdownResolutionSuccessResponseSuccess defines model for BreakdownResolutionSuccessResponse.Success.
 type BreakdownResolutionSuccessResponseSuccess bool
 
+// CarrierContactInfo defines model for CarrierContactInfo.
+type CarrierContactInfo struct {
+	FullName    string `json:"fullName"`
+	PhoneNumber string `json:"phoneNumber"`
+}
+
 // Category defines model for Category.
 type Category struct {
 	Code     string              `json:"code"`
@@ -1659,6 +1938,14 @@ type CreateFleetRequest struct {
 	RegistrationNumber string `json:"registrationNumber"`
 }
 
+// CreateLogisticsSubBookingRequest defines model for CreateLogisticsSubBookingRequest.
+type CreateLogisticsSubBookingRequest struct {
+	DestinationCoordinates GeoCoordinates     `json:"destinationCoordinates"`
+	LogisticsFleetId       openapi_types.UUID `json:"logisticsFleetId"`
+	OriginCoordinates      GeoCoordinates     `json:"originCoordinates"`
+	PickupDateTime         time.Time          `json:"pickupDateTime"`
+}
+
 // DamageClaimRequest defines model for DamageClaimRequest.
 type DamageClaimRequest struct {
 	// ClaimedAmountMinor Itemized repair compensation claimed in integer minor currency units
@@ -1766,6 +2053,38 @@ type ErrorEnvelope struct {
 
 // ErrorEnvelopeSuccess defines model for ErrorEnvelope.Success.
 type ErrorEnvelopeSuccess bool
+
+// ExternalTransportRequest defines model for ExternalTransportRequest.
+type ExternalTransportRequest struct {
+	CarrierName              string    `json:"carrierName"`
+	DriverFullName           string    `json:"driverFullName"`
+	DriverPhoneNumber        string    `json:"driverPhoneNumber"`
+	EstimatedArrivalDateTime time.Time `json:"estimatedArrivalDateTime"`
+	PrimeMoverPlateNumber    string    `json:"primeMoverPlateNumber"`
+}
+
+// ExternalTransportResponseData defines model for ExternalTransportResponseData.
+type ExternalTransportResponseData struct {
+	CarrierName                 string             `json:"carrierName"`
+	DriverFullName              string             `json:"driverFullName"`
+	DriverPhoneNumber           string             `json:"driverPhoneNumber"`
+	EstimatedArrivalDateTime    time.Time          `json:"estimatedArrivalDateTime"`
+	ExternalTransportRegistered bool               `json:"externalTransportRegistered"`
+	ParentBookingId             openapi_types.UUID `json:"parentBookingId"`
+	PrimeMoverPlateNumber       string             `json:"primeMoverPlateNumber"`
+	Status                      string             `json:"status"`
+}
+
+// ExternalTransportSuccessResponse defines model for ExternalTransportSuccessResponse.
+type ExternalTransportSuccessResponse struct {
+	Data    ExternalTransportResponseData           `json:"data"`
+	Error   map[string]interface{}                  `json:"error"`
+	Meta    ResponseMeta                            `json:"meta"`
+	Success ExternalTransportSuccessResponseSuccess `json:"success"`
+}
+
+// ExternalTransportSuccessResponseSuccess defines model for ExternalTransportSuccessResponse.Success.
+type ExternalTransportSuccessResponseSuccess bool
 
 // FinalReconciliationResponseData defines model for FinalReconciliationResponseData.
 type FinalReconciliationResponseData struct {
@@ -1987,6 +2306,13 @@ type FleetSearchSuccessResponse struct {
 // FleetSearchSuccessResponseSuccess defines model for FleetSearchSuccessResponse.Success.
 type FleetSearchSuccessResponseSuccess bool
 
+// GeoCoordinates defines model for GeoCoordinates.
+type GeoCoordinates struct {
+	Latitude     float64 `json:"latitude"`
+	LocationName *string `json:"locationName,omitempty"`
+	Longitude    float64 `json:"longitude"`
+}
+
 // HandoverChallengeResponseData defines model for HandoverChallengeResponseData.
 type HandoverChallengeResponseData struct {
 	AttemptCount *int               `json:"attemptCount,omitempty"`
@@ -2155,6 +2481,143 @@ type LinkFleetAttachmentSuccessResponse struct {
 
 // LinkFleetAttachmentSuccessResponseSuccess defines model for LinkFleetAttachmentSuccessResponse.Success.
 type LinkFleetAttachmentSuccessResponseSuccess bool
+
+// LogisticsDispatchRequest defines model for LogisticsDispatchRequest.
+type LogisticsDispatchRequest struct {
+	Notes          *string                             `json:"notes,omitempty"`
+	TargetStage    LogisticsDispatchRequestTargetStage `json:"targetStage"`
+	WinchingPhotos *[]WinchingInspectionPhoto          `json:"winchingPhotos,omitempty"`
+}
+
+// LogisticsDispatchRequestTargetStage defines model for LogisticsDispatchRequest.TargetStage.
+type LogisticsDispatchRequestTargetStage string
+
+// LogisticsDispatchResponseData defines model for LogisticsDispatchResponseData.
+type LogisticsDispatchResponseData struct {
+	ParentBookingId     openapi_types.UUID `json:"parentBookingId"`
+	ParentBookingStatus string             `json:"parentBookingStatus"`
+	SubBookingId        openapi_types.UUID `json:"subBookingId"`
+	SubBookingStatus    string             `json:"subBookingStatus"`
+	UpdatedAt           time.Time          `json:"updatedAt"`
+	WinchingPhotosCount *int32             `json:"winchingPhotosCount,omitempty"`
+}
+
+// LogisticsDispatchSuccessResponse defines model for LogisticsDispatchSuccessResponse.
+type LogisticsDispatchSuccessResponse struct {
+	Data    LogisticsDispatchResponseData           `json:"data"`
+	Error   map[string]interface{}                  `json:"error"`
+	Meta    ResponseMeta                            `json:"meta"`
+	Success LogisticsDispatchSuccessResponseSuccess `json:"success"`
+}
+
+// LogisticsDispatchSuccessResponseSuccess defines model for LogisticsDispatchSuccessResponse.Success.
+type LogisticsDispatchSuccessResponseSuccess bool
+
+// LogisticsMatchRequest defines model for LogisticsMatchRequest.
+type LogisticsMatchRequest struct {
+	PickupDate     time.Time `json:"pickupDate"`
+	SearchRadiusKm int32     `json:"searchRadiusKm"`
+}
+
+// LogisticsMatchResponseData defines model for LogisticsMatchResponseData.
+type LogisticsMatchResponseData struct {
+	AbnormalLoadEscortRequired bool                    `json:"abnormalLoadEscortRequired"`
+	AvailableLogisticsFleets   []MatchedLogisticsFleet `json:"availableLogisticsFleets"`
+	MachineSpecs               MachineLogisticsSpecs   `json:"machineSpecs"`
+	MatchingCarriersCount      int32                   `json:"matchingCarriersCount"`
+	ParentBookingId            openapi_types.UUID      `json:"parentBookingId"`
+	RecommendedTrailerClass    string                  `json:"recommendedTrailerClass"`
+	RequiredMinimumPayloadKg   float64                 `json:"requiredMinimumPayloadKg"`
+	SelfMoveCapable            bool                    `json:"selfMoveCapable"`
+}
+
+// LogisticsMatchSuccessResponse defines model for LogisticsMatchSuccessResponse.
+type LogisticsMatchSuccessResponse struct {
+	Data    LogisticsMatchResponseData           `json:"data"`
+	Error   map[string]interface{}               `json:"error"`
+	Meta    ResponseMeta                         `json:"meta"`
+	Success LogisticsMatchSuccessResponseSuccess `json:"success"`
+}
+
+// LogisticsMatchSuccessResponseSuccess defines model for LogisticsMatchSuccessResponse.Success.
+type LogisticsMatchSuccessResponseSuccess bool
+
+// LogisticsOverviewResponseData defines model for LogisticsOverviewResponseData.
+type LogisticsOverviewResponseData struct {
+	ActiveTransshipment *TransshipmentAlertResponseData            `json:"activeTransshipment,omitempty"`
+	ExternalTransport   *ExternalTransportResponseData             `json:"externalTransport,omitempty"`
+	LogisticsMode       LogisticsOverviewResponseDataLogisticsMode `json:"logisticsMode"`
+	ParentBookingId     openapi_types.UUID                         `json:"parentBookingId"`
+	ParentBookingStatus string                                     `json:"parentBookingStatus"`
+	ReverseCascade      *ReverseCascadeResponseData                `json:"reverseCascade,omitempty"`
+	SelfMoveCapable     bool                                       `json:"selfMoveCapable"`
+	SubBooking          *LogisticsSubBookingResponseData           `json:"subBooking,omitempty"`
+}
+
+// LogisticsOverviewResponseDataLogisticsMode defines model for LogisticsOverviewResponseData.LogisticsMode.
+type LogisticsOverviewResponseDataLogisticsMode string
+
+// LogisticsOverviewSuccessResponse defines model for LogisticsOverviewSuccessResponse.
+type LogisticsOverviewSuccessResponse struct {
+	Data    LogisticsOverviewResponseData           `json:"data"`
+	Error   map[string]interface{}                  `json:"error"`
+	Meta    ResponseMeta                            `json:"meta"`
+	Success LogisticsOverviewSuccessResponseSuccess `json:"success"`
+}
+
+// LogisticsOverviewSuccessResponseSuccess defines model for LogisticsOverviewSuccessResponse.Success.
+type LogisticsOverviewSuccessResponseSuccess bool
+
+// LogisticsSubBookingResponseData defines model for LogisticsSubBookingResponseData.
+type LogisticsSubBookingResponseData struct {
+	AbnormalLoadEscortRequired bool               `json:"abnormalLoadEscortRequired"`
+	CarrierContact             CarrierContactInfo `json:"carrierContact"`
+	CommissionOwedMinor        int64              `json:"commissionOwedMinor"`
+	Currency                   string             `json:"currency"`
+	EscortFeeMinor             *int64             `json:"escortFeeMinor,omitempty"`
+	FreightHireFeeMinor        int64              `json:"freightHireFeeMinor"`
+	ParentBookingId            openapi_types.UUID `json:"parentBookingId"`
+	PlatformCommissionBps      int32              `json:"platformCommissionBps"`
+	PlatformCommissionRate     string             `json:"platformCommissionRate"`
+	Status                     string             `json:"status"`
+	SubBookingId               openapi_types.UUID `json:"subBookingId"`
+}
+
+// LogisticsSubBookingSuccessResponse defines model for LogisticsSubBookingSuccessResponse.
+type LogisticsSubBookingSuccessResponse struct {
+	Data    LogisticsSubBookingResponseData           `json:"data"`
+	Error   map[string]interface{}                    `json:"error"`
+	Meta    ResponseMeta                              `json:"meta"`
+	Success LogisticsSubBookingSuccessResponseSuccess `json:"success"`
+}
+
+// LogisticsSubBookingSuccessResponseSuccess defines model for LogisticsSubBookingSuccessResponse.Success.
+type LogisticsSubBookingSuccessResponseSuccess bool
+
+// MachineLogisticsSpecs defines model for MachineLogisticsSpecs.
+type MachineLogisticsSpecs struct {
+	OperatingWeightKg float64 `json:"operatingWeightKg"`
+	TransportHeightMm int32   `json:"transportHeightMm"`
+	TransportLengthMm int32   `json:"transportLengthMm"`
+	TransportWidthMm  int32   `json:"transportWidthMm"`
+}
+
+// MatchedLogisticsFleet defines model for MatchedLogisticsFleet.
+type MatchedLogisticsFleet struct {
+	AverageRating           float64            `json:"averageRating"`
+	AxleCount               int32              `json:"axleCount"`
+	Currency                string             `json:"currency"`
+	DailyRateMinor          int64              `json:"dailyRateMinor"`
+	DeckWellLengthMm        int32              `json:"deckWellLengthMm"`
+	DeckWidthMm             int32              `json:"deckWidthMm"`
+	DistanceFromDepotMeters float64            `json:"distanceFromDepotMeters"`
+	FleetId                 openapi_types.UUID `json:"fleetId"`
+	Make                    string             `json:"make"`
+	Model                   string             `json:"model"`
+	OwnerTradingName        string             `json:"ownerTradingName"`
+	PayloadCapacityKg       float64            `json:"payloadCapacityKg"`
+	TareWeightKg            float64            `json:"tareWeightKg"`
+}
 
 // MechanicalBreakdownRequest defines model for MechanicalBreakdownRequest.
 type MechanicalBreakdownRequest struct {
@@ -2409,6 +2872,36 @@ type ReturnInspectionSuccessResponse struct {
 // ReturnInspectionSuccessResponseSuccess defines model for ReturnInspectionSuccessResponse.Success.
 type ReturnInspectionSuccessResponseSuccess bool
 
+// ReverseCascadeRequest defines model for ReverseCascadeRequest.
+type ReverseCascadeRequest struct {
+	Reason *string `json:"reason,omitempty"`
+}
+
+// ReverseCascadeResponseData defines model for ReverseCascadeResponseData.
+type ReverseCascadeResponseData struct {
+	CarrierDefaultPenaltyMinor      int64              `json:"carrierDefaultPenaltyMinor"`
+	Currency                        string             `json:"currency"`
+	OwnerCommissionRestitutionMinor int64              `json:"ownerCommissionRestitutionMinor"`
+	OwnerPenaltyLeviedMinor         int64              `json:"ownerPenaltyLeviedMinor"`
+	ParentBookingId                 openapi_types.UUID `json:"parentBookingId"`
+	ParentStatus                    string             `json:"parentStatus"`
+	RenterRefundDueMinor            int64              `json:"renterRefundDueMinor"`
+	Resolution                      string             `json:"resolution"`
+	SubBookingId                    openapi_types.UUID `json:"subBookingId"`
+	SubStatus                       string             `json:"subStatus"`
+}
+
+// ReverseCascadeSuccessResponse defines model for ReverseCascadeSuccessResponse.
+type ReverseCascadeSuccessResponse struct {
+	Data    ReverseCascadeResponseData           `json:"data"`
+	Error   map[string]interface{}               `json:"error"`
+	Meta    ResponseMeta                         `json:"meta"`
+	Success ReverseCascadeSuccessResponseSuccess `json:"success"`
+}
+
+// ReverseCascadeSuccessResponseSuccess defines model for ReverseCascadeSuccessResponse.Success.
+type ReverseCascadeSuccessResponseSuccess bool
+
 // SubmitInspectionRequest defines model for SubmitInspectionRequest.
 type SubmitInspectionRequest struct {
 	ConditionReport     string                       `json:"conditionReport"`
@@ -2432,6 +2925,41 @@ type SubmitPaymentSlipRequest struct {
 	StorageUri           string  `json:"storageUri"`
 	TransactionReference *string `json:"transactionReference,omitempty"`
 }
+
+// TransshipmentAlertRequest defines model for TransshipmentAlertRequest.
+type TransshipmentAlertRequest struct {
+	CurrentLocation    GeoCoordinates                           `json:"currentLocation"`
+	FailureCategory    TransshipmentAlertRequestFailureCategory `json:"failureCategory"`
+	FailureDescription string                                   `json:"failureDescription"`
+	Photos             []string                                 `json:"photos"`
+}
+
+// TransshipmentAlertRequestFailureCategory defines model for TransshipmentAlertRequest.FailureCategory.
+type TransshipmentAlertRequestFailureCategory string
+
+// TransshipmentAlertResponseData defines model for TransshipmentAlertResponseData.
+type TransshipmentAlertResponseData struct {
+	CandidateCarriersCount   int32              `json:"candidateCarriersCount"`
+	Currency                 string             `json:"currency"`
+	HotSwapSlaDeadline       time.Time          `json:"hotSwapSlaDeadline"`
+	ParentBookingId          openapi_types.UUID `json:"parentBookingId"`
+	ParentBookingStatus      string             `json:"parentBookingStatus"`
+	SubBookingId             openapi_types.UUID `json:"subBookingId"`
+	SubBookingStatus         string             `json:"subBookingStatus"`
+	TransshipmentBountyMinor int64              `json:"transshipmentBountyMinor"`
+	TransshipmentId          openapi_types.UUID `json:"transshipmentId"`
+}
+
+// TransshipmentAlertSuccessResponse defines model for TransshipmentAlertSuccessResponse.
+type TransshipmentAlertSuccessResponse struct {
+	Data    TransshipmentAlertResponseData           `json:"data"`
+	Error   map[string]interface{}                   `json:"error"`
+	Meta    ResponseMeta                             `json:"meta"`
+	Success TransshipmentAlertSuccessResponseSuccess `json:"success"`
+}
+
+// TransshipmentAlertSuccessResponseSuccess defines model for TransshipmentAlertSuccessResponse.Success.
+type TransshipmentAlertSuccessResponseSuccess bool
 
 // UpdateCountryConfigRequest defines model for UpdateCountryConfigRequest.
 type UpdateCountryConfigRequest struct {
@@ -2505,6 +3033,15 @@ type WalletTransactionListSuccessResponse struct {
 
 // WalletTransactionListSuccessResponseSuccess defines model for WalletTransactionListSuccessResponse.Success.
 type WalletTransactionListSuccessResponseSuccess bool
+
+// WinchingInspectionPhoto defines model for WinchingInspectionPhoto.
+type WinchingInspectionPhoto struct {
+	Angle      WinchingInspectionPhotoAngle `json:"angle"`
+	StorageUri string                       `json:"storageUri"`
+}
+
+// WinchingInspectionPhotoAngle defines model for WinchingInspectionPhoto.Angle.
+type WinchingInspectionPhotoAngle string
 
 // CountryCodeHeader defines model for country-code-header.
 type CountryCodeHeader = string
@@ -2675,6 +3212,48 @@ type HandoverInspectParams struct {
 
 // SubmitBookingInspectionParams defines parameters for SubmitBookingInspection.
 type SubmitBookingInspectionParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// UpdateLogisticsDispatchStageParams defines parameters for UpdateLogisticsDispatchStage.
+type UpdateLogisticsDispatchStageParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// RegisterExternalTransportParams defines parameters for RegisterExternalTransport.
+type RegisterExternalTransportParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// MatchLogisticsFleetsParams defines parameters for MatchLogisticsFleets.
+type MatchLogisticsFleetsParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// TriggerLogisticsReverseCascadeParams defines parameters for TriggerLogisticsReverseCascade.
+type TriggerLogisticsReverseCascadeParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// CreateLogisticsSubBookingParams defines parameters for CreateLogisticsSubBooking.
+type CreateLogisticsSubBookingParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// AcceptLogisticsTransshipmentParams defines parameters for AcceptLogisticsTransshipment.
+type AcceptLogisticsTransshipmentParams struct {
+	// IdempotencyKey Unique mutation request key preventing duplicate execution.
+	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
+}
+
+// ReportLogisticsTransshipmentAlertParams defines parameters for ReportLogisticsTransshipmentAlert.
+type ReportLogisticsTransshipmentAlertParams struct {
 	// IdempotencyKey Unique mutation request key preventing duplicate execution.
 	IdempotencyKey IdempotencyKeyHeader `json:"Idempotency-Key"`
 }
@@ -2892,6 +3471,27 @@ type HandoverInspectJSONRequestBody = HandoverInspectionRequest
 
 // SubmitBookingInspectionJSONRequestBody defines body for SubmitBookingInspection for application/json ContentType.
 type SubmitBookingInspectionJSONRequestBody = SubmitInspectionRequest
+
+// UpdateLogisticsDispatchStageJSONRequestBody defines body for UpdateLogisticsDispatchStage for application/json ContentType.
+type UpdateLogisticsDispatchStageJSONRequestBody = LogisticsDispatchRequest
+
+// RegisterExternalTransportJSONRequestBody defines body for RegisterExternalTransport for application/json ContentType.
+type RegisterExternalTransportJSONRequestBody = ExternalTransportRequest
+
+// MatchLogisticsFleetsJSONRequestBody defines body for MatchLogisticsFleets for application/json ContentType.
+type MatchLogisticsFleetsJSONRequestBody = LogisticsMatchRequest
+
+// TriggerLogisticsReverseCascadeJSONRequestBody defines body for TriggerLogisticsReverseCascade for application/json ContentType.
+type TriggerLogisticsReverseCascadeJSONRequestBody = ReverseCascadeRequest
+
+// CreateLogisticsSubBookingJSONRequestBody defines body for CreateLogisticsSubBooking for application/json ContentType.
+type CreateLogisticsSubBookingJSONRequestBody = CreateLogisticsSubBookingRequest
+
+// AcceptLogisticsTransshipmentJSONRequestBody defines body for AcceptLogisticsTransshipment for application/json ContentType.
+type AcceptLogisticsTransshipmentJSONRequestBody = AcceptTransshipmentRequest
+
+// ReportLogisticsTransshipmentAlertJSONRequestBody defines body for ReportLogisticsTransshipmentAlert for application/json ContentType.
+type ReportLogisticsTransshipmentAlertJSONRequestBody = TransshipmentAlertRequest
 
 // SubmitBookingPaymentEvidenceJSONRequestBody defines body for SubmitBookingPaymentEvidence for application/json ContentType.
 type SubmitBookingPaymentEvidenceJSONRequestBody = SubmitPaymentSlipRequest

@@ -1586,6 +1586,335 @@ paths:
           $ref: '#/components/responses/unprocessable-entity'
         '500':
           $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/logistics:
+    get:
+      tags:
+        - booking
+      summary: Retrieve logistics mobilization overview for a booking
+      description: Returns current logistics mode, linked sub-booking dispatch state, external transport driver details, active transshipment, or reverse cascade record.
+      operationId: getBookingLogisticsOverview
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Logistics mobilization overview retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogisticsOverviewSuccessResponse'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/logistics/match:
+    post:
+      tags:
+        - booking
+      summary: Match compatible lowboy logistics transport fleets
+      description: Queries active LOGISTICS fleets matching machine operating weight, safety margin (1.10x), length, width, corridor clearance, and EAC 56t GVM limits.
+      operationId: matchLogisticsFleets
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogisticsMatchRequest'
+      responses:
+        '200':
+          description: Matching logistics transport fleets evaluated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogisticsMatchSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/logistics/sub-booking:
+    post:
+      tags:
+        - booking
+      summary: Create linked in-platform logistics sub-booking
+      description: Instantiates a child logistics sub-booking linked via parentBookingId with the 2.5% pass-through freight commission discount and dimensional safety verification.
+      operationId: createLogisticsSubBooking
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLogisticsSubBookingRequest'
+      responses:
+        '201':
+          description: Logistics sub-booking created and confirmed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogisticsSubBookingSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '422':
+          $ref: '#/components/responses/unprocessable-entity'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/logistics/external-transport:
+    post:
+      tags:
+        - booking
+      summary: Register external private transport declaration
+      description: Records private prime mover and driver details when owner handles logistics externally without an in-platform sub-booking.
+      operationId: registerExternalTransport
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalTransportRequest'
+      responses:
+        '200':
+          description: External transport registered; parent booking transitioned to READY_FOR_PICKUP.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalTransportSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/logistics/dispatch:
+    post:
+      tags:
+        - booking
+      summary: Advance carrier dispatch, winching inspection, or site arrival milestone
+      description: Transitions a logistics sub-booking through DISPATCHED, LOADING_INSPECTION (requiring 4 winching reticle photos), IN_TRANSIT, and READY_FOR_PICKUP site arrival.
+      operationId: updateLogisticsDispatchStage
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogisticsDispatchRequest'
+      responses:
+        '200':
+          description: Dispatch milestone transitioned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogisticsDispatchSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '422':
+          $ref: '#/components/responses/unprocessable-entity'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/logistics/transshipment-alert:
+    post:
+      tags:
+        - booking
+      summary: Report mid-transit breakdown and open emergency transshipment SLA
+      description: Transitions sub-booking to TRANSSHIPMENT_REQUIRED, freezes parent booking to AWAITING_FLEET_READINESS, opens a 60-minute hot-swap window with a +20% bounty, and queries replacement carriers within 50km.
+      operationId: reportLogisticsTransshipmentAlert
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransshipmentAlertRequest'
+      responses:
+        '200':
+          description: Emergency roadside transshipment window opened.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransshipmentAlertSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/logistics/transshipment-accept:
+    post:
+      tags:
+        - booking
+      summary: Accept emergency roadside transshipment hot-swap assignment
+      description: Assigns a compatible replacement lowboy fleet within the 60-minute hot-swap SLA window and resumes transit.
+      operationId: acceptLogisticsTransshipment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptTransshipmentRequest'
+      responses:
+        '200':
+          description: Replacement lowboy assigned and transit resumed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptTransshipmentSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '422':
+          $ref: '#/components/responses/unprocessable-entity'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
+  /bookings/{id}/logistics/reverse-cascade:
+    post:
+      tags:
+        - booking
+      summary: Trigger Force Majeure reverse failure cascade
+      description: Cancels the failed sub-booking as CANCELLED_CARRIER_DEFAULT, cancels the parent booking under Force Majeure with 100% renter refund, 0% owner penalty, commission restitution, and carrier default sanctions.
+      operationId: triggerLogisticsReverseCascade
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/idempotency-key-header'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReverseCascadeRequest'
+      responses:
+        '200':
+          description: Reverse failure cascade executed under Force Majeure exoneration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReverseCascadeSuccessResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '409':
+          $ref: '#/components/responses/conflict'
+        '500':
+          $ref: '#/components/responses/internal-server-error'
   /payments/initiate:
     post:
       tags:
@@ -2350,15 +2679,24 @@ components:
         - DISPUTE_RESOLVED_RENTER
         - DISPUTE_RESOLVED_OWNER
         - CONFIRMED
+        - DISPATCHED
+        - LOADING_INSPECTION
+        - IN_TRANSIT
+        - TRANSSHIPMENT_REQUIRED
         - AWAITING_FLEET_READINESS
         - PENDING_ADDITIONAL_PAYMENT
         - READY_FOR_PICKUP
         - ACTIVE
+        - ACTIVE_BREAKDOWN_PAUSED
+        - ACTIVE_EXTENSION_HOLD
         - RETURN_INITIATED
+        - DAMAGE_PENDING_REVIEW
+        - DAMAGE_DISPUTED
         - PENDING_FINAL_PAYMENT
         - COMPLETED
         - RATED
         - CANCELLED
+        - CANCELLED_CARRIER_DEFAULT
     Booking:
       type: object
       required:
@@ -3513,6 +3851,434 @@ components:
         createdAt:
           type: string
           format: date-time
+    LogisticsMatchRequest:
+      type: object
+      required:
+        - searchRadiusKm
+        - pickupDate
+      properties:
+        searchRadiusKm:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 500
+          example: 75
+        pickupDate:
+          type: string
+          format: date-time
+          example: '2026-11-05T06:00:00+03:00'
+    LogisticsMatchResponseData:
+      type: object
+      required:
+        - parentBookingId
+        - selfMoveCapable
+        - recommendedTrailerClass
+        - abnormalLoadEscortRequired
+        - machineSpecs
+        - requiredMinimumPayloadKg
+        - matchingCarriersCount
+        - availableLogisticsFleets
+      properties:
+        parentBookingId:
+          type: string
+          format: uuid
+        selfMoveCapable:
+          type: boolean
+          example: false
+        recommendedTrailerClass:
+          type: string
+          example: Two-Axle Lowboy Trailer (25t Payload Capacity)
+        abnormalLoadEscortRequired:
+          type: boolean
+          example: false
+        machineSpecs:
+          $ref: '#/components/schemas/MachineLogisticsSpecs'
+        requiredMinimumPayloadKg:
+          type: number
+          format: double
+          example: 23980
+        matchingCarriersCount:
+          type: integer
+          format: int32
+          example: 1
+        availableLogisticsFleets:
+          type: array
+          items:
+            $ref: '#/components/schemas/MatchedLogisticsFleet'
+    CreateLogisticsSubBookingRequest:
+      type: object
+      required:
+        - logisticsFleetId
+        - pickupDateTime
+        - originCoordinates
+        - destinationCoordinates
+      properties:
+        logisticsFleetId:
+          type: string
+          format: uuid
+        pickupDateTime:
+          type: string
+          format: date-time
+          example: '2026-11-05T06:30:00+03:00'
+        originCoordinates:
+          $ref: '#/components/schemas/GeoCoordinates'
+        destinationCoordinates:
+          $ref: '#/components/schemas/GeoCoordinates'
+    LogisticsSubBookingResponseData:
+      type: object
+      required:
+        - subBookingId
+        - parentBookingId
+        - status
+        - freightHireFeeMinor
+        - platformCommissionBps
+        - platformCommissionRate
+        - commissionOwedMinor
+        - currency
+        - abnormalLoadEscortRequired
+        - carrierContact
+      properties:
+        subBookingId:
+          type: string
+          format: uuid
+        parentBookingId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: CONFIRMED
+        freightHireFeeMinor:
+          type: integer
+          format: int64
+          example: 3600000
+        platformCommissionBps:
+          type: integer
+          format: int32
+          example: 250
+        platformCommissionRate:
+          type: string
+          example: '0.025'
+        commissionOwedMinor:
+          type: integer
+          format: int64
+          example: 90000
+        currency:
+          type: string
+          example: ETB
+        abnormalLoadEscortRequired:
+          type: boolean
+          example: false
+        escortFeeMinor:
+          type: integer
+          format: int64
+          example: 0
+        carrierContact:
+          $ref: '#/components/schemas/CarrierContactInfo'
+    ExternalTransportRequest:
+      type: object
+      required:
+        - carrierName
+        - driverFullName
+        - driverPhoneNumber
+        - primeMoverPlateNumber
+        - estimatedArrivalDateTime
+      properties:
+        carrierName:
+          type: string
+          minLength: 2
+          maxLength: 120
+          example: Private In-House Fleet
+        driverFullName:
+          type: string
+          minLength: 2
+          maxLength: 120
+          example: Tadesse Bekele
+        driverPhoneNumber:
+          type: string
+          pattern: ^\+[1-9]\d{7,14}$
+          example: '+251911884912'
+        primeMoverPlateNumber:
+          type: string
+          minLength: 3
+          maxLength: 32
+          example: ET-3-44192
+        estimatedArrivalDateTime:
+          type: string
+          format: date-time
+          example: '2026-11-05T08:00:00+03:00'
+    ExternalTransportResponseData:
+      type: object
+      required:
+        - parentBookingId
+        - status
+        - externalTransportRegistered
+        - carrierName
+        - driverFullName
+        - driverPhoneNumber
+        - primeMoverPlateNumber
+        - estimatedArrivalDateTime
+      properties:
+        parentBookingId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: READY_FOR_PICKUP
+        externalTransportRegistered:
+          type: boolean
+          example: true
+        carrierName:
+          type: string
+        driverFullName:
+          type: string
+        driverPhoneNumber:
+          type: string
+        primeMoverPlateNumber:
+          type: string
+        estimatedArrivalDateTime:
+          type: string
+          format: date-time
+    LogisticsDispatchRequest:
+      type: object
+      required:
+        - targetStage
+      properties:
+        targetStage:
+          type: string
+          enum:
+            - DISPATCHED
+            - LOADING_INSPECTION
+            - IN_TRANSIT
+            - READY_FOR_PICKUP
+        winchingPhotos:
+          type: array
+          items:
+            $ref: '#/components/schemas/WinchingInspectionPhoto'
+        notes:
+          type: string
+          maxLength: 500
+    LogisticsDispatchResponseData:
+      type: object
+      required:
+        - subBookingId
+        - parentBookingId
+        - subBookingStatus
+        - parentBookingStatus
+        - updatedAt
+      properties:
+        subBookingId:
+          type: string
+          format: uuid
+        parentBookingId:
+          type: string
+          format: uuid
+        subBookingStatus:
+          type: string
+          example: IN_TRANSIT
+        parentBookingStatus:
+          type: string
+          example: CONFIRMED
+        winchingPhotosCount:
+          type: integer
+          format: int32
+        updatedAt:
+          type: string
+          format: date-time
+    TransshipmentAlertRequest:
+      type: object
+      required:
+        - currentLocation
+        - failureCategory
+        - failureDescription
+        - photos
+      properties:
+        currentLocation:
+          $ref: '#/components/schemas/GeoCoordinates'
+        failureCategory:
+          type: string
+          enum:
+            - PRIME_MOVER_ENGINE_BLOWN
+            - TRAILER_AXLE_FAILURE
+            - HYDRAULIC_RAMP_FAILURE
+            - CORRIDOR_BLOCKADE
+            - OTHER
+        failureDescription:
+          type: string
+          minLength: 10
+          maxLength: 1000
+        photos:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uri
+    TransshipmentAlertResponseData:
+      type: object
+      required:
+        - transshipmentId
+        - subBookingId
+        - parentBookingId
+        - subBookingStatus
+        - parentBookingStatus
+        - hotSwapSlaDeadline
+        - transshipmentBountyMinor
+        - currency
+        - candidateCarriersCount
+      properties:
+        transshipmentId:
+          type: string
+          format: uuid
+        subBookingId:
+          type: string
+          format: uuid
+        parentBookingId:
+          type: string
+          format: uuid
+        subBookingStatus:
+          type: string
+          example: TRANSSHIPMENT_REQUIRED
+        parentBookingStatus:
+          type: string
+          example: AWAITING_FLEET_READINESS
+        hotSwapSlaDeadline:
+          type: string
+          format: date-time
+        transshipmentBountyMinor:
+          type: integer
+          format: int64
+          example: 720000
+        currency:
+          type: string
+          example: ETB
+        candidateCarriersCount:
+          type: integer
+          format: int32
+          example: 2
+    AcceptTransshipmentRequest:
+      type: object
+      required:
+        - replacementFleetId
+      properties:
+        replacementFleetId:
+          type: string
+          format: uuid
+    AcceptTransshipmentResponseData:
+      type: object
+      required:
+        - transshipmentId
+        - subBookingId
+        - parentBookingId
+        - status
+        - subBookingStatus
+        - replacementFleetId
+        - acceptedAt
+      properties:
+        transshipmentId:
+          type: string
+          format: uuid
+        subBookingId:
+          type: string
+          format: uuid
+        parentBookingId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: ACCEPTED
+        subBookingStatus:
+          type: string
+          example: IN_TRANSIT
+        replacementFleetId:
+          type: string
+          format: uuid
+        acceptedAt:
+          type: string
+          format: date-time
+    ReverseCascadeRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+          example: Emergency 60-minute roadside transshipment SLA expired without replacement carrier.
+    ReverseCascadeResponseData:
+      type: object
+      required:
+        - parentBookingId
+        - subBookingId
+        - resolution
+        - renterRefundDueMinor
+        - ownerPenaltyLeviedMinor
+        - ownerCommissionRestitutionMinor
+        - carrierDefaultPenaltyMinor
+        - currency
+        - parentStatus
+        - subStatus
+      properties:
+        parentBookingId:
+          type: string
+          format: uuid
+        subBookingId:
+          type: string
+          format: uuid
+        resolution:
+          type: string
+          example: FORCE_MAJEURE_CANCELLATION
+        renterRefundDueMinor:
+          type: integer
+          format: int64
+          example: 10675000
+        ownerPenaltyLeviedMinor:
+          type: integer
+          format: int64
+          example: 0
+        ownerCommissionRestitutionMinor:
+          type: integer
+          format: int64
+          example: 1067500
+        carrierDefaultPenaltyMinor:
+          type: integer
+          format: int64
+          example: 720000
+        currency:
+          type: string
+          example: ETB
+        parentStatus:
+          type: string
+          example: CANCELLED
+        subStatus:
+          type: string
+          example: CANCELLED_CARRIER_DEFAULT
+    LogisticsOverviewResponseData:
+      type: object
+      required:
+        - parentBookingId
+        - parentBookingStatus
+        - selfMoveCapable
+        - logisticsMode
+      properties:
+        parentBookingId:
+          type: string
+          format: uuid
+        parentBookingStatus:
+          type: string
+        selfMoveCapable:
+          type: boolean
+        logisticsMode:
+          type: string
+          enum:
+            - SELF_MOVE
+            - UNASSIGNED
+            - PLATFORM_SUB_BOOKING
+            - EXTERNAL_TRANSPORT
+        subBooking:
+          $ref: '#/components/schemas/LogisticsSubBookingResponseData'
+        externalTransport:
+          $ref: '#/components/schemas/ExternalTransportResponseData'
+        activeTransshipment:
+          $ref: '#/components/schemas/TransshipmentAlertResponseData'
+        reverseCascade:
+          $ref: '#/components/schemas/ReverseCascadeResponseData'
     FleetSearchCenter:
       type: object
       required:
@@ -4876,5 +5642,311 @@ components:
           type: object
           nullable: true
           default: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    CarrierContactInfo:
+      type: object
+      required:
+        - fullName
+        - phoneNumber
+      properties:
+        fullName:
+          type: string
+          example: Ato Girma Wolde
+        phoneNumber:
+          type: string
+          example: '+251911449120'
+    LogisticsOverviewSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/LogisticsOverviewResponseData'
+        error:
+          type: object
+          nullable: true
+          enum:
+            - null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    MachineLogisticsSpecs:
+      type: object
+      required:
+        - operatingWeightKg
+        - transportLengthMm
+        - transportWidthMm
+        - transportHeightMm
+      properties:
+        operatingWeightKg:
+          type: number
+          format: double
+          example: 21800
+        transportLengthMm:
+          type: integer
+          format: int32
+          example: 9530
+        transportWidthMm:
+          type: integer
+          format: int32
+          example: 2980
+        transportHeightMm:
+          type: integer
+          format: int32
+          example: 3150
+    MatchedLogisticsFleet:
+      type: object
+      required:
+        - fleetId
+        - make
+        - model
+        - ownerTradingName
+        - payloadCapacityKg
+        - deckWellLengthMm
+        - deckWidthMm
+        - tareWeightKg
+        - axleCount
+        - dailyRateMinor
+        - currency
+        - distanceFromDepotMeters
+        - averageRating
+      properties:
+        fleetId:
+          type: string
+          format: uuid
+        make:
+          type: string
+          example: Sinotruk
+        model:
+          type: string
+          example: Howo 6x4 with Tri-Axle Lowbed
+        ownerTradingName:
+          type: string
+          example: Girma Heavy Haulage PLC
+        payloadCapacityKg:
+          type: number
+          format: double
+          example: 40000
+        deckWellLengthMm:
+          type: integer
+          format: int32
+          example: 11000
+        deckWidthMm:
+          type: integer
+          format: int32
+          example: 3100
+        tareWeightKg:
+          type: number
+          format: double
+          example: 14500
+        axleCount:
+          type: integer
+          format: int32
+          example: 3
+        dailyRateMinor:
+          type: integer
+          format: int64
+          example: 1800000
+        currency:
+          type: string
+          example: ETB
+        distanceFromDepotMeters:
+          type: number
+          format: double
+          example: 8420
+        averageRating:
+          type: number
+          format: double
+          example: 4.95
+    LogisticsMatchSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/LogisticsMatchResponseData'
+        error:
+          type: object
+          nullable: true
+          enum:
+            - null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    GeoCoordinates:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          example: 8.9124
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          example: 38.7412
+        locationName:
+          type: string
+          maxLength: 200
+          example: Kality Industrial Depot
+    LogisticsSubBookingSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/LogisticsSubBookingResponseData'
+        error:
+          type: object
+          nullable: true
+          enum:
+            - null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ExternalTransportSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/ExternalTransportResponseData'
+        error:
+          type: object
+          nullable: true
+          enum:
+            - null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    WinchingInspectionPhoto:
+      type: object
+      required:
+        - angle
+        - storageUri
+      properties:
+        angle:
+          type: string
+          enum:
+            - RIG_PROFILE
+            - CHAIN_BINDERS
+            - BOOM_PINNED
+            - RAMPS_LOCKED
+        storageUri:
+          type: string
+          format: uri
+    LogisticsDispatchSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/LogisticsDispatchResponseData'
+        error:
+          type: object
+          nullable: true
+          enum:
+            - null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    TransshipmentAlertSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/TransshipmentAlertResponseData'
+        error:
+          type: object
+          nullable: true
+          enum:
+            - null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    AcceptTransshipmentSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/AcceptTransshipmentResponseData'
+        error:
+          type: object
+          nullable: true
+          enum:
+            - null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ReverseCascadeSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          $ref: '#/components/schemas/ReverseCascadeResponseData'
+        error:
+          type: object
+          nullable: true
+          enum:
+            - null
         meta:
           $ref: '#/components/schemas/ResponseMeta'

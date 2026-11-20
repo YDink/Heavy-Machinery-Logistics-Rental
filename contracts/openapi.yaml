@@ -109,6 +109,22 @@ paths:
     $ref: './endpoints/rentals/final-reconcile.yaml'
   /bookings/{id}/reviews:
     $ref: './endpoints/rentals/booking-reviews.yaml'
+  /bookings/{id}/logistics:
+    $ref: './endpoints/logistics/logistics-overview.yaml'
+  /bookings/{id}/logistics/match:
+    $ref: './endpoints/logistics/match.yaml'
+  /bookings/{id}/logistics/sub-booking:
+    $ref: './endpoints/logistics/sub-booking.yaml'
+  /bookings/{id}/logistics/external-transport:
+    $ref: './endpoints/logistics/external-transport.yaml'
+  /bookings/{id}/logistics/dispatch:
+    $ref: './endpoints/logistics/dispatch.yaml'
+  /bookings/{id}/logistics/transshipment-alert:
+    $ref: './endpoints/logistics/transshipment-alert.yaml'
+  /bookings/{id}/logistics/transshipment-accept:
+    $ref: './endpoints/logistics/transshipment-accept.yaml'
+  /bookings/{id}/logistics/reverse-cascade:
+    $ref: './endpoints/logistics/reverse-cascade.yaml'
   /payments/initiate:
     $ref: './endpoints/payments/initiate-payment.yaml'
   /wallets/me:
@@ -263,3 +279,33 @@ components:
       $ref: './components/schemas/completion.yaml#/BookingReviewRequest'
     BookingReviewResponseData:
       $ref: './components/schemas/completion.yaml#/BookingReviewResponseData'
+    LogisticsMatchRequest:
+      $ref: './components/schemas/logistics.yaml#/LogisticsMatchRequest'
+    LogisticsMatchResponseData:
+      $ref: './components/schemas/logistics.yaml#/LogisticsMatchResponseData'
+    CreateLogisticsSubBookingRequest:
+      $ref: './components/schemas/logistics.yaml#/CreateLogisticsSubBookingRequest'
+    LogisticsSubBookingResponseData:
+      $ref: './components/schemas/logistics.yaml#/LogisticsSubBookingResponseData'
+    ExternalTransportRequest:
+      $ref: './components/schemas/logistics.yaml#/ExternalTransportRequest'
+    ExternalTransportResponseData:
+      $ref: './components/schemas/logistics.yaml#/ExternalTransportResponseData'
+    LogisticsDispatchRequest:
+      $ref: './components/schemas/logistics.yaml#/LogisticsDispatchRequest'
+    LogisticsDispatchResponseData:
+      $ref: './components/schemas/logistics.yaml#/LogisticsDispatchResponseData'
+    TransshipmentAlertRequest:
+      $ref: './components/schemas/logistics.yaml#/TransshipmentAlertRequest'
+    TransshipmentAlertResponseData:
+      $ref: './components/schemas/logistics.yaml#/TransshipmentAlertResponseData'
+    AcceptTransshipmentRequest:
+      $ref: './components/schemas/logistics.yaml#/AcceptTransshipmentRequest'
+    AcceptTransshipmentResponseData:
+      $ref: './components/schemas/logistics.yaml#/AcceptTransshipmentResponseData'
+    ReverseCascadeRequest:
+      $ref: './components/schemas/logistics.yaml#/ReverseCascadeRequest'
+    ReverseCascadeResponseData:
+      $ref: './components/schemas/logistics.yaml#/ReverseCascadeResponseData'
+    LogisticsOverviewResponseData:
+      $ref: './components/schemas/logistics.yaml#/LogisticsOverviewResponseData'

@@ -1,0 +1,29 @@
+get:
+  tags: [booking]
+  summary: Retrieve logistics mobilization overview for a booking
+  description: Returns current logistics mode, linked sub-booking dispatch state, external transport driver details, active transshipment, or reverse cascade record.
+  operationId: getBookingLogisticsOverview
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    '200':
+      description: Logistics mobilization overview retrieved.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/logistics.yaml#/LogisticsOverviewSuccessResponse'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/forbidden.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

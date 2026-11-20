@@ -2,10 +2,10 @@
 
 **Classification:** Canonical Project Requirement & Partition Implementation Status Matrix  
 **System:** Heavy Machinery & Logistics Rental Marketplace  
-**Last Updated:** 2026-11-05T16:55:00+03:00  
-**Latest Baseline Commit:** `13346ad` (`[GOV-RULES] fix(db): align migration rbac columns and repair sql fixtures`)  
+**Last Updated:** 2026-11-20T15:45:00+03:00  
+**Latest Baseline Commit:** `41a098a` (`[PLATFORM-01] fix(db,mobile): cast queries params and configure android gradle`)  
 **Active Phase:** Phase 2 (Partition Feature Development)  
-**Active Partition:** `05-07-rental-completion-return-damage` (Rental Completion, Off-Hire Return Inspection, Damage & Penalty Adjudication)
+**Active Partition:** `05-08-logistics-transport-integration` (Logistics Transport Integration, Sub-Bookings & Reverse Cascades)
 
 ---
 
@@ -14,7 +14,7 @@
 ### Status Metrics
 - **Total MVP Partitions (Phase 2):** 24
 - **Completed Partitions:** 7 (`05-01`, `05-02`, `05-03`, `05-04`, `05-05`, `05-06`, `05-07`) + Architecture Refactor (`Pure Go Stdlib`)
-- **In Progress Partitions:** 0 (Ready for `05-08`)
+- **In Progress Partitions:** 1 (`05-08`)
 - **Pending MVP Partitions:** 17 (`05-08` through `05-24`)
 - **Phase 2 MVP Completion Rate:** **29.2%** (7 / 24 partitions complete)
 - **Corporate Partitions (Phase 2 Extension):** 5 pending (`06-01` through `06-05`)
@@ -59,7 +59,7 @@ Quality Gates:        100% Passing (Backend Suite, Mobile 84/84, Spectral OpenAP
 | **`05-05`** | **Booking Reservation Flow**<br>16-state lifecycle FSM, 60-min Valkey hold lock, 50% prepay quoting, bank slip evidence. | `BK-01` to `BK-18`<br>`BK-01-BE` | `DB`, `OAS`, `BE`, `MOB` | ✅ `COMPLETED` | 100% unit, FSM, widgets | `3a23e83` |
 | **`05-06`** | **Active Rental Management & Telemetry**<br>5-angle inspection, 6-digit challenge PIN, 8.0 hr shift quota HUD, breakdown timer pause, extensions. | `AR-01` to `AR-05`<br>`RENT-01-BE` | `DB`, `OAS`, `BE`, `MOB` | ✅ `COMPLETED` | 100% unit, HUD, BLoC (72 tests) | `3010010` |
 | **`05-07`** | **Rental Completion, Return & Damage**<br>Return inspection, damage triage, excess shift hours billing, deposit release/forfeiture. | `RET-01` to `RET-12` | `DB`, `OAS`, `BE`, `MOB` | ✅ `COMPLETED` | 100% unit, BLoC, widgets, pure Go handlers | `c0e45ab` |
-| **`05-08`** | **Logistics & Transport Integration**<br>Lowboy carrier dispatch, freight estimation, transporter coordination. | `LOG-01` to `LOG-10` | `DB`, `OAS`, `BE`, `MOB` | ⏳ `NOT_STARTED` | — | — |
+| **`05-08`** | **Logistics & Transport Integration**<br>Lowboy carrier dispatch, freight estimation, transporter coordination. | `LOG-01` to `LOG-10` | `DB`, `OAS`, `BE`, `MOB` | 🔄 `IN_PROGRESS` | 100% backend, BLoC, widgets (92 tests) | `feature/05-08-logistics-transport-integration` |
 | **`05-09`** | **Commission Revenue & Owner Payouts**<br>Double-entry financial ledger, platform commission deduction, owner escrow wallets. | `PAY-01` to `PAY-15` | `DB`, `OAS`, `BE`, `MOB` | ⏳ `NOT_STARTED` | — | — |
 | **`05-10`** | **In-App Notification Center**<br>Multi-channel push, SMS, and in-app event notification inbox. | `NOTIF-01` to `NOTIF-08` | `DB`, `OAS`, `BE`, `MOB` | ⏳ `NOT_STARTED` | — | — |
 | **`05-11`** | **Admin Dynamic UI Engine**<br>Server-driven dynamic admin panel, approval workflows, dispute resolution console. | `ADM-01` to `ADM-14` | `DB`, `OAS`, `BE`, `ADM` | ⏳ `NOT_STARTED` | — | — |

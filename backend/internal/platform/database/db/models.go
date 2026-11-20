@@ -59,47 +59,52 @@ type AttachmentReservation struct {
 }
 
 type Booking struct {
-	ID                        pgtype.UUID               `json:"id"`
-	BookingReference          string                    `json:"booking_reference"`
-	RenterID                  pgtype.UUID               `json:"renter_id"`
-	OwnerID                   pgtype.UUID               `json:"owner_id"`
-	FleetID                   pgtype.UUID               `json:"fleet_id"`
-	StartDate                 pgtype.Date               `json:"start_date"`
-	EndDate                   pgtype.Date               `json:"end_date"`
-	HirePeriod                pgtype.Range[pgtype.Date] `json:"hire_period"`
-	DurationDays              int32                     `json:"duration_days"`
-	DailyRateAppliedMinor     int64                     `json:"daily_rate_applied_minor"`
-	BaseHireFeeMinor          int64                     `json:"base_hire_fee_minor"`
-	AttachmentsFeeMinor       int64                     `json:"attachments_fee_minor"`
-	GrossRentalAmountMinor    int64                     `json:"gross_rental_amount_minor"`
-	PrepaymentAmountMinor     int64                     `json:"prepayment_amount_minor"`
-	Currency                  string                    `json:"currency"`
-	SiteLocationAddress       string                    `json:"site_location_address"`
-	Status                    string                    `json:"status"`
-	RejectionReasonCode       *string                   `json:"rejection_reason_code"`
-	RejectionNotes            *string                   `json:"rejection_notes"`
-	CancellationReason        *string                   `json:"cancellation_reason"`
-	CancelledBy               pgtype.UUID               `json:"cancelled_by"`
-	PenaltyAmountMinor        int64                     `json:"penalty_amount_minor"`
-	RefundAmountMinor         int64                     `json:"refund_amount_minor"`
-	ExpiresAt                 pgtype.Timestamptz        `json:"expires_at"`
-	ConfirmedAt               pgtype.Timestamptz        `json:"confirmed_at"`
-	ActivatedAt               pgtype.Timestamptz        `json:"activated_at"`
-	CompletedAt               pgtype.Timestamptz        `json:"completed_at"`
-	CancelledAt               pgtype.Timestamptz        `json:"cancelled_at"`
-	HandoverPin               *string                   `json:"handover_pin"`
-	CheckInMeterHours         pgtype.Numeric            `json:"check_in_meter_hours"`
-	CheckOutMeterHours        pgtype.Numeric            `json:"check_out_meter_hours"`
-	Version                   int32                     `json:"version"`
-	CreatedAt                 pgtype.Timestamptz        `json:"created_at"`
-	UpdatedAt                 pgtype.Timestamptz        `json:"updated_at"`
-	DeletedAt                 pgtype.Timestamptz        `json:"deleted_at"`
-	AssignedOperatorID        pgtype.UUID               `json:"assigned_operator_id"`
-	DamageClaimSubmitted      bool                      `json:"damage_claim_submitted"`
-	DamageClaimWaived         bool                      `json:"damage_claim_waived"`
-	AcceptedDamageMinor       int64                     `json:"accepted_damage_minor"`
-	ExcessHoursSurchargeMinor int64                     `json:"excess_hours_surcharge_minor"`
-	FinalNetBalanceMinor      int64                     `json:"final_net_balance_minor"`
+	ID                         pgtype.UUID               `json:"id"`
+	BookingReference           string                    `json:"booking_reference"`
+	RenterID                   pgtype.UUID               `json:"renter_id"`
+	OwnerID                    pgtype.UUID               `json:"owner_id"`
+	FleetID                    pgtype.UUID               `json:"fleet_id"`
+	StartDate                  pgtype.Date               `json:"start_date"`
+	EndDate                    pgtype.Date               `json:"end_date"`
+	HirePeriod                 pgtype.Range[pgtype.Date] `json:"hire_period"`
+	DurationDays               int32                     `json:"duration_days"`
+	DailyRateAppliedMinor      int64                     `json:"daily_rate_applied_minor"`
+	BaseHireFeeMinor           int64                     `json:"base_hire_fee_minor"`
+	AttachmentsFeeMinor        int64                     `json:"attachments_fee_minor"`
+	GrossRentalAmountMinor     int64                     `json:"gross_rental_amount_minor"`
+	PrepaymentAmountMinor      int64                     `json:"prepayment_amount_minor"`
+	Currency                   string                    `json:"currency"`
+	SiteLocationAddress        string                    `json:"site_location_address"`
+	Status                     string                    `json:"status"`
+	RejectionReasonCode        *string                   `json:"rejection_reason_code"`
+	RejectionNotes             *string                   `json:"rejection_notes"`
+	CancellationReason         *string                   `json:"cancellation_reason"`
+	CancelledBy                pgtype.UUID               `json:"cancelled_by"`
+	PenaltyAmountMinor         int64                     `json:"penalty_amount_minor"`
+	RefundAmountMinor          int64                     `json:"refund_amount_minor"`
+	ExpiresAt                  pgtype.Timestamptz        `json:"expires_at"`
+	ConfirmedAt                pgtype.Timestamptz        `json:"confirmed_at"`
+	ActivatedAt                pgtype.Timestamptz        `json:"activated_at"`
+	CompletedAt                pgtype.Timestamptz        `json:"completed_at"`
+	CancelledAt                pgtype.Timestamptz        `json:"cancelled_at"`
+	HandoverPin                *string                   `json:"handover_pin"`
+	CheckInMeterHours          pgtype.Numeric            `json:"check_in_meter_hours"`
+	CheckOutMeterHours         pgtype.Numeric            `json:"check_out_meter_hours"`
+	Version                    int32                     `json:"version"`
+	CreatedAt                  pgtype.Timestamptz        `json:"created_at"`
+	UpdatedAt                  pgtype.Timestamptz        `json:"updated_at"`
+	DeletedAt                  pgtype.Timestamptz        `json:"deleted_at"`
+	AssignedOperatorID         pgtype.UUID               `json:"assigned_operator_id"`
+	DamageClaimSubmitted       bool                      `json:"damage_claim_submitted"`
+	DamageClaimWaived          bool                      `json:"damage_claim_waived"`
+	AcceptedDamageMinor        int64                     `json:"accepted_damage_minor"`
+	ExcessHoursSurchargeMinor  int64                     `json:"excess_hours_surcharge_minor"`
+	FinalNetBalanceMinor       int64                     `json:"final_net_balance_minor"`
+	ParentBookingID            pgtype.UUID               `json:"parent_booking_id"`
+	BookingKind                string                    `json:"booking_kind"`
+	PlatformCommissionRateBps  int32                     `json:"platform_commission_rate_bps"`
+	PlatformCommissionMinor    int64                     `json:"platform_commission_minor"`
+	AbnormalLoadEscortRequired bool                      `json:"abnormal_load_escort_required"`
 }
 
 type BookingAttachment struct {
@@ -180,6 +185,9 @@ type CountryConfig struct {
 	IsEnabled                 bool               `json:"is_enabled"`
 	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+	MaxGvmKg                  pgtype.Numeric     `json:"max_gvm_kg"`
+	MaxCorridorHeightMm       int32              `json:"max_corridor_height_mm"`
+	WideLoadWidthMm           int32              `json:"wide_load_width_mm"`
 }
 
 type DamageClaimDocket struct {
@@ -199,6 +207,19 @@ type DamageClaimDocket struct {
 	ArbitrationNotes      *string            `json:"arbitration_notes"`
 	ArbitratedBy          pgtype.UUID        `json:"arbitrated_by"`
 	ArbitratedAt          pgtype.Timestamptz `json:"arbitrated_at"`
+	CreatedAt             pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt             pgtype.Timestamptz `json:"updated_at"`
+}
+
+type ExternalTransport struct {
+	ID                    pgtype.UUID        `json:"id"`
+	ParentBookingID       pgtype.UUID        `json:"parent_booking_id"`
+	RegisteredBy          pgtype.UUID        `json:"registered_by"`
+	CarrierName           string             `json:"carrier_name"`
+	DriverFullName        string             `json:"driver_full_name"`
+	DriverPhoneNumber     string             `json:"driver_phone_number"`
+	PrimeMoverPlateNumber string             `json:"prime_mover_plate_number"`
+	EstimatedArrivalAt    pgtype.Timestamptz `json:"estimated_arrival_at"`
 	CreatedAt             pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt             pgtype.Timestamptz `json:"updated_at"`
 }
@@ -289,15 +310,21 @@ type FleetPhoto struct {
 }
 
 type FleetSpecIndexed struct {
-	FleetID            pgtype.UUID        `json:"fleet_id"`
-	OperatingWeightKg  pgtype.Numeric     `json:"operating_weight_kg"`
-	TransportLengthMm  pgtype.Numeric     `json:"transport_length_mm"`
-	TransportWidthMm   pgtype.Numeric     `json:"transport_width_mm"`
-	TransportHeightMm  pgtype.Numeric     `json:"transport_height_mm"`
-	PayloadCapacityKg  pgtype.Numeric     `json:"payload_capacity_kg"`
-	GrossEnginePowerHp pgtype.Numeric     `json:"gross_engine_power_hp"`
-	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
-	SpecsJson          []byte             `json:"specs_json"`
+	FleetID               pgtype.UUID        `json:"fleet_id"`
+	OperatingWeightKg     pgtype.Numeric     `json:"operating_weight_kg"`
+	TransportLengthMm     pgtype.Numeric     `json:"transport_length_mm"`
+	TransportWidthMm      pgtype.Numeric     `json:"transport_width_mm"`
+	TransportHeightMm     pgtype.Numeric     `json:"transport_height_mm"`
+	PayloadCapacityKg     pgtype.Numeric     `json:"payload_capacity_kg"`
+	GrossEnginePowerHp    pgtype.Numeric     `json:"gross_engine_power_hp"`
+	UpdatedAt             pgtype.Timestamptz `json:"updated_at"`
+	SpecsJson             []byte             `json:"specs_json"`
+	DeckWellLengthMm      pgtype.Numeric     `json:"deck_well_length_mm"`
+	DeckWidthMm           pgtype.Numeric     `json:"deck_width_mm"`
+	OutriggersExtensionMm pgtype.Numeric     `json:"outriggers_extension_mm"`
+	DeckHeightGroundMm    pgtype.Numeric     `json:"deck_height_ground_mm"`
+	TareWeightKg          pgtype.Numeric     `json:"tare_weight_kg"`
+	AxleCount             *int32             `json:"axle_count"`
 }
 
 type FleetSpecValue struct {
@@ -363,6 +390,70 @@ type LocalizationTranslation struct {
 	IsVerified      bool               `json:"is_verified"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+}
+
+type LogisticsDispatch struct {
+	ID                         pgtype.UUID        `json:"id"`
+	SubBookingID               pgtype.UUID        `json:"sub_booking_id"`
+	ParentBookingID            pgtype.UUID        `json:"parent_booking_id"`
+	LogisticsFleetID           pgtype.UUID        `json:"logistics_fleet_id"`
+	CarrierOwnerID             pgtype.UUID        `json:"carrier_owner_id"`
+	PickupDatetime             pgtype.Timestamptz `json:"pickup_datetime"`
+	OriginLatitude             float64            `json:"origin_latitude"`
+	OriginLongitude            float64            `json:"origin_longitude"`
+	OriginDepotName            string             `json:"origin_depot_name"`
+	DestinationLatitude        float64            `json:"destination_latitude"`
+	DestinationLongitude       float64            `json:"destination_longitude"`
+	DestinationSiteName        string             `json:"destination_site_name"`
+	FreightHireFeeMinor        int64              `json:"freight_hire_fee_minor"`
+	PlatformCommissionBps      int32              `json:"platform_commission_bps"`
+	CommissionOwedMinor        int64              `json:"commission_owed_minor"`
+	AbnormalLoadEscortRequired bool               `json:"abnormal_load_escort_required"`
+	EscortFeeMinor             int64              `json:"escort_fee_minor"`
+	WinchingPhotosJson         []byte             `json:"winching_photos_json"`
+	DispatchedAt               pgtype.Timestamptz `json:"dispatched_at"`
+	LoadedAt                   pgtype.Timestamptz `json:"loaded_at"`
+	InTransitAt                pgtype.Timestamptz `json:"in_transit_at"`
+	ArrivedAt                  pgtype.Timestamptz `json:"arrived_at"`
+	Version                    int32              `json:"version"`
+	CreatedAt                  pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                  pgtype.Timestamptz `json:"updated_at"`
+}
+
+type LogisticsReverseCascade struct {
+	ID                              pgtype.UUID        `json:"id"`
+	ParentBookingID                 pgtype.UUID        `json:"parent_booking_id"`
+	SubBookingID                    pgtype.UUID        `json:"sub_booking_id"`
+	TriggeredBy                     pgtype.UUID        `json:"triggered_by"`
+	Resolution                      string             `json:"resolution"`
+	Reason                          string             `json:"reason"`
+	RenterRefundDueMinor            int64              `json:"renter_refund_due_minor"`
+	OwnerPenaltyLeviedMinor         int64              `json:"owner_penalty_levied_minor"`
+	OwnerCommissionRestitutionMinor int64              `json:"owner_commission_restitution_minor"`
+	CarrierDefaultPenaltyMinor      int64              `json:"carrier_default_penalty_minor"`
+	CarrierRatingDeduction          pgtype.Numeric     `json:"carrier_rating_deduction"`
+	CreatedAt                       pgtype.Timestamptz `json:"created_at"`
+}
+
+type LogisticsTransshipment struct {
+	ID                       pgtype.UUID        `json:"id"`
+	SubBookingID             pgtype.UUID        `json:"sub_booking_id"`
+	ParentBookingID          pgtype.UUID        `json:"parent_booking_id"`
+	ReportedBy               pgtype.UUID        `json:"reported_by"`
+	BreakdownLatitude        float64            `json:"breakdown_latitude"`
+	BreakdownLongitude       float64            `json:"breakdown_longitude"`
+	FailureCategory          string             `json:"failure_category"`
+	FailureDescription       string             `json:"failure_description"`
+	PhotosJson               []byte             `json:"photos_json"`
+	HotSwapSlaDeadline       pgtype.Timestamptz `json:"hot_swap_sla_deadline"`
+	TransshipmentBountyMinor int64              `json:"transshipment_bounty_minor"`
+	ReplacementFleetID       pgtype.UUID        `json:"replacement_fleet_id"`
+	ReplacementCarrierID     pgtype.UUID        `json:"replacement_carrier_id"`
+	Status                   string             `json:"status"`
+	AcceptedAt               pgtype.Timestamptz `json:"accepted_at"`
+	CompletedAt              pgtype.Timestamptz `json:"completed_at"`
+	CreatedAt                pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                pgtype.Timestamptz `json:"updated_at"`
 }
 
 type MechanicalBreakdown struct {

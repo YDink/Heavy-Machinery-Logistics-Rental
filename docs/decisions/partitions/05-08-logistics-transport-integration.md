@@ -41,7 +41,7 @@ Option A: Linked sub-booking entity with parent_booking_id. When a renter select
 - **Operational Trade-offs:** Transport carrier delays directly impact machinery rental start times.
 
 ### 6. Verification
-- **Test File:** `backend/internal/modules/booking/application/logistics_coordination_test.go`
+- **Test File:** `backend/internal/modules/logistics/application/logistics_coordination_test.go`
 - **Assertion:** TestLogistics_ParentBookingBlockedUntilTransportDelivery asserts machinery cannot be marked ACTIVE while transport is IN_TRANSIT.
 
 ### 7. Revisit Trigger
@@ -82,8 +82,8 @@ Option A: Automated mechanical weight matching. The logistics dispatch engine co
 - **Operational Trade-offs:** Owners must provide certified weighbridge or manufacturer specification documentation for heavy haul trailers.
 
 ### 6. Verification
-- **Test File:** `backend/internal/modules/machinery/domain/gvm_validation_test.go`
-- **Assertion:** TestGVM_RejectsOverloadedTrailer asserts pairing a 45-tonne excavator with a 30-tonne capacity lowboy fails validation.
+- **Test File:** `backend/internal/modules/logistics/domain/dimensional_matching_test.go`
+- **Assertion:** TestEvaluateDimensionalCompatibility asserts pairing an oversized/overweight machine exceeding trailer payload or regional 56-tonne EAC GVM limit fails validation.
 
 ### 7. Revisit Trigger
 - Revisit if national transport authorities issue special multi-axle heavy transport permit integrations in Phase 3.

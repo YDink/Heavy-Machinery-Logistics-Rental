@@ -1,0 +1,38 @@
+post:
+  tags: [booking]
+  summary: Match compatible lowboy logistics transport fleets
+  description: Queries active LOGISTICS fleets matching machine operating weight, safety margin (1.10x), length, width, corridor clearance, and EAC 56t GVM limits.
+  operationId: matchLogisticsFleets
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/logistics.yaml#/LogisticsMatchRequest'
+  responses:
+    '200':
+      description: Matching logistics transport fleets evaluated successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/logistics.yaml#/LogisticsMatchSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/forbidden.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

@@ -1,0 +1,42 @@
+post:
+  tags: [booking]
+  summary: Accept emergency roadside transshipment hot-swap assignment
+  description: Assigns a compatible replacement lowboy fleet within the 60-minute hot-swap SLA window and resumes transit.
+  operationId: acceptLogisticsTransshipment
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - $ref: '../../components/parameters/idempotency-key-header.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/logistics.yaml#/AcceptTransshipmentRequest'
+  responses:
+    '200':
+      description: Replacement lowboy assigned and transit resumed.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/logistics.yaml#/AcceptTransshipmentSuccessResponse'
+    '400':
+      $ref: '../../components/responses/bad-request.yaml'
+    '401':
+      $ref: '../../components/responses/unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/forbidden.yaml'
+    '404':
+      $ref: '../../components/responses/not-found.yaml'
+    '409':
+      $ref: '../../components/responses/conflict.yaml'
+    '422':
+      $ref: '../../components/responses/unprocessable-entity.yaml'
+    '500':
+      $ref: '../../components/responses/internal-server-error.yaml'

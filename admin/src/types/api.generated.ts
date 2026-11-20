@@ -772,6 +772,166 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/bookings/{id}/logistics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve logistics mobilization overview for a booking
+         * @description Returns current logistics mode, linked sub-booking dispatch state, external transport driver details, active transshipment, or reverse cascade record.
+         */
+        get: operations["getBookingLogisticsOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/logistics/match": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Match compatible lowboy logistics transport fleets
+         * @description Queries active LOGISTICS fleets matching machine operating weight, safety margin (1.10x), length, width, corridor clearance, and EAC 56t GVM limits.
+         */
+        post: operations["matchLogisticsFleets"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/logistics/sub-booking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create linked in-platform logistics sub-booking
+         * @description Instantiates a child logistics sub-booking linked via parentBookingId with the 2.5% pass-through freight commission discount and dimensional safety verification.
+         */
+        post: operations["createLogisticsSubBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/logistics/external-transport": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register external private transport declaration
+         * @description Records private prime mover and driver details when owner handles logistics externally without an in-platform sub-booking.
+         */
+        post: operations["registerExternalTransport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/logistics/dispatch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Advance carrier dispatch, winching inspection, or site arrival milestone
+         * @description Transitions a logistics sub-booking through DISPATCHED, LOADING_INSPECTION (requiring 4 winching reticle photos), IN_TRANSIT, and READY_FOR_PICKUP site arrival.
+         */
+        post: operations["updateLogisticsDispatchStage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/logistics/transshipment-alert": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report mid-transit breakdown and open emergency transshipment SLA
+         * @description Transitions sub-booking to TRANSSHIPMENT_REQUIRED, freezes parent booking to AWAITING_FLEET_READINESS, opens a 60-minute hot-swap window with a +20% bounty, and queries replacement carriers within 50km.
+         */
+        post: operations["reportLogisticsTransshipmentAlert"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/logistics/transshipment-accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept emergency roadside transshipment hot-swap assignment
+         * @description Assigns a compatible replacement lowboy fleet within the 60-minute hot-swap SLA window and resumes transit.
+         */
+        post: operations["acceptLogisticsTransshipment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/logistics/reverse-cascade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Trigger Force Majeure reverse failure cascade
+         * @description Cancels the failed sub-booking as CANCELLED_CARRIER_DEFAULT, cancels the parent booking under Force Majeure with 100% renter refund, 0% owner penalty, commission restitution, and carrier default sanctions.
+         */
+        post: operations["triggerLogisticsReverseCascade"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/payments/initiate": {
         parameters: {
             query?: never;
@@ -1119,7 +1279,7 @@ export interface components {
             meta: components["schemas"]["ResponseMeta"];
         };
         /** @enum {string} */
-        BookingStatus: "DRAFT" | "PENDING_PAYMENT" | "PAYMENT_EVIDENCE_UPLOADED" | "PAYMENT_DECLINED" | "DISPUTE_OPENED" | "DISPUTE_RESOLVED_RENTER" | "DISPUTE_RESOLVED_OWNER" | "CONFIRMED" | "AWAITING_FLEET_READINESS" | "PENDING_ADDITIONAL_PAYMENT" | "READY_FOR_PICKUP" | "ACTIVE" | "RETURN_INITIATED" | "PENDING_FINAL_PAYMENT" | "COMPLETED" | "RATED" | "CANCELLED";
+        BookingStatus: "DRAFT" | "PENDING_PAYMENT" | "PAYMENT_EVIDENCE_UPLOADED" | "PAYMENT_DECLINED" | "DISPUTE_OPENED" | "DISPUTE_RESOLVED_RENTER" | "DISPUTE_RESOLVED_OWNER" | "CONFIRMED" | "DISPATCHED" | "LOADING_INSPECTION" | "IN_TRANSIT" | "TRANSSHIPMENT_REQUIRED" | "AWAITING_FLEET_READINESS" | "PENDING_ADDITIONAL_PAYMENT" | "READY_FOR_PICKUP" | "ACTIVE" | "ACTIVE_BREAKDOWN_PAUSED" | "ACTIVE_EXTENSION_HOLD" | "RETURN_INITIATED" | "DAMAGE_PENDING_REVIEW" | "DAMAGE_DISPUTED" | "PENDING_FINAL_PAYMENT" | "COMPLETED" | "RATED" | "CANCELLED" | "CANCELLED_CARRIER_DEFAULT";
         Booking: {
             /** Format: uuid */
             id: string;
@@ -1769,6 +1929,238 @@ export interface components {
             isPublished: boolean;
             /** Format: date-time */
             createdAt: string;
+        };
+        LogisticsMatchRequest: {
+            /**
+             * Format: int32
+             * @example 75
+             */
+            searchRadiusKm: number;
+            /**
+             * Format: date-time
+             * @example 2026-11-05T06:00:00+03:00
+             */
+            pickupDate: string;
+        };
+        LogisticsMatchResponseData: {
+            /** Format: uuid */
+            parentBookingId: string;
+            /** @example false */
+            selfMoveCapable: boolean;
+            /** @example Two-Axle Lowboy Trailer (25t Payload Capacity) */
+            recommendedTrailerClass: string;
+            /** @example false */
+            abnormalLoadEscortRequired: boolean;
+            machineSpecs: components["schemas"]["MachineLogisticsSpecs"];
+            /**
+             * Format: double
+             * @example 23980
+             */
+            requiredMinimumPayloadKg: number;
+            /**
+             * Format: int32
+             * @example 1
+             */
+            matchingCarriersCount: number;
+            availableLogisticsFleets: components["schemas"]["MatchedLogisticsFleet"][];
+        };
+        CreateLogisticsSubBookingRequest: {
+            /** Format: uuid */
+            logisticsFleetId: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-05T06:30:00+03:00
+             */
+            pickupDateTime: string;
+            originCoordinates: components["schemas"]["GeoCoordinates"];
+            destinationCoordinates: components["schemas"]["GeoCoordinates"];
+        };
+        LogisticsSubBookingResponseData: {
+            /** Format: uuid */
+            subBookingId: string;
+            /** Format: uuid */
+            parentBookingId: string;
+            /** @example CONFIRMED */
+            status: string;
+            /**
+             * Format: int64
+             * @example 3600000
+             */
+            freightHireFeeMinor: number;
+            /**
+             * Format: int32
+             * @example 250
+             */
+            platformCommissionBps: number;
+            /** @example 0.025 */
+            platformCommissionRate: string;
+            /**
+             * Format: int64
+             * @example 90000
+             */
+            commissionOwedMinor: number;
+            /** @example ETB */
+            currency: string;
+            /** @example false */
+            abnormalLoadEscortRequired: boolean;
+            /**
+             * Format: int64
+             * @example 0
+             */
+            escortFeeMinor?: number;
+            carrierContact: components["schemas"]["CarrierContactInfo"];
+        };
+        ExternalTransportRequest: {
+            /** @example Private In-House Fleet */
+            carrierName: string;
+            /** @example Tadesse Bekele */
+            driverFullName: string;
+            /** @example +251911884912 */
+            driverPhoneNumber: string;
+            /** @example ET-3-44192 */
+            primeMoverPlateNumber: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-05T08:00:00+03:00
+             */
+            estimatedArrivalDateTime: string;
+        };
+        ExternalTransportResponseData: {
+            /** Format: uuid */
+            parentBookingId: string;
+            /** @example READY_FOR_PICKUP */
+            status: string;
+            /** @example true */
+            externalTransportRegistered: boolean;
+            carrierName: string;
+            driverFullName: string;
+            driverPhoneNumber: string;
+            primeMoverPlateNumber: string;
+            /** Format: date-time */
+            estimatedArrivalDateTime: string;
+        };
+        LogisticsDispatchRequest: {
+            /** @enum {string} */
+            targetStage: "DISPATCHED" | "LOADING_INSPECTION" | "IN_TRANSIT" | "READY_FOR_PICKUP";
+            winchingPhotos?: components["schemas"]["WinchingInspectionPhoto"][];
+            notes?: string;
+        };
+        LogisticsDispatchResponseData: {
+            /** Format: uuid */
+            subBookingId: string;
+            /** Format: uuid */
+            parentBookingId: string;
+            /** @example IN_TRANSIT */
+            subBookingStatus: string;
+            /** @example CONFIRMED */
+            parentBookingStatus: string;
+            /** Format: int32 */
+            winchingPhotosCount?: number;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        TransshipmentAlertRequest: {
+            currentLocation: components["schemas"]["GeoCoordinates"];
+            /** @enum {string} */
+            failureCategory: "PRIME_MOVER_ENGINE_BLOWN" | "TRAILER_AXLE_FAILURE" | "HYDRAULIC_RAMP_FAILURE" | "CORRIDOR_BLOCKADE" | "OTHER";
+            failureDescription: string;
+            photos: string[];
+        };
+        TransshipmentAlertResponseData: {
+            /** Format: uuid */
+            transshipmentId: string;
+            /** Format: uuid */
+            subBookingId: string;
+            /** Format: uuid */
+            parentBookingId: string;
+            /** @example TRANSSHIPMENT_REQUIRED */
+            subBookingStatus: string;
+            /** @example AWAITING_FLEET_READINESS */
+            parentBookingStatus: string;
+            /** Format: date-time */
+            hotSwapSlaDeadline: string;
+            /**
+             * Format: int64
+             * @example 720000
+             */
+            transshipmentBountyMinor: number;
+            /** @example ETB */
+            currency: string;
+            /**
+             * Format: int32
+             * @example 2
+             */
+            candidateCarriersCount: number;
+        };
+        AcceptTransshipmentRequest: {
+            /** Format: uuid */
+            replacementFleetId: string;
+        };
+        AcceptTransshipmentResponseData: {
+            /** Format: uuid */
+            transshipmentId: string;
+            /** Format: uuid */
+            subBookingId: string;
+            /** Format: uuid */
+            parentBookingId: string;
+            /** @example ACCEPTED */
+            status: string;
+            /** @example IN_TRANSIT */
+            subBookingStatus: string;
+            /** Format: uuid */
+            replacementFleetId: string;
+            /** Format: date-time */
+            acceptedAt: string;
+        };
+        ReverseCascadeRequest: {
+            /** @example Emergency 60-minute roadside transshipment SLA expired without replacement carrier. */
+            reason?: string;
+        };
+        ReverseCascadeResponseData: {
+            /** Format: uuid */
+            parentBookingId: string;
+            /** Format: uuid */
+            subBookingId: string;
+            /** @example FORCE_MAJEURE_CANCELLATION */
+            resolution: string;
+            /**
+             * Format: int64
+             * @example 10675000
+             */
+            renterRefundDueMinor: number;
+            /**
+             * Format: int64
+             * @example 0
+             */
+            ownerPenaltyLeviedMinor: number;
+            /**
+             * Format: int64
+             * @example 1067500
+             */
+            ownerCommissionRestitutionMinor: number;
+            /**
+             * Format: int64
+             * @example 720000
+             */
+            carrierDefaultPenaltyMinor: number;
+            /** @example ETB */
+            currency: string;
+            /** @example CANCELLED */
+            parentStatus: string;
+            /** @example CANCELLED_CARRIER_DEFAULT */
+            subStatus: string;
+        };
+        LogisticsOverviewResponseData: {
+            /** Format: uuid */
+            parentBookingId: string;
+            parentBookingStatus: string;
+            selfMoveCapable: boolean;
+            /** @enum {string} */
+            logisticsMode: "SELF_MOVE" | "UNASSIGNED" | "PLATFORM_SUB_BOOKING" | "EXTERNAL_TRANSPORT";
+            subBooking?: components["schemas"]["LogisticsSubBookingResponseData"];
+            externalTransport?: components["schemas"]["ExternalTransportResponseData"];
+            activeTransshipment?: components["schemas"]["TransshipmentAlertResponseData"];
+            reverseCascade?: components["schemas"]["ReverseCascadeResponseData"];
         };
         FleetSearchCenter: {
             /**
@@ -2439,6 +2831,170 @@ export interface components {
             data: components["schemas"]["BookingReviewResponseData"];
             /** @default null */
             error: Record<string, never> | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        CarrierContactInfo: {
+            /** @example Ato Girma Wolde */
+            fullName: string;
+            /** @example +251911449120 */
+            phoneNumber: string;
+        };
+        LogisticsOverviewSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["LogisticsOverviewResponseData"];
+            /** @enum {object|null} */
+            error: never | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        MachineLogisticsSpecs: {
+            /**
+             * Format: double
+             * @example 21800
+             */
+            operatingWeightKg: number;
+            /**
+             * Format: int32
+             * @example 9530
+             */
+            transportLengthMm: number;
+            /**
+             * Format: int32
+             * @example 2980
+             */
+            transportWidthMm: number;
+            /**
+             * Format: int32
+             * @example 3150
+             */
+            transportHeightMm: number;
+        };
+        MatchedLogisticsFleet: {
+            /** Format: uuid */
+            fleetId: string;
+            /** @example Sinotruk */
+            make: string;
+            /** @example Howo 6x4 with Tri-Axle Lowbed */
+            model: string;
+            /** @example Girma Heavy Haulage PLC */
+            ownerTradingName: string;
+            /**
+             * Format: double
+             * @example 40000
+             */
+            payloadCapacityKg: number;
+            /**
+             * Format: int32
+             * @example 11000
+             */
+            deckWellLengthMm: number;
+            /**
+             * Format: int32
+             * @example 3100
+             */
+            deckWidthMm: number;
+            /**
+             * Format: double
+             * @example 14500
+             */
+            tareWeightKg: number;
+            /**
+             * Format: int32
+             * @example 3
+             */
+            axleCount: number;
+            /**
+             * Format: int64
+             * @example 1800000
+             */
+            dailyRateMinor: number;
+            /** @example ETB */
+            currency: string;
+            /**
+             * Format: double
+             * @example 8420
+             */
+            distanceFromDepotMeters: number;
+            /**
+             * Format: double
+             * @example 4.95
+             */
+            averageRating: number;
+        };
+        LogisticsMatchSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["LogisticsMatchResponseData"];
+            /** @enum {object|null} */
+            error: never | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        GeoCoordinates: {
+            /**
+             * Format: double
+             * @example 8.9124
+             */
+            latitude: number;
+            /**
+             * Format: double
+             * @example 38.7412
+             */
+            longitude: number;
+            /** @example Kality Industrial Depot */
+            locationName?: string;
+        };
+        LogisticsSubBookingSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["LogisticsSubBookingResponseData"];
+            /** @enum {object|null} */
+            error: never | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        ExternalTransportSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["ExternalTransportResponseData"];
+            /** @enum {object|null} */
+            error: never | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        WinchingInspectionPhoto: {
+            /** @enum {string} */
+            angle: "RIG_PROFILE" | "CHAIN_BINDERS" | "BOOM_PINNED" | "RAMPS_LOCKED";
+            /** Format: uri */
+            storageUri: string;
+        };
+        LogisticsDispatchSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["LogisticsDispatchResponseData"];
+            /** @enum {object|null} */
+            error: never | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        TransshipmentAlertSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["TransshipmentAlertResponseData"];
+            /** @enum {object|null} */
+            error: never | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        AcceptTransshipmentSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["AcceptTransshipmentResponseData"];
+            /** @enum {object|null} */
+            error: never | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        ReverseCascadeSuccessResponse: {
+            /** @enum {boolean} */
+            success: true;
+            data: components["schemas"]["ReverseCascadeResponseData"];
+            /** @enum {object|null} */
+            error: never | null;
             meta: components["schemas"]["ResponseMeta"];
         };
     };
@@ -3848,6 +4404,279 @@ export interface operations {
             404: components["responses"]["not-found"];
             409: components["responses"]["conflict"];
             422: components["responses"]["unprocessable-entity"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    getBookingLogisticsOverview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Logistics mobilization overview retrieved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogisticsOverviewSuccessResponse"];
+                };
+            };
+            401: components["responses"]["unauthorized"];
+            403: components["responses"]["forbidden"];
+            404: components["responses"]["not-found"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    matchLogisticsFleets: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LogisticsMatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Matching logistics transport fleets evaluated successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogisticsMatchSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            403: components["responses"]["forbidden"];
+            404: components["responses"]["not-found"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    createLogisticsSubBooking: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateLogisticsSubBookingRequest"];
+            };
+        };
+        responses: {
+            /** @description Logistics sub-booking created and confirmed. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogisticsSubBookingSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            403: components["responses"]["forbidden"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            422: components["responses"]["unprocessable-entity"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    registerExternalTransport: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExternalTransportRequest"];
+            };
+        };
+        responses: {
+            /** @description External transport registered; parent booking transitioned to READY_FOR_PICKUP. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalTransportSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            403: components["responses"]["forbidden"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    updateLogisticsDispatchStage: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LogisticsDispatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Dispatch milestone transitioned successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogisticsDispatchSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            403: components["responses"]["forbidden"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            422: components["responses"]["unprocessable-entity"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    reportLogisticsTransshipmentAlert: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransshipmentAlertRequest"];
+            };
+        };
+        responses: {
+            /** @description Emergency roadside transshipment window opened. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransshipmentAlertSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            403: components["responses"]["forbidden"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    acceptLogisticsTransshipment: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptTransshipmentRequest"];
+            };
+        };
+        responses: {
+            /** @description Replacement lowboy assigned and transit resumed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcceptTransshipmentSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            403: components["responses"]["forbidden"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
+            422: components["responses"]["unprocessable-entity"];
+            500: components["responses"]["internal-server-error"];
+        };
+    };
+    triggerLogisticsReverseCascade: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique mutation request key preventing duplicate execution. */
+                "Idempotency-Key": components["parameters"]["idempotency-key-header"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ReverseCascadeRequest"];
+            };
+        };
+        responses: {
+            /** @description Reverse failure cascade executed under Force Majeure exoneration. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReverseCascadeSuccessResponse"];
+                };
+            };
+            400: components["responses"]["bad-request"];
+            401: components["responses"]["unauthorized"];
+            403: components["responses"]["forbidden"];
+            404: components["responses"]["not-found"];
+            409: components["responses"]["conflict"];
             500: components["responses"]["internal-server-error"];
         };
     };

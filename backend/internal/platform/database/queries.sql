@@ -712,7 +712,7 @@ SET status = $2,
     confirmed_at = CASE WHEN $2::varchar = 'CONFIRMED' THEN NOW() ELSE confirmed_at END,
     activated_at = CASE WHEN $2::varchar = 'ACTIVE' THEN NOW() ELSE activated_at END,
     completed_at = CASE WHEN $2::varchar = 'COMPLETED' THEN NOW() ELSE completed_at END,
-    cancelled_at = CASE WHEN $2::varchar = 'CANCELLED' THEN NOW() ELSE cancelled_at END,
+    cancelled_at = CASE WHEN $2::varchar IN ('CANCELLED', 'CANCELLED_CARRIER_DEFAULT') THEN NOW() ELSE cancelled_at END,
     expires_at = COALESCE($9, expires_at),
     updated_at = NOW()
 WHERE id = $1 AND version = $10 AND deleted_at IS NULL
@@ -1189,3 +1189,285 @@ SET status = $2,
     updated_at = NOW()
 WHERE id = $1 AND version = $9 AND deleted_at IS NULL
 RETURNING *;
+
+
+-- ==================== Logistics Transport Integration, Sub-Bookings & Reverse Cascades (Partition 05-08) ====================
+
+-- name: GetFleetLogisticsContext :one
+SELECT
+    f.id,
+    f.owner_id,
+    f.subcategory_id,
+    f.make,
+    f.model,
+    f.self_move_capable,
+    f.daily_rate_minor,
+    f.status,
+    f.country_code,
+    f.address_text,
+    ST_Y(f.location::geometry)::float8 AS latitude,
+    ST_X(f.location::geometry)::float8 AS longitude,
+    COALESCE(root_cat.code, c.code) AS root_category_code,
+    fsi.operating_weight_kg,
+    fsi.transport_length_mm,
+    fsi.transport_width_mm,
+    fsi.transport_height_mm,
+    fsi.payload_capacity_kg,
+    fsi.deck_well_length_mm,
+    fsi.deck_width_mm,
+    COALESCE(fsi.outriggers_extension_mm, 0)::numeric(10,2) AS outriggers_extension_mm,
+    fsi.deck_height_ground_mm,
+    fsi.tare_weight_kg,
+    fsi.axle_count,
+    u.full_name AS owner_full_name,
+    u.phone_number AS owner_phone_number
+FROM fleets f
+JOIN categories c ON c.id = f.subcategory_id
+LEFT JOIN categories root_cat ON root_cat.id = c.parent_id
+LEFT JOIN fleet_spec_indexed fsi ON fsi.fleet_id = f.id
+JOIN users u ON u.id = f.owner_id
+WHERE f.id = $1;
+
+-- name: GetCountryLogisticsLimits :one
+SELECT
+    country_code,
+    default_currency,
+    max_gvm_kg,
+    max_corridor_height_mm,
+    wide_load_width_mm
+FROM country_configs
+WHERE country_code = $1;
+
+-- name: MatchCompatibleLogisticsFleets :many
+SELECT
+    f.id AS fleet_id,
+    f.owner_id,
+    f.make,
+    f.model,
+    u.full_name AS owner_trading_name,
+    u.phone_number AS owner_phone_number,
+    f.daily_rate_minor,
+    ST_Y(f.location::geometry)::float8 AS latitude,
+    ST_X(f.location::geometry)::float8 AS longitude,
+    ST_Distance(f.location, ST_SetSRID(ST_MakePoint(sqlc.arg(longitude)::float8, sqlc.arg(latitude)::float8), 4326)::geography)::float8 AS distance_from_depot_meters,
+    COALESCE(oa.average_rating, 5.00) AS average_rating,
+    COALESCE(fsi.payload_capacity_kg, 0)::numeric(10,2) AS payload_capacity_kg,
+    COALESCE(fsi.deck_well_length_mm, fsi.transport_length_mm, 0)::numeric(10,2) AS deck_well_length_mm,
+    COALESCE(fsi.deck_width_mm, fsi.transport_width_mm, 0)::numeric(10,2) AS deck_width_mm,
+    COALESCE(fsi.outriggers_extension_mm, 0)::numeric(10,2) AS outriggers_extension_mm,
+    COALESCE(fsi.deck_height_ground_mm, 900)::numeric(10,2) AS deck_height_ground_mm,
+    COALESCE(fsi.tare_weight_kg, 0)::numeric(10,2) AS tare_weight_kg,
+    COALESCE(fsi.axle_count, 3)::int AS axle_count
+FROM fleets f
+JOIN categories c ON c.id = f.subcategory_id
+JOIN categories root_cat ON root_cat.id = c.parent_id
+JOIN users u ON u.id = f.owner_id
+LEFT JOIN owner_aggregates oa ON oa.owner_id = f.owner_id
+LEFT JOIN fleet_spec_indexed fsi ON fsi.fleet_id = f.id
+WHERE root_cat.code = 'LOGISTICS'
+  AND f.status = 'ACTIVE'
+  AND f.country_code = sqlc.arg(country_code)::varchar
+  AND f.owner_id != sqlc.arg(exclude_owner_id)::uuid
+  AND ST_DWithin(f.location, ST_SetSRID(ST_MakePoint(sqlc.arg(longitude)::float8, sqlc.arg(latitude)::float8), 4326)::geography, sqlc.arg(radius_meters)::float8)
+  AND COALESCE(fsi.payload_capacity_kg, 0) >= sqlc.arg(min_payload_kg)::numeric
+  AND COALESCE(fsi.deck_well_length_mm, fsi.transport_length_mm, 0) >= sqlc.arg(required_length_mm)::numeric
+  AND (COALESCE(fsi.deck_width_mm, fsi.transport_width_mm, 0) + COALESCE(fsi.outriggers_extension_mm, 0)) >= sqlc.arg(required_width_mm)::numeric
+  AND (COALESCE(fsi.deck_height_ground_mm, 900) + sqlc.arg(machine_height_mm)::numeric) <= sqlc.arg(max_corridor_height_mm)::numeric
+  AND (sqlc.arg(machine_weight_kg)::numeric + COALESCE(fsi.tare_weight_kg, 0)) <= sqlc.arg(max_gvm_kg)::numeric
+ORDER BY distance_from_depot_meters ASC, f.daily_rate_minor ASC
+LIMIT sqlc.arg(query_limit)::int;
+
+-- name: CreateLogisticsSubBooking :one
+INSERT INTO bookings (
+    booking_reference,
+    renter_id,
+    owner_id,
+    fleet_id,
+    parent_booking_id,
+    booking_kind,
+    start_date,
+    end_date,
+    hire_period,
+    duration_days,
+    daily_rate_applied_minor,
+    base_hire_fee_minor,
+    attachments_fee_minor,
+    gross_rental_amount_minor,
+    prepayment_amount_minor,
+    platform_commission_rate_bps,
+    platform_commission_minor,
+    abnormal_load_escort_required,
+    currency,
+    site_location_address,
+    status,
+    confirmed_at,
+    version
+) VALUES (
+    $1, $2, $3, $4, $5, 'LOGISTICS_SUB', $6, $7, $8, $9, $10, $11, 0, $12, $13, $14, $15, $16, $17, $18, $19, NOW(), 1
+) RETURNING *;
+
+-- name: GetBookingByParentID :one
+SELECT * FROM bookings
+WHERE parent_booking_id = $1 AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT 1;
+
+-- name: ListChildSubBookingsByParentID :many
+SELECT * FROM bookings
+WHERE parent_booking_id = $1 AND deleted_at IS NULL
+ORDER BY created_at DESC;
+
+-- name: CreateLogisticsDispatch :one
+INSERT INTO logistics_dispatches (
+    sub_booking_id,
+    parent_booking_id,
+    logistics_fleet_id,
+    carrier_owner_id,
+    pickup_datetime,
+    origin_latitude,
+    origin_longitude,
+    origin_depot_name,
+    destination_latitude,
+    destination_longitude,
+    destination_site_name,
+    freight_hire_fee_minor,
+    platform_commission_bps,
+    commission_owed_minor,
+    abnormal_load_escort_required,
+    escort_fee_minor
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+) RETURNING *;
+
+-- name: GetLogisticsDispatchBySubBookingID :one
+SELECT * FROM logistics_dispatches
+WHERE sub_booking_id = $1;
+
+-- name: GetLogisticsDispatchByParentBookingID :one
+SELECT * FROM logistics_dispatches
+WHERE parent_booking_id = $1
+ORDER BY created_at DESC
+LIMIT 1;
+
+-- name: UpdateLogisticsDispatchLoading :one
+UPDATE logistics_dispatches
+SET winching_photos_json = $2,
+    loaded_at = NOW(),
+    version = version + 1,
+    updated_at = NOW()
+WHERE sub_booking_id = $1
+RETURNING *;
+
+-- name: UpdateLogisticsDispatchMilestone :one
+UPDATE logistics_dispatches
+SET dispatched_at = CASE WHEN $2::varchar = 'DISPATCHED' THEN NOW() ELSE dispatched_at END,
+    loaded_at = CASE WHEN $2::varchar = 'LOADING_INSPECTION' THEN NOW() ELSE loaded_at END,
+    in_transit_at = CASE WHEN $2::varchar = 'IN_TRANSIT' THEN NOW() ELSE in_transit_at END,
+    arrived_at = CASE WHEN $2::varchar = 'READY_FOR_PICKUP' THEN NOW() ELSE arrived_at END,
+    version = version + 1,
+    updated_at = NOW()
+WHERE sub_booking_id = $1
+RETURNING *;
+
+-- name: UpsertExternalTransport :one
+INSERT INTO external_transports (
+    parent_booking_id,
+    registered_by,
+    carrier_name,
+    driver_full_name,
+    driver_phone_number,
+    prime_mover_plate_number,
+    estimated_arrival_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7
+) ON CONFLICT (parent_booking_id) DO UPDATE SET
+    registered_by = EXCLUDED.registered_by,
+    carrier_name = EXCLUDED.carrier_name,
+    driver_full_name = EXCLUDED.driver_full_name,
+    driver_phone_number = EXCLUDED.driver_phone_number,
+    prime_mover_plate_number = EXCLUDED.prime_mover_plate_number,
+    estimated_arrival_at = EXCLUDED.estimated_arrival_at,
+    updated_at = NOW()
+RETURNING *;
+
+-- name: GetExternalTransportByParentBookingID :one
+SELECT * FROM external_transports
+WHERE parent_booking_id = $1;
+
+-- name: CreateLogisticsTransshipment :one
+INSERT INTO logistics_transshipments (
+    sub_booking_id,
+    parent_booking_id,
+    reported_by,
+    breakdown_latitude,
+    breakdown_longitude,
+    failure_category,
+    failure_description,
+    photos_json,
+    hot_swap_sla_deadline,
+    transshipment_bounty_minor,
+    status
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+) RETURNING *;
+
+-- name: GetOpenTransshipmentBySubBookingID :one
+SELECT * FROM logistics_transshipments
+WHERE sub_booking_id = $1 AND status IN ('OPEN', 'ACCEPTED')
+ORDER BY created_at DESC
+LIMIT 1;
+
+-- name: AcceptLogisticsTransshipment :one
+UPDATE logistics_transshipments
+SET replacement_fleet_id = $2,
+    replacement_carrier_id = $3,
+    status = 'ACCEPTED',
+    accepted_at = NOW(),
+    updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: CompleteLogisticsTransshipment :one
+UPDATE logistics_transshipments
+SET status = 'COMPLETED',
+    completed_at = NOW(),
+    updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: ExpireLogisticsTransshipment :one
+UPDATE logistics_transshipments
+SET status = 'EXPIRED',
+    updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: CreateLogisticsReverseCascade :one
+INSERT INTO logistics_reverse_cascades (
+    parent_booking_id,
+    sub_booking_id,
+    triggered_by,
+    resolution,
+    reason,
+    renter_refund_due_minor,
+    owner_penalty_levied_minor,
+    owner_commission_restitution_minor,
+    carrier_default_penalty_minor,
+    carrier_rating_deduction
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+) RETURNING *;
+
+-- name: GetLogisticsReverseCascadeByParentBookingID :one
+SELECT * FROM logistics_reverse_cascades
+WHERE parent_booking_id = $1;
+
+-- name: ReleaseFleetAvailabilityByReference :exec
+DELETE FROM fleet_availability
+WHERE reference_id = $1;
+
+-- name: DeductOwnerAggregateRating :exec
+UPDATE owner_aggregates
+SET average_rating = GREATEST(1.00, average_rating - $2::numeric(3,2)),
+    updated_at = NOW()
+WHERE owner_id = $1;
